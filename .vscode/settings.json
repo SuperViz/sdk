@@ -1,0 +1,38 @@
+{
+  "eslint.codeActionsOnSave.mode": "all",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.validate": ["javascript", "typescript", "vue", "html"],
+  // prettier extension settings
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsx-tags]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true
+  },
+  "[sass]": {
+    "editor.formatOnSave": true
+  },
+  "[scss]": {
+    "editor.formatOnSave": true
+  },
+
+  "prettier.configPath": ".prettierrc.js",
+}
