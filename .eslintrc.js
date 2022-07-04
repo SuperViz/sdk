@@ -56,5 +56,7 @@ module.exports = {
         ts: 'never',
       },
     ],
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+    'prefer-object-spread': 'off',
   },
 };
