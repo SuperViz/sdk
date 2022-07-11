@@ -1,4 +1,5 @@
 import SdkFacade from './SdkFacade';
+import { MessageTypes } from './common/types/messages.types';
 import { logger } from './common/utils';
 import AuthService from './service/AuthService';
 import ApiService from './service/api/ApiService';
@@ -33,3 +34,5 @@ export default async (apiKey: string, options: IConfig = {}) => {
     ),
   );
 };
+
+export { MessageTypes };

@@ -602,10 +602,10 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@superviz/immersive-core@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@superviz/immersive-core/-/immersive-core-0.3.0.tgz#2631a4b77bfaa5913df3494e513c624dcd759b8f"
-  integrity sha512-Y8FjWENJYNEJqOTKMcUauxm6AOTOMj0JRyVz7nM+HAxS3btTrgBFSSRSgLPgALp0lxt6Rstf8yggesoTVEHFAQ==
+"@superviz/immersive-core@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@superviz/immersive-core/-/immersive-core-0.3.1.tgz#f872b397f4f542e714ed5d296e68f1263562144b"
+  integrity sha512-bigkv9ztIa7QpwEjEEKIajtyjx8HOAz3GGsHA6rp7/xZiJ68RGet/BHtE5y/9+zRhI4QHy9kbQA5bDYmlxnviA==
   dependencies:
     debug "^4.3.4"
 

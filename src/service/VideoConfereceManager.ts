@@ -1,5 +1,6 @@
 import { FrameBricklayer, MessageBridge } from '@superviz/immersive-core';
 
+import { MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
 import { IVideoManagerConfig } from './VideoConferenceManager.types';
@@ -36,13 +37,19 @@ export default class {
 
   start() {
     // TODO: initialize meeting settings
+
+    this.messageBridge.publish(MessageTypes.MEETING_START, {});
   }
 
   join() {
     // TODO: join room
+
+    this.messageBridge.publish(MessageTypes.MEETING_ENTER_ROOM, {});
   }
 
   leave() {
+    this.messageBridge.publish(MessageTypes.MEETING_LEAVE, {});
+
     this.destroy();
   }
 
@@ -58,6 +65,19 @@ export default class {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
-    // TODO: add messages
+    this.messageBridge.publish(MessageTypes.FRAME_LOAD);
+
+    // @TODO - REMOVE THIS
+    this.start();
+
+    this.messageBridge.listen(MessageTypes.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
+    this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
+    this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
+    this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
   };
+
+  private onUserAmountUpdate = (users) => {};
+  private onUserJoined = (user) => {};
+  private onUserLeft = (user) => {};
+  private onUserListUpdate = (users) => {};
 }

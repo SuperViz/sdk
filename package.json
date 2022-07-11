@@ -2,7 +2,7 @@
   "name": "@superviz/sdk",
   "version": "0.0.1",
   "description": "SuperViz SDK",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "node ./.esbuild/build.js",
     "postbuild": "tsc --emitDeclarationOnly --declaration",
@@ -40,6 +40,6 @@
     "yargs": "^17.5.1"
   },
   "dependencies": {
-    "@superviz/immersive-core": "^0.3.0"
+    "@superviz/immersive-core": "^0.3.1"
   }
 }
