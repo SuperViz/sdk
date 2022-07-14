@@ -1,5 +1,6 @@
 import { FrameBricklayer, MessageBridge } from '@superviz/immersive-core';
 
+import css from '../common/styles/videoConferenceStyle';
 import { MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
@@ -11,11 +12,15 @@ export default class {
 
   constructor(config: IVideoManagerConfig) {
     const wrapper = document.createElement('div');
+    const style = document.createElement('style');
+
+    style.innerHTML = css;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
 
     document.body.appendChild(wrapper);
+    document.head.appendChild(style);
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
@@ -64,11 +69,6 @@ export default class {
       logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
-
-    this.messageBridge.publish(MessageTypes.FRAME_LOAD);
-
-    // @TODO - REMOVE THIS
-    this.start();
 
     this.messageBridge.listen(MessageTypes.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
     this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
