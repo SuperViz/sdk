@@ -28,7 +28,7 @@ export default class {
         language: config.language,
       },
       {
-        allow: 'camera;microphone',
+        allow: 'camera *;microphone *',
       },
     );
 
