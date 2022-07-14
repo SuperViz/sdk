@@ -18,10 +18,6 @@ export default class Communicator {
     this.videoManager.start();
   }
 
-  join() {
-    this.videoManager.join();
-  }
-
   leave() {
     this.videoManager.leave();
   }

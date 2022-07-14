@@ -40,16 +40,8 @@ export default class {
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
   }
 
-  start() {
-    // TODO: initialize meeting settings
-
-    this.messageBridge.publish(MessageTypes.MEETING_START, {});
-  }
-
-  join() {
-    // TODO: join room
-
-    this.messageBridge.publish(MessageTypes.MEETING_ENTER_ROOM, {});
+  start(options) {
+    this.messageBridge.publish(MessageTypes.MEETING_START, options);
   }
 
   leave() {
