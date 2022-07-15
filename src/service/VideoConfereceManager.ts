@@ -1,14 +1,18 @@
-import { FrameBricklayer, MessageBridge } from '@superviz/immersive-core';
+import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
 import css from '../common/styles/videoConferenceStyle';
 import { MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
-import { IVideoManagerConfig } from './VideoConferenceManager.types';
+import { IVideoFrameState, IVideoManagerConfig } from './VideoConferenceManager.types';
 
-export default class {
+export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
+
+  private frameStateObserver = new ObserverHelper({ logger });
+
+  frameState = IVideoFrameState.UNINITIALIZED;
 
   constructor(config: IVideoManagerConfig) {
     const wrapper = document.createElement('div');
@@ -21,6 +25,8 @@ export default class {
 
     document.body.appendChild(wrapper);
     document.head.appendChild(style);
+
+    this.updateFrameState(IVideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
@@ -51,9 +57,12 @@ export default class {
   }
 
   destroy() {
+    this.messageBridge.destroy();
     this.bricklayer.destroy();
+    this.frameStateObserver.destroy();
 
     this.bricklayer = null;
+    this.frameState = null;
   }
 
   private onFrameLoad = () => {
@@ -66,10 +75,22 @@ export default class {
     this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
+
+    this.updateFrameState(IVideoFrameState.INITIALIZED);
   };
 
   private onUserAmountUpdate = (users) => {};
   private onUserJoined = (user) => {};
   private onUserLeft = (user) => {};
   private onUserListUpdate = (users) => {};
+
+  private updateFrameState(state: IVideoFrameState) {
+    if (state !== this.frameState) {
+      this.frameState = state;
+      this.frameStateObserver.publish(this.frameState);
+    }
+  }
+
+  subscribeToFrameState = this.frameStateObserver.subscribe;
+  unsubscribeFromFrameState = this.frameStateObserver.subscribe;
 }

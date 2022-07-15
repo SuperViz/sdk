@@ -7,9 +7,11 @@ import Communicator from './service/communicator/Communicator';
 
 interface IConfig {
   debug?: boolean;
+  roomId: string;
+  externalUserId: string;
 }
 
-export default async (apiKey: string, options: IConfig = {}) => {
+export default async (apiKey: string, options: IConfig) => {
   if (options.debug) {
     logger.enable();
   }
