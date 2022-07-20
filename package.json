@@ -3,13 +3,19 @@
   "version": "0.0.1",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
+  "private": "false",
   "scripts": {
     "build": "node ./.esbuild/build.js",
     "postbuild": "tsc --emitDeclarationOnly --declaration",
     "watch": "concurrently -n code,types \"yarn watch:code\" \"yarn watch:types\"",
     "watch:code": "node ./.esbuild/watch.js",
     "watch:types": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "release": "release-it"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",
@@ -34,6 +40,7 @@
     "eslint-plugin-import": "^2.25.2",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
+    "release-it": "^14.14.3",
     "ts-jest": "^28.0.5",
     "tsc": "^2.0.4",
     "typescript": "^4.7.4",

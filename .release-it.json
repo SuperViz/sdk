@@ -1,0 +1,14 @@
+{
+  "git": {
+    "tagName": "v${version}",
+    "commitMessage": "chore: release ${version}",
+    "pushRepo": "https://github.com/SuperViz/sdk.git"
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}"
+  },
+  "hooks": {
+    "before:init": ["echo login"]
+  }
+}
