@@ -1,6 +1,6 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
-import css from '../common/styles/videoConferenceStyle';
+import { meetingRoomStyles, meetingSettingsStyles } from '../common/styles/videoConferenceStyle';
 import { MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
@@ -18,7 +18,8 @@ export default class VideoConfereceManager {
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 
-    style.innerHTML = css;
+    // @TODO - Change style to be based on the frame events
+    style.innerHTML = meetingRoomStyles;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
