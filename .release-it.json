@@ -1,5 +1,6 @@
 {
   "git": {
+    "changelog": true,
     "tagName": "v${version}",
     "commitMessage": "chore: release ${version}",
     "pushRepo": "https://github.com/SuperViz/sdk.git"
