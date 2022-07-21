@@ -11,5 +11,11 @@
   },
   "hooks": {
     "before:init": ["echo export GITHUB_TOKEN=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"]
+  }, 
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    }
   }
 }
