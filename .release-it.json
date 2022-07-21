@@ -9,7 +9,7 @@
     "releaseName": "v${version}",
     "tokenRef": "GITHUB_TOKEN"
   },
-  "hooks": {
-    "before:init": ["echo export GITHUB_TOKEN=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"]
+  "npm": {
+    "publish": true
   }
 }
