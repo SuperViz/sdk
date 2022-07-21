@@ -7,7 +7,7 @@
   "github": {
     "release": true,
     "releaseName": "v${version}",
-    "github.tokenRef": "GITHUB_TOKEN" 
+    "tokenRef": "GITHUB_TOKEN"
   },
   "hooks": {
     "before:init": ["echo export GITHUB_TOKEN=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"]

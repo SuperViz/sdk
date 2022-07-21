@@ -11,7 +11,7 @@
     "watch:code": "node ./.esbuild/watch.js",
     "watch:types": "tsc --watch",
     "test": "jest",
-    "release": "release-it --ci --git.pushArgs=--force",
+    "release": "release-it --ci",
     "release:preview": "release-it --ci --dry-run "
   },
   "publishConfig": {
