@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
-  "private": "false",
+  "private": "true",
   "scripts": {
     "build": "node ./.esbuild/build.js",
     "postbuild": "tsc --emitDeclarationOnly --declaration",
