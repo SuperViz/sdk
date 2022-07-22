@@ -20,7 +20,7 @@ jobs:
         run: yarn install
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: git config --global user.name SuperViz
       - run: git config --global user.email ci@superviz.com
       - run: yarn release
