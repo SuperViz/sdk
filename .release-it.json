@@ -9,6 +9,10 @@
     "releaseName": "v${version}",
     "tokenRef": "GITHUB_TOKEN"
   },
+  "hooks": {
+    "after:bump": ["yarn build"],
+    "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
+  },
   "npm": {
     "publish": true
   }
