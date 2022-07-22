@@ -1,0 +1,19 @@
+{
+  "git": {
+    "tagName": "v${version}",
+    "commitMessage": "chore: release ${version}",
+    "pushRepo": "https://github.com/SuperViz/sdk.git"
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}",
+    "tokenRef": "GITHUB_TOKEN"
+  },
+  "hooks": {
+    "after:bump": ["yarn build"],
+    "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
+  },
+  "npm": {
+    "publish": true
+  }
+}

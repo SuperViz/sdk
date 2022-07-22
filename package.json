@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
@@ -9,7 +9,13 @@
     "watch": "concurrently -n code,types \"yarn watch:code\" \"yarn watch:types\"",
     "watch:code": "node ./.esbuild/watch.js",
     "watch:types": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "release": "release-it --ci",
+    "release:preview": "release-it --ci --dry-run "
+  },
+  "publishConfig": {
+    "access": "public",
+    "scope": "@superviz"
   },
   "repository": {
     "type": "git",
@@ -22,6 +28,7 @@
   },
   "homepage": "https://github.com/SuperViz/sdk#readme",
   "devDependencies": {
+    "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.3",
     "@types/node": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
@@ -34,6 +41,7 @@
     "eslint-plugin-import": "^2.25.2",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
+    "release-it": "^14.14.3",
     "ts-jest": "^28.0.5",
     "tsc": "^2.0.4",
     "typescript": "^4.7.4",
