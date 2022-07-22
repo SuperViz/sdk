@@ -1,4 +1,4 @@
-name: Publish SvComponents Package
+name: Publish SDK
 on:
   push:
     branches:
@@ -20,14 +20,14 @@ jobs:
         run: yarn install
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
-          # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: git config --global user.name SuperViz
       - run: git config --global user.email ci@superviz.com
       - run: yarn release
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish npm package
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
@@ -45,4 +45,4 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_ICON: https://avatars.slack-edge.com/2020-11-18/1496892993975_af721d1c045bea2d5a46_48.png
           MSG_MINIMAL: true
-          SLACK_USERNAME: Deploy SvComponents
+          SLACK_USERNAME: Deploy SDK
