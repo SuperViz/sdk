@@ -3,7 +3,6 @@
   "version": "0.0.4",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
-  "private": "false",
   "scripts": {
     "build": "node ./.esbuild/build.js",
     "postbuild": "tsc --emitDeclarationOnly --declaration",
@@ -16,7 +15,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "scope": "@superviz"
   },
   "repository": {
     "type": "git",
