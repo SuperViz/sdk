@@ -1,23 +1,21 @@
 const commonStyles = `
-  #superviz-video-wrapper {
-    position: relative;
+  html, body { 
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
   #sv-video-wrapper iframe {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-
-    border-radius: 4px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    
     border: none;
-  }
-`;
+    overflow: hidden;
 
-const meetingSettingsStyles = `
-  ${commonStyles}
-  #sv-video-wrapper iframe {
-    width: 370px;
-    height: 450px;
+    margin: 0; 
+    padding: 0; 
+    overflow: hidden;
   }
 `;
 
@@ -26,9 +24,20 @@ const meetingRoomStyles = `
   #sv-video-wrapper iframe {
     width: 370px;
     height: 100%;
-    min-height: calc(100vh - 100px);
-    max-height: calc(100vh - 100px);
   }
 `;
 
-export { meetingSettingsStyles, meetingRoomStyles };
+const meetingExpansiveModeStyles = `
+  ${commonStyles}
+
+  #sv-video-wrapper iframe {
+    top: 0; 
+    left: 0; 
+    bottom: 0; 
+    right: 0; 
+    
+    width: 100%; 
+  }
+`;
+
+export { meetingRoomStyles, meetingExpansiveModeStyles };

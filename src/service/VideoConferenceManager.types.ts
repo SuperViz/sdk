@@ -1,7 +1,5 @@
 import { Language } from './communicator/Communicator.types';
 
-export { Language } from './communicator/Communicator.types';
-
 export interface IVideoManagerConfig {
   apiKey: string;
   debug: boolean;
@@ -10,8 +8,13 @@ export interface IVideoManagerConfig {
   externalUserId: string;
 }
 
-export enum IVideoFrameState {
+export enum VideoFrameStateType {
   UNINITIALIZED,
   INITIALIZING,
   INITIALIZED,
+}
+
+export enum FrameSizeType {
+  SMALL = 'SMALL',
+  LARGE = 'LARGE',
 }
