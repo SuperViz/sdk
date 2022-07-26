@@ -1,4 +1,4 @@
-const commonStyles = `
+const styles = `
   html, body { 
     width: 100%;
     height: 100%;
@@ -17,20 +17,13 @@ const commonStyles = `
     padding: 0; 
     overflow: hidden;
   }
-`;
 
-const meetingRoomStyles = `
-  ${commonStyles}
   #sv-video-wrapper iframe {
     width: 370px;
     height: 100%;
   }
-`;
 
-const meetingExpansiveModeStyles = `
-  ${commonStyles}
-
-  #sv-video-wrapper iframe {
+  #sv-video-wrapper iframe.sv-video-frame--expansive-mode {
     top: 0; 
     left: 0; 
     bottom: 0; 
@@ -40,4 +33,4 @@ const meetingExpansiveModeStyles = `
   }
 `;
 
-export { meetingRoomStyles, meetingExpansiveModeStyles };
+export default styles;
