@@ -1,10 +1,17 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
-import { meetingRoomStyles, meetingSettingsStyles } from '../common/styles/videoConferenceStyle';
+import {
+  meetingExpansiveModeStyles,
+  meetingRoomStyles,
+} from '../common/styles/videoConferenceStyle';
 import { MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
-import { IVideoFrameState, IVideoManagerConfig } from './VideoConferenceManager.types';
+import {
+  VideoFrameStateType,
+  IVideoManagerConfig,
+  FrameSizeType,
+} from './VideoConferenceManager.types';
 
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
@@ -12,22 +19,18 @@ export default class VideoConfereceManager {
 
   private frameStateObserver = new ObserverHelper({ logger });
 
-  frameState = IVideoFrameState.UNINITIALIZED;
+  frameState = VideoFrameStateType.UNINITIALIZED;
 
   constructor(config: IVideoManagerConfig) {
     const wrapper = document.createElement('div');
-    const style = document.createElement('style');
-
-    // @TODO - Change style to be based on the frame events
-    style.innerHTML = meetingRoomStyles;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
 
     document.body.appendChild(wrapper);
-    document.head.appendChild(style);
 
-    this.updateFrameState(IVideoFrameState.INITIALIZING);
+    this.updateFrameState(VideoFrameStateType.INITIALIZING);
+    this.updateFrameSize(FrameSizeType.SMALL);
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
@@ -76,8 +79,9 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
+    this.messageBridge.listen(MessageTypes.FRAME_SIZE_UPDATE, this.updateFrameSize);
 
-    this.updateFrameState(IVideoFrameState.INITIALIZED);
+    this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
 
   private onUserAmountUpdate = (users) => {};
@@ -85,7 +89,16 @@ export default class VideoConfereceManager {
   private onUserLeft = (user) => {};
   private onUserListUpdate = (users) => {};
 
-  private updateFrameState(state: IVideoFrameState) {
+  private updateFrameSize = (size) => {
+    const style = document.createElement('style');
+
+    const css = size === FrameSizeType.LARGE ? meetingExpansiveModeStyles : meetingRoomStyles;
+    style.innerHTML = css;
+
+    document.head.appendChild(style);
+  };
+
+  private updateFrameState(state: VideoFrameStateType) {
     if (state !== this.frameState) {
       this.frameState = state;
       this.frameStateObserver.publish(this.frameState);

@@ -1,6 +1,6 @@
 import { logger } from '../../common/utils';
 import VideoConferencingManager from '../VideoConfereceManager';
-import { IVideoFrameState } from '../VideoConferenceManager.types';
+import { VideoFrameStateType } from '../VideoConferenceManager.types';
 
 import { ICommunicatorTypes } from './Communicator.types';
 
@@ -50,8 +50,8 @@ export default class Communicator {
     this.videoManager.destroy();
   }
 
-  onFrameStateDidChange = (state: IVideoFrameState) => {
-    if (state === IVideoFrameState.INITIALIZED) {
+  onFrameStateDidChange = (state: VideoFrameStateType) => {
+    if (state === VideoFrameStateType.INITIALIZED) {
       this.start();
     }
   };

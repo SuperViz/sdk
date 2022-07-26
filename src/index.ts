@@ -2,6 +2,7 @@ import SdkFacade from './SdkFacade';
 import { MessageTypes } from './common/types/messages.types';
 import { logger } from './common/utils';
 import AuthService from './service/AuthService';
+import { FrameSizeType } from './service/VideoConferenceManager.types';
 import ApiService from './service/api/ApiService';
 import Communicator from './service/communicator/Communicator';
 
@@ -37,4 +38,4 @@ export default async (apiKey: string, options: IConfig) => {
   );
 };
 
-export { MessageTypes };
+export { MessageTypes, FrameSizeType };

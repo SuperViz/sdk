@@ -1,5 +1,6 @@
 export enum MessageTypes {
   FRAME_LOAD = 'frame.load',
+  FRAME_SIZE_UPDATE = 'frame.size-update',
 
   MEETING_START = 'meeting.start',
   MEETING_LEAVE = 'meeting.leave',
