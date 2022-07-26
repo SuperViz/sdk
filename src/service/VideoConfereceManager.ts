@@ -1,9 +1,6 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
-import {
-  meetingExpansiveModeStyles,
-  meetingRoomStyles,
-} from '../common/styles/videoConferenceStyle';
+import videoConferenceStyle from '../common/styles/videoConferenceStyle';
 import { MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
@@ -13,6 +10,7 @@ import {
   FrameSizeType,
 } from './VideoConferenceManager.types';
 
+const FRAME_ID = 'sv-video-frame';
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
@@ -23,20 +21,23 @@ export default class VideoConfereceManager {
 
   constructor(config: IVideoManagerConfig) {
     const wrapper = document.createElement('div');
+    const style = document.createElement('style');
+
+    style.innerHTML = videoConferenceStyle;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
 
     document.body.appendChild(wrapper);
+    document.head.appendChild(style);
 
     this.updateFrameState(VideoFrameStateType.INITIALIZING);
-    this.updateFrameSize(FrameSizeType.SMALL);
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
-      'sv-video-frame',
+      FRAME_ID,
       {
         apiKey: config.apiKey,
         debug: config.debug,
@@ -89,13 +90,10 @@ export default class VideoConfereceManager {
   private onUserLeft = (user) => {};
   private onUserListUpdate = (users) => {};
 
-  private updateFrameSize = (size) => {
-    const style = document.createElement('style');
+  private updateFrameSize = (size: FrameSizeType) => {
+    const frame = document.getElementById(FRAME_ID);
 
-    const css = size === FrameSizeType.LARGE ? meetingExpansiveModeStyles : meetingRoomStyles;
-    style.innerHTML = css;
-
-    document.head.appendChild(style);
+    frame.classList.toggle('sv-video-frame--expansive-mode');
   };
 
   private updateFrameState(state: VideoFrameStateType) {
