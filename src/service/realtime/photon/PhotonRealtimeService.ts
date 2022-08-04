@@ -5,13 +5,13 @@ import packageInfo from '../../../../package.json';
 import { MeetingcolorsTypes } from '../../../common/types/meetingcolors.types';
 import { logger } from '../../../common/utils';
 
-import { PHOTON_REGIONS } from './enums/PhotonRegions';
+import { PHOTON_REGIONS } from './types/photon-region.types';
 import {
   REALTIME_STATE,
   PHOTON_STATE_TO_REALTIME_STATE,
   PHOTON_FAILED_REASONS,
   PHOTON_ERROR_TO_FAILED_REASONS,
-} from './enums/PhotonState';
+} from './types/photon-state.types';
 
 const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
 
