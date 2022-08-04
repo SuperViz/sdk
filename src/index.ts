@@ -29,10 +29,13 @@ export default async (apiKey: string, options: IConfig) => {
     throw new Error('Failed to load configuration from server');
   }
 
+  const { photonAppId } = environment;
+
   return new SdkFacade(
     new Communicator(
       Object.assign({}, options, {
         apiKey,
+        photonAppId,
       }),
     ),
   );
