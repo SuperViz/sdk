@@ -508,7 +508,6 @@ export default class PhotonRealtimeService {
       }
 
       this.log('info', 'RECONNECT: Joining room after reconnecting to master server.');
-      // Enters in room
       this.join(this.myActorProperties);
 
       // Continues in state RETRYING untill we gets in CONNECTED state
