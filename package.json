@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "0.0.0",
+  "version": "0.0.4",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
@@ -48,6 +48,7 @@
     "yargs": "^17.5.1"
   },
   "dependencies": {
-    "@superviz/immersive-core": "^0.3.1"
+    "@superviz/immersive-core": "^0.3.1",
+    "lodash.debounce": "^4.0.8"
   }
 }

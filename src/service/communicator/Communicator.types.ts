@@ -6,4 +6,5 @@ export interface ICommunicatorTypes {
   language?: Language;
   roomId: string;
   externalUserId: string;
+  photonAppId: string;
 }

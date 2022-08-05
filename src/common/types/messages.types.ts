@@ -8,6 +8,9 @@ export enum MessageTypes {
   MEETING_USER_LIST_UPDATE = 'meeting.user-list-update',
   MEETING_USER_JOINED = 'meeting.user-joined',
   MEETING_USER_LEFT = 'meeting.user-left',
+  MEETING_JOIN = 'meeting.join',
+  MEETING_USER_PROPERTIES = 'meeting.user-properties',
+  REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
 
   HEARTBEAT = 'heartbeat',
 }

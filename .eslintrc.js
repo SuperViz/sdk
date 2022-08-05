@@ -58,5 +58,6 @@ module.exports = {
     ],
     'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
     'prefer-object-spread': 'off',
+    'no-underscore-dangle': 'off',
   },
 };

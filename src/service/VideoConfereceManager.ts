@@ -16,6 +16,7 @@ export default class VideoConfereceManager {
   private bricklayer: FrameBricklayer;
 
   private frameStateObserver = new ObserverHelper({ logger });
+  private meetingJoinObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameStateType.UNINITIALIZED;
 
@@ -65,6 +66,7 @@ export default class VideoConfereceManager {
     this.messageBridge.destroy();
     this.bricklayer.destroy();
     this.frameStateObserver.destroy();
+    this.meetingJoinObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;
@@ -76,11 +78,13 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
+    // @Todo: create option to destroy all these listens
     this.messageBridge.listen(MessageTypes.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
     this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
     this.messageBridge.listen(MessageTypes.FRAME_SIZE_UPDATE, this.updateFrameSize);
+    this.messageBridge.listen(MessageTypes.MEETING_JOIN, this.meetingJoin);
 
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
@@ -103,6 +107,16 @@ export default class VideoConfereceManager {
     }
   }
 
+  private meetingJoin = (userInfo = {}) => {
+    this.meetingJoinObserver.publish(userInfo);
+  };
+
+  actorsListDidChange(actorsList) {
+    this.messageBridge.publish(MessageTypes.REALTIME_USER_LIST_UPDATE, actorsList);
+  }
+
   subscribeToFrameState = this.frameStateObserver.subscribe;
-  unsubscribeFromFrameState = this.frameStateObserver.subscribe;
+  unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
+  subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
+  unsubscribeFromMeetingJoin = this.meetingJoinObserver.unsubscribe;
 }
