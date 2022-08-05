@@ -43,6 +43,7 @@ export default class Communicator {
     this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
     this.videoManager.subscribeToMeetingJoin(this.onMeetingJoin);
     this.videoManager.subscribeToHostChange(this.onHostDidChange);
+    this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
   }
@@ -76,6 +77,7 @@ export default class Communicator {
     this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
     this.videoManager.unsubscribeFromMeetingJoin(this.onMeetingJoin);
     this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
+    this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
     this.leave();
@@ -87,11 +89,16 @@ export default class Communicator {
     }
   };
 
-  onActorsListDidChange = (actorsList) => {
-    this.videoManager.actorsListDidChange(actorsList._customProperties.slots);
+  onActorsListDidChange = (room) => {
+    this.videoManager.actorsListDidChange(room._customProperties.slots);
+    this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
   };
 
   onMasterActorDidChange = (masterActor) => {
     this.videoManager.onMasterActorDidChange(masterActor?.newMasterActorUserId);
+  };
+
+  onGridModeDidChange = (isGridModeEnable) => {
+    this.realtime.setGridMode(isGridModeEnable);
   };
 }
