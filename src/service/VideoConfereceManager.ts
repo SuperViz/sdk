@@ -115,6 +115,10 @@ export default class VideoConfereceManager {
     this.messageBridge.publish(MessageTypes.REALTIME_USER_LIST_UPDATE, actorsList);
   }
 
+  onMasterActorDidChange(hostId) {
+    this.messageBridge.publish(MessageTypes.REALTIME_HOST_CHANGE, hostId);
+  }
+
   subscribeToFrameState = this.frameStateObserver.subscribe;
   unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
   subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
