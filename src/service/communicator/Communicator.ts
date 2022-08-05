@@ -42,6 +42,7 @@ export default class Communicator {
 
     this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
     this.videoManager.subscribeToMeetingJoin(this.onMeetingJoin);
+    this.videoManager.subscribeToHostChange(this.onHostDidChange);
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
   }
@@ -62,12 +63,22 @@ export default class Communicator {
     this.realtime.join(userInfo);
   };
 
+  onHostDidChange = (hostId) => {
+    this.realtime.setMasterActor(hostId);
+  };
+
   leave() {
     this.videoManager.leave();
+    this.realtime.leave();
   }
 
   destroy() {
-    this.videoManager.destroy();
+    this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
+    this.videoManager.unsubscribeFromMeetingJoin(this.onMeetingJoin);
+    this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
+    this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
+    this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
+    this.leave();
   }
 
   onFrameStateDidChange = (state: VideoFrameStateType) => {
