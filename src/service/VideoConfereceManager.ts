@@ -96,6 +96,11 @@ export default class VideoConfereceManager {
 
   private updateFrameSize = (size: FrameSizeType) => {
     const frame = document.getElementById(FRAME_ID);
+    const isExpanded = frame.classList.contains('sv-video-frame--expansive-mode');
+
+    if (size === FrameSizeType.LARGE && isExpanded) return;
+
+    if (size === FrameSizeType.SMALL && !isExpanded) return;
 
     frame.classList.toggle('sv-video-frame--expansive-mode');
   };
