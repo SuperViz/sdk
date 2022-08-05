@@ -10,6 +10,7 @@ export enum MessageTypes {
   MEETING_USER_LEFT = 'meeting.user-left',
   MEETING_JOIN = 'meeting.join',
   MEETING_USER_PROPERTIES = 'meeting.user-properties',
+  MEETING_HOST_CHANGE = 'meeting.host-change',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
 

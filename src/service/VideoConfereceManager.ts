@@ -17,6 +17,7 @@ export default class VideoConfereceManager {
 
   private frameStateObserver = new ObserverHelper({ logger });
   private meetingJoinObserver = new ObserverHelper({ logger });
+  private hostChangeObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameStateType.UNINITIALIZED;
 
@@ -67,6 +68,7 @@ export default class VideoConfereceManager {
     this.bricklayer.destroy();
     this.frameStateObserver.destroy();
     this.meetingJoinObserver.destroy();
+    this.hostChangeObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;
@@ -85,6 +87,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
     this.messageBridge.listen(MessageTypes.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MessageTypes.MEETING_JOIN, this.meetingJoin);
+    this.messageBridge.listen(MessageTypes.MEETING_HOST_CHANGE, this.onMeetingHostChange);
 
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
@@ -116,6 +119,10 @@ export default class VideoConfereceManager {
     this.meetingJoinObserver.publish(userInfo);
   };
 
+  private onMeetingHostChange = (hostId) => {
+    this.hostChangeObserver.publish(hostId);
+  };
+
   actorsListDidChange(actorsList) {
     this.messageBridge.publish(MessageTypes.REALTIME_USER_LIST_UPDATE, actorsList);
   }
@@ -128,4 +135,6 @@ export default class VideoConfereceManager {
   unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
   subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
   unsubscribeFromMeetingJoin = this.meetingJoinObserver.unsubscribe;
+  subscribeToHostChange = this.hostChangeObserver.subscribe;
+  unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
 }

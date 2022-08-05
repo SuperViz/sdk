@@ -303,7 +303,7 @@ export default class PhotonRealtimeService {
     this.actorsObserver.publish(this.actors);
   }
 
-  updateMasterActorInfo(newMasterActorNr) {
+  updateMasterActorInfo(newMasterActorNr: string = null, updateRoomInfo: boolean = true) {
     const oldMasterActorUserId = this.masterActorUserId;
     const masterActorUserId = this.actorNrToUserId[newMasterActorNr
         ?? this.client.myRoomMasterActorNr()]
@@ -316,11 +316,14 @@ export default class PhotonRealtimeService {
         newMasterActorUserId: this.masterActorUserId,
       });
     }
-    this.updateRoomInfo();
+    if (updateRoomInfo) {
+      this.updateRoomInfo();
+    }
   }
 
   updateRoomInfo() {
     this.roomInfoUpdatedObserver.publish(this.client.myRoom());
+    this.updateMasterActorInfo(null, false);
   }
 
   initializeRoomProperties() {
@@ -660,7 +663,7 @@ export default class PhotonRealtimeService {
     this.log('info', 'Joined realtime room');
     // @Todo: change state after have in immersive-core
     this.publishStateUpdate(5, 4);
-    this.updateMasterActorInfo(this.client.myRoomMasterActorNr());
+    this.updateMasterActorInfo();
   };
 
   onActorJoin = (actor) => {
@@ -694,7 +697,7 @@ export default class PhotonRealtimeService {
     this.actorLeaveObserver.publish(actor);
     const isMasterActorLeave = actor.customProperties.userId === this.masterActorUserId;
     if (isMasterActorLeave) {
-      this.updateMasterActorInfo(this.client.myRoomMasterActorNr());
+      this.updateMasterActorInfo();
     }
     if (this.isMasterActor && !cleanup) {
       this.log(
