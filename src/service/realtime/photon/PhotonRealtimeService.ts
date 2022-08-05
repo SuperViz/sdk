@@ -340,6 +340,7 @@ export default class PhotonRealtimeService {
     const roomProperties = {
       slots: Array(16).fill(null),
       userIdToSlotIndex: {},
+      isGridModeEnable: false,
     };
 
     roomProperties.slots[0] = {
@@ -556,6 +557,15 @@ export default class PhotonRealtimeService {
     );
     this.realtimeStateObserver.publish(this.state, this.stateReason);
   }
+
+  setGridMode = (isGridModeEnable) => {
+    const roomProperties = this.getRoomProperties;
+    const newRoomProperties = {
+      ...roomProperties,
+      isGridModeEnable,
+    };
+    this.updateRoomProperties(newRoomProperties);
+  };
 
   // Photon listeners
   onError = (errorCode, errorMessage) => {
