@@ -43,6 +43,7 @@ export default class Communicator {
     this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
     this.videoManager.subscribeToMeetingJoin(this.onMeetingJoin);
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
+    this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
   }
 
   start() {
@@ -77,5 +78,9 @@ export default class Communicator {
 
   onActorsListDidChange = (actorsList) => {
     this.videoManager.actorsListDidChange(actorsList._customProperties.slots);
+  };
+
+  onMasterActorDidChange = (masterActor) => {
+    this.videoManager.onMasterActorDidChange(masterActor?.newMasterActorUserId);
   };
 }

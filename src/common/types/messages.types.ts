@@ -11,6 +11,7 @@ export enum MessageTypes {
   MEETING_JOIN = 'meeting.join',
   MEETING_USER_PROPERTIES = 'meeting.user-properties',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
+  REALTIME_HOST_CHANGE = 'realtime.host-change',
 
   HEARTBEAT = 'heartbeat',
 }
