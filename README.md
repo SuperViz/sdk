@@ -22,6 +22,10 @@ The SuperViz SDK enables you to implement SuperViz-supported meetings inside you
 ## Getting started
 To check out the [guide](docs.superviz.com), visit [docs.superviz.com](docs.superviz.com)
 
+
+## Issues
+To report a new bug or request a new feature, you can file an issue with the correct template. [Issue reporting](https://github.com/superviz/sdk/issues)
+
 ----
 
 Superviz SDK is [BSD 2 licensed](LICENSE).
