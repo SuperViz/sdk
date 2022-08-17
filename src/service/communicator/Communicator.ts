@@ -15,6 +15,8 @@ export default class Communicator {
   private externalUserId: string;
   private photonAppId: string;
   private realtime: PhotonRealtimeService;
+  private organizationId: string;
+  private organizationName: string;
 
   constructor({
     apiKey,
@@ -23,12 +25,16 @@ export default class Communicator {
     roomId,
     externalUserId,
     photonAppId,
+    organizationId,
+    organizationName,
   }: ICommunicatorTypes) {
     this.debug = debug;
     this.language = language;
     this.roomId = roomId;
     this.externalUserId = externalUserId;
     this.photonAppId = photonAppId;
+    this.organizationId = organizationId;
+    this.organizationName = organizationName;
 
     this.realtime = RealtimeService.build();
 
@@ -52,6 +58,8 @@ export default class Communicator {
     this.videoManager.start({
       roomId: this.roomId,
       externalUserId: this.externalUserId,
+      organizationId: this.organizationId,
+      organizationName: this.organizationName,
     });
     this.realtime.start(
       this.roomId,

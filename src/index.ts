@@ -1,20 +1,15 @@
 import SdkFacade from './SdkFacade';
 import { MessageTypes } from './common/types/messages.types';
+import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import AuthService from './service/AuthService';
 import { FrameSizeType } from './service/VideoConferenceManager.types';
 import ApiService from './service/api/ApiService';
 import Communicator from './service/communicator/Communicator';
 
-interface IConfig {
-  debug?: boolean;
-  roomId: string;
-  externalUserId: string;
-}
-
-export default async (apiKey: string, options: IConfig) => {
+export default async (apiKey: string, options: SuperVizSdkOptions) => {
   if (options.debug) {
-    logger.enable();
+    logger.enable('@superviz/*');
   }
 
   const isValid = await AuthService(apiKey);
@@ -30,15 +25,9 @@ export default async (apiKey: string, options: IConfig) => {
   }
 
   const { photonAppId } = environment;
+  const CommunicatorService = new Communicator(Object.assign({}, options, { apiKey, photonAppId }));
 
-  return new SdkFacade(
-    new Communicator(
-      Object.assign({}, options, {
-        apiKey,
-        photonAppId,
-      }),
-    ),
-  );
+  return new SdkFacade(CommunicatorService);
 };
 
-export { MessageTypes, FrameSizeType };
+export { MessageTypes, FrameSizeType, SuperVizSdkOptions };
