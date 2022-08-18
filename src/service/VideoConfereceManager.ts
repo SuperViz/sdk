@@ -82,7 +82,7 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
-    // @Todo: create option to destroy all these listens
+    // @Todo: create option to destroy all these listens.
     this.messageBridge.listen(MessageTypes.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
     this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
