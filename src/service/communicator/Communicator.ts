@@ -1,3 +1,5 @@
+import { ObserverHelper } from '@superviz/immersive-core';
+
 import { logger } from '../../common/utils';
 import VideoConferencingManager from '../VideoConfereceManager';
 import { VideoFrameStateType } from '../VideoConferenceManager.types';
@@ -17,6 +19,7 @@ export default class Communicator {
   private realtime: PhotonRealtimeService;
   private organizationId: string;
   private organizationName: string;
+  private observerHelpers: { string?: ObserverHelper } = {};
 
   constructor({
     apiKey,
@@ -52,6 +55,7 @@ export default class Communicator {
     this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
+    this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
   }
 
   start() {
@@ -68,14 +72,6 @@ export default class Communicator {
     );
   }
 
-  onMeetingJoin = (userInfo) => {
-    this.realtime.join(userInfo);
-  };
-
-  onHostDidChange = (hostId) => {
-    this.realtime.setMasterActor(hostId);
-  };
-
   leave() {
     this.videoManager.leave();
     this.realtime.leave();
@@ -88,8 +84,28 @@ export default class Communicator {
     this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
+    this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
+    Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
     this.leave();
   }
+
+  setSyncProperties = (property) => {
+    this.realtime.setSyncProperties(property);
+  };
+
+  onSyncPropertiesDidChange = (properties) => {
+    Object.entries(properties).forEach(([key, value]) => {
+      this.publish(key, value);
+    });
+  };
+
+  onMeetingJoin = (userInfo) => {
+    this.realtime.join(userInfo);
+  };
+
+  onHostDidChange = (hostId) => {
+    this.realtime.setMasterActor(hostId);
+  };
 
   onFrameStateDidChange = (state: VideoFrameStateType) => {
     if (state === VideoFrameStateType.INITIALIZED) {
@@ -108,5 +124,28 @@ export default class Communicator {
 
   onGridModeDidChange = (isGridModeEnable) => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  subscribe = (type: string, listener: Function) => {
+    if (!this.observerHelpers[type]) {
+      this.observerHelpers[type] = new ObserverHelper();
+    }
+
+    this.observerHelpers[type].subscribe(listener);
+  };
+
+  unsubscribe = (type: string) => {
+    if (this.observerHelpers[type]) {
+      this.observerHelpers[type].reset();
+      delete this.observerHelpers[type];
+    }
+  };
+
+  publish = (type: string, data) => {
+    const hasListenerRegistered = type in this.observerHelpers;
+
+    if (hasListenerRegistered) {
+      this.observerHelpers[type].publish(data);
+    }
   };
 }
