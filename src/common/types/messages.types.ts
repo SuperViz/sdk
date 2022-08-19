@@ -12,6 +12,8 @@ export enum MessageTypes {
   MEETING_USER_PROPERTIES = 'meeting.user-properties',
   MEETING_HOST_CHANGE = 'meeting.host-change',
   MEETING_GRID_MODE_CHANGE = 'meeting.grid-mode-change',
+  MEETING_SAME_ACCOUNT_ERROR = 'meeting.same-account-error',
+
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',

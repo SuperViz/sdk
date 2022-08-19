@@ -1,5 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
+import { MessageTypes } from '../../common/types/messages.types';
 import { logger } from '../../common/utils';
 import VideoConferencingManager from '../VideoConfereceManager';
 import { VideoFrameStateType } from '../VideoConferenceManager.types';
@@ -53,6 +54,9 @@ export default class Communicator {
     this.videoManager.subscribeToMeetingJoin(this.onMeetingJoin);
     this.videoManager.subscribeToHostChange(this.onHostDidChange);
     this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
+    this.videoManager.subscribeToSameAccountError(this.onSameAccountError);
+
+    // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
@@ -124,6 +128,11 @@ export default class Communicator {
 
   onGridModeDidChange = (isGridModeEnable) => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  onSameAccountError = (error: string): void => {
+    this.publish(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, error);
+    this.destroy();
   };
 
   subscribe = (type: string, listener: Function) => {
