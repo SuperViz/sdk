@@ -36,6 +36,7 @@ export default class PhotonRealtimeService {
   isInitializingReconnect: boolean;
   roomId?: string;
   currentReconnecAttempt: number;
+  oldSyncProperties: {} = {};
   region: PHOTON_REGIONS;
   actorObservers: ObserverHelper[];
   actorsObserver: ObserverHelper;
@@ -65,6 +66,9 @@ export default class PhotonRealtimeService {
   realtimeStateObserver: ObserverHelper;
   subscribeToRealtimeState: Function;
   unsubscribeFromRealtimeState: Function;
+  syncPropertiesObserver: ObserverHelper;
+  subscribeToSyncProperties: Function;
+  unsubscribeFromSyncProperties: Function;
 
   constructor() {
     // Actors observers helpers
@@ -85,6 +89,10 @@ export default class PhotonRealtimeService {
     this.joinRoomObserver = new ObserverHelper({ logger });
     this.subscribeToJoinRoom = this.joinRoomObserver.subscribe;
     this.unsubscribeFromJoinRoom = this.joinRoomObserver.unsubscribe;
+
+    this.syncPropertiesObserver = new ObserverHelper({ logger });
+    this.subscribeToSyncProperties = this.syncPropertiesObserver.subscribe;
+    this.unsubscribeFromSyncProperties = this.syncPropertiesObserver.unsubscribe;
 
     this.reconnectObserver = new ObserverHelper({ logger });
     this.subscribeToReconnectUpdate = this.reconnectObserver.subscribe;
@@ -324,6 +332,7 @@ export default class PhotonRealtimeService {
   updateRoomInfo() {
     this.roomInfoUpdatedObserver.publish(this.client.myRoom());
     this.updateMasterActorInfo(null, false);
+    this.checkSyncPropertiesChanged();
   }
 
   initializeRoomProperties() {
@@ -341,6 +350,7 @@ export default class PhotonRealtimeService {
       slots: Array(16).fill(null),
       userIdToSlotIndex: {},
       isGridModeEnable: false,
+      syncProperties: {},
     };
 
     roomProperties.slots[0] = {
@@ -567,6 +577,33 @@ export default class PhotonRealtimeService {
     this.updateRoomProperties(newRoomProperties);
   };
 
+  checkSyncPropertiesChanged = () => {
+    const roomProperties = this.getRoomProperties;
+    const { syncProperties } = roomProperties;
+    // @Todo: Change this function to get deep difference between properties
+    const propertiesChanged = Object
+      .fromEntries(
+        Object.entries(syncProperties)
+          .filter(([key, value]) => this.oldSyncProperties[key] !== value),
+      );
+    this.syncPropertiesObserver.publish(propertiesChanged);
+    this.oldSyncProperties = { ...syncProperties };
+  };
+
+  setSyncProperties = (properties) => {
+    const roomProperties = this.getRoomProperties;
+    let { syncProperties } = roomProperties;
+    syncProperties = {
+      ...syncProperties,
+      ...properties,
+    };
+    const newRoomProperties = {
+      ...roomProperties,
+      syncProperties,
+    };
+    this.updateRoomProperties(newRoomProperties);
+  };
+
   // Photon listeners
   onError = (errorCode, errorMessage) => {
     const photonErrorCodes = Photon.LoadBalancing.LoadBalancingClient.PeerErrorCode;
@@ -696,7 +733,7 @@ export default class PhotonRealtimeService {
          * If user opts to disconnect before enter a room, photon will emit actor
          * leave event for the local actor with actorNr -1. Since this actor was
          * not propagated via `this.actorJoinedObserver.publish`, we can simply
-         * igore the event.
+         * ignore the event.
          */
     if (this.state === REALTIME_STATE.READY_TO_JOIN || actor.actorNr === -1) {
       return;
