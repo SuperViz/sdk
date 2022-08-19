@@ -19,6 +19,7 @@ export default class VideoConfereceManager {
   private meetingJoinObserver = new ObserverHelper({ logger });
   private hostChangeObserver = new ObserverHelper({ logger });
   private gridModeChangeObserver = new ObserverHelper({ logger });
+  private sameAccountErrorObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameStateType.UNINITIALIZED;
 
@@ -91,16 +92,17 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MessageTypes.MEETING_JOIN, this.meetingJoin);
     this.messageBridge.listen(MessageTypes.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MessageTypes.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
+    this.messageBridge.listen(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, this.onSameAccountError);
 
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
 
-  private onUserAmountUpdate = (users) => {};
-  private onUserJoined = (user) => {};
-  private onUserLeft = (user) => {};
-  private onUserListUpdate = (users) => {};
+  private onUserAmountUpdate = (users: Array<Object>): void => {};
+  private onUserJoined = (user: Object): void => {};
+  private onUserLeft = (user: Object): void => {};
+  private onUserListUpdate = (users: Array<Object>): void => {};
 
-  private updateFrameSize = (size: FrameSizeType) => {
+  private updateFrameSize = (size: FrameSizeType): void => {
     const frame = document.getElementById(FRAME_ID);
     const isExpanded = frame.classList.contains('sv-video-frame--expansive-mode');
 
@@ -111,23 +113,27 @@ export default class VideoConfereceManager {
     frame.classList.toggle('sv-video-frame--expansive-mode');
   };
 
-  private updateFrameState(state: VideoFrameStateType) {
+  private updateFrameState(state: VideoFrameStateType): void {
     if (state !== this.frameState) {
       this.frameState = state;
       this.frameStateObserver.publish(this.frameState);
     }
   }
 
-  private meetingJoin = (userInfo = {}) => {
+  private meetingJoin = (userInfo = {}): void => {
     this.meetingJoinObserver.publish(userInfo);
   };
 
-  private onMeetingHostChange = (hostId) => {
+  private onMeetingHostChange = (hostId: string): void => {
     this.hostChangeObserver.publish(hostId);
   };
 
-  private onGridModeChange = (isGridModeEnable) => {
+  private onGridModeChange = (isGridModeEnable: boolean): void => {
     this.gridModeChangeObserver.publish(isGridModeEnable);
+  };
+
+  private onSameAccountError = (error: string): void => {
+    this.sameAccountErrorObserver.publish(error);
   };
 
   gridModeDidChange(isGridModeEnable) {
@@ -150,4 +156,6 @@ export default class VideoConfereceManager {
   unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
   subscribeToGridModeChange = this.gridModeChangeObserver.subscribe;
   unsubscribeFromGridModeChange = this.gridModeChangeObserver.unsubscribe;
+  subscribeToSameAccountError = this.sameAccountErrorObserver.subscribe;
+  unsubscribeFromSameAccountError = this.sameAccountErrorObserver.unsubscribe;
 }
