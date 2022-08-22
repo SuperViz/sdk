@@ -13,10 +13,20 @@ export enum MessageTypes {
   MEETING_HOST_CHANGE = 'meeting.host-change',
   MEETING_GRID_MODE_CHANGE = 'meeting.grid-mode-change',
   MEETING_SAME_ACCOUNT_ERROR = 'meeting.same-account-error',
+  MEETING_DEVICES_CHANGE = 'meeting.devices-change',
 
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
 
   HEARTBEAT = 'heartbeat',
+}
+
+export enum DevicesMessageTypes {
+  NO_CAM = 'devices.no-cam',
+  NO_DEVICES = 'devices.no-devices',
+  DEVICES_BLOCKED = 'devices.blocked',
+  DEVICES_CAM_BLOCKED = 'devices.cam-blocked',
+  DEVICES_INITIALIZATION_ERROR = 'devices.inititalization-error',
+  DEVICES_UNKNOWN_ERROR = 'devices.unknown-error',
 }

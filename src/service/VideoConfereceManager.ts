@@ -1,7 +1,7 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
 import videoConferenceStyle from '../common/styles/videoConferenceStyle';
-import { MessageTypes } from '../common/types/messages.types';
+import { DevicesMessageTypes, MessageTypes } from '../common/types/messages.types';
 import { logger } from '../common/utils';
 
 import {
@@ -20,6 +20,7 @@ export default class VideoConfereceManager {
   private hostChangeObserver = new ObserverHelper({ logger });
   private gridModeChangeObserver = new ObserverHelper({ logger });
   private sameAccountErrorObserver = new ObserverHelper({ logger });
+  private devicesObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameStateType.UNINITIALIZED;
 
@@ -83,7 +84,7 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
-    // @Todo: create option to destroy all these listens.
+    // @TODO: create option to destroy all these listens.
     this.messageBridge.listen(MessageTypes.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
     this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
@@ -93,6 +94,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MessageTypes.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MessageTypes.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, this.onSameAccountError);
+    this.messageBridge.listen(MessageTypes.MEETING_DEVICES_CHANGE, this.onDevicesChange);
 
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
@@ -136,6 +138,10 @@ export default class VideoConfereceManager {
     this.sameAccountErrorObserver.publish(error);
   };
 
+  private onDevicesChange = (state: DevicesMessageTypes): void => {
+    this.devicesObserver.publish(state);
+  };
+
   gridModeDidChange(isGridModeEnable) {
     this.messageBridge.publish(MessageTypes.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
   }
@@ -150,12 +156,19 @@ export default class VideoConfereceManager {
 
   subscribeToFrameState = this.frameStateObserver.subscribe;
   unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
+
   subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
   unsubscribeFromMeetingJoin = this.meetingJoinObserver.unsubscribe;
+
   subscribeToHostChange = this.hostChangeObserver.subscribe;
   unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
+
   subscribeToGridModeChange = this.gridModeChangeObserver.subscribe;
   unsubscribeFromGridModeChange = this.gridModeChangeObserver.unsubscribe;
+
   subscribeToSameAccountError = this.sameAccountErrorObserver.subscribe;
   unsubscribeFromSameAccountError = this.sameAccountErrorObserver.unsubscribe;
+
+  subscribeToDevicesEvents = this.devicesObserver.subscribe;
+  unsubscribeFromDevicesEvents = this.devicesObserver.unsubscribe;
 }
