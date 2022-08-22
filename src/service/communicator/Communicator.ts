@@ -1,6 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { MessageTypes } from '../../common/types/messages.types';
+import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
 import { logger } from '../../common/utils';
 import VideoConferencingManager from '../VideoConfereceManager';
 import { VideoFrameStateType } from '../VideoConferenceManager.types';
@@ -55,6 +55,7 @@ export default class Communicator {
     this.videoManager.subscribeToHostChange(this.onHostDidChange);
     this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
     this.videoManager.subscribeToSameAccountError(this.onSameAccountError);
+    this.videoManager.subscribeToDevicesEvents(this.onDevicesChange);
 
     // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
@@ -86,9 +87,11 @@ export default class Communicator {
     this.videoManager.unsubscribeFromMeetingJoin(this.onMeetingJoin);
     this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
     this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
+
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
+
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
     this.leave();
   }
@@ -135,6 +138,10 @@ export default class Communicator {
     this.destroy();
   };
 
+  onDevicesChange = (state: DevicesMessageTypes): void => {
+    this.publish(MessageTypes.MEETING_DEVICES_CHANGE, state);
+  };
+
   subscribe = (type: string, listener: Function) => {
     if (!this.observerHelpers[type]) {
       this.observerHelpers[type] = new ObserverHelper();
@@ -150,7 +157,7 @@ export default class Communicator {
     }
   };
 
-  publish = (type: string, data) => {
+  publish = (type: string, data: any): void => {
     const hasListenerRegistered = type in this.observerHelpers;
 
     if (hasListenerRegistered) {

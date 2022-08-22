@@ -1,5 +1,5 @@
 import SdkFacade from './SdkFacade';
-import { MessageTypes } from './common/types/messages.types';
+import { MessageTypes, DevicesMessageTypes } from './common/types/messages.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import AuthService from './service/AuthService';
@@ -30,4 +30,4 @@ export default async (apiKey: string, options: SuperVizSdkOptions) => {
   return new SdkFacade(CommunicatorService);
 };
 
-export { MessageTypes, FrameSizeType, SuperVizSdkOptions };
+export { MessageTypes, FrameSizeType, SuperVizSdkOptions, DevicesMessageTypes };
