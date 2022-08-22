@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
