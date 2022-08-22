@@ -2,6 +2,7 @@ import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immers
 
 import videoConferenceStyle from '../common/styles/videoConferenceStyle';
 import { DevicesMessageTypes, MessageTypes } from '../common/types/messages.types';
+import { UserVideoType } from '../common/types/user.types';
 import { logger } from '../common/utils';
 
 import {
@@ -104,19 +105,19 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
 
-  private onUserAmountUpdate = (users: Array<Object>): void => {
+  private onUserAmountUpdate = (users: Array<UserVideoType>): void => {
     this.userAmountUpdateObserver.publish(users);
   };
 
-  private onUserJoined = (user: Object): void => {
+  private onUserJoined = (user: UserVideoType): void => {
     this.userJoinedObserver.publish(user);
   };
 
-  private onUserLeft = (user: Object): void => {
+  private onUserLeft = (user: UserVideoType): void => {
     this.userLeftObserver.publish(user);
   };
 
-  private onUserListUpdate = (users: Array<Object>): void => {
+  private onUserListUpdate = (users: Array<UserVideoType>): void => {
     this.userListObserver.publish(users);
   };
 
