@@ -1,7 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
 import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
-import { logger } from '../../common/utils';
 import VideoConferencingManager from '../VideoConfereceManager';
 import { VideoFrameStateType } from '../VideoConferenceManager.types';
 import RealtimeService from '../realtime/RealtimeService';
@@ -56,6 +55,10 @@ export default class Communicator {
     this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
     this.videoManager.subscribeToSameAccountError(this.onSameAccountError);
     this.videoManager.subscribeToDevicesEvents(this.onDevicesChange);
+    this.videoManager.subscribeToUserAmountUpdate(this.onUserAmountUpdate);
+    this.videoManager.subscribeToUserListUpdate(this.onUserListUpdate);
+    this.videoManager.subscribeToUserJoined(this.onUserJoined);
+    this.videoManager.subscribeToUserLeft(this.onUserLeft);
 
     // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
@@ -63,7 +66,7 @@ export default class Communicator {
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
   }
 
-  start() {
+  public start() {
     this.videoManager.start({
       roomId: this.roomId,
       externalUserId: this.externalUserId,
@@ -77,16 +80,20 @@ export default class Communicator {
     );
   }
 
-  leave() {
+  public leave() {
     this.videoManager.leave();
     this.realtime.leave();
   }
 
-  destroy() {
+  public destroy() {
     this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
     this.videoManager.unsubscribeFromMeetingJoin(this.onMeetingJoin);
     this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
     this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
+    this.videoManager.unsubscribeFromUserAmountUpdate(this.onUserAmountUpdate);
+    this.videoManager.unsubscribeFromUserListUpdate(this.onUserListUpdate);
+    this.videoManager.unsubscribeFromUserJoined(this.onUserJoined);
+    this.videoManager.unsubscribeFromUserLeft(this.onUserLeft);
 
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
@@ -96,53 +103,11 @@ export default class Communicator {
     this.leave();
   }
 
-  setSyncProperties = (property) => {
+  public setSyncProperties = (property) => {
     this.realtime.setSyncProperties(property);
   };
 
-  onSyncPropertiesDidChange = (properties) => {
-    Object.entries(properties).forEach(([key, value]) => {
-      this.publish(key, value);
-    });
-  };
-
-  onMeetingJoin = (userInfo) => {
-    this.realtime.join(userInfo);
-  };
-
-  onHostDidChange = (hostId) => {
-    this.realtime.setMasterActor(hostId);
-  };
-
-  onFrameStateDidChange = (state: VideoFrameStateType) => {
-    if (state === VideoFrameStateType.INITIALIZED) {
-      this.start();
-    }
-  };
-
-  onActorsListDidChange = (room) => {
-    this.videoManager.actorsListDidChange(room._customProperties.slots);
-    this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
-  };
-
-  onMasterActorDidChange = (masterActor) => {
-    this.videoManager.onMasterActorDidChange(masterActor?.newMasterActorUserId);
-  };
-
-  onGridModeDidChange = (isGridModeEnable) => {
-    this.realtime.setGridMode(isGridModeEnable);
-  };
-
-  onSameAccountError = (error: string): void => {
-    this.publish(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, error);
-    this.destroy();
-  };
-
-  onDevicesChange = (state: DevicesMessageTypes): void => {
-    this.publish(MessageTypes.MEETING_DEVICES_CHANGE, state);
-  };
-
-  subscribe = (type: string, listener: Function) => {
+  public subscribe = (type: string, listener: Function) => {
     if (!this.observerHelpers[type]) {
       this.observerHelpers[type] = new ObserverHelper();
     }
@@ -150,18 +115,76 @@ export default class Communicator {
     this.observerHelpers[type].subscribe(listener);
   };
 
-  unsubscribe = (type: string) => {
+  public unsubscribe = (type: string) => {
     if (this.observerHelpers[type]) {
       this.observerHelpers[type].reset();
       delete this.observerHelpers[type];
     }
   };
 
-  publish = (type: string, data: any): void => {
+  public publish = (type: string, data: any): void => {
     const hasListenerRegistered = type in this.observerHelpers;
 
     if (hasListenerRegistered) {
       this.observerHelpers[type].publish(data);
     }
+  };
+
+  private onSyncPropertiesDidChange = (properties) => {
+    Object.entries(properties).forEach(([key, value]) => {
+      this.publish(key, value);
+    });
+  };
+
+  private onMeetingJoin = (userInfo) => {
+    this.realtime.join(userInfo);
+  };
+
+  private onHostDidChange = (hostId) => {
+    this.realtime.setMasterActor(hostId);
+  };
+
+  private onFrameStateDidChange = (state: VideoFrameStateType) => {
+    if (state === VideoFrameStateType.INITIALIZED) {
+      this.start();
+    }
+  };
+
+  private onActorsListDidChange = (room) => {
+    this.videoManager.actorsListDidChange(room._customProperties.slots);
+    this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
+  };
+
+  private onMasterActorDidChange = (masterActor) => {
+    this.videoManager.onMasterActorDidChange(masterActor?.newMasterActorUserId);
+  };
+
+  private onGridModeDidChange = (isGridModeEnable) => {
+    this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  private onSameAccountError = (error: string): void => {
+    this.publish(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, error);
+    this.destroy();
+  };
+
+  private onDevicesChange = (state: DevicesMessageTypes): void => {
+    this.publish(MessageTypes.MEETING_DEVICES_CHANGE, state);
+  };
+
+  private onUserAmountUpdate = (list: Object): void => {
+    this.publish(MessageTypes.MEETING_USER_AMOUNT_UPDATE, list);
+  };
+
+  private onUserJoined = (user: Object): void => {
+    this.publish(MessageTypes.MEETING_USER_JOINED, user);
+  };
+
+  private onUserLeft = (user: Object): void => {
+    this.publish(MessageTypes.MEETING_USER_LEFT, user);
+  };
+
+  private onUserListUpdate = (users: Array<Object>): void => {
+    this.publish(MessageTypes.MEETING_USER_LIST_UPDATE, users);
   };
 }

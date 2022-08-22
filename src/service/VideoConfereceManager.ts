@@ -22,6 +22,11 @@ export default class VideoConfereceManager {
   private sameAccountErrorObserver = new ObserverHelper({ logger });
   private devicesObserver = new ObserverHelper({ logger });
 
+  private userAmountUpdateObserver = new ObserverHelper({ logger });
+  private userJoinedObserver = new ObserverHelper({ logger });
+  private userLeftObserver = new ObserverHelper({ logger });
+  private userListObserver = new ObserverHelper({ logger });
+
   frameState = VideoFrameStateType.UNINITIALIZED;
 
   constructor(config: IVideoManagerConfig) {
@@ -99,10 +104,21 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
 
-  private onUserAmountUpdate = (users: Array<Object>): void => {};
-  private onUserJoined = (user: Object): void => {};
-  private onUserLeft = (user: Object): void => {};
-  private onUserListUpdate = (users: Array<Object>): void => {};
+  private onUserAmountUpdate = (users: Array<Object>): void => {
+    this.userAmountUpdateObserver.publish(users);
+  };
+
+  private onUserJoined = (user: Object): void => {
+    this.userJoinedObserver.publish(user);
+  };
+
+  private onUserLeft = (user: Object): void => {
+    this.userLeftObserver.publish(user);
+  };
+
+  private onUserListUpdate = (users: Array<Object>): void => {
+    this.userListObserver.publish(users);
+  };
 
   private updateFrameSize = (size: FrameSizeType): void => {
     const frame = document.getElementById(FRAME_ID);
@@ -142,33 +158,45 @@ export default class VideoConfereceManager {
     this.devicesObserver.publish(state);
   };
 
-  gridModeDidChange(isGridModeEnable) {
+  public gridModeDidChange = (isGridModeEnable: boolean): void => {
     this.messageBridge.publish(MessageTypes.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
-  }
+  };
 
-  actorsListDidChange(actorsList) {
+  public actorsListDidChange = (actorsList): void => {
     this.messageBridge.publish(MessageTypes.REALTIME_USER_LIST_UPDATE, actorsList);
-  }
+  };
 
-  onMasterActorDidChange(hostId) {
+  public onMasterActorDidChange = (hostId: string): void => {
     this.messageBridge.publish(MessageTypes.REALTIME_HOST_CHANGE, hostId);
-  }
+  };
 
-  subscribeToFrameState = this.frameStateObserver.subscribe;
-  unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
+  public subscribeToFrameState = this.frameStateObserver.subscribe;
+  public unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
 
-  subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
-  unsubscribeFromMeetingJoin = this.meetingJoinObserver.unsubscribe;
+  public subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
+  public unsubscribeFromMeetingJoin = this.meetingJoinObserver.unsubscribe;
 
-  subscribeToHostChange = this.hostChangeObserver.subscribe;
-  unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
+  public subscribeToHostChange = this.hostChangeObserver.subscribe;
+  public unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
 
-  subscribeToGridModeChange = this.gridModeChangeObserver.subscribe;
-  unsubscribeFromGridModeChange = this.gridModeChangeObserver.unsubscribe;
+  public subscribeToGridModeChange = this.gridModeChangeObserver.subscribe;
+  public unsubscribeFromGridModeChange = this.gridModeChangeObserver.unsubscribe;
 
-  subscribeToSameAccountError = this.sameAccountErrorObserver.subscribe;
-  unsubscribeFromSameAccountError = this.sameAccountErrorObserver.unsubscribe;
+  public subscribeToSameAccountError = this.sameAccountErrorObserver.subscribe;
+  public unsubscribeFromSameAccountError = this.sameAccountErrorObserver.unsubscribe;
 
-  subscribeToDevicesEvents = this.devicesObserver.subscribe;
-  unsubscribeFromDevicesEvents = this.devicesObserver.unsubscribe;
+  public subscribeToDevicesEvents = this.devicesObserver.subscribe;
+  public unsubscribeFromDevicesEvents = this.devicesObserver.unsubscribe;
+
+  public subscribeToUserAmountUpdate = this.userAmountUpdateObserver.subscribe;
+  public unsubscribeFromUserAmountUpdate = this.userAmountUpdateObserver.unsubscribe;
+
+  public subscribeToUserJoined = this.userJoinedObserver.subscribe;
+  public unsubscribeFromUserJoined = this.userJoinedObserver.unsubscribe;
+
+  public subscribeToUserLeft = this.userLeftObserver.subscribe;
+  public unsubscribeFromUserLeft = this.userLeftObserver.unsubscribe;
+
+  public subscribeToUserListUpdate = this.userListObserver.subscribe;
+  public unsubscribeFromUserListUpdate = this.userListObserver.unsubscribe;
 }
