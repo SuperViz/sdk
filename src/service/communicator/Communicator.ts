@@ -1,6 +1,7 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
 import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
+import { UserVideoType } from '../../common/types/user.types';
 import VideoConferencingManager from '../VideoConfereceManager';
 import { VideoFrameStateType } from '../VideoConferenceManager.types';
 import RealtimeService from '../realtime/RealtimeService';
@@ -159,7 +160,7 @@ export default class Communicator {
     this.videoManager.onMasterActorDidChange(masterActor?.newMasterActorUserId);
   };
 
-  private onGridModeDidChange = (isGridModeEnable) => {
+  private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
   };
 
@@ -172,19 +173,19 @@ export default class Communicator {
     this.publish(MessageTypes.MEETING_DEVICES_CHANGE, state);
   };
 
-  private onUserAmountUpdate = (list: Object): void => {
-    this.publish(MessageTypes.MEETING_USER_AMOUNT_UPDATE, list);
+  private onUserAmountUpdate = (count: number): void => {
+    this.publish(MessageTypes.MEETING_USER_AMOUNT_UPDATE, count);
   };
 
-  private onUserJoined = (user: Object): void => {
+  private onUserJoined = (user: UserVideoType): void => {
     this.publish(MessageTypes.MEETING_USER_JOINED, user);
   };
 
-  private onUserLeft = (user: Object): void => {
+  private onUserLeft = (user: UserVideoType): void => {
     this.publish(MessageTypes.MEETING_USER_LEFT, user);
   };
 
-  private onUserListUpdate = (users: Array<Object>): void => {
+  private onUserListUpdate = (users: Array<UserVideoType>): void => {
     this.publish(MessageTypes.MEETING_USER_LIST_UPDATE, users);
   };
 }
