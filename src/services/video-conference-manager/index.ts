@@ -1,15 +1,11 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
-import videoConferenceStyle from '../common/styles/videoConferenceStyle';
-import { DevicesMessageTypes, MessageTypes } from '../common/types/messages.types';
-import { UserVideoType } from '../common/types/user.types';
-import { logger } from '../common/utils';
+import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
+import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
+import { UserType } from '../../common/types/user.types';
+import { logger } from '../../common/utils';
 
-import {
-  VideoFrameStateType,
-  IVideoManagerConfig,
-  FrameSizeType,
-} from './VideoConferenceManager.types';
+import { VideoFrameStateType, VideoManagerConfig, FrameSizeType } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 export default class VideoConfereceManager {
@@ -30,7 +26,7 @@ export default class VideoConfereceManager {
 
   frameState = VideoFrameStateType.UNINITIALIZED;
 
-  constructor(config: IVideoManagerConfig) {
+  constructor(config: VideoManagerConfig) {
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 
@@ -105,19 +101,19 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
 
-  private onUserAmountUpdate = (users: Array<UserVideoType>): void => {
+  private onUserAmountUpdate = (users: Array<UserType>): void => {
     this.userAmountUpdateObserver.publish(users);
   };
 
-  private onUserJoined = (user: UserVideoType): void => {
+  private onUserJoined = (user: UserType): void => {
     this.userJoinedObserver.publish(user);
   };
 
-  private onUserLeft = (user: UserVideoType): void => {
+  private onUserLeft = (user: UserType): void => {
     this.userLeftObserver.publish(user);
   };
 
-  private onUserListUpdate = (users: Array<UserVideoType>): void => {
+  private onUserListUpdate = (users: Array<UserType>): void => {
     this.userListObserver.publish(users);
   };
 

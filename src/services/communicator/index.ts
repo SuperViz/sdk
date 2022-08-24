@@ -3,12 +3,12 @@ import { ObserverHelper } from '@superviz/immersive-core';
 import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
 import { OrganizationType } from '../../common/types/organization.types';
 import { UserType } from '../../common/types/user.types';
-import VideoConferencingManager from '../VideoConfereceManager';
-import { VideoFrameStateType } from '../VideoConferenceManager.types';
-import RealtimeService from '../realtime/RealtimeService';
-import PhotonRealtimeService from '../realtime/photon/PhotonRealtimeService';
+import RealtimeService from '../realtime';
+import PhotonRealtimeService from '../realtime/photon';
+import VideoConferencingManager from '../video-conference-manager';
+import { VideoFrameStateType } from '../video-conference-manager/types';
 
-import { ICommunicatorTypes } from './Communicator.types';
+import { CommunicatorType } from './types';
 
 export default class Communicator {
   private videoManager: VideoConferencingManager;
@@ -30,7 +30,7 @@ export default class Communicator {
     photonAppId,
     organization,
     user,
-  }: ICommunicatorTypes) {
+  }: CommunicatorType) {
     const { id: externalUserId } = user;
 
     this.debug = debug;
