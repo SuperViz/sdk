@@ -1,4 +1,4 @@
-import PhotonRealtimeService from './photon/PhotonRealtimeService';
+import PhotonRealtimeService from './photon';
 
 export default class RealtimeService {
   static build(): PhotonRealtimeService {

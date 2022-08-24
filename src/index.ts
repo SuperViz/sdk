@@ -2,12 +2,28 @@ import SdkFacade from './SdkFacade';
 import { MessageTypes, DevicesMessageTypes } from './common/types/messages.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
-import AuthService from './service/AuthService';
-import { FrameSizeType } from './service/VideoConferenceManager.types';
-import ApiService from './service/api/ApiService';
-import Communicator from './service/communicator/Communicator';
+import ApiService from './services/api';
+import AuthService from './services/auth-service';
+import Communicator from './services/communicator';
+import { FrameSizeType } from './services/video-conference-manager/types';
+
+const validateOptions = ({ organization, user, roomId }: SuperVizSdkOptions) => {
+  if (!organization || !organization.name || !organization.id) {
+    throw new Error('organization fields is required');
+  }
+
+  if (!user || !user.id) {
+    throw new Error('user fields is required');
+  }
+
+  if (!roomId) {
+    throw new Error('room id is required');
+  }
+};
 
 export default async (apiKey: string, options: SuperVizSdkOptions) => {
+  validateOptions(options);
+
   if (options.debug) {
     logger.enable('@superviz/*');
   }

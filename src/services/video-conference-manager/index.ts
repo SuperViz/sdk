@@ -1,15 +1,12 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
-import videoConferenceStyle from '../common/styles/videoConferenceStyle';
-import { DevicesMessageTypes, MessageTypes } from '../common/types/messages.types';
-import { UserVideoType } from '../common/types/user.types';
-import { logger } from '../common/utils';
+import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
+import { StartMeetingOptions } from '../../common/types/meeting.types';
+import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
+import { UserType } from '../../common/types/user.types';
+import { logger } from '../../common/utils';
 
-import {
-  VideoFrameStateType,
-  IVideoManagerConfig,
-  FrameSizeType,
-} from './VideoConferenceManager.types';
+import { VideoFrameStateType, VideoManagerConfig, FrameSizeType } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 export default class VideoConfereceManager {
@@ -30,7 +27,9 @@ export default class VideoConfereceManager {
 
   frameState = VideoFrameStateType.UNINITIALIZED;
 
-  constructor(config: IVideoManagerConfig) {
+  constructor(config: VideoManagerConfig) {
+    const { apiKey, language, debug } = config;
+
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 
@@ -50,19 +49,19 @@ export default class VideoConfereceManager {
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
       {
-        apiKey: config.apiKey,
-        debug: config.debug,
-        language: config.language,
+        apiKey,
+        debug,
+        language,
       },
       {
-        allow: 'camera *;microphone *; display-capture *;',
+        allow: 'camera *;microphone *; display-capture *; local-storage *;',
       },
     );
 
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
   }
 
-  start(options) {
+  start(options: StartMeetingOptions) {
     this.messageBridge.publish(MessageTypes.MEETING_START, options);
   }
 
@@ -105,19 +104,19 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameStateType.INITIALIZED);
   };
 
-  private onUserAmountUpdate = (users: Array<UserVideoType>): void => {
+  private onUserAmountUpdate = (users: Array<UserType>): void => {
     this.userAmountUpdateObserver.publish(users);
   };
 
-  private onUserJoined = (user: UserVideoType): void => {
+  private onUserJoined = (user: UserType): void => {
     this.userJoinedObserver.publish(user);
   };
 
-  private onUserLeft = (user: UserVideoType): void => {
+  private onUserLeft = (user: UserType): void => {
     this.userLeftObserver.publish(user);
   };
 
-  private onUserListUpdate = (users: Array<UserVideoType>): void => {
+  private onUserListUpdate = (users: Array<UserType>): void => {
     this.userListObserver.publish(users);
   };
 

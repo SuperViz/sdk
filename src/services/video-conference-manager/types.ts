@@ -1,6 +1,6 @@
-import { Language } from './communicator/Communicator.types';
+import { Language } from '../communicator/types';
 
-export interface IVideoManagerConfig {
+export interface VideoManagerConfig {
   apiKey: string;
   debug: boolean;
   language: Language;

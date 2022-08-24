@@ -1,4 +1,4 @@
-import Communicator from './service/communicator/Communicator';
+import Communicator from './services/communicator';
 
 export default class SdkFacade {
   private communicator: Communicator;

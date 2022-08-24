@@ -5,13 +5,13 @@ import packageInfo from '../../../../package.json';
 import { MeetingcolorsTypes } from '../../../common/types/meetingcolors.types';
 import { logger } from '../../../common/utils';
 
-import { PHOTON_REGIONS } from './types/photon-region.types';
 import {
+  PHOTON_REGIONS,
   REALTIME_STATE,
   PHOTON_STATE_TO_REALTIME_STATE,
   PHOTON_FAILED_REASONS,
   PHOTON_ERROR_TO_FAILED_REASONS,
-} from './types/photon-state.types';
+} from './types';
 
 const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
 
@@ -296,14 +296,13 @@ export default class PhotonRealtimeService {
     const actors = {};
     const actorNrToUserId = {};
 
-    Object.values(this.client.myRoomActors())
-      .forEach((actor: {
-        actorNr: string,
-        customProperties: { userId: string } }) => {
+    Object.values(this.client.myRoomActors()).forEach(
+      (actor: { actorNr: string; customProperties: { userId: string } }) => {
         actors[actor.customProperties.userId] = actor;
 
         actorNrToUserId[actor.actorNr] = actor.customProperties.userId;
-      });
+      },
+    );
 
     this.actors = actors;
     this.actorNrToUserId = actorNrToUserId;
@@ -313,9 +312,8 @@ export default class PhotonRealtimeService {
 
   updateMasterActorInfo(newMasterActorNr: string = null, updateRoomInfo: boolean = true) {
     const oldMasterActorUserId = this.masterActorUserId;
-    const masterActorUserId = this.actorNrToUserId[newMasterActorNr
-        ?? this.client.myRoomMasterActorNr()]
-        ?? null;
+    const masterActorUserId =
+      this.actorNrToUserId[newMasterActorNr ?? this.client.myRoomMasterActorNr()] ?? null;
 
     if (masterActorUserId !== this.masterActorUserId) {
       this.masterActorUserId = masterActorUserId;
@@ -336,8 +334,8 @@ export default class PhotonRealtimeService {
   }
 
   initializeRoomProperties() {
-    const alreadyHaveProperties = this.getRoomProperties.slots
-        && this.getRoomProperties.userIdToSlotIndex;
+    const alreadyHaveProperties =
+      this.getRoomProperties.slots && this.getRoomProperties.userIdToSlotIndex;
     const isMasterActor = this.client.myRoomMasterActorNr() === this.getMyActor.actorNr;
 
     if (alreadyHaveProperties || !isMasterActor) {
@@ -465,9 +463,9 @@ export default class PhotonRealtimeService {
     }
 
     /*
-         * If user is connected to master server, tries to reconnect using joinRoom
-         * rejoin option
-         */
+     * If user is connected to master server, tries to reconnect using joinRoom
+     * rejoin option
+     */
     if (this.client.isConnectedToMaster() && this.shouldEnterRoomOnReconnect) {
       this.log(
         'info',
@@ -478,10 +476,10 @@ export default class PhotonRealtimeService {
     }
 
     /*
-         * If user has lost his connection to master server, tries connecting to
-         * it and starts joins the room again in onStateChange when reach
-         * state READY_TO_JOIN.
-         */
+     * If user has lost his connection to master server, tries connecting to
+     * it and starts joins the room again in onStateChange when reach
+     * state READY_TO_JOIN.
+     */
     this.log('info', 'RECONNECT: Reconnecting to master server since user lost connection.');
     this.client.connectToRegionMaster(this.region ?? PHOTON_REGIONS.default);
     this.updateMyProperties(this.myActorProperties);
@@ -497,8 +495,8 @@ export default class PhotonRealtimeService {
 
     if (newState === REALTIME_STATE.FAILED) {
       if (
-        this.currentReconnecAttempt >= MAX_REALTIME_LOBBY_RETRIES
-                && !this.shouldEnterRoomOnReconnect
+        this.currentReconnecAttempt >= MAX_REALTIME_LOBBY_RETRIES &&
+        !this.shouldEnterRoomOnReconnect
       ) {
         this.log(
           'info',
@@ -581,11 +579,11 @@ export default class PhotonRealtimeService {
     const roomProperties = this.getRoomProperties;
     const { syncProperties } = roomProperties;
     // @Todo: Change this function to get deep difference between properties
-    const propertiesChanged = Object
-      .fromEntries(
-        Object.entries(syncProperties)
-          .filter(([key, value]) => this.oldSyncProperties[key] !== value),
-      );
+    const propertiesChanged = Object.fromEntries(
+      Object.entries(syncProperties).filter(
+        ([key, value]) => this.oldSyncProperties[key] !== value,
+      ),
+    );
     this.syncPropertiesObserver.publish(propertiesChanged);
     this.oldSyncProperties = { ...syncProperties };
   };
@@ -647,8 +645,8 @@ export default class PhotonRealtimeService {
 
     if (newState === REALTIME_STATE.FAILED && this.state !== REALTIME_STATE.RETRYING) {
       this.isInitializingReconnect = true;
-      this.shouldEnterRoomOnReconnect = this.state === REALTIME_STATE.CONNECTING
-          || this.state === REALTIME_STATE.CONNECTED;
+      this.shouldEnterRoomOnReconnect =
+        this.state === REALTIME_STATE.CONNECTING || this.state === REALTIME_STATE.CONNECTED;
 
       this.publishStateUpdate(REALTIME_STATE.RETRYING, state);
       this.initReconnect();
@@ -669,8 +667,8 @@ export default class PhotonRealtimeService {
   };
 
   onOperationResponse = (errorCode, _, code) => {
-    const isPluginReportedError = errorCode
-        === Photon.LoadBalancing.Constants.ErrorCode.PluginReportedError;
+    const isPluginReportedError =
+      errorCode === Photon.LoadBalancing.Constants.ErrorCode.PluginReportedError;
     const isJoinGameError = code === Photon.LoadBalancing.Constants.OperationCode.JoinGame;
 
     if (isPluginReportedError && isJoinGameError) {
@@ -730,11 +728,11 @@ export default class PhotonRealtimeService {
 
   onActorLeave = (actor, cleanup) => {
     /*
-         * If user opts to disconnect before enter a room, photon will emit actor
-         * leave event for the local actor with actorNr -1. Since this actor was
-         * not propagated via `this.actorJoinedObserver.publish`, we can simply
-         * ignore the event.
-         */
+     * If user opts to disconnect before enter a room, photon will emit actor
+     * leave event for the local actor with actorNr -1. Since this actor was
+     * not propagated via `this.actorJoinedObserver.publish`, we can simply
+     * ignore the event.
+     */
     if (this.state === REALTIME_STATE.READY_TO_JOIN || actor.actorNr === -1) {
       return;
     }

@@ -1,5 +1,12 @@
 import { RealtimeStateTypes } from '@superviz/immersive-core';
 
+export enum PHOTON_REGIONS {
+  cn = 'cn',
+  ap = 'asia',
+  eu = 'eu',
+  default = 'us',
+}
+
 export const REALTIME_STATE = RealtimeStateTypes;
 
 export enum PHOTON_STATE_TO_REALTIME_STATE {
