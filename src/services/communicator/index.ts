@@ -70,9 +70,8 @@ export default class Communicator {
   public start() {
     this.videoManager.start({
       roomId: this.roomId,
-      externalUserId: this.user?.id,
-      organizationId: this.organization?.id,
-      organizationName: this.organization?.name,
+      user: this.user,
+      organization: this.organization,
     });
     this.realtime.start(this.roomId, { userId: this.user.id }, { photonAppId: this.photonAppId });
   }

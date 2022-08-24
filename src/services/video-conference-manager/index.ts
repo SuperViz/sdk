@@ -1,6 +1,7 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
+import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
 import { UserType } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
@@ -27,6 +28,8 @@ export default class VideoConfereceManager {
   frameState = VideoFrameStateType.UNINITIALIZED;
 
   constructor(config: VideoManagerConfig) {
+    const { apiKey, language, debug } = config;
+
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 
@@ -46,19 +49,19 @@ export default class VideoConfereceManager {
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
       {
-        apiKey: config.apiKey,
-        debug: config.debug,
-        language: config.language,
+        apiKey,
+        debug,
+        language,
       },
       {
-        allow: 'camera *;microphone *; display-capture *;',
+        allow: 'camera *;microphone *; display-capture *; local-storage *;',
       },
     );
 
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
   }
 
-  start(options) {
+  start(options: StartMeetingOptions) {
     this.messageBridge.publish(MessageTypes.MEETING_START, options);
   }
 
