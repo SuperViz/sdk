@@ -1,7 +1,8 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
 import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
-import { UserVideoType } from '../../common/types/user.types';
+import { OrganizationType } from '../../common/types/organization.types';
+import { UserType } from '../../common/types/user.types';
 import VideoConferencingManager from '../VideoConfereceManager';
 import { VideoFrameStateType } from '../VideoConferenceManager.types';
 import RealtimeService from '../realtime/RealtimeService';
@@ -15,11 +16,10 @@ export default class Communicator {
   private debug: boolean = false;
   private language: string = 'en';
   private roomId: string;
-  private externalUserId: string;
+  private user: UserType;
   private photonAppId: string;
   private realtime: PhotonRealtimeService;
-  private organizationId: string;
-  private organizationName: string;
+  private organization: OrganizationType;
   private observerHelpers: { string?: ObserverHelper } = {};
 
   constructor({
@@ -27,18 +27,18 @@ export default class Communicator {
     debug = false,
     language = 'en',
     roomId,
-    externalUserId,
     photonAppId,
-    organizationId,
-    organizationName,
+    organization,
+    user,
   }: ICommunicatorTypes) {
+    const { id: externalUserId } = user;
+
     this.debug = debug;
     this.language = language;
     this.roomId = roomId;
-    this.externalUserId = externalUserId;
+    this.user = user;
     this.photonAppId = photonAppId;
-    this.organizationId = organizationId;
-    this.organizationName = organizationName;
+    this.organization = organization;
 
     this.realtime = RealtimeService.build();
 
@@ -70,15 +70,11 @@ export default class Communicator {
   public start() {
     this.videoManager.start({
       roomId: this.roomId,
-      externalUserId: this.externalUserId,
-      organizationId: this.organizationId,
-      organizationName: this.organizationName,
+      externalUserId: this.user?.id,
+      organizationId: this.organization?.id,
+      organizationName: this.organization?.name,
     });
-    this.realtime.start(
-      this.roomId,
-      { userId: this.externalUserId },
-      { photonAppId: this.photonAppId },
-    );
+    this.realtime.start(this.roomId, { userId: this.user.id }, { photonAppId: this.photonAppId });
   }
 
   public leave() {
@@ -177,15 +173,15 @@ export default class Communicator {
     this.publish(MessageTypes.MEETING_USER_AMOUNT_UPDATE, count);
   };
 
-  private onUserJoined = (user: UserVideoType): void => {
+  private onUserJoined = (user: UserType): void => {
     this.publish(MessageTypes.MEETING_USER_JOINED, user);
   };
 
-  private onUserLeft = (user: UserVideoType): void => {
+  private onUserLeft = (user: UserType): void => {
     this.publish(MessageTypes.MEETING_USER_LEFT, user);
   };
 
-  private onUserListUpdate = (users: Array<UserVideoType>): void => {
+  private onUserListUpdate = (users: Array<UserType>): void => {
     this.publish(MessageTypes.MEETING_USER_LIST_UPDATE, users);
   };
 }

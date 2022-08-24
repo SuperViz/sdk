@@ -1,7 +1,9 @@
+import { OrganizationType } from './organization.types';
+import { UserType } from './user.types';
+
 export interface SuperVizSdkOptions {
   debug?: boolean;
   roomId: string;
-  externalUserId: string;
-  organizationId: string;
-  organizationName: string;
+  organization: OrganizationType;
+  user: UserType;
 }

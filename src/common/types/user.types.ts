@@ -1,4 +1,4 @@
-export interface UserVideoType {
+export interface UserType {
   id: string;
   name: string;
 }
