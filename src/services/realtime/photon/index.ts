@@ -11,6 +11,7 @@ import {
   PHOTON_STATE_TO_REALTIME_STATE,
   PHOTON_FAILED_REASONS,
   PHOTON_ERROR_TO_FAILED_REASONS,
+  StartRealtimeType,
 } from './types';
 
 const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
@@ -26,7 +27,6 @@ export default class PhotonRealtimeService {
   stateReason?: PHOTON_FAILED_REASONS = null;
   previousState = null;
   actors = {};
-  masterActor = null;
   actorNrToUserId = {};
   masterActorUserId = null;
   myActorProperties = null;
@@ -116,12 +116,13 @@ export default class PhotonRealtimeService {
     this.unsubscribeFromRealtimeState = this.realtimeStateObserver.unsubscribe;
   }
 
-  start(roomId, actorInfo, options) {
-    this.region = options?.region ?? PHOTON_REGIONS.default;
-    this.enableSync = options?.enableSync ?? true;
+  start({ actorInfo, photonAppId, roomId }: StartRealtimeType) {
+    // @TODO - Implement this
+    this.region = PHOTON_REGIONS.default;
+    this.enableSync = true;
 
     if (!this.client) {
-      this.buildClient(options.photonAppId);
+      this.buildClient(photonAppId);
     }
 
     if (!this.client.isInLobby()) {
@@ -164,7 +165,6 @@ export default class PhotonRealtimeService {
     this.stateReason = null;
     this.previousState = null;
     this.actors = {};
-    this.masterActor = null;
     this.actorNrToUserId = {};
     this.masterActorUserId = null;
     this.myActorProperties = null;
@@ -207,8 +207,11 @@ export default class PhotonRealtimeService {
   }
 
   setMasterActor(actorUserId) {
-    const { actorNr } = this.actors[actorUserId];
+    const actor = this.actors[actorUserId];
+    const { actorNr } = actor;
+
     this.client.myRoom().setMasterClient(actorNr);
+
     this.updateMasterActorInfo(actorNr);
     this.log(
       'info',
@@ -433,7 +436,7 @@ export default class PhotonRealtimeService {
     this.updateRoomProperties(newRoomProperties);
   }
 
-  initReconnect = debounce(function (photonState) {
+  initReconnect = debounce((photonState) => {
     this.log('info', 'RECONNECT: Initializing reconnect');
     this.publishStateUpdate(REALTIME_STATE.RETRYING, photonState);
 
@@ -445,7 +448,7 @@ export default class PhotonRealtimeService {
     this.reconnect();
   }, RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL);
 
-  retryReconnect = debounce(function () {
+  retryReconnect = debounce(() => {
     this.currentReconnecAttempt += 1;
     this.reconnectObserver.publish(this.currentReconnecAttempt);
 
