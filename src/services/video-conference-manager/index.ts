@@ -54,7 +54,7 @@ export default class VideoConfereceManager {
         language,
       },
       {
-        allow: 'camera *;microphone *; display-capture *; local-storage *;',
+        allow: 'camera *;microphone *; display-capture *;',
       },
     );
 

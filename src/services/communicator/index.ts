@@ -31,8 +31,6 @@ export default class Communicator {
     organization,
     user,
   }: CommunicatorType) {
-    const { id: externalUserId } = user;
-
     this.debug = debug;
     this.language = language;
     this.roomId = roomId;
@@ -47,7 +45,6 @@ export default class Communicator {
       debug,
       language,
       roomId,
-      externalUserId,
     });
 
     this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
@@ -73,7 +70,15 @@ export default class Communicator {
       user: this.user,
       organization: this.organization,
     });
-    this.realtime.start(this.roomId, { userId: this.user.id }, { photonAppId: this.photonAppId });
+
+    this.realtime.start({
+      actorInfo: {
+        userId: this.user.id,
+        ...this.user,
+      },
+      roomId: this.roomId,
+      photonAppId: this.photonAppId,
+    });
   }
 
   public leave() {
@@ -136,11 +141,11 @@ export default class Communicator {
     this.realtime.join(userInfo);
   };
 
-  private onHostDidChange = (hostId) => {
+  private onHostDidChange = (hostId: string): void => {
     this.realtime.setMasterActor(hostId);
   };
 
-  private onFrameStateDidChange = (state: VideoFrameStateType) => {
+  private onFrameStateDidChange = (state: VideoFrameStateType): void => {
     if (state === VideoFrameStateType.INITIALIZED) {
       this.start();
     }

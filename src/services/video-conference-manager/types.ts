@@ -5,7 +5,6 @@ export interface VideoManagerConfig {
   debug: boolean;
   language: Language;
   roomId: string;
-  externalUserId: string;
 }
 
 export enum VideoFrameStateType {
