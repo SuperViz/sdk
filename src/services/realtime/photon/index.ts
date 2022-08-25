@@ -27,7 +27,6 @@ export default class PhotonRealtimeService {
   stateReason?: PHOTON_FAILED_REASONS = null;
   previousState = null;
   actors = {};
-  masterActor = null;
   actorNrToUserId = {};
   masterActorUserId = null;
   myActorProperties = null;
@@ -166,7 +165,6 @@ export default class PhotonRealtimeService {
     this.stateReason = null;
     this.previousState = null;
     this.actors = {};
-    this.masterActor = null;
     this.actorNrToUserId = {};
     this.masterActorUserId = null;
     this.myActorProperties = null;
@@ -213,7 +211,6 @@ export default class PhotonRealtimeService {
     const { actorNr } = actor;
 
     this.client.myRoom().setMasterClient(actorNr);
-    this.masterActor = actor;
 
     this.updateMasterActorInfo(actorNr);
     this.log(
