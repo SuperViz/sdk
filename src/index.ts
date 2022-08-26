@@ -1,10 +1,10 @@
-import SdkFacade from './SdkFacade';
 import { MessageTypes, DevicesMessageTypes } from './common/types/messages.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import Communicator from './services/communicator';
+import { CommunicatorFacade } from './services/communicator/types';
 import { FrameSizeType } from './services/video-conference-manager/types';
 
 const validateOptions = ({ organization, user, roomId }: SuperVizSdkOptions) => {
@@ -41,9 +41,7 @@ export default async (apiKey: string, options: SuperVizSdkOptions) => {
   }
 
   const { photonAppId } = environment;
-  const CommunicatorService = new Communicator(Object.assign({}, options, { apiKey, photonAppId }));
-
-  return new SdkFacade(CommunicatorService);
+  return Communicator(Object.assign({}, options, { apiKey, photonAppId }));
 };
 
-export { MessageTypes, FrameSizeType, SuperVizSdkOptions, DevicesMessageTypes };
+export { MessageTypes, FrameSizeType, SuperVizSdkOptions, DevicesMessageTypes, CommunicatorFacade };

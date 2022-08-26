@@ -7,3 +7,10 @@ export interface CommunicatorType extends SuperVizSdkOptions {
   language?: Language;
   photonAppId: string;
 }
+
+export type CommunicatorFacade = {
+  setSyncProperty: (property: {}) => void;
+  subscribe: (property: string, listener: () => void) => void;
+  unsubscribe: (property: string) => void;
+  destroy: () => void;
+};

@@ -8,16 +8,15 @@ import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameStateType } from '../video-conference-manager/types';
 
-import { CommunicatorType } from './types';
+import { CommunicatorFacade, CommunicatorType } from './types';
 
-export default class Communicator {
+class Communicator {
   private videoManager: VideoConferencingManager;
 
   private debug: boolean = false;
   private language: string = 'en';
   private roomId: string;
   private user: UserType;
-  private photonAppId: string;
   private realtime: PhotonRealtimeService;
   private organization: OrganizationType;
   private observerHelpers: { string?: ObserverHelper } = {};
@@ -35,7 +34,6 @@ export default class Communicator {
     this.language = language;
     this.roomId = roomId;
     this.user = user;
-    this.photonAppId = photonAppId;
     this.organization = organization;
 
     this.realtime = RealtimeService.build();
@@ -62,14 +60,6 @@ export default class Communicator {
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
-  }
-
-  public start() {
-    this.videoManager.start({
-      roomId: this.roomId,
-      user: this.user,
-      organization: this.organization,
-    });
 
     this.realtime.start({
       actorInfo: {
@@ -77,7 +67,15 @@ export default class Communicator {
         ...this.user,
       },
       roomId: this.roomId,
-      photonAppId: this.photonAppId,
+      photonAppId,
+    });
+  }
+
+  public start() {
+    this.videoManager.start({
+      roomId: this.roomId,
+      user: this.user,
+      organization: this.organization,
     });
   }
 
@@ -189,3 +187,14 @@ export default class Communicator {
     this.publish(MessageTypes.MEETING_USER_LIST_UPDATE, users);
   };
 }
+
+export default (params: CommunicatorType): CommunicatorFacade => {
+  const communicator = new Communicator(params);
+
+  return {
+    setSyncProperty: (property) => communicator.setSyncProperties(property),
+    subscribe: (property, listener) => communicator.subscribe(property, listener),
+    unsubscribe: (property) => communicator.unsubscribe(property),
+    destroy: () => communicator.destroy(),
+  };
+};

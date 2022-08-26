@@ -2,6 +2,7 @@ const baseConfig = require('./config');
 
 const config = Object.assign({}, baseConfig, {
   minify: true,
+  drop: ['debugger', 'console'],
 });
 
 require('esbuild')
