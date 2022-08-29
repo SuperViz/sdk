@@ -87,7 +87,7 @@ class Communicator {
 
   public destroy() {
     this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
-    this.videoManager.subscribeToRealtimeJoin(this.onRealtimeJoin);
+    this.videoManager.unsubscribeFromRealtimeJoin(this.onRealtimeJoin);
     this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
     this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
     this.videoManager.unsubscribeFromUserAmountUpdate(this.onUserAmountUpdate);
