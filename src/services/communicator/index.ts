@@ -46,7 +46,7 @@ class Communicator {
     });
 
     this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
-    this.videoManager.subscribeToMeetingJoin(this.onMeetingJoin);
+    this.videoManager.subscribeToRealtimeJoin(this.onRealtimeJoin);
     this.videoManager.subscribeToHostChange(this.onHostDidChange);
     this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
     this.videoManager.subscribeToSameAccountError(this.onSameAccountError);
@@ -60,6 +60,7 @@ class Communicator {
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
+    this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
 
     this.realtime.start({
       actorInfo: {
@@ -86,7 +87,7 @@ class Communicator {
 
   public destroy() {
     this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
-    this.videoManager.unsubscribeFromMeetingJoin(this.onMeetingJoin);
+    this.videoManager.subscribeToRealtimeJoin(this.onRealtimeJoin);
     this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
     this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
     this.videoManager.unsubscribeFromUserAmountUpdate(this.onUserAmountUpdate);
@@ -97,6 +98,7 @@ class Communicator {
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
+    this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
     this.leave();
@@ -135,7 +137,7 @@ class Communicator {
     });
   };
 
-  private onMeetingJoin = (userInfo) => {
+  private onRealtimeJoin = (userInfo) => {
     this.realtime.join(userInfo);
   };
 
@@ -160,6 +162,10 @@ class Communicator {
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  private onWaitForHostDidChange = (isWaiting: boolean): void => {
+    this.videoManager.waitForHostDidChange(isWaiting);
   };
 
   private onSameAccountError = (error: string): void => {

@@ -14,7 +14,7 @@ export default class VideoConfereceManager {
   private bricklayer: FrameBricklayer;
 
   private frameStateObserver = new ObserverHelper({ logger });
-  private meetingJoinObserver = new ObserverHelper({ logger });
+  private realtimeObserver = new ObserverHelper({ logger });
   private hostChangeObserver = new ObserverHelper({ logger });
   private gridModeChangeObserver = new ObserverHelper({ logger });
   private sameAccountErrorObserver = new ObserverHelper({ logger });
@@ -75,7 +75,7 @@ export default class VideoConfereceManager {
     this.messageBridge.destroy();
     this.bricklayer.destroy();
     this.frameStateObserver.destroy();
-    this.meetingJoinObserver.destroy();
+    this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
     this.gridModeChangeObserver.destroy();
 
@@ -95,7 +95,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
     this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
     this.messageBridge.listen(MessageTypes.FRAME_SIZE_UPDATE, this.updateFrameSize);
-    this.messageBridge.listen(MessageTypes.MEETING_JOIN, this.meetingJoin);
+    this.messageBridge.listen(MessageTypes.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(MessageTypes.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MessageTypes.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, this.onSameAccountError);
@@ -138,8 +138,8 @@ export default class VideoConfereceManager {
     }
   }
 
-  private meetingJoin = (userInfo = {}): void => {
-    this.meetingJoinObserver.publish(userInfo);
+  private realtimeJoin = (userInfo = {}): void => {
+    this.realtimeObserver.publish(userInfo);
   };
 
   private onMeetingHostChange = (hostId: string): void => {
@@ -158,6 +158,10 @@ export default class VideoConfereceManager {
     this.devicesObserver.publish(state);
   };
 
+  public waitForHostDidChange = (isWating: boolean): void => {
+    this.messageBridge.publish(MessageTypes.REALTIME_WAIT_FOR_HOST, isWating);
+  };
+
   public gridModeDidChange = (isGridModeEnable: boolean): void => {
     this.messageBridge.publish(MessageTypes.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
   };
@@ -173,8 +177,8 @@ export default class VideoConfereceManager {
   public subscribeToFrameState = this.frameStateObserver.subscribe;
   public unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
 
-  public subscribeToMeetingJoin = this.meetingJoinObserver.subscribe;
-  public unsubscribeFromMeetingJoin = this.meetingJoinObserver.unsubscribe;
+  public subscribeToRealtimeJoin = this.realtimeObserver.subscribe;
+  public unsubscribeFromRealtimeJoin = this.realtimeObserver.unsubscribe;
 
   public subscribeToHostChange = this.hostChangeObserver.subscribe;
   public unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
