@@ -2,5 +2,5 @@ export interface UserType {
   id: string;
   name: string;
   isHost: boolean;
-  isEligibleForHost: boolean;
+  isHostCandidate: boolean;
 }

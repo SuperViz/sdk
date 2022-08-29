@@ -617,7 +617,7 @@ export default class PhotonRealtimeService {
     const masterActor = this.actors[masterActorUserId];
 
     const actorsNr = this.client.actorsArray
-      .filter((actor) => actor?.customProperties?.isEligibleForHost)
+      .filter((actor) => actor?.customProperties?.isHostCandidate)
       .map((actor) => actor.actorNr);
 
     if (!actorsNr.includes(masterActor.actorNr) && actorsNr.includes(actor.actorNr)) {
