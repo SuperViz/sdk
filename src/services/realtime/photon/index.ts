@@ -69,6 +69,9 @@ export default class PhotonRealtimeService {
   syncPropertiesObserver: ObserverHelper;
   subscribeToSyncProperties: Function;
   unsubscribeFromSyncProperties: Function;
+  waitForHostObserver: ObserverHelper;
+  subscribeToWaitForHost: Function;
+  unsubscribeFromWaitForHost: Function;
 
   constructor() {
     // Actors observers helpers
@@ -114,6 +117,10 @@ export default class PhotonRealtimeService {
     this.realtimeStateObserver = new ObserverHelper({ logger });
     this.subscribeToRealtimeState = this.realtimeStateObserver.subscribe;
     this.unsubscribeFromRealtimeState = this.realtimeStateObserver.unsubscribe;
+
+    this.waitForHostObserver = new ObserverHelper({ logger });
+    this.subscribeToWaitForHost = this.waitForHostObserver.subscribe;
+    this.unsubscribeFromWaitForHost = this.waitForHostObserver.unsubscribe;
   }
 
   start({ actorInfo, photonAppId, roomId }: StartRealtimeType) {
@@ -605,6 +612,30 @@ export default class PhotonRealtimeService {
     this.updateRoomProperties(newRoomProperties);
   };
 
+  waitForHostHandle(actor) {
+    const masterActorUserId = this.actorNrToUserId[this.client.myRoomMasterActorNr()];
+    const masterActor = this.actors[masterActorUserId];
+
+    const actorsNr = this.client.actorsArray
+      .filter((actor) => actor?.customProperties?.isHostCandidate)
+      .map((actor) => actor.actorNr);
+
+    if (!actorsNr.includes(masterActor.actorNr) && actorsNr.includes(actor.actorNr)) {
+      this.setMasterActor(actor.customProperties.userId);
+      this.waitForHostObserver.publish(false);
+
+      return;
+    }
+
+    if (actorsNr.length) {
+      this.waitForHostObserver.publish(false);
+
+      return;
+    }
+
+    this.waitForHostObserver.publish(true);
+  }
+
   // Photon listeners
   onError = (errorCode, errorMessage) => {
     const photonErrorCodes = Photon.LoadBalancing.LoadBalancingClient.PeerErrorCode;
@@ -727,6 +758,8 @@ export default class PhotonRealtimeService {
       );
       this.setActorInfoInRoomProperties(actor);
     }
+
+    this.waitForHostHandle(actor);
   };
 
   onActorLeave = (actor, cleanup) => {
@@ -736,17 +769,21 @@ export default class PhotonRealtimeService {
      * not propagated via `this.actorJoinedObserver.publish`, we can simply
      * ignore the event.
      */
+
     if (this.state === REALTIME_STATE.READY_TO_JOIN || actor.actorNr === -1) {
       return;
     }
 
+    const isMasterActorLeave = actor.customProperties.userId === this.masterActorUserId;
+
     this.updateActors();
     this.updateRoomInfo();
     this.actorLeaveObserver.publish(actor);
-    const isMasterActorLeave = actor.customProperties.userId === this.masterActorUserId;
+
     if (isMasterActorLeave) {
       this.updateMasterActorInfo();
     }
+
     if (this.isMasterActor && !cleanup) {
       this.log(
         'info',

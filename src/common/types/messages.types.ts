@@ -15,9 +15,11 @@ export enum MessageTypes {
   MEETING_SAME_ACCOUNT_ERROR = 'meeting.same-account-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
 
+  REALTIME_JOIN = 'realtime.join',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
+  REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
 
   HEARTBEAT = 'heartbeat',
 }
