@@ -81,12 +81,6 @@ class Communicator {
     });
   }
 
-  public leave() {
-    this.videoManager.leave();
-    this.realtime.leave();
-    this.destroy();
-  }
-
   public destroy() {
     this.publish(MessageTypes.DESTROY, undefined);
 
@@ -106,7 +100,8 @@ class Communicator {
     this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
-    this.leave();
+    this.videoManager.leave();
+    this.realtime.leave();
   }
 
   public setSyncProperties = (property) => {
@@ -144,7 +139,7 @@ class Communicator {
 
   private onKickAllUsersDidChange = (kick: boolean): void => {
     this.publish(MessageTypes.MEETING_KICK_USERS, kick);
-    this.leave();
+    this.destroy();
   };
 
   private onRealtimeJoin = (userInfo) => {
@@ -197,7 +192,7 @@ class Communicator {
 
   private onUserLeft = (user: UserType): void => {
     this.publish(MessageTypes.MEETING_USER_LEFT, user);
-    this.leave();
+    this.destroy();
   };
 
   private onUserListUpdate = (users: Array<UserType>): void => {
