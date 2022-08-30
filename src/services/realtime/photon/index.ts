@@ -72,6 +72,9 @@ export default class PhotonRealtimeService {
   waitForHostObserver: ObserverHelper;
   subscribeToWaitForHost: Function;
   unsubscribeFromWaitForHost: Function;
+  kickAllUsersObserver: ObserverHelper;
+  subscribeToKickAllUsers: Function;
+  unsubscribeFromKickAllUsers: Function;
 
   constructor() {
     // Actors observers helpers
@@ -121,6 +124,10 @@ export default class PhotonRealtimeService {
     this.waitForHostObserver = new ObserverHelper({ logger });
     this.subscribeToWaitForHost = this.waitForHostObserver.subscribe;
     this.unsubscribeFromWaitForHost = this.waitForHostObserver.unsubscribe;
+
+    this.kickAllUsersObserver = new ObserverHelper({ logger });
+    this.subscribeToKickAllUsers = this.kickAllUsersObserver.subscribe;
+    this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
   }
 
   start({ actorInfo, photonAppId, roomId }: StartRealtimeType) {
@@ -636,6 +643,28 @@ export default class PhotonRealtimeService {
     this.waitForHostObserver.publish(true);
   }
 
+  hostPassingHandle() {
+    const masterActorUserId = this.actorNrToUserId[this.client.myRoomMasterActorNr()];
+    const masterActor = this.actors[masterActorUserId];
+
+    const hostCandidatesNr = this.client.actorsArray
+      .filter((actor) => actor?.customProperties?.isHostCandidate)
+      .map((actor) => actor.actorNr);
+
+    if (!hostCandidatesNr.length) {
+      this.kickAllUsersObserver.publish(true);
+      return;
+    }
+
+    if (!hostCandidatesNr.includes(masterActor.actorNr)) {
+      const nextHostCandidateUserid = this.actorNrToUserId[hostCandidatesNr[0]];
+
+      this.setMasterActor(nextHostCandidateUserid);
+    }
+
+    this.updateMasterActorInfo();
+  }
+
   // Photon listeners
   onError = (errorCode, errorMessage) => {
     const photonErrorCodes = Photon.LoadBalancing.LoadBalancingClient.PeerErrorCode;
@@ -781,7 +810,7 @@ export default class PhotonRealtimeService {
     this.actorLeaveObserver.publish(actor);
 
     if (isMasterActorLeave) {
-      this.updateMasterActorInfo();
+      this.hostPassingHandle();
     }
 
     if (this.isMasterActor && !cleanup) {
