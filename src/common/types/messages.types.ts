@@ -21,6 +21,7 @@ export enum MessageTypes {
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
+  REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',
 
   HEARTBEAT = 'heartbeat',
   DESTROY = 'destroy',

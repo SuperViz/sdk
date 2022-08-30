@@ -62,4 +62,5 @@ export interface StartRealtimeType {
   actorInfo: ActorInfoType;
   roomId: string;
   photonAppId: string;
+  apiKey: string;
 }
