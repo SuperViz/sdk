@@ -77,6 +77,7 @@ export default class PhotonRealtimeService {
   kickAllUsersObserver: ObserverHelper;
   subscribeToKickAllUsers: Function;
   unsubscribeFromKickAllUsers: Function;
+  authenticationObserver: ObserverHelper;
 
   constructor() {
     // Actors observers helpers
@@ -130,9 +131,10 @@ export default class PhotonRealtimeService {
     this.kickAllUsersObserver = new ObserverHelper({ logger });
     this.subscribeToKickAllUsers = this.kickAllUsersObserver.subscribe;
     this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
+    this.authenticationObserver = new ObserverHelper({ logger });
   }
 
-  start({ actorInfo, photonAppId, roomId }: StartRealtimeType) {
+  start({ actorInfo, photonAppId, roomId, apiKey }: StartRealtimeType) {
     // @TODO - Implement this
     this.region = PHOTON_REGIONS.default;
     this.enableSync = true;
@@ -145,10 +147,17 @@ export default class PhotonRealtimeService {
       this.log('info', `Connecting to region master '${this.region}'.`);
       this.client.connectToRegionMaster(this.region);
     }
+    this.auth(apiKey);
 
     this.updateMyProperties(actorInfo);
 
     this.roomId = roomId;
+  }
+
+  auth(apiKey) {
+    const { origin } = window.location;
+    const query = `apiKey=${apiKey}&domain=${origin}`;
+    this.client.setCustomAuthentication(query);
   }
 
   join(myActorProperties, aditionalRoomProperties = {}) {
@@ -677,6 +686,14 @@ export default class PhotonRealtimeService {
 
   // Photon listeners
   onError = (errorCode, errorMessage) => {
+    const isAuthenticationFailed = errorMessage.includes(
+      Photon.LoadBalancing.Constants.ErrorCode.CustomAuthenticationFailed,
+    );
+    if (isAuthenticationFailed) {
+      this.log('error', "You don't have permission to use realtime");
+      this.authenticationObserver.publish();
+      return;
+    }
     const photonErrorCodes = Photon.LoadBalancing.LoadBalancingClient.PeerErrorCode;
     const photonErrorName = Object.keys(photonErrorCodes).find(
       (errorName) => photonErrorCodes[errorName] === errorCode,

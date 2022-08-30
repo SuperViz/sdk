@@ -15,10 +15,10 @@ class Communicator {
 
   private debug: boolean = false;
   private language: string = 'en';
-  private roomId: string;
-  private user: UserType;
+  private readonly roomId: string;
+  private readonly user: UserType;
   private realtime: PhotonRealtimeService;
-  private organization: OrganizationType;
+  private readonly organization: OrganizationType;
   private observerHelpers: { string?: ObserverHelper } = {};
 
   constructor({
@@ -62,6 +62,7 @@ class Communicator {
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
     this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
     this.realtime.subscribeToKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
       actorInfo: {
@@ -70,6 +71,7 @@ class Communicator {
       },
       roomId: this.roomId,
       photonAppId,
+      apiKey,
     });
   }
 
@@ -98,6 +100,7 @@ class Communicator {
     this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
     this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
     this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
     this.videoManager.leave();
@@ -197,6 +200,11 @@ class Communicator {
 
   private onUserListUpdate = (users: Array<UserType>): void => {
     this.publish(MessageTypes.MEETING_USER_LIST_UPDATE, users);
+  };
+
+  private onAuthenticationFailed = (): void => {
+    this.publish(MessageTypes.REALTIME_AUTHENTICATION_FAILED, null);
+    this.destroy();
   };
 }
 
