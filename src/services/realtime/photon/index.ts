@@ -156,7 +156,7 @@ export default class PhotonRealtimeService {
 
   auth(apiKey) {
     const { origin } = window.location;
-    const query = `apiKey=${apiKey}&origin=${origin}`;
+    const query = `apiKey=${apiKey}&domain=${origin}`;
     this.client.setCustomAuthentication(query);
   }
 
