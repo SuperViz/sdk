@@ -40,6 +40,7 @@ export default class PhotonRealtimeService {
   currentReconnecAttempt: number;
   oldSyncProperties: {} = {};
   region: PHOTON_REGIONS;
+  sholdKickUsersOnHostLeave: boolean;
   actorObservers: ObserverHelper[];
   actorsObserver: ObserverHelper;
   subscribeToActorsUpdate: Function;
@@ -132,10 +133,11 @@ export default class PhotonRealtimeService {
     this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
   }
 
-  start({ actorInfo, photonAppId, roomId }: StartRealtimeType) {
+  start({ actorInfo, photonAppId, roomId, sholdKickUsersOnHostLeave }: StartRealtimeType) {
     // @TODO - Implement this
     this.region = PHOTON_REGIONS.default;
     this.enableSync = true;
+    this.sholdKickUsersOnHostLeave = sholdKickUsersOnHostLeave;
 
     if (!this.client) {
       this.buildClient(photonAppId);
@@ -658,7 +660,7 @@ export default class PhotonRealtimeService {
       .filter((actor) => actor?.customProperties?.isHostCandidate)
       .map((actor) => actor.actorNr);
 
-    if (!hostCandidatesNr.length) {
+    if (this.sholdKickUsersOnHostLeave && !hostCandidatesNr.length) {
       KICK_USERS_TIMEOUT = setTimeout(() => {
         this.kickAllUsersObserver.publish(true);
       }, KICK_USERS_TIME);

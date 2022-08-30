@@ -16,6 +16,7 @@ class Communicator {
   private debug: boolean = false;
   private language: string = 'en';
   private roomId: string;
+  private sholdKickUsersOnHostLeave: boolean;
   private user: UserType;
   private realtime: PhotonRealtimeService;
   private organization: OrganizationType;
@@ -29,12 +30,14 @@ class Communicator {
     photonAppId,
     organization,
     user,
+    sholdKickUsersOnHostLeave,
   }: CommunicatorType) {
     this.debug = debug;
     this.language = language;
     this.roomId = roomId;
     this.user = user;
     this.organization = organization;
+    this.sholdKickUsersOnHostLeave = sholdKickUsersOnHostLeave ?? true;
 
     this.realtime = RealtimeService.build();
 
@@ -70,6 +73,7 @@ class Communicator {
       },
       roomId: this.roomId,
       photonAppId,
+      sholdKickUsersOnHostLeave: this.sholdKickUsersOnHostLeave,
     });
   }
 
