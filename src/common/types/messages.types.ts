@@ -14,6 +14,7 @@ export enum MessageTypes {
   MEETING_GRID_MODE_CHANGE = 'meeting.grid-mode-change',
   MEETING_SAME_ACCOUNT_ERROR = 'meeting.same-account-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
+  MEETING_KICK_USERS = 'meeting.kick-all-users',
 
   REALTIME_JOIN = 'realtime.join',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
@@ -22,6 +23,7 @@ export enum MessageTypes {
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
 
   HEARTBEAT = 'heartbeat',
+  DESTROY = 'destroy',
 }
 
 export enum DevicesMessageTypes {

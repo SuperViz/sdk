@@ -18,6 +18,8 @@ const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
 
 const MAX_REALTIME_LOBBY_RETRIES = 3;
 const RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL = 5000;
+const KICK_USERS_TIME = 1000 * 60;
+let KICK_USERS_TIMEOUT = null;
 export default class PhotonRealtimeService {
   static LOGGER_PREFIX = 'PHOTON';
 
@@ -72,6 +74,9 @@ export default class PhotonRealtimeService {
   waitForHostObserver: ObserverHelper;
   subscribeToWaitForHost: Function;
   unsubscribeFromWaitForHost: Function;
+  kickAllUsersObserver: ObserverHelper;
+  subscribeToKickAllUsers: Function;
+  unsubscribeFromKickAllUsers: Function;
 
   constructor() {
     // Actors observers helpers
@@ -121,6 +126,10 @@ export default class PhotonRealtimeService {
     this.waitForHostObserver = new ObserverHelper({ logger });
     this.subscribeToWaitForHost = this.waitForHostObserver.subscribe;
     this.unsubscribeFromWaitForHost = this.waitForHostObserver.unsubscribe;
+
+    this.kickAllUsersObserver = new ObserverHelper({ logger });
+    this.subscribeToKickAllUsers = this.kickAllUsersObserver.subscribe;
+    this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
   }
 
   start({ actorInfo, photonAppId, roomId }: StartRealtimeType) {
@@ -616,24 +625,54 @@ export default class PhotonRealtimeService {
     const masterActorUserId = this.actorNrToUserId[this.client.myRoomMasterActorNr()];
     const masterActor = this.actors[masterActorUserId];
 
-    const actorsNr = this.client.actorsArray
+    const hostCandidatesNr = this.client.actorsArray
       .filter((actor) => actor?.customProperties?.isHostCandidate)
       .map((actor) => actor.actorNr);
 
-    if (!actorsNr.includes(masterActor.actorNr) && actorsNr.includes(actor.actorNr)) {
+    if (
+      !hostCandidatesNr.includes(masterActor.actorNr) &&
+      hostCandidatesNr.includes(actor.actorNr)
+    ) {
+      clearTimeout(KICK_USERS_TIMEOUT);
+
       this.setMasterActor(actor.customProperties.userId);
       this.waitForHostObserver.publish(false);
 
       return;
     }
 
-    if (actorsNr.length) {
+    if (hostCandidatesNr.length) {
       this.waitForHostObserver.publish(false);
 
       return;
     }
 
     this.waitForHostObserver.publish(true);
+  }
+
+  hostPassingHandle() {
+    const masterActorUserId = this.actorNrToUserId[this.client.myRoomMasterActorNr()];
+    const masterActor = this.actors[masterActorUserId];
+
+    const hostCandidatesNr = this.client.actorsArray
+      .filter((actor) => actor?.customProperties?.isHostCandidate)
+      .map((actor) => actor.actorNr);
+
+    if (!hostCandidatesNr.length) {
+      KICK_USERS_TIMEOUT = setTimeout(() => {
+        this.kickAllUsersObserver.publish(true);
+      }, KICK_USERS_TIME);
+
+      return;
+    }
+
+    if (!hostCandidatesNr.includes(masterActor.actorNr)) {
+      const nextHostCandidateUserid = this.actorNrToUserId[hostCandidatesNr[0]];
+
+      this.setMasterActor(nextHostCandidateUserid);
+    }
+
+    this.updateMasterActorInfo();
   }
 
   // Photon listeners
@@ -775,13 +814,14 @@ export default class PhotonRealtimeService {
     }
 
     const isMasterActorLeave = actor.customProperties.userId === this.masterActorUserId;
+    const isMasterActor = this.client.myRoomMasterActorNr() === this.getMyActor.actorNr;
 
     this.updateActors();
     this.updateRoomInfo();
     this.actorLeaveObserver.publish(actor);
 
-    if (isMasterActorLeave) {
-      this.updateMasterActorInfo();
+    if (isMasterActor && isMasterActorLeave) {
+      this.hostPassingHandle();
     }
 
     if (this.isMasterActor && !cleanup) {

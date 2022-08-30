@@ -61,6 +61,7 @@ class Communicator {
     this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
     this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
+    this.realtime.subscribeToKickAllUsers(this.onKickAllUsersDidChange);
 
     this.realtime.start({
       actorInfo: {
@@ -80,12 +81,9 @@ class Communicator {
     });
   }
 
-  public leave() {
-    this.videoManager.leave();
-    this.realtime.leave();
-  }
-
   public destroy() {
+    this.publish(MessageTypes.DESTROY, undefined);
+
     this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
     this.videoManager.unsubscribeFromRealtimeJoin(this.onRealtimeJoin);
     this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
@@ -99,9 +97,11 @@ class Communicator {
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
     this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
     this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
+    this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
-    this.leave();
+    this.videoManager.leave();
+    this.realtime.leave();
   }
 
   public setSyncProperties = (property) => {
@@ -123,7 +123,7 @@ class Communicator {
     }
   };
 
-  public publish = (type: string, data: any): void => {
+  private publish = (type: string, data: any): void => {
     const hasListenerRegistered = type in this.observerHelpers;
 
     if (hasListenerRegistered) {
@@ -135,6 +135,11 @@ class Communicator {
     Object.entries(properties).forEach(([key, value]) => {
       this.publish(key, value);
     });
+  };
+
+  private onKickAllUsersDidChange = (kick: boolean): void => {
+    this.publish(MessageTypes.MEETING_KICK_USERS, kick);
+    this.destroy();
   };
 
   private onRealtimeJoin = (userInfo) => {
@@ -187,6 +192,7 @@ class Communicator {
 
   private onUserLeft = (user: UserType): void => {
     this.publish(MessageTypes.MEETING_USER_LEFT, user);
+    this.destroy();
   };
 
   private onUserListUpdate = (users: Array<UserType>): void => {
