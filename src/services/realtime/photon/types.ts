@@ -63,4 +63,5 @@ export interface StartRealtimeType {
   roomId: string;
   photonAppId: string;
   apiKey: string;
+  shouldKickUsersOnHostLeave: boolean;
 }

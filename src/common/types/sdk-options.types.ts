@@ -6,4 +6,5 @@ export interface SuperVizSdkOptions {
   roomId: string;
   organization: OrganizationType;
   user: UserType;
+  shouldKickUsersOnHostLeave?: boolean;
 }

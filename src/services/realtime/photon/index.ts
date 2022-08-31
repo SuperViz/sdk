@@ -37,6 +37,7 @@ export default class PhotonRealtimeService {
   shouldEnterRoomOnReconnect?: boolean;
   isInitializingReconnect: boolean;
   roomId?: string;
+  shouldKickUsersOnHostLeave: boolean;
   currentReconnecAttempt: number;
   oldSyncProperties: {} = {};
   region: PHOTON_REGIONS;
@@ -134,7 +135,7 @@ export default class PhotonRealtimeService {
     this.authenticationObserver = new ObserverHelper({ logger });
   }
 
-  start({ actorInfo, photonAppId, roomId, apiKey }: StartRealtimeType) {
+  start({ actorInfo, photonAppId, roomId, apiKey, shouldKickUsersOnHostLeave }: StartRealtimeType) {
     // @TODO - Implement this
     this.region = PHOTON_REGIONS.default;
     this.enableSync = true;
@@ -152,6 +153,7 @@ export default class PhotonRealtimeService {
     this.updateMyProperties(actorInfo);
 
     this.roomId = roomId;
+    this.shouldKickUsersOnHostLeave = shouldKickUsersOnHostLeave;
   }
 
   auth(apiKey) {
@@ -667,16 +669,20 @@ export default class PhotonRealtimeService {
       .filter((actor) => actor?.customProperties?.isHostCandidate)
       .map((actor) => actor.actorNr);
 
-    if (!hostCandidatesNr.length) {
+    if (this.shouldKickUsersOnHostLeave && !hostCandidatesNr.length) {
       KICK_USERS_TIMEOUT = setTimeout(() => {
         this.kickAllUsersObserver.publish(true);
       }, KICK_USERS_TIME);
 
+      this.log('info', `users will be removed in ${KICK_USERS_TIME}ms`);
+
       return;
     }
 
-    if (!hostCandidatesNr.includes(masterActor.actorNr)) {
+    if (hostCandidatesNr.length && !hostCandidatesNr.includes(masterActor.actorNr)) {
       const nextHostCandidateUserid = this.actorNrToUserId[hostCandidatesNr[0]];
+
+      this.log('info', `passing the host to the user: ${nextHostCandidateUserid}`);
 
       this.setMasterActor(nextHostCandidateUserid);
     }

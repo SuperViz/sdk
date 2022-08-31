@@ -11,13 +11,13 @@ import { VideoFrameStateType } from '../video-conference-manager/types';
 import { CommunicatorFacade, CommunicatorType } from './types';
 
 class Communicator {
-  private videoManager: VideoConferencingManager;
+  private readonly videoManager: VideoConferencingManager;
+  private readonly realtime: PhotonRealtimeService;
 
   private debug: boolean = false;
   private language: string = 'en';
   private readonly roomId: string;
   private readonly user: UserType;
-  private realtime: PhotonRealtimeService;
   private readonly organization: OrganizationType;
   private observerHelpers: { string?: ObserverHelper } = {};
 
@@ -29,6 +29,7 @@ class Communicator {
     photonAppId,
     organization,
     user,
+    shouldKickUsersOnHostLeave,
   }: CommunicatorType) {
     this.debug = debug;
     this.language = language;
@@ -72,6 +73,7 @@ class Communicator {
       roomId: this.roomId,
       photonAppId,
       apiKey,
+      shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
     });
   }
 
