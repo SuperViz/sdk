@@ -135,7 +135,13 @@ export default class PhotonRealtimeService {
     this.authenticationObserver = new ObserverHelper({ logger });
   }
 
-  start({ actorInfo, photonAppId, roomId, apiKey, shouldKickUsersOnHostLeave }: StartRealtimeType) {
+  start({
+    actorInfo,
+    photonAppId,
+    roomId,
+    apiKey,
+    shouldKickUsersOnHostLeave,
+  }: StartRealtimeType): void {
     // @TODO - Implement this
     this.region = PHOTON_REGIONS.default;
     this.enableSync = true;
@@ -152,11 +158,11 @@ export default class PhotonRealtimeService {
 
     this.updateMyProperties(actorInfo);
 
-    this.roomId = roomId;
+    this.roomId = `${roomId}-${apiKey}`;
     this.shouldKickUsersOnHostLeave = shouldKickUsersOnHostLeave;
   }
 
-  auth(apiKey) {
+  auth(apiKey: string): void {
     const { origin } = window.location;
     const query = `apiKey=${apiKey}&domain=${origin}`;
     this.client.setCustomAuthentication(query);
