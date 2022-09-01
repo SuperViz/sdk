@@ -5,7 +5,7 @@ import { DevicesMessageTypes, MessageTypes } from './messages.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
 
 export interface SuperVizCdn {
-  start: (apiKey: string, options: SuperVizSdkOptions) => Promise<CommunicatorFacade>;
+  init: (apiKey: string, options: SuperVizSdkOptions) => Promise<CommunicatorFacade>;
   MessageTypes: typeof MessageTypes;
   FrameSizeType: typeof FrameSizeType;
   DevicesMessageTypes: typeof DevicesMessageTypes;

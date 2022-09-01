@@ -1,4 +1,3 @@
-import { SuperVizCdn } from './common/types/cdn.types';
 import { MessageTypes, DevicesMessageTypes } from './common/types/messages.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
@@ -22,7 +21,7 @@ const validateOptions = ({ organization, user, roomId }: SuperVizSdkOptions) => 
   }
 };
 
-const start = async (apiKey: string, options: SuperVizSdkOptions) => {
+const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   validateOptions(options);
 
   if (options.debug) {
@@ -47,12 +46,12 @@ const start = async (apiKey: string, options: SuperVizSdkOptions) => {
 
 if (window) {
   window.SuperVizSdk = {
-    start,
+    init,
     MessageTypes,
     FrameSizeType,
     DevicesMessageTypes,
   };
 }
 
-export default start;
+export default { init };
 export { MessageTypes, FrameSizeType, SuperVizSdkOptions, DevicesMessageTypes, CommunicatorFacade };
