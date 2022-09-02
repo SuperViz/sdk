@@ -7,13 +7,13 @@ export interface VideoManagerConfig {
   roomId: string;
 }
 
-export enum VideoFrameStateType {
+export enum VideoFrameState {
   UNINITIALIZED,
   INITIALIZING,
   INITIALIZED,
 }
 
-export enum FrameSizeType {
+export enum FrameSize {
   SMALL = 'SMALL',
   LARGE = 'LARGE',
 }

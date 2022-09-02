@@ -1,10 +1,9 @@
-import { OrganizationType } from './organization.types';
-import { UserType } from './user.types';
+import { User, UserGroup } from './user.types';
 
 export interface SuperVizSdkOptions {
   debug?: boolean;
   roomId: string;
-  organization: OrganizationType;
-  user: UserType;
+  user: User;
+  userGroup: UserGroup;
   shouldKickUsersOnHostLeave?: boolean;
 }

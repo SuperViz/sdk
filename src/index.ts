@@ -1,15 +1,15 @@
-import { MessageTypes, DevicesMessageTypes } from './common/types/messages.types';
+import { MeetingEvent, RealtimeEvent, DeviceEvent } from './common/types/events.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import Communicator from './services/communicator';
 import { CommunicatorFacade } from './services/communicator/types';
-import { FrameSizeType } from './services/video-conference-manager/types';
+import { FrameSize } from './services/video-conference-manager/types';
 
-const validateOptions = ({ organization, user, roomId }: SuperVizSdkOptions) => {
-  if (!organization || !organization.name || !organization.id) {
-    throw new Error('organization fields is required');
+const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
+  if (!userGroup || !userGroup.name || !userGroup.id) {
+    throw new Error('userGroup fields is required');
   }
 
   if (!user || !user.id) {
@@ -47,11 +47,19 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
 if (window) {
   window.SuperVizSdk = {
     init,
-    MessageTypes,
-    FrameSizeType,
-    DevicesMessageTypes,
+    MeetingEvent,
+    FrameSize,
+    DeviceEvent,
+    RealtimeEvent,
   };
 }
 
 export default { init };
-export { MessageTypes, FrameSizeType, SuperVizSdkOptions, DevicesMessageTypes, CommunicatorFacade };
+export {
+  MeetingEvent,
+  RealtimeEvent,
+  FrameSize,
+  SuperVizSdkOptions,
+  DeviceEvent,
+  CommunicatorFacade,
+};

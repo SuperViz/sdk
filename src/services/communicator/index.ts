@@ -1,12 +1,11 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
-import { OrganizationType } from '../../common/types/organization.types';
-import { UserType } from '../../common/types/user.types';
+import { DeviceEvent, MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import { User, UserGroup } from '../../common/types/user.types';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameStateType } from '../video-conference-manager/types';
+import { VideoFrameState } from '../video-conference-manager/types';
 
 import { CommunicatorFacade, CommunicatorType } from './types';
 
@@ -17,9 +16,10 @@ class Communicator {
   private debug: boolean = false;
   private language: string = 'en';
   private readonly roomId: string;
-  private readonly user: UserType;
-  private readonly organization: OrganizationType;
+  private readonly userGroup: UserGroup;
   private observerHelpers: { string?: ObserverHelper } = {};
+  private user: User;
+  private userList: User[] = [];
 
   constructor({
     apiKey,
@@ -27,7 +27,7 @@ class Communicator {
     language = 'en',
     roomId,
     photonAppId,
-    organization,
+    userGroup,
     user,
     shouldKickUsersOnHostLeave,
   }: CommunicatorType) {
@@ -35,7 +35,7 @@ class Communicator {
     this.language = language;
     this.roomId = roomId;
     this.user = user;
-    this.organization = organization;
+    this.userGroup = userGroup;
 
     this.realtime = RealtimeService.build();
 
@@ -81,12 +81,12 @@ class Communicator {
     this.videoManager.start({
       roomId: this.roomId,
       user: this.user,
-      organization: this.organization,
+      userGroup: this.userGroup,
     });
   }
 
   public destroy() {
-    this.publish(MessageTypes.DESTROY, undefined);
+    this.publish(MeetingEvent.DESTROY, undefined);
 
     this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
     this.videoManager.unsubscribeFromRealtimeJoin(this.onRealtimeJoin);
@@ -143,7 +143,7 @@ class Communicator {
   };
 
   private onKickAllUsersDidChange = (kick: boolean): void => {
-    this.publish(MessageTypes.MEETING_KICK_USERS, kick);
+    this.publish(MeetingEvent.MEETING_KICK_USERS, kick);
     this.destroy();
   };
 
@@ -155,8 +155,8 @@ class Communicator {
     this.realtime.setMasterActor(hostId);
   };
 
-  private onFrameStateDidChange = (state: VideoFrameStateType): void => {
-    if (state === VideoFrameStateType.INITIALIZED) {
+  private onFrameStateDidChange = (state: VideoFrameState): void => {
+    if (state === VideoFrameState.INITIALIZED) {
       this.start();
     }
   };
@@ -179,33 +179,33 @@ class Communicator {
   };
 
   private onSameAccountError = (error: string): void => {
-    this.publish(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, error);
+    this.publish(MeetingEvent.MEETING_SAME_USER_ERROR, error);
     this.destroy();
   };
 
-  private onDevicesChange = (state: DevicesMessageTypes): void => {
-    this.publish(MessageTypes.MEETING_DEVICES_CHANGE, state);
+  private onDevicesChange = (state: DeviceEvent): void => {
+    this.publish(MeetingEvent.MEETING_DEVICES_CHANGE, state);
   };
 
   private onUserAmountUpdate = (count: number): void => {
-    this.publish(MessageTypes.MEETING_USER_AMOUNT_UPDATE, count);
+    this.publish(MeetingEvent.MEETING_USER_AMOUNT_UPDATE, count);
   };
 
-  private onUserJoined = (user: UserType): void => {
-    this.publish(MessageTypes.MEETING_USER_JOINED, user);
+  private onUserJoined = (user: User): void => {
+    this.publish(MeetingEvent.MEETING_USER_JOINED, user);
   };
 
-  private onUserLeft = (user: UserType): void => {
-    this.publish(MessageTypes.MEETING_USER_LEFT, user);
+  private onUserLeft = (user: User): void => {
+    this.publish(MeetingEvent.MEETING_USER_LEFT, user);
     this.destroy();
   };
 
-  private onUserListUpdate = (users: Array<UserType>): void => {
-    this.publish(MessageTypes.MEETING_USER_LIST_UPDATE, users);
+  private onUserListUpdate = (users: Array<User>): void => {
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, users);
   };
 
   private onAuthenticationFailed = (): void => {
-    this.publish(MessageTypes.REALTIME_AUTHENTICATION_FAILED, null);
+    this.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED, null);
     this.destroy();
   };
 }
