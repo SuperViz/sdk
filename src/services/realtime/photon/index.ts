@@ -2,7 +2,7 @@ import { ObserverHelper, RealtimeStateTypes } from '@superviz/immersive-core';
 import debounce from 'lodash.debounce';
 
 import packageInfo from '../../../../package.json';
-import { MeetingcolorsTypes } from '../../../common/types/meetingcolors.types';
+import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
 
 import {
@@ -281,7 +281,7 @@ export default class PhotonRealtimeService {
   getActorColor(index) {
     let avatarColorIndex = index;
     avatarColorIndex %= 16;
-    return MeetingcolorsTypes[avatarColorIndex];
+    return MeetingColors[avatarColorIndex];
   }
 
   // internal

@@ -1,4 +1,4 @@
-export enum MessageTypes {
+export enum MeetingEvent {
   FRAME_LOAD = 'frame.load',
   FRAME_SIZE_UPDATE = 'frame.size-update',
 
@@ -12,22 +12,24 @@ export enum MessageTypes {
   MEETING_USER_PROPERTIES = 'meeting.user-properties',
   MEETING_HOST_CHANGE = 'meeting.host-change',
   MEETING_GRID_MODE_CHANGE = 'meeting.grid-mode-change',
-  MEETING_SAME_ACCOUNT_ERROR = 'meeting.same-account-error',
+  MEETING_SAME_USER_ERROR = 'meeting.same-user-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_USERS = 'meeting.kick-all-users',
 
+  HEARTBEAT = 'heartbeat',
+  DESTROY = 'destroy',
+}
+
+export enum RealtimeEvent {
   REALTIME_JOIN = 'realtime.join',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
   REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',
-
-  HEARTBEAT = 'heartbeat',
-  DESTROY = 'destroy',
 }
 
-export enum DevicesMessageTypes {
+export enum DeviceEvent {
   NO_CAM = 'devices.no-cam',
   NO_DEVICES = 'devices.no-devices',
   DEVICES_BLOCKED = 'devices.blocked',

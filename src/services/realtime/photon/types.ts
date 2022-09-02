@@ -1,6 +1,6 @@
 import { RealtimeStateTypes } from '@superviz/immersive-core';
 
-import { UserType } from '../../../common/types/user.types';
+import { User } from '../../../common/types/user.types';
 
 export enum PHOTON_REGIONS {
   cn = 'cn',
@@ -54,7 +54,7 @@ export enum PHOTON_ERROR_TO_FAILED_REASONS {
   NameServerAuthenticationFailed = PHOTON_FAILED_REASONS.LOBBY_SERVER_NOT_REACHEABLE,
 }
 
-export interface ActorInfoType extends UserType {
+export interface ActorInfoType extends User {
   userId: string;
 }
 

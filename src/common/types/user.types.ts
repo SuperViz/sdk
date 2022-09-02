@@ -1,6 +1,11 @@
-export interface UserType {
+export interface User {
   id: string;
   name: string;
   isHost: boolean;
   isHostCandidate: boolean;
+}
+
+export interface UserGroup {
+  id: string;
+  name: string;
 }

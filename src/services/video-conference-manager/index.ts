@@ -1,12 +1,12 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
+import { DeviceEvent, MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
-import { DevicesMessageTypes, MessageTypes } from '../../common/types/messages.types';
-import { UserType } from '../../common/types/user.types';
+import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 
-import { VideoFrameStateType, VideoManagerConfig, FrameSizeType } from './types';
+import { VideoFrameState, VideoManagerConfig, FrameSize } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 export default class VideoConfereceManager {
@@ -25,7 +25,7 @@ export default class VideoConfereceManager {
   private userLeftObserver = new ObserverHelper({ logger });
   private userListObserver = new ObserverHelper({ logger });
 
-  frameState = VideoFrameStateType.UNINITIALIZED;
+  frameState = VideoFrameState.UNINITIALIZED;
 
   constructor(config: VideoManagerConfig) {
     const { apiKey, language, debug } = config;
@@ -41,7 +41,7 @@ export default class VideoConfereceManager {
     document.body.appendChild(wrapper);
     document.head.appendChild(style);
 
-    this.updateFrameState(VideoFrameStateType.INITIALIZING);
+    this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
@@ -62,11 +62,11 @@ export default class VideoConfereceManager {
   }
 
   start(options: StartMeetingOptions) {
-    this.messageBridge.publish(MessageTypes.MEETING_START, options);
+    this.messageBridge.publish(MeetingEvent.MEETING_START, options);
   }
 
   leave() {
-    this.messageBridge.publish(MessageTypes.MEETING_LEAVE, {});
+    this.messageBridge.publish(MeetingEvent.MEETING_LEAVE, {});
 
     this.destroy();
   }
@@ -90,48 +90,48 @@ export default class VideoConfereceManager {
     });
 
     // @TODO: create option to destroy all these listens.
-    this.messageBridge.listen(MessageTypes.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
-    this.messageBridge.listen(MessageTypes.MEETING_USER_JOINED, this.onUserJoined);
-    this.messageBridge.listen(MessageTypes.MEETING_USER_LEFT, this.onUserLeft);
-    this.messageBridge.listen(MessageTypes.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
-    this.messageBridge.listen(MessageTypes.FRAME_SIZE_UPDATE, this.updateFrameSize);
-    this.messageBridge.listen(MessageTypes.REALTIME_JOIN, this.realtimeJoin);
-    this.messageBridge.listen(MessageTypes.MEETING_HOST_CHANGE, this.onMeetingHostChange);
-    this.messageBridge.listen(MessageTypes.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
-    this.messageBridge.listen(MessageTypes.MEETING_SAME_ACCOUNT_ERROR, this.onSameAccountError);
-    this.messageBridge.listen(MessageTypes.MEETING_DEVICES_CHANGE, this.onDevicesChange);
+    this.messageBridge.listen(MeetingEvent.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
+    this.messageBridge.listen(MeetingEvent.MEETING_USER_JOINED, this.onUserJoined);
+    this.messageBridge.listen(MeetingEvent.MEETING_USER_LEFT, this.onUserLeft);
+    this.messageBridge.listen(MeetingEvent.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
+    this.messageBridge.listen(MeetingEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
+    this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
+    this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
+    this.messageBridge.listen(MeetingEvent.MEETING_SAME_USER_ERROR, this.onSameAccountError);
+    this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
 
-    this.updateFrameState(VideoFrameStateType.INITIALIZED);
+    this.updateFrameState(VideoFrameState.INITIALIZED);
   };
 
-  private onUserAmountUpdate = (users: Array<UserType>): void => {
+  private onUserAmountUpdate = (users: Array<User>): void => {
     this.userAmountUpdateObserver.publish(users);
   };
 
-  private onUserJoined = (user: UserType): void => {
+  private onUserJoined = (user: User): void => {
     this.userJoinedObserver.publish(user);
   };
 
-  private onUserLeft = (user: UserType): void => {
+  private onUserLeft = (user: User): void => {
     this.userLeftObserver.publish(user);
   };
 
-  private onUserListUpdate = (users: Array<UserType>): void => {
+  private onUserListUpdate = (users: Array<User>): void => {
     this.userListObserver.publish(users);
   };
 
-  private updateFrameSize = (size: FrameSizeType): void => {
+  private updateFrameSize = (size: FrameSize): void => {
     const frame = document.getElementById(FRAME_ID);
     const isExpanded = frame.classList.contains('sv-video-frame--expansive-mode');
 
-    if (size === FrameSizeType.LARGE && isExpanded) return;
+    if (size === FrameSize.LARGE && isExpanded) return;
 
-    if (size === FrameSizeType.SMALL && !isExpanded) return;
+    if (size === FrameSize.SMALL && !isExpanded) return;
 
     frame.classList.toggle('sv-video-frame--expansive-mode');
   };
 
-  private updateFrameState(state: VideoFrameStateType): void {
+  private updateFrameState(state: VideoFrameState): void {
     if (state !== this.frameState) {
       this.frameState = state;
       this.frameStateObserver.publish(this.frameState);
@@ -154,24 +154,24 @@ export default class VideoConfereceManager {
     this.sameAccountErrorObserver.publish(error);
   };
 
-  private onDevicesChange = (state: DevicesMessageTypes): void => {
+  private onDevicesChange = (state: DeviceEvent): void => {
     this.devicesObserver.publish(state);
   };
 
   public waitForHostDidChange = (isWating: boolean): void => {
-    this.messageBridge.publish(MessageTypes.REALTIME_WAIT_FOR_HOST, isWating);
+    this.messageBridge.publish(RealtimeEvent.REALTIME_WAIT_FOR_HOST, isWating);
   };
 
   public gridModeDidChange = (isGridModeEnable: boolean): void => {
-    this.messageBridge.publish(MessageTypes.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
+    this.messageBridge.publish(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
   };
 
   public actorsListDidChange = (actorsList): void => {
-    this.messageBridge.publish(MessageTypes.REALTIME_USER_LIST_UPDATE, actorsList);
+    this.messageBridge.publish(RealtimeEvent.REALTIME_USER_LIST_UPDATE, actorsList);
   };
 
   public onMasterActorDidChange = (hostId: string): void => {
-    this.messageBridge.publish(MessageTypes.REALTIME_HOST_CHANGE, hostId);
+    this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
   };
 
   public subscribeToFrameState = this.frameStateObserver.subscribe;
