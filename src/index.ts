@@ -1,4 +1,9 @@
-import { MeetingEvent, RealtimeEvent, DeviceEvent } from './common/types/events.types';
+import {
+  MeetingEvent,
+  RealtimeEvent,
+  DeviceEvent,
+  MeetingState,
+} from './common/types/events.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
@@ -51,6 +56,7 @@ if (window) {
     FrameSize,
     DeviceEvent,
     RealtimeEvent,
+    MeetingState,
   };
 }
 
@@ -62,4 +68,5 @@ export {
   SuperVizSdkOptions,
   DeviceEvent,
   CommunicatorFacade,
+  MeetingState,
 };

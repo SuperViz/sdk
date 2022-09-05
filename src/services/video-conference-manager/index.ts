@@ -1,7 +1,12 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
-import { DeviceEvent, MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import {
+  DeviceEvent,
+  MeetingEvent,
+  MeetingState,
+  RealtimeEvent,
+} from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
@@ -19,6 +24,7 @@ export default class VideoConfereceManager {
   private gridModeChangeObserver = new ObserverHelper({ logger });
   private sameAccountErrorObserver = new ObserverHelper({ logger });
   private devicesObserver = new ObserverHelper({ logger });
+  public meetingStateObserver = new ObserverHelper({ logger });
 
   private userAmountUpdateObserver = new ObserverHelper({ logger });
   private userJoinedObserver = new ObserverHelper({ logger });
@@ -98,6 +104,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_USER_ERROR, this.onSameAccountError);
+    this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
 
@@ -136,6 +143,20 @@ export default class VideoConfereceManager {
       this.frameState = state;
       this.frameStateObserver.publish(this.frameState);
     }
+
+    switch (state) {
+      case VideoFrameState.INITIALIZING:
+        this.meetingStateUpdate(MeetingState.FRAME_INITIALIZING);
+        break;
+      case VideoFrameState.INITIALIZED:
+        this.meetingStateUpdate(MeetingState.FRAME_INITIALIZED);
+        break;
+      case VideoFrameState.UNINITIALIZED:
+        this.meetingStateUpdate(MeetingState.FRAME_UNINITIALIZED);
+        break;
+      default:
+        break;
+    }
   }
 
   private realtimeJoin = (userInfo = {}): void => {
@@ -172,6 +193,10 @@ export default class VideoConfereceManager {
 
   public onMasterActorDidChange = (hostId: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
+  };
+
+  private meetingStateUpdate = (newState: MeetingState): void => {
+    this.meetingStateObserver.publish(newState);
   };
 
   public subscribeToFrameState = this.frameStateObserver.subscribe;

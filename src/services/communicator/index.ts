@@ -1,7 +1,12 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 import isEqual from 'lodash.isequal';
 
-import { DeviceEvent, MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import {
+  DeviceEvent,
+  MeetingEvent,
+  MeetingState,
+  RealtimeEvent,
+} from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
@@ -57,6 +62,7 @@ class Communicator {
     this.videoManager.subscribeToUserListUpdate(this.onUserListUpdate);
     this.videoManager.subscribeToUserJoined(this.onUserJoined);
     this.videoManager.subscribeToUserLeft(this.onUserLeft);
+    this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
 
     // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
@@ -224,6 +230,10 @@ class Communicator {
   private onAuthenticationFailed = (): void => {
     this.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED, null);
     this.destroy();
+  };
+
+  private onMeetingStateUpdate = (newState: MeetingState) => {
+    this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 }
 
