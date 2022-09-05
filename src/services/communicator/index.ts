@@ -1,6 +1,12 @@
 import { ObserverHelper } from '@superviz/immersive-core';
+import isEqual from 'lodash.isequal';
 
-import { DeviceEvent, MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import {
+  DeviceEvent,
+  MeetingEvent,
+  MeetingState,
+  RealtimeEvent,
+} from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
@@ -56,6 +62,7 @@ class Communicator {
     this.videoManager.subscribeToUserListUpdate(this.onUserListUpdate);
     this.videoManager.subscribeToUserJoined(this.onUserJoined);
     this.videoManager.subscribeToUserLeft(this.onUserLeft);
+    this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
 
     // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
@@ -192,21 +199,41 @@ class Communicator {
   };
 
   private onUserJoined = (user: User): void => {
+    if (user.id === this.user.id) {
+      this.publish(MeetingEvent.MY_USER_JOINED, user);
+    }
+
     this.publish(MeetingEvent.MEETING_USER_JOINED, user);
   };
 
   private onUserLeft = (user: User): void => {
+    if (user.id === this.user.id) {
+      this.publish(MeetingEvent.MY_USER_LEFT, user);
+    }
+
     this.publish(MeetingEvent.MEETING_USER_LEFT, user);
     this.destroy();
   };
 
   private onUserListUpdate = (users: Array<User>): void => {
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, users);
+    this.userList = users;
+    const myUser = this.userList.find((user) => user.id === this.user.id);
+
+    if (!isEqual(myUser, this.user)) {
+      this.user = myUser;
+      this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
+    }
+
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
   };
 
   private onAuthenticationFailed = (): void => {
     this.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED, null);
     this.destroy();
+  };
+
+  private onMeetingStateUpdate = (newState: MeetingState) => {
+    this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 }
 
