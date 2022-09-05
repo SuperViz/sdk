@@ -16,6 +16,10 @@ export enum MeetingEvent {
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_USERS = 'meeting.kick-all-users',
 
+  MY_USER_UPDATE = 'my-user.update',
+  MY_USER_LEFT = 'my-user.left',
+  MY_USER_JOINED = 'my-user.joined',
+
   HEARTBEAT = 'heartbeat',
   DESTROY = 'destroy',
 }

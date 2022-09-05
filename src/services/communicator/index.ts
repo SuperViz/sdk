@@ -1,4 +1,5 @@
 import { ObserverHelper } from '@superviz/immersive-core';
+import isEqual from 'lodash.isequal';
 
 import { DeviceEvent, MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
@@ -192,16 +193,32 @@ class Communicator {
   };
 
   private onUserJoined = (user: User): void => {
+    if (user.id === this.user.id) {
+      this.publish(MeetingEvent.MY_USER_JOINED, user);
+    }
+
     this.publish(MeetingEvent.MEETING_USER_JOINED, user);
   };
 
   private onUserLeft = (user: User): void => {
+    if (user.id === this.user.id) {
+      this.publish(MeetingEvent.MY_USER_LEFT, user);
+    }
+
     this.publish(MeetingEvent.MEETING_USER_LEFT, user);
     this.destroy();
   };
 
   private onUserListUpdate = (users: Array<User>): void => {
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, users);
+    this.userList = users;
+    const myUser = this.userList.find((user) => user.id === this.user.id);
+
+    if (!isEqual(myUser, this.user)) {
+      this.user = myUser;
+      this.publish(MeetingEvent.MY_USER_UPDATE, this.user);
+    }
+
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
   };
 
   private onAuthenticationFailed = (): void => {
