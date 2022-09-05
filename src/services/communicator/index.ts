@@ -221,7 +221,7 @@ class Communicator {
 
     if (!isEqual(myUser, this.user)) {
       this.user = myUser;
-      this.publish(MeetingEvent.MY_USER_UPDATE, this.user);
+      this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
     }
 
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
