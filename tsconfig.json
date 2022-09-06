@@ -4,11 +4,9 @@
     "module": "ES2020",
     "outDir": "./dist",
     "emitDeclarationOnly": true,
-    "preserveWatchOutput": true,
     "declaration": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "resolveJsonModule": true
   },
   "include": [
     "./src"
