@@ -8,9 +8,9 @@ export interface CommunicatorType extends SuperVizSdkOptions {
   photonAppId: string;
 }
 
-export type CommunicatorFacade = {
-  setSyncProperty: (property: {}) => void;
-  subscribe: (property: string, listener: () => void) => void;
-  unsubscribe: (property: string) => void;
+export type SuperVizSdk = {
+  setSyncProperty: (name: string, property: any) => void;
+  subscribe: (propertyName: string, listener: () => void) => void;
+  unsubscribe: (propertyName: string) => void;
   destroy: () => void;
 };

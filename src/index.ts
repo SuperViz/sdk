@@ -10,7 +10,7 @@ import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import Communicator from './services/communicator';
-import { CommunicatorFacade } from './services/communicator/types';
+import { SuperVizSdk } from './services/communicator/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
@@ -68,7 +68,7 @@ export {
   FrameSize,
   SuperVizSdkOptions,
   DeviceEvent,
-  CommunicatorFacade,
+  SuperVizSdk,
   MeetingState,
   User,
   UserGroup,

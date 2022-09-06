@@ -13,7 +13,7 @@ import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
-import { CommunicatorFacade, CommunicatorType } from './types';
+import { SuperVizSdk, CommunicatorType } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
@@ -116,8 +116,8 @@ class Communicator {
     this.realtime.leave();
   }
 
-  public setSyncProperties = (property) => {
-    this.realtime.setSyncProperties(property);
+  public setSyncProperties = (name: string, property: any): void => {
+    this.realtime.setSyncProperties({ [name]: property });
   };
 
   public subscribe = (type: string, listener: Function) => {
@@ -237,13 +237,13 @@ class Communicator {
   };
 }
 
-export default (params: CommunicatorType): CommunicatorFacade => {
+export default (params: CommunicatorType): SuperVizSdk => {
   const communicator = new Communicator(params);
 
   return {
-    setSyncProperty: (property) => communicator.setSyncProperties(property),
-    subscribe: (property, listener) => communicator.subscribe(property, listener),
-    unsubscribe: (property) => communicator.unsubscribe(property),
+    setSyncProperty: (name, property) => communicator.setSyncProperties(name, property),
+    subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
+    unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
   };
 };
