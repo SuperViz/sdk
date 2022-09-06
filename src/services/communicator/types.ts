@@ -9,8 +9,8 @@ export interface CommunicatorType extends SuperVizSdkOptions {
 }
 
 export type SuperVizSdk = {
-  setSyncProperty: (name: string, property: any) => void;
-  subscribe: (propertyName: string, listener: () => void) => void;
+  setSyncProperty: (name: string, property?: any) => void;
+  subscribe: (propertyName: string, listener: (property?: any) => void) => void;
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
 };
