@@ -1,7 +1,6 @@
 import { ObserverHelper, RealtimeStateTypes } from '@superviz/immersive-core';
 import debounce from 'lodash.debounce';
 
-import packageInfo from '../../../../package.json';
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
 
@@ -14,6 +13,7 @@ import {
   StartRealtimeType,
 } from './types';
 
+const packageInfo = require('../../../../package.json');
 const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
 
 const MAX_REALTIME_LOBBY_RETRIES = 3;
