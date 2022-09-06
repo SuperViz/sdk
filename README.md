@@ -20,7 +20,7 @@ The SuperViz SDK enables you to implement SuperViz-supported meetings inside you
 `@superviz/sdk` is a package that abstracts all operations and management of meeting spaces from SuperViz, including audio, video, screen sharing and virtual 3D spaces.
 
 ## Getting started
-To check out the [guide](docs.superviz.com), visit [docs.superviz.com](docs.superviz.com)
+To check out the [guide](https://docs.superviz.com), visit [https://docs.superviz.com](https://docs.superviz.com)
 
 
 ## Issues
