@@ -38,7 +38,7 @@ export default class PhotonRealtimeService {
   isInitializingReconnect: boolean;
   roomId?: string;
   shouldKickUsersOnHostLeave: boolean;
-  currentReconnecAttempt: number;
+  currentReconnectAttempt: number;
   oldSyncProperties: {} = {};
   region: PHOTON_REGIONS;
   actorObservers: ObserverHelper[];
@@ -473,17 +473,17 @@ export default class PhotonRealtimeService {
     this.log('info', 'RECONNECT: Initializing reconnect');
     this.publishStateUpdate(REALTIME_STATE.RETRYING, photonState);
 
-    this.currentReconnecAttempt = 0;
+    this.currentReconnectAttempt = 0;
     this.isInitializingReconnect = false;
 
-    this.reconnectObserver.publish(this.currentReconnecAttempt);
+    this.reconnectObserver.publish(this.currentReconnectAttempt);
 
     this.reconnect();
   }, RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL);
 
   retryReconnect = debounce(() => {
-    this.currentReconnecAttempt += 1;
-    this.reconnectObserver.publish(this.currentReconnecAttempt);
+    this.currentReconnectAttempt += 1;
+    this.reconnectObserver.publish(this.currentReconnectAttempt);
 
     this.reconnect();
   }, RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL);
@@ -491,7 +491,7 @@ export default class PhotonRealtimeService {
   reconnect() {
     this.log(
       'info',
-      `RECONNECT: Starting photon reconnect | Current attempt: ${this.currentReconnecAttempt}`,
+      `RECONNECT: Starting photon reconnect | Current attempt: ${this.currentReconnectAttempt}`,
     );
 
     if (!this.roomId) {
@@ -531,12 +531,12 @@ export default class PhotonRealtimeService {
 
     if (newState === REALTIME_STATE.FAILED) {
       if (
-        this.currentReconnecAttempt >= MAX_REALTIME_LOBBY_RETRIES &&
+        this.currentReconnectAttempt >= MAX_REALTIME_LOBBY_RETRIES &&
         !this.shouldEnterRoomOnReconnect
       ) {
         this.log(
           'info',
-          `RECONNECT: Stopping reconnect to lobby after ${this.currentReconnecAttempt} attempts`,
+          `RECONNECT: Stopping reconnect to lobby after ${this.currentReconnectAttempt} attempts`,
         );
         return REALTIME_STATE.FAILED;
       }
