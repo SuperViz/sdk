@@ -3,6 +3,7 @@ import isEqual from 'lodash.isequal';
 
 import {
   DeviceEvent,
+  MeetingConnectionStatus,
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
@@ -63,6 +64,7 @@ class Communicator {
     this.videoManager.subscribeToUserJoined(this.onUserJoined);
     this.videoManager.subscribeToUserLeft(this.onUserLeft);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
+    this.videoManager.meetingConnectionObserver.subscribe(this.publishConnectionStatus);
 
     // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
@@ -103,6 +105,8 @@ class Communicator {
     this.videoManager.unsubscribeFromUserListUpdate(this.onUserListUpdate);
     this.videoManager.unsubscribeFromUserJoined(this.onUserJoined);
     this.videoManager.unsubscribeFromUserLeft(this.onUserLeft);
+    this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
+    this.videoManager.meetingConnectionObserver.unsubscribe(this.publishConnectionStatus);
 
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
@@ -234,6 +238,10 @@ class Communicator {
 
   private onMeetingStateUpdate = (newState: MeetingState) => {
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
+  };
+
+  private publishConnectionStatus = (newStatus: MeetingConnectionStatus): void => {
+    this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
 }
 
