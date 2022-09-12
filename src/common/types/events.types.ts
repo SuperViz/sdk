@@ -16,6 +16,7 @@ export enum MeetingEvent {
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_USERS = 'meeting.kick-all-users',
   MEETING_STATE_UPDATE = 'meeting.state-update',
+  MEETING_CONNECTION_STATUS_CHANGE = 'meeting.connection-status-change',
 
   MY_USER_UPDATED = 'my-user.update',
   MY_USER_LEFT = 'my-user.left',
@@ -41,9 +42,31 @@ export enum MeetingState {
   MEETING_READY_TO_JOIN = 2,
   MEETING_CONNECTING = 3,
   MEETING_CONNECTED = 4,
-  FRAME_INITIALIZING = 5,
-  FRAME_INITIALIZED = 6,
-  FRAME_UNINITIALIZED = 7,
+  MEETING_RECONNECT = 5,
+
+  FRAME_INITIALIZING = 6,
+  FRAME_INITIALIZED = 7,
+  FRAME_UNINITIALIZED = 8,
+}
+
+/**
+ * @enum { number }
+ * @description Defines the possible Meeting connection states
+ * @options
+ * * NOT_AVAILABLE: Audio/video service is disconnected;
+ * * GOOD: Good connection;
+ * * BAD: Bad connection. Turn off video is recommended;
+ * * POOR: Poor connection. User connection and/or PC not meet the minimum requirements;
+ * * DISCONNECTED: Audio/video is not able to send/receive network packets for at least 10 secs;
+ * * RECONNECTING: Reconnecting due to loss of connection.
+ */
+export enum MeetingConnectionStatus {
+  NOT_AVAILABLE = 0,
+  GOOD = 1,
+  BAD = 2,
+  POOR = 3,
+  DISCONNECTED = 4,
+  RECONNECTING = 5,
 }
 
 export enum DeviceEvent {

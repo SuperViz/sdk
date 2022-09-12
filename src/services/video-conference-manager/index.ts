@@ -3,6 +3,7 @@ import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immers
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
 import {
   DeviceEvent,
+  MeetingConnectionStatus,
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
@@ -25,6 +26,7 @@ export default class VideoConfereceManager {
   private sameAccountErrorObserver = new ObserverHelper({ logger });
   private devicesObserver = new ObserverHelper({ logger });
   public meetingStateObserver = new ObserverHelper({ logger });
+  public meetingConnectionObserver = new ObserverHelper({ logger });
 
   private userAmountUpdateObserver = new ObserverHelper({ logger });
   private userJoinedObserver = new ObserverHelper({ logger });
@@ -105,6 +107,10 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_USER_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
+    this.messageBridge.listen(
+      MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE,
+      this.onConnectionStatusChange,
+    );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
 
@@ -197,6 +203,10 @@ export default class VideoConfereceManager {
 
   private meetingStateUpdate = (newState: MeetingState): void => {
     this.meetingStateObserver.publish(newState);
+  };
+
+  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
+    this.meetingConnectionObserver.publish(newStatus);
   };
 
   public subscribeToFrameState = this.frameStateObserver.subscribe;

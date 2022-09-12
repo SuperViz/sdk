@@ -3,6 +3,7 @@ import {
   RealtimeEvent,
   DeviceEvent,
   MeetingState,
+  MeetingConnectionStatus,
 } from './common/types/events.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { User, UserGroup } from './common/types/user.types';
@@ -72,4 +73,5 @@ export {
   MeetingState,
   User,
   UserGroup,
+  MeetingConnectionStatus,
 };
