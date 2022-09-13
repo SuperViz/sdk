@@ -6,7 +6,7 @@ import debounce from 'lodash.debounce';
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
 
-const ABLY_KEY = 'n-qrHg.vpJN2w:aemdZyJl_SrSHhu1EY6ctDR0UWLoQdZdj8kY5xb8cpY';
+const ABLY_KEY = '';
 
 import Ably from 'ably';
 
