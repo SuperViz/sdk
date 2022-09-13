@@ -1,6 +1,4 @@
-import { RealtimeStateTypes } from '@superviz/immersive-core';
-
-import { User } from '../../../common/types/user.types';
+import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 
 export enum PHOTON_REGIONS {
   cn = 'cn',
@@ -52,16 +50,4 @@ export enum PHOTON_ERROR_TO_FAILED_REASONS {
   NameServerTimeout = PHOTON_FAILED_REASONS.LOBBY_SERVER_NOT_REACHEABLE,
   NameServerEncryptionEstablishError = PHOTON_FAILED_REASONS.LOBBY_SERVER_NOT_REACHEABLE,
   NameServerAuthenticationFailed = PHOTON_FAILED_REASONS.LOBBY_SERVER_NOT_REACHEABLE,
-}
-
-export interface ActorInfoType extends User {
-  userId: string;
-}
-
-export interface StartRealtimeType {
-  actorInfo: ActorInfoType;
-  roomId: string;
-  photonAppId: string;
-  apiKey: string;
-  shouldKickUsersOnHostLeave: boolean;
 }

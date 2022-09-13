@@ -1,5 +1,6 @@
 import { ObserverHelper, RealtimeStateTypes } from '@superviz/immersive-core';
 import debounce from 'lodash.debounce';
+import RealtimeService from '..';
 
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
@@ -10,8 +11,9 @@ import {
   PHOTON_STATE_TO_REALTIME_STATE,
   PHOTON_FAILED_REASONS,
   PHOTON_ERROR_TO_FAILED_REASONS,
-  StartRealtimeType,
 } from './types';
+
+import { StartRealtimeType } from './../types';
 
 const packageInfo = require('../../../../package.json');
 const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
@@ -20,9 +22,8 @@ const MAX_REALTIME_LOBBY_RETRIES = 3;
 const RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL = 5000;
 const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
-export default class PhotonRealtimeService {
+export default class PhotonRealtimeService extends RealtimeService {
   static LOGGER_PREFIX = 'PHOTON';
-
   Photon;
   client;
   state: RealtimeStateTypes = REALTIME_STATE.DISCONNECTED;
@@ -41,46 +42,10 @@ export default class PhotonRealtimeService {
   currentReconnectAttempt: number;
   oldSyncProperties: {} = {};
   region: PHOTON_REGIONS;
-  actorObservers: ObserverHelper[];
-  actorsObserver: ObserverHelper;
-  subscribeToActorsUpdate: Function;
-  unsubscribeFromActorsUpdate: Function;
-  actorJoinedObserver: ObserverHelper;
-  subscribeToActorJoined: Function;
-  unsubscribeFromActorJoined: Function;
-  actorLeaveObserver: ObserverHelper;
-  subscribeToActorLeave: Function;
-  unsubscribeFromActorLeave: Function;
-  joinRoomObserver: ObserverHelper;
-  subscribeToJoinRoom: Function;
-  unsubscribeFromJoinRoom: Function;
-  reconnectObserver: ObserverHelper;
-  subscribeToReconnectUpdate: Function;
-  unsubscribeFromReconnectUpdate: Function;
-  roomInfoUpdatedObserver: ObserverHelper;
-  subscribeToRoomInfoUpdated: Function;
-  unsubscribeFromRoomInfoUpdated: Function;
-  roomListUpdatedObserver: ObserverHelper;
-  subscribeToRoomListUpdated: Function;
-  unsubscribeFromRoomListUpdated: Function;
-  masterActorObserver: ObserverHelper;
-  subscribeToMasterActorUpdate: Function;
-  unsubscribeFromMasterActorUpdate: Function;
-  realtimeStateObserver: ObserverHelper;
-  subscribeToRealtimeState: Function;
-  unsubscribeFromRealtimeState: Function;
-  syncPropertiesObserver: ObserverHelper;
-  subscribeToSyncProperties: Function;
-  unsubscribeFromSyncProperties: Function;
-  waitForHostObserver: ObserverHelper;
-  subscribeToWaitForHost: Function;
-  unsubscribeFromWaitForHost: Function;
-  kickAllUsersObserver: ObserverHelper;
-  subscribeToKickAllUsers: Function;
-  unsubscribeFromKickAllUsers: Function;
-  authenticationObserver: ObserverHelper;
 
   constructor() {
+    super();
+    console.log('SUPER CALLED');
     // Actors observers helpers
     this.actorObservers = [];
 

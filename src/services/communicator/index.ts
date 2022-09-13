@@ -1,4 +1,5 @@
 import { ObserverHelper } from '@superviz/immersive-core';
+import { Realtime } from 'ably';
 import isEqual from 'lodash.isequal';
 
 import {
@@ -10,7 +11,8 @@ import {
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import RealtimeService from '../realtime';
-import PhotonRealtimeService from '../realtime/photon';
+import AblyRealtimeService from '../realtime/ably';
+
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
@@ -18,7 +20,7 @@ import { SuperVizSdk, CommunicatorType } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
-  private readonly realtime: PhotonRealtimeService;
+  private readonly realtime: RealtimeService;
 
   private debug: boolean = false;
   private language: string = 'en';
@@ -44,7 +46,7 @@ class Communicator {
     this.user = user;
     this.userGroup = userGroup;
 
-    this.realtime = RealtimeService.build();
+    this.realtime = new AblyRealtimeService();
 
     this.videoManager = new VideoConferencingManager({
       apiKey,
@@ -80,8 +82,8 @@ class Communicator {
         ...this.user,
       },
       roomId: this.roomId,
-      photonAppId,
       apiKey,
+      photonAppId,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
     });
   }
@@ -148,8 +150,11 @@ class Communicator {
   };
 
   private onSyncPropertiesDidChange = (properties) => {
+    console.log('onSyncPropertiesDidChange', properties);
     Object.entries(properties).forEach(([key, value]) => {
       this.publish(key, value);
+      console.log('publish', key);
+      console.log('publish', value);
     });
   };
 
@@ -173,6 +178,7 @@ class Communicator {
   };
 
   private onActorsListDidChange = (room) => {
+    console.warn('onActorsListDidChange', room);
     this.videoManager.actorsListDidChange(room._customProperties.slots);
     this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
   };
@@ -204,6 +210,7 @@ class Communicator {
 
   private onUserJoined = (user: User): void => {
     if (user.id === this.user.id) {
+      console.warn('[OUT]meeting state MY_USER_JOINED');
       this.publish(MeetingEvent.MY_USER_JOINED, user);
     }
 
@@ -237,6 +244,7 @@ class Communicator {
   };
 
   private onMeetingStateUpdate = (newState: MeetingState) => {
+    console.warn('[OUT]meeting state', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 
