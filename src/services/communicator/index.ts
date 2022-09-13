@@ -9,6 +9,7 @@ import {
   RealtimeEvent,
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
+import { ConnectionService } from '../connection-status';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
@@ -19,6 +20,7 @@ import { SuperVizSdk, CommunicatorType } from './types';
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
   private readonly realtime: PhotonRealtimeService;
+  private readonly connectionService: ConnectionService;
 
   private debug: boolean = false;
   private language: string = 'en';
@@ -53,6 +55,13 @@ class Communicator {
       roomId,
     });
 
+    this.connectionService = new ConnectionService();
+    this.connectionService.addListerners();
+
+    // Connection observers
+    this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
+
+    // Video observers
     this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
     this.videoManager.subscribeToRealtimeJoin(this.onRealtimeJoin);
     this.videoManager.subscribeToHostChange(this.onHostDidChange);
@@ -64,7 +73,9 @@ class Communicator {
     this.videoManager.subscribeToUserJoined(this.onUserJoined);
     this.videoManager.subscribeToUserLeft(this.onUserLeft);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
-    this.videoManager.meetingConnectionObserver.subscribe(this.publishConnectionStatus);
+    this.videoManager.meetingConnectionObserver.subscribe(
+      this.connectionService.updateMeetingConnectionStatus,
+    );
 
     // Realtime observers
     this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
@@ -106,7 +117,9 @@ class Communicator {
     this.videoManager.unsubscribeFromUserJoined(this.onUserJoined);
     this.videoManager.unsubscribeFromUserLeft(this.onUserLeft);
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
-    this.videoManager.meetingConnectionObserver.unsubscribe(this.publishConnectionStatus);
+    this.videoManager.meetingConnectionObserver.unsubscribe(
+      this.connectionService.updateMeetingConnectionStatus,
+    );
 
     this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
     this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
@@ -115,9 +128,12 @@ class Communicator {
     this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
 
+    this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
+
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
     this.videoManager.leave();
     this.realtime.leave();
+    this.connectionService.removeListeners();
   }
 
   public setSyncProperties = (name: string, property: any): void => {
@@ -240,7 +256,7 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 
-  private publishConnectionStatus = (newStatus: MeetingConnectionStatus): void => {
+  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
 }
