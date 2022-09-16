@@ -59,6 +59,7 @@ export enum MeetingState {
  * * POOR: Poor connection. User connection and/or PC not meet the minimum requirements;
  * * DISCONNECTED: Audio/video is not able to send/receive network packets for at least 10 secs;
  * * RECONNECTING: Reconnecting due to loss of connection.
+ * * LOST_CONNECTION: ...
  */
 export enum MeetingConnectionStatus {
   NOT_AVAILABLE = 0,
@@ -67,6 +68,7 @@ export enum MeetingConnectionStatus {
   POOR = 3,
   DISCONNECTED = 4,
   RECONNECTING = 5,
+  LOST_CONNECTION = 6,
 }
 
 export enum DeviceEvent {
