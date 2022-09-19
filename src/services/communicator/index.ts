@@ -136,7 +136,7 @@ class Communicator {
     this.connectionService.removeListeners();
   }
 
-  public setSyncProperties = (name: string, property: any): void => {
+  public setSyncProperties = <T>(name: string, property: T): void => {
     this.realtime.setSyncProperties({ [name]: property });
   };
 
