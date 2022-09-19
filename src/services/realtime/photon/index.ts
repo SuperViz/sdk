@@ -624,7 +624,7 @@ export default class PhotonRealtimeService {
     this.oldSyncProperties = { ...syncProperties };
   };
 
-  setSyncProperties = (properties) => {
+  setSyncProperties = <T>(properties: T): void => {
     const roomProperties = this.getRoomProperties;
     let { syncProperties } = roomProperties;
     syncProperties = {
