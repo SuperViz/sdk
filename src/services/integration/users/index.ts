@@ -16,7 +16,7 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
 
   /**
    * @function setUserList
-   * @description enable avatars in 3D space;
+   * @description add user list in 3D space
    * @param {UserOn3D[]} users
    * @returns {void}
    */
@@ -26,7 +26,7 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
 
   /**
    * @function setLocalUser
-   * @description enable avatars in 3D space;
+   * @description set current user
    * @param {UserOn3D} user
    * @returns {void}
    */
@@ -36,7 +36,7 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
 
   /**
    * @function createUserOn3D
-   * @description enable avatars in 3D space;
+   * @description Creates a user object with properties for 3D space
    * @param {User} user
    * @returns {UserOn3D}
    */

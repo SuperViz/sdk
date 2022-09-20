@@ -18,7 +18,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
     this.isAvatarsEnabled = isAvatarsEnabled ?? true;
     this.isPointersEnabled = isPointersEnabled ?? true;
 
-    // Users on 3D service
+    // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
 
     const user = this.IntegrationUsersService.createUserOn3D(localUser);
@@ -74,7 +74,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
 
   /**
    * @function addUser
-   * @description add new user in 3D space;
+   * @description add new user to list
    * @returns {void}
    */
   public addUser = (user: User): void => {
