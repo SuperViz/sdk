@@ -33,14 +33,7 @@ module.exports = {
       'error',
       {
         'newlines-between': 'always',
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          'parent',
-          'sibling',
-          'object',
-        ],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'object'],
         alphabetize: {
           order: 'asc',
           caseInsensitive: false,
@@ -63,14 +56,11 @@ module.exports = {
         ts: 'never',
       },
     ],
-    'lines-between-class-members': [
-      'error',
-      'always',
-      { exceptAfterSingleLine: true },
-    ],
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
     'prefer-object-spread': 'off',
     'no-underscore-dangle': 'off',
     'object-curly-newline': 'off',
     'operator-linebreak': 'off',
+    'no-use-before-define': 'off',
   },
 };
