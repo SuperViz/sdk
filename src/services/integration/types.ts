@@ -12,6 +12,8 @@ export interface DefaultIntegrationManager {
 export interface DefaultIntegrationManagerOptions {
   isAvatarsEnabled?: boolean;
   isPointersEnabled?: boolean;
-  userList: User[];
-  localUser: User;
+
+  // @TODO - ADD TYPE
+  userList: any;
+  localUser: any;
 }

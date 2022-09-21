@@ -10,6 +10,8 @@ import {
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { ConnectionService } from '../connection-status';
+import { IntegrationManager } from '../integration';
+import { UserOn3D } from '../integration/users/types';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
@@ -21,6 +23,8 @@ class Communicator {
   private readonly videoManager: VideoConferencingManager;
   private readonly realtime: PhotonRealtimeService;
   private readonly connectionService: ConnectionService;
+
+  private integrationManager: IntegrationManager | null = null;
 
   private debug: boolean = false;
   private language: string = 'en';
@@ -83,6 +87,8 @@ class Communicator {
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
     this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
     this.realtime.subscribeToKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.subscribeToActorJoined(this.onUserJoinedInRealtime);
+    this.realtime.subscribeToActorLeave(this.onUserLeaveInRealtime);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
@@ -95,6 +101,10 @@ class Communicator {
       apiKey,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
     });
+  }
+
+  private get isIntegrationManagerInitializated(): boolean {
+    return !!this.integrationManager;
   }
 
   public start() {
@@ -127,6 +137,8 @@ class Communicator {
     this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
     this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
+    this.realtime.unsubscribeFromActorJoined(this.onUserJoinedInRealtime);
+    this.realtime.unsubscribeFromActorLeave(this.onUserLeaveInRealtime);
 
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
@@ -205,6 +217,23 @@ class Communicator {
     this.videoManager.waitForHostDidChange(isWaiting);
   };
 
+  private onUserJoinedInRealtime = (actor): void => {
+    if (!this.isIntegrationManagerInitializated) return;
+
+    const { id, name } = actor;
+
+    this.integrationManager.addUser({
+      id,
+      name,
+    });
+  };
+
+  private onUserLeaveInRealtime = (actor): void => {
+    if (!this.isIntegrationManagerInitializated) return;
+
+    this.integrationManager.removeUser(actor.customProperties.id);
+  };
+
   private onSameAccountError = (error: string): void => {
     this.publish(MeetingEvent.MEETING_SAME_USER_ERROR, error);
     this.destroy();
@@ -259,6 +288,49 @@ class Communicator {
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
+
+  // Integrator methods
+
+  // @TODO - define props
+  // @TODO - returns 3D manager facade
+  public init3DAdapter(props: any): IntegrationManager {
+    if (this.isIntegrationManagerInitializated) {
+      throw new Error('is integration manager initializeted');
+    }
+
+    this.integrationManager = new IntegrationManager({
+      isAvatarsEnabled: true,
+      isPointersEnabled: true,
+      localUser: {
+        id: this.user.id,
+        name: this.user.name,
+        color: this.getUserColor(this.user.id),
+      },
+      userList: this.userList.map((user) => {
+        const { id, name }: User = user;
+        const color = this.getUserColor(id);
+
+        return {
+          id,
+          name,
+          color,
+        };
+      }),
+    });
+
+    return this.integrationManager;
+  }
+
+  public getUsersOn3D(): UserOn3D[] {
+    return this.integrationManager.users;
+  }
+
+  private getUserColor(userId) {
+    const slots = this.realtime?.room?._customProperties?.slots;
+    const { color } = slots.find((slot) => slot.userId === userId);
+
+    return color;
+  }
 }
 
 export default (params: CommunicatorType): SuperVizSdk => {
@@ -269,5 +341,8 @@ export default (params: CommunicatorType): SuperVizSdk => {
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
+
+    init3DAdapter: (props) => communicator.init3DAdapter(props),
+    getUsersOn3D: () => communicator.getUsersOn3D(),
   };
 };

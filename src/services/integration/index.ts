@@ -77,7 +77,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
    * @description add new user to list
    * @returns {void}
    */
-  public addUser = (user: User): void => {
+  public addUser = (user): void => {
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.setUserList([...this.users, userOn3D]);

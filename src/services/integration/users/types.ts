@@ -7,5 +7,7 @@ export interface DefaultUsersOn3DManager {
 
 // @TODO - Defines this
 export interface UserOn3D {
+  id: string;
+  name: string;
   color: string;
 }

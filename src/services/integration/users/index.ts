@@ -40,9 +40,9 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
    * @param {User} user
    * @returns {UserOn3D}
    */
-  public createUserOn3D = (user: User): UserOn3D => {
+  public createUserOn3D = (user): UserOn3D => {
     // @TODO - Create user with 3D properties
-    const userOn3D: UserOn3D = { ...user, color: 'yellow' };
+    const userOn3D: UserOn3D = { ...user };
 
     return userOn3D;
   };
@@ -53,5 +53,7 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
    * @param {string} userId
    * @returns {void}
    */
-  public removeUser = (userId: string): void => {};
+  public removeUser = (userId: string): void => {
+    this._users = this._users.filter((user) => user.id !== userId);
+  };
 }
