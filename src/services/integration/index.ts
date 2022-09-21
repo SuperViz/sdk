@@ -1,8 +1,6 @@
-import { User } from '../../common/types/user.types';
-
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
-import { UserOn3D } from './users/types';
+import { UserTo3D, UserOn3D } from './users/types';
 
 export class IntegrationManager implements DefaultIntegrationManager {
   isAvatarsEnabled: boolean;
@@ -75,9 +73,10 @@ export class IntegrationManager implements DefaultIntegrationManager {
   /**
    * @function addUser
    * @description add new user to list
+   * @param {UserTo3D}
    * @returns {void}
    */
-  public addUser = (user): void => {
+  public addUser = (user: UserTo3D): void => {
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.setUserList([...this.users, userOn3D]);

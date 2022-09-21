@@ -1,6 +1,4 @@
-import { User } from '../../../common/types/user.types';
-
-import { DefaultUsersOn3DManager, UserOn3D } from './types';
+import { DefaultUsersOn3DManager, UserOn3D, UserTo3D } from './types';
 
 export class IntegrationUsersManager implements DefaultUsersOn3DManager {
   private _user: UserOn3D;
@@ -37,12 +35,12 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
   /**
    * @function createUserOn3D
    * @description Creates a user object with properties for 3D space
-   * @param {User} user
+   * @param {UserTo3D} user
    * @returns {UserOn3D}
    */
-  public createUserOn3D = (user): UserOn3D => {
+  public createUserOn3D = (user: UserTo3D): UserOn3D => {
     // @TODO - Create user with 3D properties
-    const userOn3D: UserOn3D = { ...user };
+    const userOn3D: UserOn3D = { ...user, color: 'yellow' };
 
     return userOn3D;
   };

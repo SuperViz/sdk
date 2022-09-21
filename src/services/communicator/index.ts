@@ -220,7 +220,7 @@ class Communicator {
   private onUserJoinedInRealtime = (actor): void => {
     if (!this.isIntegrationManagerInitializated) return;
 
-    const { id, name } = actor;
+    const { id, name } = actor.customProperties;
 
     this.integrationManager.addUser({
       id,
@@ -304,16 +304,13 @@ class Communicator {
       localUser: {
         id: this.user.id,
         name: this.user.name,
-        color: this.getUserColor(this.user.id),
       },
       userList: this.userList.map((user) => {
         const { id, name }: User = user;
-        const color = this.getUserColor(id);
 
         return {
           id,
           name,
-          color,
         };
       }),
     });
@@ -323,13 +320,6 @@ class Communicator {
 
   public getUsersOn3D(): UserOn3D[] {
     return this.integrationManager.users;
-  }
-
-  private getUserColor(userId) {
-    const slots = this.realtime?.room?._customProperties?.slots;
-    const { color } = slots.find((slot) => slot.userId === userId);
-
-    return color;
   }
 }
 

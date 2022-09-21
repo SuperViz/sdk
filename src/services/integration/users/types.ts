@@ -6,8 +6,11 @@ export interface DefaultUsersOn3DManager {
 }
 
 // @TODO - Defines this
-export interface UserOn3D {
+export interface UserOn3D extends UserTo3D {
+  color: string;
+}
+
+export interface UserTo3D {
   id: string;
   name: string;
-  color: string;
 }
