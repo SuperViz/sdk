@@ -1,19 +1,19 @@
-import { User } from '../../common/types/user.types';
-
+import { BaseAdapterManager } from './base-adapter';
+import { DefaultAdapterOptions } from './base-adapter/types';
 import { IntegrationUsersManager } from './users';
+import { UserOn3D, UserTo3D } from './users/types';
 
 export interface DefaultIntegrationManager {
+  IntegrationUsersService: IntegrationUsersManager;
+  users: UserOn3D[];
+  localUser: UserOn3D;
+
+  BaseAdapterManager: BaseAdapterManager;
   isAvatarsEnabled: boolean;
   isPointersEnabled: boolean;
-  IntegrationUsersService: IntegrationUsersManager;
 }
 
-// constructor options
-export interface DefaultIntegrationManagerOptions {
-  isAvatarsEnabled?: boolean;
-  isPointersEnabled?: boolean;
-
-  // @TODO - ADD TYPE
-  userList: any;
-  localUser: any;
+export interface DefaultIntegrationManagerOptions extends DefaultAdapterOptions {
+  userList: UserTo3D[];
+  localUser: UserTo3D;
 }

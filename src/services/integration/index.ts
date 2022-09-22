@@ -1,21 +1,21 @@
+import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
 import { UserTo3D, UserOn3D } from './users/types';
 
 export class IntegrationManager implements DefaultIntegrationManager {
-  isAvatarsEnabled: boolean;
-  isPointersEnabled: boolean;
   IntegrationUsersService: IntegrationUsersManager;
+  BaseAdapterManager: BaseAdapterManager;
 
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
+    isFollowAvailable,
+    isGatherAvailable,
+    isGoToAvailable,
     localUser,
     userList,
   }: DefaultIntegrationManagerOptions) {
-    this.isAvatarsEnabled = isAvatarsEnabled ?? true;
-    this.isPointersEnabled = isPointersEnabled ?? true;
-
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
 
@@ -24,6 +24,21 @@ export class IntegrationManager implements DefaultIntegrationManager {
 
     this.IntegrationUsersService.setLocalUser(user);
     this.IntegrationUsersService.setUserList(userOn3DList);
+
+    // Adapter manager
+    const avatars = isAvatarsEnabled ?? true;
+    const pointers = isPointersEnabled ?? true;
+    const canUseFollow = isFollowAvailable ?? true;
+    const canUseGather = isGatherAvailable ?? true;
+    const canUseGoTo = isGoToAvailable ?? true;
+
+    this.BaseAdapterManager = new BaseAdapterManager({
+      isAvatarsEnabled: avatars,
+      isPointersEnabled: pointers,
+      isFollowAvailable: canUseFollow,
+      isGatherAvailable: canUseGather,
+      isGoToAvailable: canUseGoTo,
+    });
   }
 
   public get users(): UserOn3D[] {
@@ -34,13 +49,21 @@ export class IntegrationManager implements DefaultIntegrationManager {
     return this.IntegrationUsersService.user;
   }
 
+  public get isAvatarsEnabled(): boolean {
+    return this.BaseAdapterManager.isAvatarsEnabled;
+  }
+
+  public get isPointersEnabled(): boolean {
+    return this.BaseAdapterManager.isPointersEnabled;
+  }
+
   /**
    * @function enableAvatars
    * @description enable avatars in 3D space;
    * @returns {void}
    */
   public enableAvatars = (): void => {
-    this.isAvatarsEnabled = true;
+    this.BaseAdapterManager.enableAvatars();
   };
 
   /**
@@ -49,7 +72,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
    * @returns {void}
    */
   public disableAvatars = (): void => {
-    this.isAvatarsEnabled = false;
+    this.BaseAdapterManager.disableAvatars();
   };
 
   /**
@@ -58,7 +81,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
    * @returns {void}
    */
   public enablePointers = (): void => {
-    this.isPointersEnabled = true;
+    this.BaseAdapterManager.enablePointers();
   };
 
   /**
@@ -67,7 +90,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
    * @returns {void}
    */
   public disablePointers = (): void => {
-    this.isPointersEnabled = false;
+    this.BaseAdapterManager.disablePointers();
   };
 
   /**
