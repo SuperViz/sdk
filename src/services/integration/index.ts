@@ -15,6 +15,8 @@ export class IntegrationManager implements DefaultIntegrationManager {
     isGoToAvailable,
     localUser,
     userList,
+    instance,
+    adapter,
   }: DefaultIntegrationManagerOptions) {
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
@@ -38,6 +40,8 @@ export class IntegrationManager implements DefaultIntegrationManager {
       isFollowAvailable: canUseFollow,
       isGatherAvailable: canUseGather,
       isGoToAvailable: canUseGoTo,
+      instance,
+      adapter,
     });
   }
 

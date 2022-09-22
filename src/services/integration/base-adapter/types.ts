@@ -16,6 +16,10 @@ export interface DefaultAdapterOptions {
   isFollowAvailable?: boolean;
   isGatherAvailable?: boolean;
   isGoToAvailable?: boolean;
+
+  // Adapter settings
+  adapter: Adapter;
+  instance: Instance;
 }
 
 export interface AdapterMethods {
@@ -25,3 +29,10 @@ export interface AdapterMethods {
   disableAvatars: () => void;
   getUsersOn3D: () => UserOn3D[];
 }
+
+// @TODO - Whats is a adapter?
+// @NOTE - Add adapters to the type when they are developed.
+export type Adapter = any; // MatteportAdapter | ForgeAdapter | ThreeJsAdapter | IFCAdapter
+
+// @TODO - Whats is a instance?
+export type Instance = any;

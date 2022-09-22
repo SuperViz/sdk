@@ -1,13 +1,6 @@
-import { DefaultAdapterManager, DefaultAdapterOptions } from './types';
+import { DefaultAdapterManager, DefaultAdapterOptions, Adapter, Instance } from './types';
 
 export class BaseAdapterManager implements DefaultAdapterManager {
-  /**
-    the difference between avatars and pointers is that they can be
-    activated and deactivated during the meeting. But the 3D positioning
-    functions (Go To, Gather, Follow) must be configured in advance
-    to be available during the meeting
-  */
-
   private _isAvatarsEnabled: boolean;
   private _isPointersEnabled: boolean;
 
@@ -15,12 +8,17 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isGatherAvailable: boolean;
   private _isGoToAvailable: boolean;
 
+  private Adapter: Adapter;
+  private Instance: Instance;
+
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
     isFollowAvailable,
     isGatherAvailable,
     isGoToAvailable,
+    adapter,
+    instance,
   }: DefaultAdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
@@ -28,6 +26,9 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this._isFollowAvailable = isFollowAvailable;
     this._isGatherAvailable = isGatherAvailable;
     this._isGoToAvailable = isGoToAvailable;
+
+    this.Adapter = adapter;
+    this.Instance = instance;
   }
 
   public get isAvatarsEnabled(): boolean {
