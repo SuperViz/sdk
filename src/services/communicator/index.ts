@@ -11,18 +11,14 @@ import {
 import { User, UserGroup } from '../../common/types/user.types';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
+import { DefaultAdapterOptions, AdapterMethods } from '../integration/base-adapter/types';
 import { UserOn3D } from '../integration/users/types';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
-import {
-  SuperVizSdk,
-  CommunicatorOptions,
-  InitializeAdapterOptions,
-  AdapterMethods,
-} from './types';
+import { SuperVizSdk, CommunicatorOptions } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
@@ -295,17 +291,13 @@ class Communicator {
   };
 
   // Integrator methods
-  public init3DAdapter({
-    isAvatarsEnabled,
-    isPointersEnabled,
-  }: InitializeAdapterOptions): AdapterMethods {
+  public init3DAdapter(params: DefaultAdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
-      throw new Error('is integration manager initializeted');
+      throw new Error('the 3D adapter has already been started');
     }
 
     this.integrationManager = new IntegrationManager({
-      isAvatarsEnabled,
-      isPointersEnabled,
+      ...params,
       localUser: {
         id: this.user.id,
         name: this.user.name,
@@ -328,10 +320,6 @@ class Communicator {
       getUsersOn3D: () => this.integrationManager.users,
     };
   }
-
-  public getUsersOn3D(): UserOn3D[] {
-    return this.integrationManager.users;
-  }
 }
 
 export default (params: CommunicatorOptions): SuperVizSdk => {
@@ -344,6 +332,5 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     destroy: () => communicator.destroy(),
 
     init3DAdapter: (props) => communicator.init3DAdapter(props),
-    getUsersOn3D: () => communicator.getUsersOn3D(),
   };
 };

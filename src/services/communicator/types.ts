@@ -1,5 +1,5 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
-import { UserOn3D } from '../integration/users/types';
+import { AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
 
 export type Language = 'pt' | 'en' | 'zh';
 
@@ -15,19 +15,5 @@ export type SuperVizSdk = {
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
 
-  init3DAdapter: (props: any) => void;
-  getUsersOn3D: () => UserOn3D[];
+  init3DAdapter: (props: DefaultAdapterOptions) => AdapterMethods;
 };
-
-export interface InitializeAdapterOptions {
-  isAvatarsEnabled?: boolean;
-  isPointersEnabled?: boolean;
-}
-
-export interface AdapterMethods {
-  disablePointers: () => void;
-  enablePointers: () => void;
-  enableAvatars: () => void;
-  disableAvatars: () => void;
-  getUsersOn3D: () => UserOn3D[];
-}
