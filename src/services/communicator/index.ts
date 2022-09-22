@@ -17,7 +17,12 @@ import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorType } from './types';
+import {
+  SuperVizSdk,
+  CommunicatorOptions,
+  InitializeAdapterOptions,
+  AdapterMethods,
+} from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
@@ -43,7 +48,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-  }: CommunicatorType) {
+  }: CommunicatorOptions) {
     this.debug = debug;
     this.language = language;
     this.roomId = roomId;
@@ -290,17 +295,17 @@ class Communicator {
   };
 
   // Integrator methods
-
-  // @TODO - define props
-  // @TODO - returns 3D manager facade
-  public init3DAdapter(props: any): IntegrationManager {
+  public init3DAdapter({
+    isAvatarsEnabled,
+    isPointersEnabled,
+  }: InitializeAdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('is integration manager initializeted');
     }
 
     this.integrationManager = new IntegrationManager({
-      isAvatarsEnabled: true,
-      isPointersEnabled: true,
+      isAvatarsEnabled,
+      isPointersEnabled,
       localUser: {
         id: this.user.id,
         name: this.user.name,
@@ -315,7 +320,13 @@ class Communicator {
       }),
     });
 
-    return this.integrationManager;
+    return {
+      disablePointers: this.integrationManager.disablePointers,
+      enablePointers: this.integrationManager.enablePointers,
+      enableAvatars: this.integrationManager.enableAvatars,
+      disableAvatars: this.integrationManager.disableAvatars,
+      getUsersOn3D: () => this.integrationManager.users,
+    };
   }
 
   public getUsersOn3D(): UserOn3D[] {
@@ -323,7 +334,7 @@ class Communicator {
   }
 }
 
-export default (params: CommunicatorType): SuperVizSdk => {
+export default (params: CommunicatorOptions): SuperVizSdk => {
   const communicator = new Communicator(params);
 
   return {

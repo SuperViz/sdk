@@ -73,7 +73,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
   /**
    * @function addUser
    * @description add new user to list
-   * @param {UserTo3D}
+   * @param {UserTo3D} user
    * @returns {void}
    */
   public addUser = (user: UserTo3D): void => {
