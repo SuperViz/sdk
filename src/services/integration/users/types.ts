@@ -5,12 +5,18 @@ export interface DefaultUsersOn3DManager {
   users: UserOn3D[];
 }
 
-// @TODO - Defines this
 export interface UserOn3D extends UserTo3D {
   color: string;
+  position: UserPosition;
 }
 
 export interface UserTo3D {
   id: string;
   name: string;
 }
+
+export type UserPosition = {
+  x: number;
+  y: number;
+  z: number;
+};
