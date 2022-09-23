@@ -12,7 +12,6 @@ import { User, UserGroup } from '../../common/types/user.types';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { DefaultAdapterOptions, AdapterMethods } from '../integration/base-adapter/types';
-import { UserOn3D } from '../integration/users/types';
 import RealtimeService from '../realtime';
 import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
@@ -88,8 +87,6 @@ class Communicator {
     this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
     this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
     this.realtime.subscribeToKickAllUsers(this.onKickAllUsersDidChange);
-    this.realtime.subscribeToActorJoined(this.onUserJoinedInRealtime);
-    this.realtime.subscribeToActorLeave(this.onUserLeaveInRealtime);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
@@ -138,9 +135,6 @@ class Communicator {
     this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
     this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
-    this.realtime.unsubscribeFromActorJoined(this.onUserJoinedInRealtime);
-    this.realtime.unsubscribeFromActorLeave(this.onUserLeaveInRealtime);
-
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
@@ -229,12 +223,6 @@ class Communicator {
     });
   };
 
-  private onUserLeaveInRealtime = (actor): void => {
-    if (!this.isIntegrationManagerInitializated) return;
-
-    this.integrationManager.removeUser(actor.customProperties.id);
-  };
-
   private onSameAccountError = (error: string): void => {
     this.publish(MeetingEvent.MEETING_SAME_USER_ERROR, error);
     this.destroy();
@@ -291,13 +279,13 @@ class Communicator {
   };
 
   // Integrator methods
-  public init3DAdapter(params: DefaultAdapterOptions): AdapterMethods {
+  public init3DAdapter(adapterOptions: DefaultAdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
 
     this.integrationManager = new IntegrationManager({
-      ...params,
+      ...adapterOptions,
       localUser: {
         id: this.user.id,
         name: this.user.name,
@@ -310,6 +298,7 @@ class Communicator {
           name,
         };
       }),
+      RealtimeService: this.realtime,
     });
 
     return {

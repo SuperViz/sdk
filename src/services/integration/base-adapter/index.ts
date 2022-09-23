@@ -1,3 +1,5 @@
+import PhotonRealtimeService from '../../realtime/photon';
+
 import { DefaultAdapterManager, DefaultAdapterOptions, Adapter, Instance } from './types';
 
 export class BaseAdapterManager implements DefaultAdapterManager {
@@ -11,6 +13,8 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private Adapter: Adapter;
   private Instance: Instance;
 
+  private RealtimeService: PhotonRealtimeService;
+
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
@@ -19,6 +23,8 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     isGoToAvailable,
     adapter,
     instance,
+
+    RealtimeService,
   }: DefaultAdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
@@ -29,6 +35,8 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
     this.Adapter = adapter;
     this.Instance = instance;
+
+    this.RealtimeService = RealtimeService;
   }
 
   public get isAvatarsEnabled(): boolean {

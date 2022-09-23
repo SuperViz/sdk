@@ -1,3 +1,4 @@
+import PhotonRealtimeService from '../../realtime/photon';
 import { UserOn3D } from '../users/types';
 
 export interface DefaultAdapterManager {
@@ -20,6 +21,9 @@ export interface DefaultAdapterOptions {
   // Adapter settings
   adapter: Adapter;
   instance: Instance;
+
+  // @TODO - Add generic interface to Realtime
+  RealtimeService: PhotonRealtimeService;
 }
 
 export interface AdapterMethods {

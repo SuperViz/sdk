@@ -1,11 +1,14 @@
+import PhotonRealtimeService from '../realtime/photon';
+
 import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
 import { UserTo3D, UserOn3D } from './users/types';
 
 export class IntegrationManager implements DefaultIntegrationManager {
-  IntegrationUsersService: IntegrationUsersManager;
-  BaseAdapterManager: BaseAdapterManager;
+  private IntegrationUsersService: IntegrationUsersManager;
+  private BaseAdapterManager: BaseAdapterManager;
+  private RealtimeService: PhotonRealtimeService;
 
   constructor({
     isAvatarsEnabled,
@@ -13,10 +16,13 @@ export class IntegrationManager implements DefaultIntegrationManager {
     isFollowAvailable,
     isGatherAvailable,
     isGoToAvailable,
-    localUser,
-    userList,
     instance,
     adapter,
+
+    RealtimeService,
+
+    localUser,
+    userList,
   }: DefaultIntegrationManagerOptions) {
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
@@ -30,6 +36,7 @@ export class IntegrationManager implements DefaultIntegrationManager {
     // Adapter manager
     const avatars = isAvatarsEnabled ?? true;
     const pointers = isPointersEnabled ?? true;
+
     const canUseFollow = isFollowAvailable ?? true;
     const canUseGather = isGatherAvailable ?? true;
     const canUseGoTo = isGoToAvailable ?? true;
@@ -42,7 +49,13 @@ export class IntegrationManager implements DefaultIntegrationManager {
       isGoToAvailable: canUseGoTo,
       instance,
       adapter,
+      RealtimeService,
     });
+
+    this.RealtimeService = RealtimeService;
+
+    this.RealtimeService.subscribeToActorJoined(this.onActorJoined);
+    this.RealtimeService.subscribeToActorLeave(this.onActorLeave);
   }
 
   public get users(): UserOn3D[] {
@@ -117,5 +130,30 @@ export class IntegrationManager implements DefaultIntegrationManager {
    */
   public removeUser = (userId: string): void => {
     this.IntegrationUsersService.removeUser(userId);
+  };
+
+  /**
+   * @function onActorJoined
+   * @description add users as they enter the RealtimeService
+   * @param {} actor
+   * @returns {void}
+   */
+  private onActorJoined = (actor): void => {
+    const { id, name } = actor.customProperties;
+
+    this.addUser({
+      id,
+      name,
+    });
+  };
+
+  /**
+   * @function onActorLeave
+   * @description removes users as they leave the RealtimeService
+   * @param {} actor
+   * @returns {void}
+   */
+  private onActorLeave = (actor): void => {
+    this.removeUser(actor.customProperties.id);
   };
 }

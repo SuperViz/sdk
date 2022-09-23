@@ -4,11 +4,9 @@ import { IntegrationUsersManager } from './users';
 import { UserOn3D, UserTo3D } from './users/types';
 
 export interface DefaultIntegrationManager {
-  IntegrationUsersService: IntegrationUsersManager;
   users: UserOn3D[];
   localUser: UserOn3D;
 
-  BaseAdapterManager: BaseAdapterManager;
   isAvatarsEnabled: boolean;
   isPointersEnabled: boolean;
 }
