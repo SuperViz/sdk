@@ -212,17 +212,6 @@ class Communicator {
     this.videoManager.waitForHostDidChange(isWaiting);
   };
 
-  private onUserJoinedInRealtime = (actor): void => {
-    if (!this.isIntegrationManagerInitializated) return;
-
-    const { id, name } = actor.customProperties;
-
-    this.integrationManager.addUser({
-      id,
-      name,
-    });
-  };
-
   private onSameAccountError = (error: string): void => {
     this.publish(MeetingEvent.MEETING_SAME_USER_ERROR, error);
     this.destroy();
