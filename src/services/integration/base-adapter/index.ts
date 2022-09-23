@@ -13,7 +13,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private Adapter: Adapter;
   private Instance: Instance;
 
-  private RealtimeService: PhotonRealtimeService;
+  public RealtimeService: PhotonRealtimeService;
 
   constructor({
     isAvatarsEnabled,
