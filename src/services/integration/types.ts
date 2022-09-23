@@ -1,9 +1,7 @@
-import { BaseAdapterManager } from './base-adapter';
-import { DefaultAdapterOptions } from './base-adapter/types';
-import { IntegrationUsersManager } from './users';
+import { DefaultAdapterManager, DefaultAdapterOptions } from './base-adapter/types';
 import { UserOn3D, UserTo3D } from './users/types';
 
-export interface DefaultIntegrationManager {
+export interface DefaultIntegrationManager extends DefaultAdapterManager {
   users: UserOn3D[];
   localUser: UserOn3D;
 

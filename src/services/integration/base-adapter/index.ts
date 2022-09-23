@@ -1,4 +1,5 @@
 import PhotonRealtimeService from '../../realtime/photon';
+import { UserOn3D } from '../users/types';
 
 import { DefaultAdapterManager, DefaultAdapterOptions, Adapter, Instance } from './types';
 
@@ -75,6 +76,42 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public disableAvatars = (): void => {
     this._isAvatarsEnabled = false;
+  };
+
+  /**
+   * @function createAvatar
+   * @description create an avatar for the user in 3D space;
+   * @returns {void}
+   */
+  public createAvatar = (user: UserOn3D): void => {
+    console.log('CREATE AVATAR', user);
+  };
+
+  /**
+   * @function destroyAvatar
+   * @description destroys a user's avatar in 3D space;
+   * @returns {void}
+   */
+  public destroyAvatar = (userId: string): void => {
+    console.log('DESTROY AVATAR', userId);
+  };
+
+  /**
+   * @function createPointer
+   * @description create an pointer for the user in 3D space;
+   * @returns {void}
+   */
+  public createPointer = (user: UserOn3D): void => {
+    console.log('CREATE POINTER', user);
+  };
+
+  /**
+   * @function destroyPointer
+   * @description destroys a user's pointer in 3D space;
+   * @returns {void}
+   */
+  public destroyPointer = (userId: string): void => {
+    console.log('DESTROY POINTER', userId);
   };
 
   /**

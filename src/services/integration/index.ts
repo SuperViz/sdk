@@ -1,5 +1,3 @@
-import PhotonRealtimeService from '../realtime/photon';
-
 import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
@@ -72,6 +70,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.setUserList([...this.users, userOn3D]);
+
+    this.createAvatar(userOn3D);
+    this.createPointer(userOn3D);
   };
 
   /**
@@ -82,6 +83,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    */
   public removeUser = (userId: string): void => {
     this.IntegrationUsersService.removeUser(userId);
+
+    this.destroyAvatar(userId);
+    this.destroyPointer(userId);
   };
 
   /**
