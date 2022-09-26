@@ -34,9 +34,16 @@ export interface AdapterMethods {
   getUsersOn3D: () => UserOn3D[];
 }
 
-// @TODO - Whats is a adapter?
-// @NOTE - Add adapters to the type when they are developed.
-export type Adapter = any; // MatteportAdapter | ForgeAdapter | ThreeJsAdapter | IFCAdapter
+export enum Adapters {
+  MATTERPORT = 'MATTERPORT',
+  FORGE = 'FORGE',
+  THREEJS = 'THREEJS',
+}
 
-// @TODO - Whats is a instance?
+export type AdapterType = keyof typeof Adapters;
+
+// @NOTE - the instance type is unknown, the client can send anything.
 export type Instance = any;
+
+// @TODO - So far the adapter type is unknown, add to the type when ready.
+export type Adapter = any; // MatterportAdapter | ForgeAdapter | ThreeJsAdapter;

@@ -1,7 +1,7 @@
 import PhotonRealtimeService from '../../realtime/photon';
 import { UserOn3D } from '../users/types';
 
-import { DefaultAdapterManager, DefaultAdapterOptions, Adapter, Instance } from './types';
+import { DefaultAdapterManager, DefaultAdapterOptions, Adapter, Instance, Adapters } from './types';
 
 export class BaseAdapterManager implements DefaultAdapterManager {
   private _isAvatarsEnabled: boolean;
@@ -11,8 +11,8 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isGatherAvailable: boolean;
   private _isGoToAvailable: boolean;
 
-  private Adapter: Adapter;
-  private Instance: Instance;
+  private adapter: Adapter;
+  private instance: Instance;
 
   public RealtimeService: PhotonRealtimeService;
 
@@ -34,8 +34,10 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this._isGatherAvailable = isGatherAvailable;
     this._isGoToAvailable = isGoToAvailable;
 
-    this.Adapter = adapter;
-    this.Instance = instance;
+    this.adapter = adapter;
+    this.instance = instance;
+
+    this.validateAdapter();
 
     this.RealtimeService = RealtimeService;
   }
@@ -130,5 +132,18 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public disablePointers = (): void => {
     this._isPointersEnabled = false;
+  };
+
+  /**
+   * @function validateAdapter
+   * @description validates if the adapter is available in the adapters list
+   * @returns {void | Error}
+   */
+  private validateAdapter = (): void | Error => {
+    const adapters = Object.values(Adapters);
+
+    if (adapters.includes(this.adapter.type)) return;
+
+    throw new Error('Adapter not found');
   };
 }

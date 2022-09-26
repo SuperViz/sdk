@@ -12,7 +12,12 @@ import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import Communicator from './services/communicator';
 import { SuperVizSdk } from './services/communicator/types';
-import { AdapterMethods, DefaultAdapterOptions } from './services/integration/base-adapter/types';
+import {
+  AdapterMethods,
+  DefaultAdapterOptions,
+  AdapterType,
+} from './services/integration/base-adapter/types';
+import { MatterportMockAdapter } from './services/integration/matterport';
 import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
@@ -78,4 +83,6 @@ export {
   MeetingConnectionStatus,
   DefaultAdapterOptions,
   AdapterMethods,
+  AdapterType,
+  MatterportMockAdapter,
 };
