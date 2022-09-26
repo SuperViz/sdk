@@ -123,7 +123,7 @@ export default class AblyRealtimeService extends RealtimeService {
     // update myself
     this.updateMyProperties(actorInfo);
 
-    this.roomId = `${roomId.toLowerCase()}-${apiKey}`;
+    this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
     this.shouldKickUsersOnHostLeave = shouldKickUsersOnHostLeave;
 
     if (!this.client) {
