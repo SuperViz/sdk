@@ -278,21 +278,21 @@ class Communicator {
       localUser: {
         id: this.user.id,
         name: this.user.name,
+        avatarUrl: this.user.avatarUrl,
       },
       userList: this.userList.map((user) => {
-        const { id, name }: User = user;
+        const { id, name, avatarUrl }: User = user;
 
         return {
           id,
           name,
+          avatarUrl,
         };
       }),
       RealtimeService: this.realtime,
     });
 
     return {
-      disablePointers: this.integrationManager.disablePointers,
-      enablePointers: this.integrationManager.enablePointers,
       enableAvatars: this.integrationManager.enableAvatars,
       disableAvatars: this.integrationManager.disableAvatars,
       getUsersOn3D: () => this.integrationManager.users,

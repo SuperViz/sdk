@@ -12,7 +12,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     isFollowAvailable,
     isGatherAvailable,
     isGoToAvailable,
-    instance,
     adapter,
 
     RealtimeService,
@@ -30,7 +29,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
     super({
       adapter,
-      instance,
       RealtimeService,
       isAvatarsEnabled: avatars,
       isPointersEnabled: pointers,
@@ -71,21 +69,21 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
     this.IntegrationUsersService.setUserList([...this.users, userOn3D]);
 
-    this.createAvatar(userOn3D);
+    this.createAvatar(userOn3D, user.avatarUrl);
     this.createPointer(userOn3D);
   };
 
   /**
    * @function removeUser
    * @description remove user from list
-   * @param {string} userId
+   * @param {UserOn3D} user
    * @returns {void}
    */
-  public removeUser = (userId: string): void => {
-    this.IntegrationUsersService.removeUser(userId);
+  public removeUser = (user: UserOn3D): void => {
+    this.IntegrationUsersService.removeUser(user);
 
-    this.destroyAvatar(userId);
-    this.destroyPointer(userId);
+    this.destroyAvatar(user);
+    this.destroyPointer(user);
   };
 
   /**
@@ -95,11 +93,12 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorJoined = (actor): void => {
-    const { id, name } = actor.customProperties;
+    const { id, name, avatarUrl } = actor.customProperties;
 
     this.addUser({
       id,
       name,
+      avatarUrl,
     });
   };
 
@@ -110,6 +109,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorLeave = (actor): void => {
-    this.removeUser(actor.customProperties.id);
+    const user = this.users.find((user) => user.id === actor.customProperties.id);
+
+    this.removeUser(user);
   };
 }

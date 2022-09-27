@@ -38,11 +38,12 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
    * @param {UserTo3D} user
    * @returns {UserOn3D}
    */
-  public createUserOn3D = ({ id, name }: UserTo3D): UserOn3D => {
+  public createUserOn3D = ({ id, name, avatarUrl }: UserTo3D): UserOn3D => {
     // @TODO - get color from RealtimeService
     const userOn3D: UserOn3D = {
       id,
       name,
+      avatarUrl,
       color: 'yellow',
       position: {
         x: 0,
@@ -61,10 +62,10 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
   /**
    * @function removeUser
    * @description remove user from list
-   * @param {string} userId
+   * @param {UserOn3D} user
    * @returns {void}
    */
-  public removeUser = (userId: string): void => {
-    this._users = this._users.filter((user) => user.id !== userId);
+  public removeUser = (user: UserOn3D): void => {
+    this._users = this._users.filter((userOnlist) => userOnlist.id !== user.id);
   };
 }

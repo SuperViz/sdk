@@ -20,30 +20,23 @@ export interface DefaultAdapterOptions {
 
   // Adapter settings
   adapter: Adapter;
-  instance: Instance;
 
   // @TODO - Add generic interface to Realtime
   RealtimeService: PhotonRealtimeService;
 }
 
 export interface AdapterMethods {
-  disablePointers: () => void;
-  enablePointers: () => void;
   enableAvatars: () => void;
   disableAvatars: () => void;
   getUsersOn3D: () => UserOn3D[];
 }
 
-export enum Adapters {
-  MATTERPORT = 'MATTERPORT',
-  FORGE = 'FORGE',
-  THREEJS = 'THREEJS',
-}
+export type Adapter = {
+  createPointer: (user: UserOn3D) => void;
+  destroyPointer: (user: UserOn3D) => void;
 
-export type AdapterType = keyof typeof Adapters;
-
-// @NOTE - the instance type is unknown, the client can send anything.
-export type Instance = any;
-
-// @TODO - So far the adapter type is unknown, add to the type when ready.
-export type Adapter = any; // MatterportAdapter | ForgeAdapter | ThreeJsAdapter;
+  createAvatar: (user: UserOn3D, avatarUrl?: string) => void;
+  destroyAvatar: (user: UserOn3D) => void;
+  enableAvatars: () => void;
+  disableAvatars: () => void;
+};

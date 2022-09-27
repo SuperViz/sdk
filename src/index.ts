@@ -15,9 +15,9 @@ import { SuperVizSdk } from './services/communicator/types';
 import {
   AdapterMethods,
   DefaultAdapterOptions,
-  AdapterType,
+  Adapter,
 } from './services/integration/base-adapter/types';
-import { MatterportMockAdapter } from './services/integration/matterport';
+import { UserOn3D, UserTo3D } from './services/integration/users/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
@@ -83,6 +83,7 @@ export {
   MeetingConnectionStatus,
   DefaultAdapterOptions,
   AdapterMethods,
-  AdapterType,
-  MatterportMockAdapter,
+  Adapter,
+  UserOn3D,
+  UserTo3D,
 };

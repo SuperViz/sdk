@@ -1,7 +1,7 @@
 import PhotonRealtimeService from '../../realtime/photon';
 import { UserOn3D } from '../users/types';
 
-import { DefaultAdapterManager, DefaultAdapterOptions, Adapter, Instance, Adapters } from './types';
+import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
 
 export class BaseAdapterManager implements DefaultAdapterManager {
   private _isAvatarsEnabled: boolean;
@@ -11,8 +11,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isGatherAvailable: boolean;
   private _isGoToAvailable: boolean;
 
-  private adapter: Adapter;
-  private instance: Instance;
+  public adapter: Adapter;
 
   public RealtimeService: PhotonRealtimeService;
 
@@ -23,8 +22,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     isGatherAvailable,
     isGoToAvailable,
     adapter,
-    instance,
-
     RealtimeService,
   }: DefaultAdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
@@ -35,10 +32,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this._isGoToAvailable = isGoToAvailable;
 
     this.adapter = adapter;
-    this.instance = instance;
-
-    this.validateAdapter();
-
     this.RealtimeService = RealtimeService;
   }
 
@@ -69,6 +62,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public enableAvatars = (): void => {
     this._isAvatarsEnabled = true;
+    this.adapter.enableAvatars();
   };
 
   /**
@@ -78,72 +72,47 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public disableAvatars = (): void => {
     this._isAvatarsEnabled = false;
+    this.adapter.disableAvatars();
   };
 
   /**
    * @function createAvatar
    * @description create an avatar for the user in 3D space;
+   * @param {UserOn3D} user;
+   * @param {string} avatarUrl
    * @returns {void}
    */
-  public createAvatar = (user: UserOn3D): void => {
-    console.log('CREATE AVATAR', user);
+  public createAvatar = (user: UserOn3D, avatarUrl?: string): void => {
+    this.adapter.createAvatar(user, avatarUrl);
   };
 
   /**
    * @function destroyAvatar
    * @description destroys a user's avatar in 3D space;
+   * @param {UserOn3D} user
    * @returns {void}
    */
-  public destroyAvatar = (userId: string): void => {
-    console.log('DESTROY AVATAR', userId);
+  public destroyAvatar = (user: UserOn3D): void => {
+    this.adapter.destroyAvatar(user);
   };
 
   /**
    * @function createPointer
    * @description create an pointer for the user in 3D space;
+   * @param {UserOn3D} user
    * @returns {void}
    */
   public createPointer = (user: UserOn3D): void => {
-    console.log('CREATE POINTER', user);
+    this.adapter.createPointer(user);
   };
 
   /**
    * @function destroyPointer
    * @description destroys a user's pointer in 3D space;
+   * @param {UserOn3D} user
    * @returns {void}
    */
-  public destroyPointer = (userId: string): void => {
-    console.log('DESTROY POINTER', userId);
-  };
-
-  /**
-   * @function enablePointers
-   * @description enable pointers in 3D space;
-   * @returns {void}
-   */
-  public enablePointers = (): void => {
-    this._isPointersEnabled = true;
-  };
-
-  /**
-   * @function disablePointers
-   * @description disable pointers in 3D space;
-   * @returns {void}
-   */
-  public disablePointers = (): void => {
-    this._isPointersEnabled = false;
-  };
-
-  /**
-   * @function validateAdapter
-   * @description validates if the adapter is available in the adapters list
-   * @returns {void | Error}
-   */
-  private validateAdapter = (): void | Error => {
-    const adapters = Object.values(Adapters);
-
-    if (adapters.includes(this.adapter.type)) return;
-
-    throw new Error('Adapter not found');
+  public destroyPointer = (user: UserOn3D): void => {
+    this.adapter.destroyAvatar(user);
   };
 }
