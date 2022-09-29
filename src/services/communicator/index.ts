@@ -11,17 +11,21 @@ import {
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { ConnectionService } from '../connection-status';
+import { IntegrationManager } from '../integration';
+import { DefaultAdapterOptions, AdapterMethods } from '../integration/base-adapter/types';
 import RealtimeService from '../realtime';
 import AblyRealtimeService from '../realtime/ably';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorType } from './types';
+import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
   private readonly realtime: RealtimeService;
   private readonly connectionService: ConnectionService;
+
+  private integrationManager: IntegrationManager | null = null;
 
   private debug: boolean = false;
   private language: string = 'en';
@@ -40,7 +44,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-  }: CommunicatorType) {
+  }: CommunicatorOptions) {
     this.debug = debug;
     this.language = language;
     this.roomId = roomId;
@@ -98,6 +102,10 @@ class Communicator {
     });
   }
 
+  private get isIntegrationManagerInitializated(): boolean {
+    return !!this.integrationManager;
+  }
+
   public start() {
     this.videoManager.start({
       roomId: this.roomId,
@@ -128,7 +136,6 @@ class Communicator {
     this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
     this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
-
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
@@ -266,9 +273,41 @@ class Communicator {
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
+
+  // Integrator methods
+  public init3DAdapter(adapterOptions: AdapterOptions): AdapterMethods {
+    if (this.isIntegrationManagerInitializated) {
+      throw new Error('the 3D adapter has already been started');
+    }
+
+    this.integrationManager = new IntegrationManager({
+      ...adapterOptions,
+      localUser: {
+        id: this.user.id,
+        name: this.user.name,
+        avatarUrl: this.user.avatarUrl,
+      },
+      userList: this.userList.map((user) => {
+        const { id, name, avatarUrl }: User = user;
+
+        return {
+          id,
+          name,
+          avatarUrl,
+        };
+      }),
+      RealtimeService: this.realtime,
+    });
+
+    return {
+      enableAvatars: this.integrationManager.enableAvatars,
+      disableAvatars: this.integrationManager.disableAvatars,
+      getUsersOn3D: () => this.integrationManager.users,
+    };
+  }
 }
 
-export default (params: CommunicatorType): SuperVizSdk => {
+export default (params: CommunicatorOptions): SuperVizSdk => {
   const communicator = new Communicator(params);
 
   return {
@@ -276,5 +315,7 @@ export default (params: CommunicatorType): SuperVizSdk => {
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
+
+    init3DAdapter: (props) => communicator.init3DAdapter(props),
   };
 };
