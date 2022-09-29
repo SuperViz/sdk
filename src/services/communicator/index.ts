@@ -17,7 +17,7 @@ import PhotonRealtimeService from '../realtime/photon';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorOptions } from './types';
+import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
@@ -268,7 +268,7 @@ class Communicator {
   };
 
   // Integrator methods
-  public init3DAdapter(adapterOptions: DefaultAdapterOptions): AdapterMethods {
+  public init3DAdapter(adapterOptions: AdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }

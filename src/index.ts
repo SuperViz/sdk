@@ -11,12 +11,8 @@ import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import Communicator from './services/communicator';
-import { SuperVizSdk } from './services/communicator/types';
-import {
-  AdapterMethods,
-  DefaultAdapterOptions,
-  Adapter,
-} from './services/integration/base-adapter/types';
+import { SuperVizSdk, AdapterOptions } from './services/communicator/types';
+import { AdapterMethods, Adapter } from './services/integration/base-adapter/types';
 import { UserOn3D, UserTo3D } from './services/integration/users/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
@@ -81,8 +77,8 @@ export {
   User,
   UserGroup,
   MeetingConnectionStatus,
-  DefaultAdapterOptions,
   AdapterMethods,
+  AdapterOptions,
   Adapter,
   UserOn3D,
   UserTo3D,

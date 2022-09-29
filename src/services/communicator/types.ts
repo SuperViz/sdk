@@ -9,6 +9,8 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
   photonAppId: string;
 }
 
+export interface AdapterOptions extends Omit<DefaultAdapterOptions, 'RealtimeService'> {}
+
 export type SuperVizSdk = {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
