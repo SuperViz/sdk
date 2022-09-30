@@ -63,5 +63,6 @@ module.exports = {
     'operator-linebreak': 'off',
     'no-use-before-define': 'off',
     'arrow-body-style': 'off',
+    'no-plusplus': 'off',
   },
 };
