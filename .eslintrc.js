@@ -62,5 +62,6 @@ module.exports = {
     'object-curly-newline': 'off',
     'operator-linebreak': 'off',
     'no-use-before-define': 'off',
+    'arrow-body-style': 'off',
   },
 };
