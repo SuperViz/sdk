@@ -1,6 +1,4 @@
 import { User } from '../../common/types/user.types';
-import AblyRealtimeService from './ably';
-import PhotonRealtimeService from './photon';
 
 export interface ActorInfoType extends User {
   userId: string;

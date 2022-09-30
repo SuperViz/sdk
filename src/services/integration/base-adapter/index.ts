@@ -1,4 +1,4 @@
-import PhotonRealtimeService from '../../realtime/photon';
+import { RealtimeService } from '../../realtime/base';
 import { UserOn3D } from '../users/types';
 
 import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
@@ -13,7 +13,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
   public adapter: Adapter;
 
-  public RealtimeService: PhotonRealtimeService;
+  public RealtimeService: RealtimeService;
 
   constructor({
     isAvatarsEnabled,

@@ -1,38 +1,27 @@
 import { ObserverHelper } from '@superviz/immersive-core';
-import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-
-import debounce from 'lodash.debounce';
-
-import { MeetingColors } from '../../../common/types/meeting-colors.types';
-import { logger } from '../../../common/utils';
-
-const ABLY_KEY = '';
-
 import Ably from 'ably';
 
+import { MeetingColors } from '../../../common/types/meeting-colors.types';
+import { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { logger } from '../../../common/utils';
+import { RealtimeService } from '../base';
+import { StartRealtimeType } from '../types';
+
 import {
-  REALTIME_STATE,
   ABLY_CHANNEL_STATE_TO_REALTIME_STATE,
   ABLY_CONNECTION_STATE_TO_REALTIME_STATE,
+  AblyRealtime,
 } from './types';
 
-import { StartRealtimeType } from './../types';
-
-import { update } from 'lodash';
-import RealtimeService from '..';
-
-const packageInfo = require('../../../../package.json');
-
-const MAX_REALTIME_LOBBY_RETRIES = 3;
-const RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL = 5000;
+const ABLY_KEY = '';
 const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
 
-export default class AblyRealtimeService extends RealtimeService {
+export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   static LOGGER_PREFIX = 'ABLY';
 
   client;
-  state: RealtimeStateTypes = REALTIME_STATE.DISCONNECTED;
+  state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   ablyError? = null;
   previousState = null;
   actors: { [id: string]: Ably.Types.PresenceMessage };
@@ -55,58 +44,6 @@ export default class AblyRealtimeService extends RealtimeService {
 
   constructor() {
     super();
-    // Actors observers helpers
-    this.actorObservers = [];
-
-    this.actorsObserver = new ObserverHelper({ logger });
-    this.subscribeToActorsUpdate = this.actorsObserver.subscribe;
-    this.unsubscribeFromActorsUpdate = this.actorsObserver.unsubscribe;
-
-    this.actorJoinedObserver = new ObserverHelper({ logger });
-    this.subscribeToActorJoined = this.actorJoinedObserver.subscribe;
-    this.unsubscribeFromActorJoined = this.actorJoinedObserver.unsubscribe;
-
-    this.actorLeaveObserver = new ObserverHelper({ logger });
-    this.subscribeToActorLeave = this.actorLeaveObserver.subscribe;
-    this.unsubscribeFromActorLeave = this.actorLeaveObserver.unsubscribe;
-
-    this.joinRoomObserver = new ObserverHelper({ logger });
-    this.subscribeToJoinRoom = this.joinRoomObserver.subscribe;
-    this.unsubscribeFromJoinRoom = this.joinRoomObserver.unsubscribe;
-
-    this.syncPropertiesObserver = new ObserverHelper({ logger });
-    this.subscribeToSyncProperties = this.syncPropertiesObserver.subscribe;
-    this.unsubscribeFromSyncProperties = this.syncPropertiesObserver.unsubscribe;
-
-    this.reconnectObserver = new ObserverHelper({ logger });
-    this.subscribeToReconnectUpdate = this.reconnectObserver.subscribe;
-    this.unsubscribeFromReconnectUpdate = this.reconnectObserver.unsubscribe;
-
-    // Room info obervers helpers
-    this.roomInfoUpdatedObserver = new ObserverHelper({ logger });
-    this.subscribeToRoomInfoUpdated = this.roomInfoUpdatedObserver.subscribe;
-    this.unsubscribeFromRoomInfoUpdated = this.roomInfoUpdatedObserver.unsubscribe;
-
-    this.roomListUpdatedObserver = new ObserverHelper({ logger });
-    this.subscribeToRoomListUpdated = this.roomListUpdatedObserver.subscribe;
-    this.unsubscribeFromRoomListUpdated = this.roomListUpdatedObserver.unsubscribe;
-
-    this.masterActorObserver = new ObserverHelper({ logger });
-    this.subscribeToMasterActorUpdate = this.masterActorObserver.subscribe;
-    this.unsubscribeFromMasterActorUpdate = this.masterActorObserver.unsubscribe;
-
-    this.realtimeStateObserver = new ObserverHelper({ logger });
-    this.subscribeToRealtimeState = this.realtimeStateObserver.subscribe;
-    this.unsubscribeFromRealtimeState = this.realtimeStateObserver.unsubscribe;
-
-    this.waitForHostObserver = new ObserverHelper({ logger });
-    this.subscribeToWaitForHost = this.waitForHostObserver.subscribe;
-    this.unsubscribeFromWaitForHost = this.waitForHostObserver.unsubscribe;
-
-    this.kickAllUsersObserver = new ObserverHelper({ logger });
-    this.subscribeToKickAllUsers = this.kickAllUsersObserver.subscribe;
-    this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
-    this.authenticationObserver = new ObserverHelper({ logger });
 
     // bind ably callbacks
     this.onAblyPresenceEnter = this.onAblyPresenceEnter.bind(this);
@@ -116,7 +53,7 @@ export default class AblyRealtimeService extends RealtimeService {
     this.onAblySyncChannelUpdate = this.onAblySyncChannelUpdate.bind(this);
   }
 
-  start({ actorInfo, roomId, apiKey, shouldKickUsersOnHostLeave }: StartRealtimeType): void {
+  public start({ actorInfo, roomId, apiKey, shouldKickUsersOnHostLeave }: StartRealtimeType): void {
     // @TODO - Implement this
     this.enableSync = true;
 
@@ -134,7 +71,7 @@ export default class AblyRealtimeService extends RealtimeService {
   auth(apiKey: string): void {}
 
   onAblyPresenceEnter(member) {
-    let actor = { ...member };
+    const actor = { ...member };
     if (member.clientId === this.myActorProperties.userId) {
       this.onJoinRoom(actor);
     } else {
@@ -144,6 +81,7 @@ export default class AblyRealtimeService extends RealtimeService {
 
   onAblyPresenceUpdate(member) {
     const userId = member.clientId;
+
     member.customProperties = member.data; // force photon architecture
     this.actors[userId] = member;
 
@@ -158,9 +96,9 @@ export default class AblyRealtimeService extends RealtimeService {
   }
 
   onAblySyncChannelUpdate(message) {
-    const name = message.name;
-    var key = name;
-    var property = {};
+    const { name } = message;
+    const key = name;
+    const property = {};
     property[key] = message.data;
     this.syncPropertiesObserver.publish(property);
   }
@@ -187,7 +125,7 @@ export default class AblyRealtimeService extends RealtimeService {
     // join custom sync channel
     this.roomSyncChannel = this.client.channels.get(`${this.roomId}:sync`);
     this.roomSyncChannel.subscribe(this.onAblySyncChannelUpdate);
-    //this.roomSyncChannel.on(this.onStateChange); // maybe not necessary?
+    // this.roomSyncChannel.on(this.onStateChange); // maybe not necessary?
 
     // join main room channel
     this.roomChannel = this.client.channels.get(this.roomId);
@@ -230,7 +168,7 @@ export default class AblyRealtimeService extends RealtimeService {
     Object.values(roomActors).forEach((actor) => {
       currentConnectionIds.push(actor.connectionId);
     });
-    const slots = roomProperties.slots;
+    const { slots } = roomProperties;
     slots.forEach((slot) => {
       if (slot) {
         if (!currentConnectionIds.includes(slot.connectionId)) {
@@ -311,7 +249,7 @@ export default class AblyRealtimeService extends RealtimeService {
       return;
     }
     const actor = this.actors[actorUserId];
-    const connectionId = actor.connectionId;
+    const { connectionId } = actor;
     this.updateRoomProperties({ hostConnectionId: connectionId });
   }
 
@@ -355,7 +293,7 @@ export default class AblyRealtimeService extends RealtimeService {
       this.throw('error', 'Tried to call buildClient@Ably is already initialized');
     }
 
-    let options: Ably.Types.ClientOptions = {
+    const options: Ably.Types.ClientOptions = {
       key: ABLY_KEY,
       disconnectedRetryTimeout: 5000,
       suspendedRetryTimeout: 5000,
@@ -505,7 +443,7 @@ export default class AblyRealtimeService extends RealtimeService {
       this.throw('error', 'Tried to reconnect without roomId set');
     }
 
-    if (this.state === REALTIME_STATE.READY_TO_JOIN) {
+    if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
       this.log('info', 'RECONNECT: Rejoining room since client aready connected to ably servers.');
       this.join(this.myActorProperties);
       return;
@@ -602,7 +540,7 @@ export default class AblyRealtimeService extends RealtimeService {
       Object.values(properties)[0],
       (err) => {
         if (err) {
-          console.log('publish failed with error ' + err);
+          console.log(`publish failed with error ${err}`);
         } else {
           console.log('publish succeeded');
         }
@@ -647,9 +585,9 @@ export default class AblyRealtimeService extends RealtimeService {
   }
 
   hostPassingHandle() {
-    let slotList = this.localRoomProperties.slots.filter((slot) => !!slot);
+    const slotList = this.localRoomProperties.slots.filter((slot) => !!slot);
 
-    var oldestSlot = slotList
+    const oldestSlot = slotList
       .sort((a?: number, b?: number) => {
         const timestampA = slotList[a]?.timestamp ? slotList[a]?.timestamp : 9999999999;
         const timestampB = slotList[b]?.timestamp ? slotList[b]?.timestamp : 9999999999;
@@ -663,9 +601,7 @@ export default class AblyRealtimeService extends RealtimeService {
     this.roomChannel.presence.get((err, members) => {
       const membersListCopy = members.filter(() => true);
       const hostCandidatesNr = membersListCopy
-        .filter((member) => {
-          return member.data.isHostCandidate;
-        })
+        .filter((member) => member.data.isHostCandidate)
         .map((member) => member.connectionId);
       if (this.shouldKickUsersOnHostLeave && !hostCandidatesNr.length) {
         KICK_USERS_TIMEOUT = setTimeout(() => {
@@ -688,11 +624,11 @@ export default class AblyRealtimeService extends RealtimeService {
 
   onStateChange = (state) => {
     const stateName = state.current;
-    let newState =
-      ABLY_CONNECTION_STATE_TO_REALTIME_STATE[stateName as keyof typeof REALTIME_STATE] ||
-      ABLY_CHANNEL_STATE_TO_REALTIME_STATE[stateName as keyof typeof REALTIME_STATE];
+    const newState =
+      ABLY_CONNECTION_STATE_TO_REALTIME_STATE[stateName as keyof typeof RealtimeStateTypes] ||
+      ABLY_CHANNEL_STATE_TO_REALTIME_STATE[stateName as keyof typeof RealtimeStateTypes];
 
-    if (newState === REALTIME_STATE.READY_TO_JOIN) {
+    if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.hadJoinedLobbyAtLeastOnce = true;
       this.currentReconnecAttempt = 0;
     }
@@ -701,12 +637,12 @@ export default class AblyRealtimeService extends RealtimeService {
       this.onJoinRoom(this.getMyActor);
     }
 
-    if (this.state === REALTIME_STATE.RETRYING) {
+    if (this.state === RealtimeStateTypes.RETRYING) {
       // rejoin room
       this.forceReconnect();
     }
 
-    if (newState === REALTIME_STATE.FAILED) {
+    if (newState === RealtimeStateTypes.FAILED) {
       this.forceReconnect();
       return;
     }
@@ -714,7 +650,7 @@ export default class AblyRealtimeService extends RealtimeService {
     if (state.retryIn) {
       this.currentReconnecAttempt++;
       this.isReconnecting = true;
-      this.publishStateUpdate(REALTIME_STATE.RETRYING);
+      this.publishStateUpdate(RealtimeStateTypes.RETRYING);
       this.reconnectObserver.publish(this.currentReconnecAttempt);
     }
 
@@ -753,7 +689,7 @@ export default class AblyRealtimeService extends RealtimeService {
     this.isReconnecting = false;
     this.joinRoomObserver.publish(this.roomChannel);
 
-    this.publishStateUpdate(REALTIME_STATE.CONNECTED);
+    this.publishStateUpdate(RealtimeStateTypes.CONNECTED);
     this.validateRoomProperties();
     this.log('info', 'Joined realtime room');
 
@@ -785,7 +721,7 @@ export default class AblyRealtimeService extends RealtimeService {
     actor.customProperties = actor.data; // PHOTON ARCHITECTURE
     actor.userId = actor.clientId; // PHOTON ARCHITECTURE
 
-    if (this.state === REALTIME_STATE.READY_TO_JOIN || actor.connectionId === -1) {
+    if (this.state === RealtimeStateTypes.READY_TO_JOIN || actor.connectionId === -1) {
       return;
     }
     await this.updateActors();
@@ -816,19 +752,15 @@ export default class AblyRealtimeService extends RealtimeService {
 
   // getters
   get isJoinedRoom() {
-    // @Todo: set in immersive-core the new state 5
-    // @ts-ignore
-    // eslint-disable-next-line eqeqeq
-    return this.state === REALTIME_STATE.JOINED;
+    return this.state === RealtimeStateTypes.JOINED;
   }
 
   get isConnected() {
-    // TODO set CONNECTED OR JOINED (5)
-    return this.state === REALTIME_STATE.JOINED || REALTIME_STATE.CONNECTED;
+    return this.state === RealtimeStateTypes.JOINED || RealtimeStateTypes.CONNECTED;
   }
 
   get canJoinRoom() {
-    return this.state === REALTIME_STATE.READY_TO_JOIN;
+    return this.state === RealtimeStateTypes.READY_TO_JOIN;
   }
 
   get getMyActor() {

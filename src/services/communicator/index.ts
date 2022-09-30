@@ -1,5 +1,4 @@
 import { ObserverHelper } from '@superviz/immersive-core';
-import { Realtime } from 'ably';
 import isEqual from 'lodash.isequal';
 
 import {
@@ -10,11 +9,12 @@ import {
   RealtimeEvent,
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
+import { logger } from '../../common/utils';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
-import { DefaultAdapterOptions, AdapterMethods } from '../integration/base-adapter/types';
-import RealtimeService from '../realtime';
-import AblyRealtimeService from '../realtime/ably';
+import { AdapterMethods } from '../integration/base-adapter/types';
+import { AblyRealtimeService } from '../realtime';
+import { DefaultRealtimeService } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
@@ -22,7 +22,7 @@ import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
-  private readonly realtime: RealtimeService;
+  private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
 
   private integrationManager: IntegrationManager | null = null;
@@ -266,7 +266,7 @@ class Communicator {
   };
 
   private onMeetingStateUpdate = (newState: MeetingState) => {
-    console.warn('[OUT]meeting state', newState);
+    logger.log('MEETING STATE', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 

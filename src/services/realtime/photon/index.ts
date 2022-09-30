@@ -1,9 +1,11 @@
-import { ObserverHelper, RealtimeStateTypes } from '@superviz/immersive-core';
+import { ObserverHelper } from '@superviz/immersive-core';
 import debounce from 'lodash.debounce';
-import RealtimeService from '..';
 
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
+import type { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
+import { RealtimeService } from '../base';
+import type { StartRealtimeType } from '../types';
 
 import {
   PHOTON_REGIONS,
@@ -12,8 +14,6 @@ import {
   PHOTON_FAILED_REASONS,
   PHOTON_ERROR_TO_FAILED_REASONS,
 } from './types';
-
-import { StartRealtimeType } from './../types';
 
 const packageInfo = require('../../../../package.json');
 const { Photon } = require('../../../vendor/photon/Photon-Javascript_SDK');
@@ -42,63 +42,6 @@ export default class PhotonRealtimeService extends RealtimeService {
   currentReconnectAttempt: number;
   oldSyncProperties: {} = {};
   region: PHOTON_REGIONS;
-
-  constructor() {
-    super();
-    console.log('SUPER CALLED');
-    // Actors observers helpers
-    this.actorObservers = [];
-
-    this.actorsObserver = new ObserverHelper({ logger });
-    this.subscribeToActorsUpdate = this.actorsObserver.subscribe;
-    this.unsubscribeFromActorsUpdate = this.actorsObserver.unsubscribe;
-
-    this.actorJoinedObserver = new ObserverHelper({ logger });
-    this.subscribeToActorJoined = this.actorJoinedObserver.subscribe;
-    this.unsubscribeFromActorJoined = this.actorJoinedObserver.unsubscribe;
-
-    this.actorLeaveObserver = new ObserverHelper({ logger });
-    this.subscribeToActorLeave = this.actorLeaveObserver.subscribe;
-    this.unsubscribeFromActorLeave = this.actorLeaveObserver.unsubscribe;
-
-    this.joinRoomObserver = new ObserverHelper({ logger });
-    this.subscribeToJoinRoom = this.joinRoomObserver.subscribe;
-    this.unsubscribeFromJoinRoom = this.joinRoomObserver.unsubscribe;
-
-    this.syncPropertiesObserver = new ObserverHelper({ logger });
-    this.subscribeToSyncProperties = this.syncPropertiesObserver.subscribe;
-    this.unsubscribeFromSyncProperties = this.syncPropertiesObserver.unsubscribe;
-
-    this.reconnectObserver = new ObserverHelper({ logger });
-    this.subscribeToReconnectUpdate = this.reconnectObserver.subscribe;
-    this.unsubscribeFromReconnectUpdate = this.reconnectObserver.unsubscribe;
-
-    // Room info obervers helpers
-    this.roomInfoUpdatedObserver = new ObserverHelper({ logger });
-    this.subscribeToRoomInfoUpdated = this.roomInfoUpdatedObserver.subscribe;
-    this.unsubscribeFromRoomInfoUpdated = this.roomInfoUpdatedObserver.unsubscribe;
-
-    this.roomListUpdatedObserver = new ObserverHelper({ logger });
-    this.subscribeToRoomListUpdated = this.roomListUpdatedObserver.subscribe;
-    this.unsubscribeFromRoomListUpdated = this.roomListUpdatedObserver.unsubscribe;
-
-    this.masterActorObserver = new ObserverHelper({ logger });
-    this.subscribeToMasterActorUpdate = this.masterActorObserver.subscribe;
-    this.unsubscribeFromMasterActorUpdate = this.masterActorObserver.unsubscribe;
-
-    this.realtimeStateObserver = new ObserverHelper({ logger });
-    this.subscribeToRealtimeState = this.realtimeStateObserver.subscribe;
-    this.unsubscribeFromRealtimeState = this.realtimeStateObserver.unsubscribe;
-
-    this.waitForHostObserver = new ObserverHelper({ logger });
-    this.subscribeToWaitForHost = this.waitForHostObserver.subscribe;
-    this.unsubscribeFromWaitForHost = this.waitForHostObserver.unsubscribe;
-
-    this.kickAllUsersObserver = new ObserverHelper({ logger });
-    this.subscribeToKickAllUsers = this.kickAllUsersObserver.subscribe;
-    this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
-    this.authenticationObserver = new ObserverHelper({ logger });
-  }
 
   start({
     actorInfo,
