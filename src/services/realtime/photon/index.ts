@@ -2,10 +2,10 @@ import { ObserverHelper } from '@superviz/immersive-core';
 import debounce from 'lodash.debounce';
 
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
-import type { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
 import { RealtimeService } from '../base';
-import type { StartRealtimeType } from '../types';
+import { StartRealtimeType } from '../base/types';
 
 import {
   PHOTON_REGIONS,
@@ -13,6 +13,7 @@ import {
   PHOTON_STATE_TO_REALTIME_STATE,
   PHOTON_FAILED_REASONS,
   PHOTON_ERROR_TO_FAILED_REASONS,
+  PhotonRealtime,
 } from './types';
 
 const packageInfo = require('../../../../package.json');
@@ -22,7 +23,7 @@ const MAX_REALTIME_LOBBY_RETRIES = 3;
 const RECONNECT_STATE_UPDATE_DEBOUNCE_INTERVAL = 5000;
 const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
-export default class PhotonRealtimeService extends RealtimeService {
+export default class PhotonRealtimeService extends RealtimeService implements PhotonRealtime {
   static LOGGER_PREFIX = 'PHOTON';
   Photon;
   client;
@@ -147,7 +148,7 @@ export default class PhotonRealtimeService extends RealtimeService {
     this.updateRoomInfo();
   }
 
-  setMasterActor(actorUserId) {
+  setHost(actorUserId) {
     const actor = this.actors[actorUserId];
     const { actorNr } = actor;
 
@@ -560,7 +561,7 @@ export default class PhotonRealtimeService extends RealtimeService {
     ) {
       clearTimeout(KICK_USERS_TIMEOUT);
 
-      this.setMasterActor(actor.customProperties.userId);
+      this.setHost(actor.customProperties.userId);
       this.waitForHostObserver.publish(false);
 
       return;
@@ -598,7 +599,7 @@ export default class PhotonRealtimeService extends RealtimeService {
 
       this.log('info', `passing the host to the user: ${nextHostCandidateUserid}`);
 
-      this.setMasterActor(nextHostCandidateUserid);
+      this.setHost(nextHostCandidateUserid);
     }
 
     this.updateMasterActorInfo();

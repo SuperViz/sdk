@@ -190,7 +190,7 @@ class Communicator {
   };
 
   private onHostDidChange = (hostId: string): void => {
-    this.realtime.setMasterActor(hostId);
+    this.realtime.setHost(hostId);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {

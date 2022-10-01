@@ -64,5 +64,6 @@ module.exports = {
     'no-use-before-define': 'off',
     'arrow-body-style': 'off',
     'no-plusplus': 'off',
+    'consistent-return': 'off',
   },
 };

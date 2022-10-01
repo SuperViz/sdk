@@ -1,4 +1,7 @@
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { DefaultRealtimeMethods } from '../base/types';
+
+export interface PhotonRealtime extends DefaultRealtimeMethods {}
 
 export enum PHOTON_REGIONS {
   cn = 'cn',

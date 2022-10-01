@@ -1,9 +1,15 @@
+import type Ably from 'ably';
+
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { DefaultRealtimeMethods, DefaultRealtimeService } from '../base/types';
+import { DefaultRealtimeMethods } from '../base/types';
 
 export interface AblyRealtime extends DefaultRealtimeMethods {}
 
-export enum ABLY_CONNECTION_STATE_TO_REALTIME_STATE {
+export interface AblyActor {
+  [id: string]: Ably.Types.PresenceMessage;
+}
+
+export enum AblyConnectionState {
   failed = RealtimeStateTypes.FAILED,
   closed = RealtimeStateTypes.DISCONNECTED,
   initialized = RealtimeStateTypes.DISCONNECTED,
@@ -12,9 +18,8 @@ export enum ABLY_CONNECTION_STATE_TO_REALTIME_STATE {
   disconnected = RealtimeStateTypes.DISCONNECTED,
   closing = RealtimeStateTypes.DISCONNECTED,
   suspended = RealtimeStateTypes.DISCONNECTED,
-  // update = ?????
 }
-export enum ABLY_CHANNEL_STATE_TO_REALTIME_STATE {
+export enum AblyChannelState {
   initialized = RealtimeStateTypes.CONNECTING,
   attaching = RealtimeStateTypes.CONNECTING,
   attached = RealtimeStateTypes.JOINED,

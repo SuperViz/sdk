@@ -1,6 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { StartRealtimeType } from '../types';
+import { User } from '../../../common/types/user.types';
 
 export interface DefaultRealtimeService {
   actorObservers: ObserverHelper[];
@@ -48,6 +48,19 @@ export interface DefaultRealtimeMethods {
   leave: () => void;
   join: (myActorProperties: any, aditionalRoomProperties: any) => void;
   setSyncProperties: (options: Object) => void;
-  setMasterActor: (masterUserId: String) => void;
+  setHost: (masterUserId: String) => void;
   setGridMode: (value: boolean) => void;
+}
+
+export interface ActorInfo extends User {
+  userId: string;
+  noSlotRequired?: boolean;
+}
+
+export interface StartRealtimeType {
+  actorInfo: ActorInfo;
+  roomId: string;
+  photonAppId?: string;
+  apiKey: string;
+  shouldKickUsersOnHostLeave: boolean;
 }
