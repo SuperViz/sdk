@@ -97,4 +97,30 @@ export class RealtimeService implements DefaultRealtimeService {
     this.unsubscribeFromKickAllUsers = this.kickAllUsersObserver.unsubscribe;
     this.authenticationObserver = new ObserverHelper({ logger });
   }
+
+  /**
+   * @function subscribeToActorUpdate
+   * @description subscribe to a user's events
+   * @param {string} userId
+   * @param {Function} callback
+   * @returns {void}
+   */
+  public subscribeToActorUpdate(userId: string, callback: Function): void {
+    if (!this.actorObservers[userId]) {
+      this.actorObservers[userId] = new ObserverHelper({ logger });
+    }
+
+    this.actorObservers[userId].subscribe(callback);
+  }
+
+  /**
+   * @function subscribeToActorUpdate
+   * @description unsubscribe to a user's events
+   * @param {string} userId
+   * @param {Function} callback
+   * @returns {void}
+   */
+  public unsubscribeFromActorUpdate(userId: string, callback: Function): void {
+    this.actorObservers[userId].unsubscribe(callback);
+  }
 }

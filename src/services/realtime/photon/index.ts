@@ -161,18 +161,6 @@ export default class PhotonRealtimeService extends RealtimeService implements Ph
     );
   }
 
-  subscribeToActorUpdate(userId, callback) {
-    if (!this.actorObservers[userId]) {
-      this.actorObservers[userId] = new ObserverHelper({ logger });
-    }
-
-    this.actorObservers[userId].subscribe(callback);
-  }
-
-  unsubscribeFromActorUpdate(userId, callback) {
-    this.actorObservers[userId].unsubscribe(callback);
-  }
-
   getUserUniqueInteger(userId) {
     let uniqueInteger = 0;
 
