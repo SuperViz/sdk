@@ -105,7 +105,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     // join main room channel
     this.roomChannel = this.client.channels.get(this.roomId);
-    this.roomChannel.on(this.onStateChange);
+    this.roomChannel.on(this.onAblyChannelStateChange);
     this.roomChannel.subscribe(this.onAblyRoomUpdate);
 
     // presence only in the main channel
@@ -410,7 +410,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.client = new Ably.Realtime(options);
 
-    this.client.connection.on(this.onStateChange);
+    this.client.connection.on(this.onAblyConnectionStateChange);
   }
 
   publishActorUpdate(actor) {
@@ -564,7 +564,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     this.client = new Ably.Realtime(options);
-    this.client.connection.on(this.onStateChange);
+    this.client.connection.on(this.onAblyConnectionStateChange);
 
     this.updateMyProperties(this.myActorProperties);
   }
@@ -679,15 +679,16 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function onStateChange
-   * @param {} state
+   * @function onAblyConnectionStateChange
+   * @param {Ably.Types.ConnectionStateChange} state
    * @description gets ably's new connection state
    * @returns {void}
-   * @TODO - Add type do state
    */
-  private onStateChange = (state: any): void => {
+  private onAblyConnectionStateChange(state: Ably.Types.ConnectionStateChange): void {
     const stateName = state.current;
-    const newState: unknown = AblyConnectionState[stateName] || AblyChannelState[stateName];
+    const newState = AblyConnectionState[stateName as keyof typeof RealtimeStateTypes];
+
+    console.log({ stateName, newState });
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.hadJoinedLobbyAtLeastOnce = true;
@@ -716,9 +717,24 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (newState !== this.state) {
-      this.publishStateUpdate(newState as RealtimeStateTypes);
+      this.publishStateUpdate(newState);
     }
-  };
+  }
+
+  /**
+   * @function onAblyChannelStateChange
+   * @param {Ably.Types.ChannelStateChange} state
+   * @description gets ably's new channel state
+   * @returns {void}
+   */
+  private onAblyChannelStateChange(state: Ably.Types.ChannelStateChange): void {
+    const stateName = state.current;
+    const newState = AblyChannelState[stateName as keyof typeof RealtimeStateTypes];
+
+    if (newState !== this.state) {
+      this.publishStateUpdate(newState);
+    }
+  }
 
   onRoomListUpdate = (rooms) => {
     this.roomListUpdatedObserver.publish(rooms);
