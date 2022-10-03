@@ -533,7 +533,7 @@ export default class PhotonRealtimeService extends RealtimeService implements Ph
     this.oldSyncProperties = { ...syncProperties };
   };
 
-  setSyncProperties = <T>(properties: T): void => {
+  setSyncProperty = <T>(properties: T): void => {
     const roomProperties = this.getRoomProperties;
     let { syncProperties } = roomProperties;
     syncProperties = {

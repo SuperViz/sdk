@@ -47,9 +47,14 @@ export interface DefaultRealtimeMethods {
   start: (options: StartRealtimeType) => void;
   leave: () => void;
   join: (myActorProperties: any, aditionalRoomProperties: any) => void;
-  setSyncProperties: (options: Object) => void;
+  setSyncProperty: (options: SyncProperty) => void;
   setHost: (masterUserId: String) => void;
   setGridMode: (value: boolean) => void;
+}
+
+export interface RealtimeJoinOptions {
+  isHostCandidate: boolean;
+  name: string;
 }
 
 export interface ActorInfo extends User {
@@ -63,4 +68,8 @@ export interface StartRealtimeType {
   photonAppId?: string;
   apiKey: string;
   shouldKickUsersOnHostLeave: boolean;
+}
+
+export interface SyncProperty {
+  [key: string]: unknown;
 }

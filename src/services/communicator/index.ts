@@ -14,7 +14,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
-import { DefaultRealtimeService } from '../realtime/base/types';
+import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
@@ -144,8 +144,8 @@ class Communicator {
     this.connectionService.removeListeners();
   }
 
-  public setSyncProperties = <T>(name: string, property: T): void => {
-    this.realtime.setSyncProperties({ [name]: property });
+  public setSyncProperty = <T>(name: string, property: T): void => {
+    this.realtime.setSyncProperty({ [name]: property });
   };
 
   public subscribe = (type: string, listener: Function) => {
@@ -185,7 +185,7 @@ class Communicator {
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo) => {
+  private onRealtimeJoin = (userInfo: RealtimeJoinOptions) => {
     this.realtime.join(userInfo);
   };
 
@@ -311,7 +311,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
   const communicator = new Communicator(params);
 
   return {
-    setSyncProperty: (name, property) => communicator.setSyncProperties(name, property),
+    setSyncProperty: (name, property) => communicator.setSyncProperty(name, property),
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),

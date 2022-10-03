@@ -1,12 +1,28 @@
 import type Ably from 'ably';
 
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { DefaultRealtimeMethods } from '../base/types';
+import { DefaultRealtimeMethods, SyncProperty } from '../base/types';
 
 export interface AblyRealtime extends DefaultRealtimeMethods {}
 
 export interface AblyActor {
   [id: string]: Ably.Types.PresenceMessage;
+}
+
+export interface AblyRealtimeData {
+  hostConnectionId: string;
+  isGridModeEnabled: boolean;
+  syncProperties: SyncProperty[];
+
+  slots: AblySlot[];
+  userIdToSlotIndex: { [id: string]: number };
+}
+
+export interface AblySlot {
+  color?: string;
+  connectionId?: string;
+  timestamp?: number;
+  userId?: string;
 }
 
 export enum AblyConnectionState {
