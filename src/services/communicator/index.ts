@@ -83,11 +83,12 @@ class Communicator {
     );
 
     // Realtime observers
-    this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
-    this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
-    this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
-    this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
-    this.realtime.subscribeToKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.roomInfoUpdatedObserver.subscribe(this.onActorsListDidChange);
+    this.realtime.masterActorObserver.subscribe(this.onMasterActorDidChange);
+    this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
+    this.realtime.waitForHostObserver.subscribe(this.onWaitForHostDidChange);
+    this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
+    this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
@@ -130,12 +131,13 @@ class Communicator {
       this.connectionService.updateMeetingConnectionStatus,
     );
 
-    this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
-    this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
-    this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
-    this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
-    this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onActorsListDidChange);
+    this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
+    this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
+    this.realtime.waitForHostObserver.unsubscribe(this.onWaitForHostDidChange);
+    this.realtime.kickAllUsersObserver.unsubscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
+
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
