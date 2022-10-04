@@ -38,9 +38,12 @@ Set `E2E_BASE_URL` env var to your local execution: Ex: http://localhost:3000
 Verify that the first step of the test conforms to the SDK initialization implementation, such as room id, user id and username fields. If you are not using this aproach, just add `skip` annotation to this test stage ([See documentation](https://playwright.dev/docs/test-annotations#skip-a-test)).
 
 ```typescript
-await page.locator(LOCATORS.GENERIC_INPUT).first().fill(ROOM_ID);
-await page.locator(LOCATORS.GENERIC_INPUT).nth(1).fill(USER_ID);
-await page.locator(LOCATORS.GENERIC_INPUT).nth(2).fill(USER_NAME);
+test('Fill the params and initialize SDK', async () => {
+  await page.locator(LOCATORS.GENERIC_INPUT).first().fill(ROOM_ID);
+  await page.locator(LOCATORS.GENERIC_INPUT).nth(1).fill(USER_ID);
+  await page.locator(LOCATORS.GENERIC_INPUT).nth(2).fill(USER_NAME);
+  await page.locator(LOCATORS.INITIALIZE_SDK_BUTTON).click();
+});
 ```
 
 You can use code generator to pick this locators with command
