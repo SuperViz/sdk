@@ -35,7 +35,7 @@ yarn && yarn test:e2e:install
 
 Set `E2E_BASE_URL` env var to your local execution: Ex: http://localhost:3000
 
-Verify that the first step of the test conforms to the SDK initialization implementation, such as room id, user id and username fields. If you are not using this aproach, just add `skip` annotation to this test stage ([See documentation](https://playwright.dev/docs/test-annotations#skip-a-test)).
+Verify that the first step of the test conforms to the SDK initialization implementation, such as room id, user id and username fields. If you are not using this aproach, just add `skip` annotation to this test stage ([See documentation](https://playwright.dev/docs/test-annotations#skip-a-test)) or remove [this section](https://github.com/SuperViz/sdk/blob/chore/e2e-tests/e2e/meeting-sdk.e2e.spec.ts#L25).
 
 ```typescript
 test('Fill the params and initialize SDK', async () => {
