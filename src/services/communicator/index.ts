@@ -9,11 +9,12 @@ import {
   RealtimeEvent,
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
+import { logger } from '../../common/utils';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
-import { DefaultAdapterOptions, AdapterMethods } from '../integration/base-adapter/types';
-import RealtimeService from '../realtime';
-import PhotonRealtimeService from '../realtime/photon';
+import { AdapterMethods } from '../integration/base-adapter/types';
+import { AblyRealtimeService } from '../realtime';
+import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState } from '../video-conference-manager/types';
 
@@ -21,7 +22,7 @@ import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
 class Communicator {
   private readonly videoManager: VideoConferencingManager;
-  private readonly realtime: PhotonRealtimeService;
+  private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
 
   private integrationManager: IntegrationManager | null = null;
@@ -50,7 +51,7 @@ class Communicator {
     this.user = user;
     this.userGroup = userGroup;
 
-    this.realtime = RealtimeService.build();
+    this.realtime = new AblyRealtimeService();
 
     this.videoManager = new VideoConferencingManager({
       apiKey,
@@ -82,11 +83,12 @@ class Communicator {
     );
 
     // Realtime observers
-    this.realtime.subscribeToRoomInfoUpdated(this.onActorsListDidChange);
-    this.realtime.subscribeToMasterActorUpdate(this.onMasterActorDidChange);
-    this.realtime.subscribeToSyncProperties(this.onSyncPropertiesDidChange);
-    this.realtime.subscribeToWaitForHost(this.onWaitForHostDidChange);
-    this.realtime.subscribeToKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.roomInfoUpdatedObserver.subscribe(this.onActorsListDidChange);
+    this.realtime.masterActorObserver.subscribe(this.onMasterActorDidChange);
+    this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
+    this.realtime.waitForHostObserver.subscribe(this.onWaitForHostDidChange);
+    this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
+    this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
@@ -95,8 +97,8 @@ class Communicator {
         ...this.user,
       },
       roomId: this.roomId,
-      photonAppId,
       apiKey,
+      photonAppId,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
     });
   }
@@ -129,12 +131,13 @@ class Communicator {
       this.connectionService.updateMeetingConnectionStatus,
     );
 
-    this.realtime.unsubscribeFromRoomInfoUpdated(this.onActorsListDidChange);
-    this.realtime.unsubscribeFromMasterActorUpdate(this.onMasterActorDidChange);
-    this.realtime.unsubscribeFromSyncProperties(this.onSyncPropertiesDidChange);
-    this.realtime.unsubscribeFromWaitForHost(this.onWaitForHostDidChange);
-    this.realtime.unsubscribeFromKickAllUsers(this.onKickAllUsersDidChange);
+    this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onActorsListDidChange);
+    this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
+    this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
+    this.realtime.waitForHostObserver.unsubscribe(this.onWaitForHostDidChange);
+    this.realtime.kickAllUsersObserver.unsubscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
+
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
     Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
@@ -143,8 +146,8 @@ class Communicator {
     this.connectionService.removeListeners();
   }
 
-  public setSyncProperties = <T>(name: string, property: T): void => {
-    this.realtime.setSyncProperties({ [name]: property });
+  public setSyncProperty = <T>(name: string, property: T): void => {
+    this.realtime.setSyncProperty({ [name]: property });
   };
 
   public subscribe = (type: string, listener: Function) => {
@@ -181,12 +184,12 @@ class Communicator {
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo) => {
+  private onRealtimeJoin = (userInfo: RealtimeJoinOptions) => {
     this.realtime.join(userInfo);
   };
 
   private onHostDidChange = (hostId: string): void => {
-    this.realtime.setMasterActor(hostId);
+    this.realtime.setHost(hostId);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {
@@ -227,6 +230,7 @@ class Communicator {
 
   private onUserJoined = (user: User): void => {
     if (user.id === this.user.id) {
+      console.warn('[OUT]meeting state MY_USER_JOINED');
       this.publish(MeetingEvent.MY_USER_JOINED, user);
     }
 
@@ -260,6 +264,7 @@ class Communicator {
   };
 
   private onMeetingStateUpdate = (newState: MeetingState) => {
+    logger.log('MEETING STATE', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 
@@ -304,7 +309,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
   const communicator = new Communicator(params);
 
   return {
-    setSyncProperty: (name, property) => communicator.setSyncProperties(name, property),
+    setSyncProperty: (name, property) => communicator.setSyncProperty(name, property),
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),

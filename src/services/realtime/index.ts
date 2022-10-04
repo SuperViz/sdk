@@ -1,7 +1,10 @@
+import AblyRealtimeService from './ably';
+import { DefaultRealtimeMethods, DefaultRealtimeService } from './base/types';
 import PhotonRealtimeService from './photon';
 
-export default class RealtimeService {
-  static build(): PhotonRealtimeService {
-    return new PhotonRealtimeService();
-  }
-}
+export {
+  AblyRealtimeService,
+  PhotonRealtimeService,
+  DefaultRealtimeMethods,
+  DefaultRealtimeService,
+};

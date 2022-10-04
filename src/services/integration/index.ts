@@ -37,8 +37,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       isFollowAvailable: canUseFollow,
     });
 
-    this.RealtimeService.subscribeToActorJoined(this.onActorJoined);
-    this.RealtimeService.subscribeToActorLeave(this.onActorLeave);
+    this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
+    this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
 
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
