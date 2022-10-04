@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const BASE_URL = process.env.E2E_BASE_URL || 'https://localhost:3000';
+const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
 // WEBRTC Test configuration options.
 // https://webrtc.org/getting-started/testing

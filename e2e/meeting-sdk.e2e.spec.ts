@@ -18,12 +18,18 @@ test.describe(`Initialize meeting from SDK demo [${LANGUAGES[LOCALE]}]`, () => {
     await browser.close();
   });
 
-  test('Initialize meeting with params (room, user_id and user_name)', async ({ baseURL }) => {
+  test('Open SDK demo page', async ({ baseURL }) => {
     await page.goto(`${baseURL}`);
+  });
+
+  test('Fill the params and initialize SDK', async () => {
     await page.locator(LOCATORS.GENERIC_INPUT).first().fill(ROOM_ID);
     await page.locator(LOCATORS.GENERIC_INPUT).nth(1).fill(USER_ID);
     await page.locator(LOCATORS.GENERIC_INPUT).nth(2).fill(USER_NAME);
     await page.locator(LOCATORS.INITIALIZE_SDK_BUTTON).click();
+  });
+
+  test('Check if meeting are started and join to the room', async () => {
     await page
       .frameLocator(LOCATORS.VIDEO_FRAME)
       .locator(LOCATORS.MEETINGS_SETTINGS_TITLE[LOCALE])
