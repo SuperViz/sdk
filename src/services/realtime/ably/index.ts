@@ -19,27 +19,21 @@ const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
 
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
-  client: Ably.Realtime;
-  state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
-  ablyError? = null;
-  previousState = null;
-  actors: AblyActors;
-  connectionIdToUserId: { [key: string]: string } = {};
-  hostUserId: string = null;
-  myActorProperties: ActorInfo = null;
-  roomChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  roomSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  isReconnecting: boolean = false;
-  currentReconnecAttempt: number = 0;
-  localRoomProperties?: AblyRealtimeData = null;
-  initialRoomProperties: AblyRealtimeData = null;
-  enableSync: boolean = true;
-  hadJoinedLobbyAtLeastOnce: boolean = false;
-  shouldEnterRoomOnReconnect: boolean;
-  isInitializingReconnect: boolean;
-  roomId: string;
-  shouldKickUsersOnHostLeave: boolean;
-  currentReconnectAttempt: number;
+  private client: Ably.Realtime;
+  private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
+  private actors: AblyActors;
+  private connectionIdToUserId: { [key: string]: string } = {};
+  private hostUserId: string = null;
+  private myActorProperties: ActorInfo = null;
+  private roomChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private roomSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private isReconnecting: boolean = false;
+  private currentReconnecAttempt: number = 0;
+  private localRoomProperties?: AblyRealtimeData = null;
+  private initialRoomProperties: AblyRealtimeData = null;
+  private enableSync: boolean = true;
+  private roomId: string;
+  private shouldKickUsersOnHostLeave: boolean;
 
   constructor() {
     super();
@@ -126,7 +120,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.client.close();
     this.isReconnecting = false;
     this.roomId = null;
-    this.previousState = null;
     this.actors = {};
     this.connectionIdToUserId = {};
     this.hostUserId = null;
@@ -618,7 +611,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private publishStateUpdate(state: RealtimeStateTypes): void {
     if (this.state === state) return;
 
-    this.previousState = this.state;
     this.state = state;
 
     logger.log('REALTIME', `Realtime state did change. New state: ${this.state}`);
@@ -724,7 +716,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const newState = AblyConnectionState[stateName as keyof typeof RealtimeStateTypes];
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
-      this.hadJoinedLobbyAtLeastOnce = true;
       this.currentReconnecAttempt = 0;
     }
 
