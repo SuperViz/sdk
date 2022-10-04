@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const BASE_URL = process.env.E2E_BASE_URL || 'https://sdk-demo.superviz.com';
+const BASE_URL = process.env.E2E_BASE_URL || 'https://localhost:3000';
 
-// Playwright Test configuration options.
+// WEBRTC Test configuration options.
 // https://webrtc.org/getting-started/testing
 
 const CHROME = {
@@ -47,7 +47,7 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 5000,
   },
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.E2E_CI,
   retries: process.env.E2E_CI ? 2 : 0,
   workers: process.env.E2E_CI ? 1 : undefined,
@@ -57,7 +57,6 @@ const config: PlaywrightTestConfig = {
     baseURL: BASE_URL,
     trace: 'on-first-retry',
   },
-
   projects: [CHROME],
 };
 
