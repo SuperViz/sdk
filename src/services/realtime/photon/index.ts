@@ -175,12 +175,6 @@ export default class PhotonRealtimeService extends RealtimeService implements Ph
     return uniqueInteger;
   }
 
-  getActorColor(index) {
-    let avatarColorIndex = index;
-    avatarColorIndex %= 16;
-    return MeetingColors[avatarColorIndex];
-  }
-
   // internal
   buildClient(photonAppId) {
     if (this.client) {

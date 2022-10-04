@@ -1,7 +1,5 @@
-import { ObserverHelper } from '@superviz/immersive-core';
 import Ably from 'ably';
 
-import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
 import { RealtimeService } from '../base';
@@ -11,8 +9,9 @@ import {
   AblyChannelState,
   AblyConnectionState,
   AblyRealtime,
-  AblyActor,
+  AblyActors,
   AblyRealtimeData,
+  AblyActor,
 } from './types';
 
 const ABLY_KEY = process.env.SDK_REALTIME_KEY;
@@ -20,27 +19,25 @@ const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
 
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
-  static LOGGER_PREFIX = 'ABLY';
-
   client: Ably.Realtime;
   state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   ablyError? = null;
   previousState = null;
-  actors: AblyActor;
-  connectionIdToUserId = {};
-  masterActorUserId = null;
-  myActorProperties = null;
+  actors: AblyActors;
+  connectionIdToUserId: { [key: string]: string } = {};
+  hostUserId: string = null;
+  myActorProperties: ActorInfo = null;
   roomChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  roomSyncChannel = null;
-  isReconnecting = false;
-  currentReconnecAttempt: 0;
+  roomSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  isReconnecting: boolean = false;
+  currentReconnecAttempt: number = 0;
   localRoomProperties?: AblyRealtimeData = null;
-  initialRoomProperties = null;
+  initialRoomProperties: AblyRealtimeData = null;
   enableSync: boolean = true;
   hadJoinedLobbyAtLeastOnce: boolean = false;
-  shouldEnterRoomOnReconnect?: boolean;
+  shouldEnterRoomOnReconnect: boolean;
   isInitializingReconnect: boolean;
-  roomId?: string;
+  roomId: string;
   shouldKickUsersOnHostLeave: boolean;
   currentReconnectAttempt: number;
 
@@ -53,6 +50,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.onAblyPresenceLeave = this.onAblyPresenceLeave.bind(this);
     this.onAblyRoomUpdate = this.onAblyRoomUpdate.bind(this);
     this.onAblySyncChannelUpdate = this.onAblySyncChannelUpdate.bind(this);
+    this.onAblyChannelStateChange = this.onAblyChannelStateChange.bind(this);
+    this.onAblyConnectionStateChange = this.onAblyConnectionStateChange.bind(this);
   }
 
   private get isJoinedRoom() {
@@ -130,7 +129,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.previousState = null;
     this.actors = {};
     this.connectionIdToUserId = {};
-    this.masterActorUserId = null;
+    this.hostUserId = null;
     this.myActorProperties = null;
     this.roomChannel = null;
     this.roomSyncChannel = null;
@@ -216,7 +215,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   private onAblyPresenceUpdate(presenceMessage: Ably.Types.PresenceMessage): void {
     const { clientId, data } = presenceMessage;
-    const user = Object.assign({}, presenceMessage, { customProperties: data });
+    const user: AblyActor = Object.assign({}, presenceMessage, {
+      customProperties: data,
+      userId: presenceMessage.clientId,
+    });
 
     this.actors[clientId] = user;
     this.publishActorUpdate(this.actors[clientId]);
@@ -266,7 +268,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private updateLocalRoomState = (data: AblyRealtimeData): void => {
-    this.localRoomProperties = data;
+    this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
     this.roomInfoUpdatedObserver.publish({
       _customProperties: this.localRoomProperties,
@@ -355,11 +357,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function updateRoomProperties
-   * @param {{}} properties
+   * @param {AblyRealtimeData} properties
    * @description updates room properties
    * @returns {Promise<void>}
    */
-  private updateRoomProperties(properties: {}): void {
+  private updateRoomProperties(properties: AblyRealtimeData): void {
     if (!this.enableSync) {
       return;
     }
@@ -372,30 +374,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomChannel.publish('update', newProperties);
   }
 
-  getUserUniqueInteger(userId) {
-    let uniqueInteger = 0;
-    if (this.actors[userId] && this.actors[userId].data && this.localRoomProperties) {
-      if (this.actors[userId]?.data.noSlotRequired) {
-        uniqueInteger = 16;
-      } else {
-        const hasSlot = this.localRoomProperties?.slots?.find((slot) => slot?.userId === userId);
-        if (hasSlot) {
-          return this.localRoomProperties?.userIdToSlotIndex?.[userId];
-        }
-      }
-    }
-
-    return uniqueInteger;
-  }
-
-  getActorColor(index: number): string {
-    let avatarColorIndex = index;
-    avatarColorIndex %= 16;
-    return MeetingColors[avatarColorIndex];
-  }
-
-  // internal
-  buildClient() {
+  /**
+   * @function buildClient
+   * @description ably client build
+   * @returns {void}
+   */
+  private buildClient(): void {
     if (this.client) {
       this.throw('Tried to call buildClient@Ably is already initialized');
     }
@@ -413,27 +397,38 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.client.connection.on(this.onAblyConnectionStateChange);
   }
 
-  publishActorUpdate(actor) {
+  /**
+   * @function publishActorUpdate
+   * @param {AblyActor} actor
+   * @description publish a user's changes to observer
+   * @returns {void}
+   */
+  private publishActorUpdate(actor: AblyActor): void {
     if (this.actorObservers[actor.data.userId]) {
       this.actorObservers[actor.data.userId].publish(actor);
     }
   }
 
-  updateActors() {
+  /**
+   * @function updateActors
+   * @description update user list
+   * @returns {void}
+   */
+  private updateActors(): void {
     const actors = {};
     const connectionIdToUserId = {};
 
     this.roomChannel.presence.get((_, members) => {
       members.forEach((member) => {
         const userId = member.clientId;
-        // @TODO - Add type for RealtimeUser
-        const actor: any = member;
+        const actor: AblyActor = member as AblyActor;
         connectionIdToUserId[member.connectionId] = actor.data.userId;
 
-        actor.userId = userId; // FORCE PHOTON ARCHITECTURE
-        actor.customProperties = actor.data; // FORCE PHOTON ARCHITECTURE
+        actor.userId = userId;
+        actor.customProperties = actor.data;
         actors[userId] = actor;
       });
+
       this.actors = actors;
       this.connectionIdToUserId = connectionIdToUserId;
       this.actorsObserver.publish(this.actors);
@@ -445,31 +440,48 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.validateRoomProperties();
   }
 
-  updateHostInfo(newMasterConnectionId: string = null) {
-    const oldMasterActorUserId = this.masterActorUserId;
-    const masterActorUserId = this.connectionIdToUserId[newMasterConnectionId];
+  /**
+   * @function updateHostInfo
+   * @param {string} newHostId
+   * @description update user list
+   * @returns {void}
+   */
+  private updateHostInfo(newHostId: string): void {
+    const oldHostUserId = this.hostUserId;
+    const hostUserId = this.connectionIdToUserId[newHostId];
 
-    if (masterActorUserId !== this.masterActorUserId) {
-      this.masterActorUserId = masterActorUserId;
-      if (!this.masterActorUserId) {
-        this.hostPassingHandle();
-        return;
-      }
-      setTimeout(() => {
-        this.masterActorObserver.publish({
-          oldMasterActorUserId,
-          newMasterActorUserId: this.masterActorUserId,
-        });
-        logger.log(
-          'RELTIME',
-          `Master actor has been changed. New Master Actor: ${this.masterActorUserId} - ${newMasterConnectionId}`,
-        );
-      }, 500);
+    if (hostUserId === this.hostUserId) return;
+
+    this.hostUserId = hostUserId;
+
+    if (!this.hostUserId) {
+      this.hostPassingHandle();
+      return;
     }
+
+    this.masterActorObserver.publish({
+      oldMasterActorUserId: oldHostUserId,
+      newMasterActorUserId: this.hostUserId,
+    });
+
+    logger.log(
+      'RELTIME',
+      `Master actor has been changed. New Master Actor: ${this.hostUserId} - ${newHostId}`,
+    );
   }
 
-  initializeRoomProperties = async (myActor, additionalProperties = {}) => {
-    const roomProperties = {
+  /**
+   * @function initializeRoomProperties
+   * @param {Ably.Types.PresenceMessage} user
+   * @param {AblyRealtimeData} additionalProperties
+   * @description initializes room properties
+   * @returns {void}
+   */
+  private initializeRoomProperties(
+    user: Ably.Types.PresenceMessage,
+    additionalProperties: AblyRealtimeData = {},
+  ): void {
+    const roomProperties: AblyRealtimeData = {
       slots: Array(16).fill(null),
       userIdToSlotIndex: {},
       isGridModeEnable: false,
@@ -478,20 +490,30 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     roomProperties.slots[0] = {
-      connectionId: myActor.connectionId,
-      userId: myActor.data.userId,
+      connectionId: user.connectionId,
+      userId: user.data.userId,
       color: this.getActorColor(0),
-      timestamp: myActor.timestamp,
+      timestamp: user.timestamp,
     };
-    roomProperties.userIdToSlotIndex[myActor.data.userId] = 0;
-    await this.updateRoomProperties(roomProperties);
-    await this.updateActors();
-  };
 
-  addToSlot = async (actorInfo) => {
+    roomProperties.userIdToSlotIndex[user.data.userId] = 0;
+
+    this.updateRoomProperties(roomProperties);
+    this.updateActors();
+  }
+
+  /**
+   * @function addToSlot
+   * @description add a slot for a user
+   * @param {Ably.Types.PresenceMessage} user
+   * @returns {Promise<void>}
+   */
+  private async addToSlot(user: Ably.Types.PresenceMessage): Promise<void> {
     const roomProperties = await this.fetchRoomProperties();
+    const actorUserId = user.data.userId;
+
     this.localRoomProperties = roomProperties;
-    const actorUserId = actorInfo.userId;
+
     if (!this.localRoomProperties?.userIdToSlotIndex) {
       return;
     }
@@ -500,28 +522,33 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
-    const slots = [...this.localRoomProperties.slots];
-    const userIdToSlotIndex = { ...this.localRoomProperties.userIdToSlotIndex };
+    const { slots, userIdToSlotIndex } = this.localRoomProperties;
 
     for (let index = 0; index < slots.length; index += 1) {
       if (!slots[index]) {
         slots[index] = {
-          connectionId: actorInfo.connectionId,
-          userId: actorInfo.data.userId,
+          connectionId: user.connectionId,
+          userId: user.data.userId,
           color: this.getActorColor(index),
-          timestamp: actorInfo.timestamp,
+          timestamp: user.timestamp,
         };
-        userIdToSlotIndex[actorInfo.data.userId] = index;
+        userIdToSlotIndex[user.data.userId] = index;
         break;
       }
     }
 
-    await this.updateRoomProperties({ slots, userIdToSlotIndex });
-  };
+    this.updateRoomProperties({ slots, userIdToSlotIndex });
+  }
 
-  removeFromSlot(actorInfo) {
+  /**
+   * @function removeFromSlot
+   * @description remove a slot for a user
+   * @param {Ably.Types.PresenceMessage} user
+   * @returns {Promise<void>}
+   */
+  private removeFromSlot(user: Ably.Types.PresenceMessage): void {
     const roomProperties = this.localRoomProperties;
-    const actorUserId = actorInfo.data.userId;
+    const actorUserId = user.data.userId;
 
     if (roomProperties.userIdToSlotIndex[actorUserId] === undefined) {
       logger.log('REALTIME', 'Tried to remove an actor that is not in room from a room slot');
@@ -538,7 +565,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.updateRoomProperties(newRoomProperties);
   }
 
-  forceReconnect() {
+  /**
+   * @function forceReconnect
+   * @returns {void}
+   */
+  private forceReconnect(): void {
     logger.log(
       'REALTIME',
       `RECONNECT: Starting force realtime reconnect | Current attempt: ${this.currentReconnecAttempt}`,
@@ -569,6 +600,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.updateMyProperties(this.myActorProperties);
   }
 
+  /**
+   * @function forceReconnect
+   * @returns {void}
+   */
   private throw(message: string): void {
     logger.log(message);
     throw new Error(message);
@@ -621,7 +656,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} user
    * @returns {void}
    */
-  waitForHostHandle(user: Ably.Types.PresenceMessage): void {
+  private waitForHostHandle(user: Ably.Types.PresenceMessage): void {
     this.roomChannel.presence.get((_, members) => {
       const hostCandidatesNr = members
         .filter((member) => member.data.isHostCandidate)
@@ -688,8 +723,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const stateName = state.current;
     const newState = AblyConnectionState[stateName as keyof typeof RealtimeStateTypes];
 
-    console.log({ stateName, newState });
-
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.hadJoinedLobbyAtLeastOnce = true;
       this.currentReconnecAttempt = 0;
@@ -736,15 +769,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
   }
 
-  onRoomListUpdate = (rooms) => {
-    this.roomListUpdatedObserver.publish(rooms);
-  };
-
-  onRoomList = (rooms) => {
-    this.roomListUpdatedObserver.publish(rooms);
-  };
-
-  private onJoinRoom = async (user: Ably.Types.PresenceMessage) => {
+  /**
+   * @function onActorJoin
+   * @param {Ably.Types.PresenceMessage} user
+   * @returns {void}
+   */
+  private async onJoinRoom(user: Ably.Types.PresenceMessage): Promise<void> {
     this.localRoomProperties = await this.fetchRoomProperties();
 
     if (!this.localRoomProperties) {
@@ -763,9 +793,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.waitForHostHandle(user);
 
     logger.log('REALTIME', 'Joined realtime room');
-  };
+  }
 
-  private async onActorJoin(actor: Ably.Types.PresenceMessage) {
+  /**
+   * @function onActorJoin
+   * @param {Ably.Types.PresenceMessage} actor
+   * @returns {void}
+   */
+  private async onActorJoin(actor: Ably.Types.PresenceMessage): Promise<void> {
     await this.updateActors();
 
     const user = Object.assign({}, actor, { customProperties: actor.data, userId: actor.clientId });
@@ -781,7 +816,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.waitForHostHandle(actor);
   }
 
-  onActorLeave = async (actor: Ably.Types.PresenceMessage, cleanup: boolean) => {
+  /**
+   * @function onActorLeave
+   * @param {Ably.Types.PresenceMessage} actor
+   * @returns {void}
+   */
+  private async onActorLeave(actor: Ably.Types.PresenceMessage, cleanup: boolean): Promise<void> {
     const user = Object.assign({}, actor, { customProperties: actor.data, userId: actor.clientId });
 
     if (this.state === RealtimeStateTypes.READY_TO_JOIN || actor.connectionId === '-1') {
@@ -789,7 +829,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
     await this.updateActors();
 
-    const hostLeft = actor.data.userId === this.masterActorUserId;
+    const hostLeft = actor.data.userId === this.hostUserId;
 
     this.actorLeaveObserver.publish(user);
 
@@ -801,10 +841,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       logger.log('REALTIME', `Actor left room. Actor data: ${JSON.stringify(actor)}`);
       this.removeFromSlot(actor);
     }
-  };
+  }
 
-  onHostLeft = (actor) => {
+  /**
+   * @function onHostLeft
+   * @param {Ably.Types.PresenceMessage} actor
+   * @returns {void}
+   */
+  private onHostLeft(actor: Ably.Types.PresenceMessage): void {
     this.removeFromSlot(actor);
     this.updateRoomProperties({ hostConnectionId: null });
-  };
+  }
 }

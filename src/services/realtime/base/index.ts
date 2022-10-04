@@ -1,5 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
+import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
 
 import { DefaultRealtimeService } from './types';
@@ -122,5 +123,17 @@ export class RealtimeService implements DefaultRealtimeService {
    */
   public unsubscribeFromActorUpdate(userId: string, callback: Function): void {
     this.actorObservers[userId].unsubscribe(callback);
+  }
+
+  /**
+   * @function getActorColor
+   * @description get user color
+   * @param {number} index
+   * @returns {string}
+   */
+  public getActorColor(index: number): string {
+    let avatarColorIndex = index;
+    avatarColorIndex %= 16;
+    return MeetingColors[avatarColorIndex];
   }
 }

@@ -5,17 +5,22 @@ import { DefaultRealtimeMethods, SyncProperty } from '../base/types';
 
 export interface AblyRealtime extends DefaultRealtimeMethods {}
 
-export interface AblyActor {
-  [id: string]: Ably.Types.PresenceMessage;
+export interface AblyActors {
+  [id: string]: AblyActor;
+}
+
+export interface AblyActor extends Ably.Types.PresenceMessage {
+  userId: string;
+  customProperties: any;
 }
 
 export interface AblyRealtimeData {
-  hostConnectionId: string;
-  isGridModeEnabled: boolean;
-  syncProperties: SyncProperty[];
+  hostConnectionId?: string;
+  isGridModeEnable?: boolean;
+  syncProperties?: SyncProperty;
 
-  slots: AblySlot[];
-  userIdToSlotIndex: { [id: string]: number };
+  slots?: AblySlot[];
+  userIdToSlotIndex?: { [id: string]: number };
 }
 
 export interface AblySlot {

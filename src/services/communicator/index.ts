@@ -172,11 +172,8 @@ class Communicator {
   };
 
   private onSyncPropertiesDidChange = (properties) => {
-    console.log('onSyncPropertiesDidChange', properties);
     Object.entries(properties).forEach(([key, value]) => {
       this.publish(key, value);
-      console.log('publish', key);
-      console.log('publish', value);
     });
   };
 
@@ -200,7 +197,6 @@ class Communicator {
   };
 
   private onActorsListDidChange = (room) => {
-    console.warn('onActorsListDidChange', room);
     this.videoManager.actorsListDidChange(room._customProperties.slots);
     this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
   };
