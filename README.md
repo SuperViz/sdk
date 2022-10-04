@@ -57,7 +57,7 @@ To run tests in headless mode, execute the command
 yarn test:e2e
 ```
 
-You can run tests with default language (EN) or set one of supported: en, pt-BR with commands:
+You can run tests with default language (based on `E2E_LOCALE` env var) or run with one of supported: en, pt-BR with commands:
 
 ```bash
 # Run tests with English language
