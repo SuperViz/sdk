@@ -24,6 +24,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'eslint-plugin-import'],
   rules: {
+    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'no-unused-vars': 'off',
     'no-shadow': 'off',
     'no-console': 'off',
@@ -33,14 +34,7 @@ module.exports = {
       'error',
       {
         'newlines-between': 'always',
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          'parent',
-          'sibling',
-          'object',
-        ],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'object'],
         alphabetize: {
           order: 'asc',
           caseInsensitive: false,
@@ -63,11 +57,7 @@ module.exports = {
         ts: 'never',
       },
     ],
-    'lines-between-class-members': [
-      'error',
-      'always',
-      { exceptAfterSingleLine: true },
-    ],
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
     'prefer-object-spread': 'off',
     'no-underscore-dangle': 'off',
     'object-curly-newline': 'off',
