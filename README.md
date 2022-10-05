@@ -79,7 +79,6 @@ You can run tests with debug mode with the command
 ```bash
 yarn test:e2e:debug
 ```
-----
 
 You can build and run E2E tests on container with command
 
@@ -92,5 +91,6 @@ Or build localy with command
 ```bash
 docker build --no-cache -t sdk-e2e -f ./docker/e2e/Dockerfile .
 ```
+----
 
 Superviz SDK is [BSD 2 licensed](LICENSE).
