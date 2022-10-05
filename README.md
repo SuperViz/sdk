@@ -87,4 +87,10 @@ You can build and run E2E tests on container with command
 source ./e2e/build-e2e.sh
 ```
 
+Or build localy with command
+
+```bash
+docker build --no-cache -t sdk-e2e -f ./docker/e2e/Dockerfile .
+```
+
 Superviz SDK is [BSD 2 licensed](LICENSE).
