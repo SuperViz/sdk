@@ -7,7 +7,8 @@ const ROOM_ID = process.env.E2E_ROOM_ID || 'test-room';
 const USER_NAME = process.env.E2E_USER_NAME || 'test-user';
 const USER_ID = process.env.E2E_USER_ID || 'test-user-id';
 
-test.describe(`Initialize meeting from SDK demo [${LANGUAGES[LOCALE]}]`, () => {
+test.describe(`Init meeting SDK demo [${LANGUAGES[LOCALE]}]`, () => {
+  test.describe.configure({ mode: 'serial' });
   let page: Page;
 
   test.beforeAll(async ({ browser }) => {
