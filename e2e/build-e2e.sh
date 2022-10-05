@@ -6,4 +6,4 @@ docker build --no-cache -t sdk-e2e \
   --build-arg E2E_ROOM_ID=$E2E_ROOM_ID \
   --build-arg E2E_USER_NAME=$E2E_USER_NAME \
   --build-arg E2E_USER_ID=$E2E_USER_ID \
-   -f ./docker/e2e/Dockerfile .
+   -f ./e2e/docker/Dockerfile .
