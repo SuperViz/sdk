@@ -47,7 +47,7 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 5000,
   },
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.E2E_CI,
   retries: process.env.E2E_CI ? 2 : 0,
   workers: process.env.E2E_CI ? 1 : undefined,

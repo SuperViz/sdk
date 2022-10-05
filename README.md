@@ -81,4 +81,10 @@ yarn test:e2e:debug
 ```
 ----
 
+You can build and run E2E tests on container with command
+
+```bash
+source ./e2e/build-e2e.sh
+```
+
 Superviz SDK is [BSD 2 licensed](LICENSE).
