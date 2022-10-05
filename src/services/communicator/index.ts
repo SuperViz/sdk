@@ -41,6 +41,7 @@ class Communicator {
     language = 'en',
     roomId,
     photonAppId,
+    ablyKey,
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
@@ -51,7 +52,7 @@ class Communicator {
     this.user = user;
     this.userGroup = userGroup;
 
-    this.realtime = new AblyRealtimeService();
+    this.realtime = new AblyRealtimeService(ablyKey);
 
     this.videoManager = new VideoConferencingManager({
       apiKey,
@@ -230,7 +231,6 @@ class Communicator {
 
   private onUserJoined = (user: User): void => {
     if (user.id === this.user.id) {
-      console.warn('[OUT]meeting state MY_USER_JOINED');
       this.publish(MeetingEvent.MY_USER_JOINED, user);
     }
 
