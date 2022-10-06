@@ -41,6 +41,7 @@ class Communicator {
     language = 'en',
     roomId,
     photonAppId,
+    ablyKey,
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
@@ -51,7 +52,7 @@ class Communicator {
     this.user = user;
     this.userGroup = userGroup;
 
-    this.realtime = new AblyRealtimeService();
+    this.realtime = new AblyRealtimeService(ablyKey);
 
     this.videoManager = new VideoConferencingManager({
       apiKey,

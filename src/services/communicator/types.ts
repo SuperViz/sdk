@@ -7,6 +7,7 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
   language?: Language;
   photonAppId: string;
+  ablyKey: string;
 }
 
 export interface AdapterOptions extends Omit<DefaultAdapterOptions, 'RealtimeService'> {}
