@@ -1,4 +1,4 @@
-import { RealtimeService } from '../../realtime/base';
+import { AblyRealtimeService } from '../../realtime';
 import { UserOn3D } from '../users/types';
 
 import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
@@ -13,7 +13,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
   public adapter: Adapter;
 
-  public RealtimeService: RealtimeService;
+  public RealtimeService: AblyRealtimeService;
 
   constructor({
     isAvatarsEnabled,
@@ -32,6 +32,12 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this._isGoToAvailable = isGoToAvailable;
 
     this.adapter = adapter;
+
+    // @ts-ignore
+    this.adapter.prototype.setSyncProperty = this.RealtimeService.setSyncProperty;
+    // @ts-ignore
+    this.adapter.prototype.syncPropertiesObserver = this.RealtimeService.syncPropertiesObserver;
+
     this.RealtimeService = RealtimeService;
   }
 

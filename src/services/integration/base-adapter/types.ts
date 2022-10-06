@@ -1,4 +1,5 @@
-import { RealtimeService } from '../../realtime/base';
+import { AblyRealtimeService } from '../../realtime';
+import { SyncProperty } from '../../realtime/base/types';
 import { UserOn3D } from '../users/types';
 
 export interface DefaultAdapterManager {
@@ -21,7 +22,7 @@ export interface DefaultAdapterOptions {
   // Adapter settings
   adapter: Adapter;
 
-  RealtimeService: RealtimeService;
+  RealtimeService: AblyRealtimeService;
 }
 
 export interface AdapterMethods {
@@ -31,6 +32,7 @@ export interface AdapterMethods {
 }
 
 export type Adapter = {
+  setSyncProperty: (property: SyncProperty) => void;
   createPointer: (user: UserOn3D) => void;
   destroyPointer: (user: UserOn3D) => void;
 

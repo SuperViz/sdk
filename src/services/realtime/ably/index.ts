@@ -14,7 +14,6 @@ import {
   AblyActor,
 } from './types';
 
-const ABLY_KEY = process.env.SDK_REALTIME_KEY;
 const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
 
@@ -34,9 +33,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private enableSync: boolean = true;
   private roomId: string;
   private shouldKickUsersOnHostLeave: boolean;
+  private ablyKey: string;
 
-  constructor() {
+  constructor(ablyKey: string) {
     super();
+
+    this.ablyKey = ablyKey;
 
     // bind ably callbacks
     this.onAblyPresenceEnter = this.onAblyPresenceEnter.bind(this);
@@ -378,7 +380,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     const options: Ably.Types.ClientOptions = {
-      key: ABLY_KEY,
+      key: this.ablyKey,
       disconnectedRetryTimeout: 5000,
       suspendedRetryTimeout: 5000,
       clientId: this.myActorProperties.userId,
@@ -581,7 +583,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     logger.log('REALTIME', 'RECONNECT: Restarting ably server since user lost connection.');
 
     const options = {
-      key: ABLY_KEY,
+      key: this.ablyKey,
       disconnectedRetryTimeout: 5000,
       suspendedRetryTimeout: 5000,
       clientId: this.myActorProperties.userId,
