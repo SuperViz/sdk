@@ -30,6 +30,11 @@ export interface AblySlot {
   userId?: string;
 }
 
+export type AblyTokenCallBack = (
+  error: Ably.Types.ErrorInfo | string,
+  tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string,
+) => void;
+
 export enum AblyConnectionState {
   failed = RealtimeStateTypes.FAILED,
   closed = RealtimeStateTypes.DISCONNECTED,

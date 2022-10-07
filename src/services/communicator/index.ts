@@ -231,7 +231,6 @@ class Communicator {
 
   private onUserJoined = (user: User): void => {
     if (user.id === this.user.id) {
-      console.warn('[OUT]meeting state MY_USER_JOINED');
       this.publish(MeetingEvent.MY_USER_JOINED, user);
     }
 
