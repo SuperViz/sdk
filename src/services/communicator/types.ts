@@ -18,5 +18,5 @@ export type SuperVizSdk = {
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
 
-  init3DAdapter: (props: DefaultAdapterOptions) => AdapterMethods;
+  connectAdapter: (adapter: Object, props: DefaultAdapterOptions) => AdapterMethods;
 };

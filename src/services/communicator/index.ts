@@ -274,12 +274,13 @@ class Communicator {
   };
 
   // Integrator methods
-  public init3DAdapter(adapterOptions: AdapterOptions): AdapterMethods {
+  public connectAdapter(adapter: Object, adapterOptions: AdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
-
+    console.log('adapter', adapter);
     this.integrationManager = new IntegrationManager({
+      adapter,
       ...adapterOptions,
       localUser: {
         id: this.user.id,
@@ -288,7 +289,6 @@ class Communicator {
       },
       userList: this.userList.map((user) => {
         const { id, name, avatarUrl }: User = user;
-
         return {
           id,
           name,
@@ -315,6 +315,6 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
 
-    init3DAdapter: (props) => communicator.init3DAdapter(props),
+    connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
   };
 };
