@@ -119,6 +119,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public destroyPointer = (user: UserOn3D): void => {
-    this.adapter.destroyAvatar(user);
+    this.adapter.destroyPointer(user);
   };
 }
