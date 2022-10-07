@@ -1,5 +1,6 @@
 import Ably from 'ably';
 
+import { RealtimeEvent } from '../../../common/types/events.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
 import ApiService from '../../api';
@@ -112,7 +113,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       },
       (error, tokenRequest) => {
         if (error) {
-          this.authenticationObserver.publish();
+          this.authenticationObserver.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
         }
         callback(error, tokenRequest);
       },

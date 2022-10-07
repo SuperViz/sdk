@@ -90,7 +90,6 @@ class Communicator {
     this.realtime.waitForHostObserver.subscribe(this.onWaitForHostDidChange);
     this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
-    this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
       actorInfo: {
@@ -258,8 +257,8 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
   };
 
-  private onAuthenticationFailed = (): void => {
-    this.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED, null);
+  private onAuthenticationFailed = (event: RealtimeEvent): void => {
+    this.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED, event);
     this.destroy();
   };
 
