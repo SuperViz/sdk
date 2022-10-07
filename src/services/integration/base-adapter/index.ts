@@ -33,12 +33,12 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
     this.adapter = adapter;
 
+    this.RealtimeService = RealtimeService;
+
     // @ts-ignore
     this.adapter.prototype.setSyncProperty = this.RealtimeService.setSyncProperty;
     // @ts-ignore
     this.adapter.prototype.syncPropertiesObserver = this.RealtimeService.syncPropertiesObserver;
-
-    this.RealtimeService = RealtimeService;
   }
 
   public get isAvatarsEnabled(): boolean {
