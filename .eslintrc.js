@@ -24,6 +24,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'eslint-plugin-import'],
   rules: {
+    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'no-unused-vars': 'off',
     'no-shadow': 'off',
     'no-console': 'off',
