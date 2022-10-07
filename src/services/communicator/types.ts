@@ -6,7 +6,6 @@ export type Language = 'pt' | 'en' | 'zh';
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
   language?: Language;
-  photonAppId: string;
   ablyKey: string;
 }
 
