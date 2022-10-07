@@ -278,7 +278,6 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
-    console.log('adapter', adapter);
     this.integrationManager = new IntegrationManager({
       adapter,
       ...adapterOptions,
