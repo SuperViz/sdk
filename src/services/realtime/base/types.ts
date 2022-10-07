@@ -41,7 +41,6 @@ export interface ActorInfo extends User {
 export interface StartRealtimeType {
   actorInfo: ActorInfo;
   roomId: string;
-  photonAppId?: string;
   apiKey: string;
   shouldKickUsersOnHostLeave: boolean;
 }

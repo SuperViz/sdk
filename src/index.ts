@@ -45,12 +45,12 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
 
   const environment = await ApiService.fetchConfig(apiKey);
 
-  if (!environment || !environment.photonAppId || !environment.ablyKey) {
+  if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
-  const { photonAppId, ablyKey } = environment;
-  return Communicator(Object.assign({}, options, { apiKey, photonAppId, ablyKey }));
+  const { ablyKey } = environment;
+  return Communicator(Object.assign({}, options, { apiKey, ablyKey }));
 };
 
 if (window) {
