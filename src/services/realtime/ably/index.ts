@@ -1,7 +1,9 @@
 import Ably from 'ably';
 
+import { RealtimeEvent } from '../../../common/types/events.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
+import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ActorInfo, RealtimeJoinOptions, StartRealtimeType, SyncProperty } from '../base/types';
 
@@ -12,6 +14,7 @@ import {
   AblyActors,
   AblyRealtimeData,
   AblyActor,
+  AblyTokenCallBack,
 } from './types';
 
 const KICK_USERS_TIME = 1000 * 60;
@@ -34,6 +37,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private roomId: string;
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
+  private apiKey: string;
 
   constructor(ablyKey: string) {
     super();
@@ -48,6 +52,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.onAblySyncChannelUpdate = this.onAblySyncChannelUpdate.bind(this);
     this.onAblyChannelStateChange = this.onAblyChannelStateChange.bind(this);
     this.onAblyConnectionStateChange = this.onAblyConnectionStateChange.bind(this);
+    this.auth = this.auth.bind(this);
   }
 
   private get isJoinedRoom() {
@@ -75,13 +80,45 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
     this.shouldKickUsersOnHostLeave = shouldKickUsersOnHostLeave;
+    this.apiKey = apiKey;
 
     if (!this.client) {
       this.buildClient();
     }
   }
 
-  public auth(apiKey: string): void {}
+  /**
+   * @function auth
+   * @description authenticates to the realtime service
+   * @param {Ably.Types.TokenParams} tokenParams
+   * @param {AblyTokenCallBack} callback
+   * @returns {void}
+   */
+  private async auth(
+    tokenParams: Ably.Types.TokenParams,
+    callback: AblyTokenCallBack,
+  ): Promise<void> {
+    const ably = new Ably.Rest({ key: this.ablyKey });
+    const { origin } = window.location;
+
+    ably.auth.requestToken(
+      tokenParams,
+      {
+        authUrl: `${ApiService.baseUrl}/realtime/auth`,
+        key: this.ablyKey,
+        authParams: {
+          domain: origin,
+          apiKey: this.apiKey,
+        },
+      },
+      (error, tokenRequest) => {
+        if (error) {
+          this.authenticationObserver.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
+        }
+        callback(error, tokenRequest);
+      },
+    );
+  }
 
   /**
    * @function setHost
@@ -385,6 +422,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       suspendedRetryTimeout: 5000,
       clientId: this.myActorProperties.userId,
       // transportParams: { remainPresentFor: 1000 } // TODO investigate best params
+      authCallback: this.auth,
     };
 
     this.client = new Ably.Realtime(options);
@@ -582,15 +620,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     logger.log('REALTIME', 'RECONNECT: Restarting ably server since user lost connection.');
 
-    const options = {
-      key: this.ablyKey,
-      disconnectedRetryTimeout: 5000,
-      suspendedRetryTimeout: 5000,
-      clientId: this.myActorProperties.userId,
-    };
-
-    this.client = new Ably.Realtime(options);
-    this.client.connection.on(this.onAblyConnectionStateChange);
+    this.buildClient();
 
     this.updateMyProperties(this.myActorProperties);
   }
