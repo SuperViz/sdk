@@ -43,11 +43,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
 
-    const user = this.IntegrationUsersService.createUserOn3D(localUser);
-    const userOn3DList = userList.map((user) => this.IntegrationUsersService.createUserOn3D(user));
-
-    this.IntegrationUsersService.setLocalUser(user);
-    this.IntegrationUsersService.setUserList(userOn3DList);
+    this.createUserList(userList);
+    this.createLocalUser(localUser);
   }
 
   public get users(): UserOn3D[] {
@@ -87,6 +84,36 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   };
 
   /**
+   * @function createLocalUser
+   * @description creates the user list with what is needed for the 3D environment
+   * @param {UserTo3D} localUser
+   * @returns {void}
+   */
+  private createLocalUser = (localUser: UserTo3D): void => {
+    const user = this.IntegrationUsersService.createUserOn3D(localUser);
+
+    this.createAvatar(user, user.avatarUrl);
+    this.createPointer(user);
+    this.IntegrationUsersService.setLocalUser(user);
+  };
+
+  /**
+   * @function createUserList
+   * @description creates the local user with what is needed for the 3D environment
+   * @param {UserOn3D[]} userList
+   * @returns {void}
+   */
+  private createUserList = (userList: UserTo3D[]): void => {
+    const userOn3DList = userList.map((user) => this.IntegrationUsersService.createUserOn3D(user));
+    userOn3DList.forEach((user) => {
+      this.createAvatar(user);
+      this.createPointer(user);
+    });
+
+    this.IntegrationUsersService.setUserList(userOn3DList);
+  };
+
+  /**
    * @function onActorJoined
    * @description add users as they enter the RealtimeService
    * @param {} actor
@@ -110,6 +137,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    */
   private onActorLeave = (actor): void => {
     const user = this.users.find((user) => user.id === actor.customProperties.id);
+
+    if (!user) {
+      return;
+    }
 
     this.removeUser(user);
   };

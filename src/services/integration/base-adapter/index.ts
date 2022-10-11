@@ -1,4 +1,5 @@
 import { AblyRealtimeService } from '../../realtime';
+import { SyncProperty } from '../../realtime/base/types';
 import { UserOn3D } from '../users/types';
 
 import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
@@ -33,12 +34,12 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
     this.adapter = adapter;
 
-    // @ts-ignore
-    this.adapter.prototype.setSyncProperty = this.RealtimeService.setSyncProperty;
-    // @ts-ignore
-    this.adapter.prototype.syncPropertiesObserver = this.RealtimeService.syncPropertiesObserver;
-
     this.RealtimeService = RealtimeService;
+
+    this.adapter.setRealtimeMethods({
+      setSyncProperty: (prop: SyncProperty) => RealtimeService.setSyncProperty(prop),
+      subscribe: RealtimeService.syncPropertiesObserver.subscribe,
+    });
   }
 
   public get isAvatarsEnabled(): boolean {

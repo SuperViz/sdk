@@ -40,4 +40,10 @@ export type Adapter = {
   destroyAvatar: (user: UserOn3D) => void;
   enableAvatars: () => void;
   disableAvatars: () => void;
+  setRealtimeMethods: (methods: RealtimeAdapterMethods) => void;
 };
+
+export interface RealtimeAdapterMethods {
+  setSyncProperty: (prop: SyncProperty) => void;
+  subscribe: (callback: Function) => void;
+}
