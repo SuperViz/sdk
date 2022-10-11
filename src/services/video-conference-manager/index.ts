@@ -15,6 +15,9 @@ import { logger } from '../../common/utils';
 import { VideoFrameState, VideoManagerConfig, FrameSize } from './types';
 
 const FRAME_ID = 'sv-video-frame';
+const FRAME_SETTINGS_CLASS = 'sv-video-frame--settings-view';
+const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
+
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
@@ -97,6 +100,9 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
+    const frame = document.getElementById(FRAME_ID);
+    frame.classList.toggle(FRAME_SETTINGS_CLASS);
+
     // @TODO: create option to destroy all these listens.
     this.messageBridge.listen(MeetingEvent.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
     this.messageBridge.listen(MeetingEvent.MEETING_USER_JOINED, this.onUserJoined);
@@ -122,26 +128,31 @@ export default class VideoConfereceManager {
   };
 
   private onUserJoined = (user: User): void => {
+    const frame = document.getElementById(FRAME_ID);
+    frame.classList.toggle(FRAME_SETTINGS_CLASS);
     this.userJoinedObserver.publish(user);
   };
 
   private onUserLeft = (user: User): void => {
+    const frame = document.getElementById(FRAME_ID);
+    frame.classList.toggle(FRAME_SETTINGS_CLASS);
     this.userLeftObserver.publish(user);
   };
 
   private onUserListUpdate = (users: Array<User>): void => {
+    const frame = document.getElementById(FRAME_ID);
     this.userListObserver.publish(users);
   };
 
   private updateFrameSize = (size: FrameSize): void => {
     const frame = document.getElementById(FRAME_ID);
-    const isExpanded = frame.classList.contains('sv-video-frame--expansive-mode');
+    const isExpanded = frame.classList.contains(FRAME_EXPANSIVE_CLASS);
 
     if (size === FrameSize.LARGE && isExpanded) return;
 
     if (size === FrameSize.SMALL && !isExpanded) return;
 
-    frame.classList.toggle('sv-video-frame--expansive-mode');
+    frame.classList.toggle(FRAME_EXPANSIVE_CLASS);
   };
 
   private updateFrameState(state: VideoFrameState): void {
