@@ -16,21 +16,20 @@ import { AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState } from '../video-conference-manager/types';
+import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
 class Communicator {
-  private readonly videoManager: VideoConferencingManager;
   private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
-
   private integrationManager: IntegrationManager | null = null;
+  private videoManager: VideoConferencingManager;
 
-  private debug: boolean = false;
-  private language: string = 'en';
   private readonly roomId: string;
   private readonly userGroup: UserGroup;
+  private readonly realtimeOnly: boolean = false;
+
   private observerHelpers: { string?: ObserverHelper } = {};
   private user: User;
   private userList: User[] = [];
@@ -45,21 +44,21 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
+    camsOff,
+    realtimeOnly,
+    screenshareOff,
   }: CommunicatorOptions) {
-    this.debug = debug;
-    this.language = language;
+    this.realtimeOnly = realtimeOnly ?? false;
     this.roomId = roomId;
-    this.user = user;
     this.userGroup = userGroup;
+    this.user = user;
 
     this.realtime = new AblyRealtimeService(ablyKey);
 
-    this.videoManager = new VideoConferencingManager({
-      apiKey,
-      debug,
-      language,
-      roomId,
-    });
+    const canUseCams = camsOff ?? true;
+    const canUseScreenshare = screenshareOff ?? true;
+
+    // @TODO - do not create Video Frame if `realtimeOnly` flag is true
 
     this.connectionService = new ConnectionService();
     this.connectionService.addListerners();
@@ -67,21 +66,14 @@ class Communicator {
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
 
-    // Video observers
-    this.videoManager.subscribeToFrameState(this.onFrameStateDidChange);
-    this.videoManager.subscribeToRealtimeJoin(this.onRealtimeJoin);
-    this.videoManager.subscribeToHostChange(this.onHostDidChange);
-    this.videoManager.subscribeToGridModeChange(this.onGridModeDidChange);
-    this.videoManager.subscribeToSameAccountError(this.onSameAccountError);
-    this.videoManager.subscribeToDevicesEvents(this.onDevicesChange);
-    this.videoManager.subscribeToUserAmountUpdate(this.onUserAmountUpdate);
-    this.videoManager.subscribeToUserListUpdate(this.onUserListUpdate);
-    this.videoManager.subscribeToUserJoined(this.onUserJoined);
-    this.videoManager.subscribeToUserLeft(this.onUserLeft);
-    this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
-    this.videoManager.meetingConnectionObserver.subscribe(
-      this.connectionService.updateMeetingConnectionStatus,
-    );
+    this.startVideo({
+      canUseCams,
+      canUseScreenshare,
+      apiKey,
+      debug,
+      language,
+      roomId,
+    });
 
     // Realtime observers
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onActorsListDidChange);
@@ -117,15 +109,16 @@ class Communicator {
 
   public destroy() {
     this.publish(MeetingEvent.DESTROY, undefined);
-
-    this.videoManager.unsubscribeFromFrameState(this.onFrameStateDidChange);
-    this.videoManager.unsubscribeFromRealtimeJoin(this.onRealtimeJoin);
-    this.videoManager.unsubscribeFromHostChange(this.onHostDidChange);
-    this.videoManager.unsubscribeFromGridModeChange(this.onGridModeDidChange);
-    this.videoManager.unsubscribeFromUserAmountUpdate(this.onUserAmountUpdate);
-    this.videoManager.unsubscribeFromUserListUpdate(this.onUserListUpdate);
-    this.videoManager.unsubscribeFromUserJoined(this.onUserJoined);
-    this.videoManager.unsubscribeFromUserLeft(this.onUserLeft);
+    this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
+    this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
+    this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
+    this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
+    this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
+    this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
+    this.videoManager.userAmountUpdateObserver.unsubscribe(this.onUserAmountUpdate);
+    this.videoManager.userListObserver.unsubscribe(this.onUserListUpdate);
+    this.videoManager.userJoinedObserver.unsubscribe(this.onUserJoined);
+    this.videoManager.userLeftObserver.unsubscribe(this.onUserLeft);
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -163,6 +156,28 @@ class Communicator {
       this.observerHelpers[type].reset();
       delete this.observerHelpers[type];
     }
+  };
+
+  private startVideo = (options: VideoManagerOptions): void => {
+    if (this.realtimeOnly) return;
+
+    this.videoManager = new VideoConferencingManager(options);
+
+    // Video observers
+    this.videoManager.frameStateObserver.subscribe(this.onFrameStateDidChange);
+    this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
+    this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
+    this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
+    this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
+    this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
+    this.videoManager.userAmountUpdateObserver.subscribe(this.onUserAmountUpdate);
+    this.videoManager.userListObserver.subscribe(this.onUserListUpdate);
+    this.videoManager.userJoinedObserver.subscribe(this.onUserJoined);
+    this.videoManager.userLeftObserver.subscribe(this.onUserLeft);
+    this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
+    this.videoManager.meetingConnectionObserver.subscribe(
+      this.connectionService.updateMeetingConnectionStatus,
+    );
   };
 
   private publish = (type: string, data: any): void => {
