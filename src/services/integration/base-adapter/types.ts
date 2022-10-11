@@ -19,9 +19,6 @@ export interface DefaultAdapterOptions {
   isGatherAvailable?: boolean;
   isGoToAvailable?: boolean;
 
-  // Adapter settings
-  adapter: Adapter;
-
   RealtimeService: AblyRealtimeService;
 }
 
