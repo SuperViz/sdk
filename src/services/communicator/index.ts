@@ -55,8 +55,8 @@ class Communicator {
 
     this.realtime = new AblyRealtimeService(ablyKey);
 
-    const canUseCams = camsOff ?? true;
-    const canUseScreenshare = screenshareOff ?? true;
+    const canUseCams = !camsOff;
+    const canUseScreenshare = !screenshareOff;
 
     // @TODO - do not create Video Frame if `realtimeOnly` flag is true
 
