@@ -198,7 +198,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function setSyncProperty
-   * @param {SyncProperty} property
+   * @param {string} name
+   * @param {unknown} property
    * @description add/change and sync a property in the room
    * @returns {void}
    */
