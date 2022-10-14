@@ -1,4 +1,5 @@
 import Ably from 'ably';
+import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -201,7 +202,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setSyncProperty<T>(name: string, property: T): void {
+  public setSyncProperty = throttle((name: string, property: unknown): void => {
     // keep in room properties for validation
     const roomProperties = this.localRoomProperties;
     let { syncProperties } = roomProperties;
@@ -221,7 +222,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     });
 
     this.updateRoomProperties(newRoomProperties);
-  }
+  }, 500);
 
   /**
    * @function onAblyPresenceEnter
