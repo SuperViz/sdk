@@ -28,7 +28,6 @@ class Communicator {
 
   private readonly roomId: string;
   private readonly userGroup: UserGroup;
-  private readonly realtimeOnly: boolean = false;
 
   private observerHelpers: { string?: ObserverHelper } = {};
   private user: User;
@@ -45,10 +44,8 @@ class Communicator {
     user,
     shouldKickUsersOnHostLeave,
     camsOff,
-    realtimeOnly,
     screenshareOff,
   }: CommunicatorOptions) {
-    this.realtimeOnly = realtimeOnly ?? false;
     this.roomId = roomId;
     this.userGroup = userGroup;
     this.user = user;
@@ -57,8 +54,6 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
-
-    // @TODO - do not create Video Frame if `realtimeOnly` flag is true
 
     this.connectionService = new ConnectionService();
     this.connectionService.addListerners();
@@ -159,8 +154,6 @@ class Communicator {
   };
 
   private startVideo = (options: VideoManagerOptions): void => {
-    if (this.realtimeOnly) return;
-
     this.videoManager = new VideoConferencingManager(options);
 
     // Video observers

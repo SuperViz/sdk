@@ -35,9 +35,7 @@ export default class VideoConfereceManager {
 
   frameState = VideoFrameState.UNINITIALIZED;
 
-  constructor(config: VideoManagerOptions) {
-    const { apiKey, language, debug, canUseCams, canUseScreenshare } = config;
-
+  constructor({ apiKey, language, debug, canUseCams, canUseScreenshare }: VideoManagerOptions) {
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 

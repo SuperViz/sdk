@@ -6,7 +6,6 @@ export interface SuperVizSdkOptions {
   user: User;
   userGroup: UserGroup;
   shouldKickUsersOnHostLeave?: boolean;
-  realtimeOnly?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;
 }
