@@ -38,7 +38,6 @@ class Communicator {
     debug = false,
     language = 'en',
     roomId,
-    photonAppId,
     ablyKey,
     userGroup,
     user,
@@ -85,7 +84,6 @@ class Communicator {
       },
       roomId: this.roomId,
       apiKey,
-      photonAppId,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
     });
   }

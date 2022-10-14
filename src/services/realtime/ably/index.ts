@@ -794,15 +794,19 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onActorJoin
-   * @param {Ably.Types.PresenceMessage} user
+   * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
    */
-  private async onJoinRoom(user: Ably.Types.PresenceMessage): Promise<void> {
+  private async onJoinRoom(actor: Ably.Types.PresenceMessage): Promise<void> {
     this.localRoomProperties = await this.fetchRoomProperties();
 
     if (!this.localRoomProperties) {
-      await this.initializeRoomProperties(user, this.initialRoomProperties);
+      await this.initializeRoomProperties(actor, this.initialRoomProperties);
     }
+
+    const user = Object.assign({}, actor, { customProperties: actor.data, userId: actor.clientId });
+
+    this.actorJoinedObserver.publish(user);
 
     await this.updateActors();
 
