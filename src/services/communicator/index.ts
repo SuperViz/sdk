@@ -145,7 +145,7 @@ class Communicator {
   }
 
   public setSyncProperty = <T>(name: string, property: T): void => {
-    this.realtime.setSyncProperty({ [name]: property });
+    this.realtime.setSyncProperty(name, property);
   };
 
   public subscribe = (type: string, listener: Function) => {

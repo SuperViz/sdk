@@ -201,25 +201,23 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setSyncProperty(property: SyncProperty): void {
+  public setSyncProperty<T>(name: string, property: T): void {
     // keep in room properties for validation
     const roomProperties = this.localRoomProperties;
     let { syncProperties } = roomProperties;
     syncProperties = {
       ...syncProperties,
-      ...property,
+      ...{ [name]: property },
     };
     const newRoomProperties = {
       ...roomProperties,
       syncProperties,
     };
 
-    Object.entries(property).forEach(([key, value]) => {
-      this.roomSyncChannel.publish(key, value, (error: Ably.Types.ErrorInfo) => {
-        if (!error) return;
+    this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
+      if (!error) return;
 
-        logger.log(`publish failed with error ${error}`);
-      });
+      logger.log(`publish failed with error ${error}`);
     });
 
     this.updateRoomProperties(newRoomProperties);

@@ -44,7 +44,7 @@ export type Adapter = {
 };
 
 export interface RealtimeAdapterMethods {
-  setSyncProperty: (prop: SyncProperty) => void;
+  setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
 }
