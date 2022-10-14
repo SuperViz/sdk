@@ -23,7 +23,7 @@ export interface DefaultRealtimeMethods {
   start: (options: StartRealtimeType) => void;
   leave: () => void;
   join: (myActorProperties: any, aditionalRoomProperties: any) => void;
-  setSyncProperty: (options: SyncProperty) => void;
+  setSyncProperty: <T>(name: string, property: T) => void;
   setHost: (masterUserId: String) => void;
   setGridMode: (value: boolean) => void;
 }

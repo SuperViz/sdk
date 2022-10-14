@@ -1,4 +1,5 @@
 import Ably from 'ably';
+import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -6,7 +7,6 @@ import { logger } from '../../../common/utils';
 import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ActorInfo, RealtimeJoinOptions, StartRealtimeType, SyncProperty } from '../base/types';
-import throttle from 'lodash/throttle';
 
 import {
   AblyChannelState,
@@ -198,27 +198,28 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function setSyncProperty
-   * @param {SyncProperty} property
+   * @param {string} name
+   * @param {unknown} property
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setSyncProperty = throttle((property: SyncProperty): void => {
+  public setSyncProperty = throttle((name: string, property: unknown): void => {
     // keep in room properties for validation
     const roomProperties = this.localRoomProperties;
     let { syncProperties } = roomProperties;
     syncProperties = {
       ...syncProperties,
-      ...property,
+      ...{ [name]: property },
     };
     const newRoomProperties = {
       ...roomProperties,
       syncProperties,
     };
-    Object.entries(property).forEach(([key, value]) => {
-      this.roomSyncChannel.publish(key, value, (error: Ably.Types.ErrorInfo) => {
-        if (!error) return;
-        logger.log(`publish failed with error ${error}`);
-      });
+
+    this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
+      if (!error) return;
+
+      logger.log(`publish failed with error ${error}`);
     });
 
     this.updateRoomProperties(newRoomProperties);

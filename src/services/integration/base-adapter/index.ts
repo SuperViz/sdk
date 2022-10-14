@@ -37,7 +37,9 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this.RealtimeService = RealtimeService;
 
     this.adapter.setRealtimeMethods({
-      setSyncProperty: (prop: SyncProperty) => RealtimeService.setSyncProperty(prop),
+      setSyncProperty: <T>(name: string, property: T) => {
+        RealtimeService.setSyncProperty<T>(name, property);
+      },
       subscribe: RealtimeService.syncPropertiesObserver.subscribe,
       unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
     });
