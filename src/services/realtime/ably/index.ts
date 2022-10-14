@@ -6,6 +6,7 @@ import { logger } from '../../../common/utils';
 import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ActorInfo, RealtimeJoinOptions, StartRealtimeType, SyncProperty } from '../base/types';
+import throttle from 'lodash/throttle';
 
 import {
   AblyChannelState,
@@ -201,7 +202,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setSyncProperty(property: SyncProperty): void {
+  public setSyncProperty = throttle((property: SyncProperty): void => {
     // keep in room properties for validation
     const roomProperties = this.localRoomProperties;
     let { syncProperties } = roomProperties;
@@ -213,17 +214,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       ...roomProperties,
       syncProperties,
     };
-
     Object.entries(property).forEach(([key, value]) => {
       this.roomSyncChannel.publish(key, value, (error: Ably.Types.ErrorInfo) => {
         if (!error) return;
-
         logger.log(`publish failed with error ${error}`);
       });
     });
 
     this.updateRoomProperties(newRoomProperties);
-  }
+  }, 500);
 
   /**
    * @function onAblyPresenceEnter
