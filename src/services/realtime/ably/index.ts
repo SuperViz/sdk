@@ -6,7 +6,7 @@ import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
 import ApiService from '../../api';
 import { RealtimeService } from '../base';
-import { ActorInfo, RealtimeJoinOptions, StartRealtimeType, SyncProperty } from '../base/types';
+import { ActorInfo, RealtimeJoinOptions, StartRealtimeType } from '../base/types';
 
 import {
   AblyChannelState,
