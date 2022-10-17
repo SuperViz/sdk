@@ -1,5 +1,5 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
-import { AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
+import { Adapter, AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
 
 export type Language = 'pt' | 'en' | 'zh';
 
@@ -17,5 +17,5 @@ export type SuperVizSdk = {
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
 
-  connectAdapter: (adapter: Object, props: DefaultAdapterOptions) => AdapterMethods;
+  connectAdapter: (adapter: Adapter, props: DefaultAdapterOptions) => AdapterMethods;
 };

@@ -35,7 +35,7 @@ export default class VideoConfereceManager {
 
   frameState = VideoFrameState.UNINITIALIZED;
 
-  constructor({ apiKey, language, debug, canUseCams, canUseScreenshare }: VideoManagerOptions) {
+  constructor(options: VideoManagerOptions) {
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 
@@ -54,13 +54,7 @@ export default class VideoConfereceManager {
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
-      {
-        apiKey,
-        debug,
-        language,
-        canUseCams,
-        canUseScreenshare,
-      },
+      options,
       {
         allow: 'camera *;microphone *; display-capture *;',
       },

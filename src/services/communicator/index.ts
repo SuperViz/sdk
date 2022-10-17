@@ -10,9 +10,10 @@ import {
 } from '../../common/types/events.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
+import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
-import { AdapterMethods } from '../integration/base-adapter/types';
+import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
@@ -23,6 +24,7 @@ import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 class Communicator {
   private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
+  private readonly browserService: BrowserService;
   private integrationManager: IntegrationManager | null = null;
   private videoManager: VideoConferencingManager;
 
@@ -50,6 +52,7 @@ class Communicator {
     this.user = user;
 
     this.realtime = new AblyRealtimeService(ablyKey);
+    this.browserService = new BrowserService();
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
@@ -278,7 +281,7 @@ class Communicator {
   };
 
   // Integrator methods
-  public connectAdapter(adapter: Object, adapterOptions: AdapterOptions): AdapterMethods {
+  public connectAdapter(adapter: Adapter, adapterOptions: AdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
