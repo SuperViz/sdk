@@ -32,7 +32,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private roomSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private isReconnecting: boolean = false;
   private currentReconnecAttempt: number = 0;
-  private localRoomProperties?: AblyRealtimeData = null;
+  public localRoomProperties?: AblyRealtimeData = null;
   private initialRoomProperties: AblyRealtimeData = null;
   private enableSync: boolean = true;
   private roomId: string;

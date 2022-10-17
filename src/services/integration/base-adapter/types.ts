@@ -47,4 +47,5 @@ export interface RealtimeAdapterMethods {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
+  userIdToSlotIndex: Object;
 }
