@@ -22,7 +22,6 @@ const styles = `
 
   #sv-video-wrapper iframe {
     width: 225px;
-    height: 100%;
   }
 
   #sv-video-wrapper iframe.sv-video-frame--expansive-mode {
