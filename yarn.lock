@@ -1345,6 +1345,16 @@ bops@^1.0.1:
     base64-js "1.0.2"
     to-utf8 "0.0.1"
 
+bowser-jr@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/bowser-jr/-/bowser-jr-1.0.4.tgz#2af749f0c6e1bcf6460fb805f6f5b7de8a6b34b5"
+  integrity sha512-JaDTmiRVnYHRPqGCBD1lcPyc8tCzzCW6L0NfZjRB/hHmNcoCOidb+aW2PnCXBFai24wyoSOxwkE1legLDEz8bw==
+
+bowser@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
+  integrity sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==
+
 boxen@^5.0.0:
   version "5.1.2"
   resolved "https://registry.npmjs.org/boxen/-/boxen-5.1.2.tgz"

@@ -13,7 +13,7 @@ import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 
-import { VideoFrameState, VideoManagerConfig, FrameSize } from './types';
+import { VideoFrameState, VideoManagerOptions, FrameSize } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
@@ -24,25 +24,23 @@ export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
 
-  private frameStateObserver = new ObserverHelper({ logger });
-  private realtimeObserver = new ObserverHelper({ logger });
-  private hostChangeObserver = new ObserverHelper({ logger });
-  private gridModeChangeObserver = new ObserverHelper({ logger });
-  private sameAccountErrorObserver = new ObserverHelper({ logger });
-  private devicesObserver = new ObserverHelper({ logger });
-  public meetingStateObserver = new ObserverHelper({ logger });
-  public meetingConnectionObserver = new ObserverHelper({ logger });
+  public readonly frameStateObserver = new ObserverHelper({ logger });
+  public readonly realtimeObserver = new ObserverHelper({ logger });
+  public readonly hostChangeObserver = new ObserverHelper({ logger });
+  public readonly gridModeChangeObserver = new ObserverHelper({ logger });
+  public readonly sameAccountErrorObserver = new ObserverHelper({ logger });
+  public readonly devicesObserver = new ObserverHelper({ logger });
+  public readonly meetingStateObserver = new ObserverHelper({ logger });
+  public readonly meetingConnectionObserver = new ObserverHelper({ logger });
 
-  private userAmountUpdateObserver = new ObserverHelper({ logger });
-  private userJoinedObserver = new ObserverHelper({ logger });
-  private userLeftObserver = new ObserverHelper({ logger });
-  private userListObserver = new ObserverHelper({ logger });
+  public readonly userAmountUpdateObserver = new ObserverHelper({ logger });
+  public readonly userJoinedObserver = new ObserverHelper({ logger });
+  public readonly userLeftObserver = new ObserverHelper({ logger });
+  public readonly userListObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
-  constructor(config: VideoManagerConfig) {
-    const { apiKey, language, debug } = config;
-
+  constructor(options: VideoManagerOptions) {
     const wrapper = document.createElement('div');
     const style = document.createElement('style');
 
@@ -61,11 +59,7 @@ export default class VideoConfereceManager {
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
-      {
-        apiKey,
-        debug,
-        language,
-      },
+      options,
       {
         allow: 'camera *;microphone *; display-capture *;',
       },
@@ -222,34 +216,4 @@ export default class VideoConfereceManager {
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.meetingConnectionObserver.publish(newStatus);
   };
-
-  public subscribeToFrameState = this.frameStateObserver.subscribe;
-  public unsubscribeFromFrameState = this.frameStateObserver.unsubscribe;
-
-  public subscribeToRealtimeJoin = this.realtimeObserver.subscribe;
-  public unsubscribeFromRealtimeJoin = this.realtimeObserver.unsubscribe;
-
-  public subscribeToHostChange = this.hostChangeObserver.subscribe;
-  public unsubscribeFromHostChange = this.hostChangeObserver.unsubscribe;
-
-  public subscribeToGridModeChange = this.gridModeChangeObserver.subscribe;
-  public unsubscribeFromGridModeChange = this.gridModeChangeObserver.unsubscribe;
-
-  public subscribeToSameAccountError = this.sameAccountErrorObserver.subscribe;
-  public unsubscribeFromSameAccountError = this.sameAccountErrorObserver.unsubscribe;
-
-  public subscribeToDevicesEvents = this.devicesObserver.subscribe;
-  public unsubscribeFromDevicesEvents = this.devicesObserver.unsubscribe;
-
-  public subscribeToUserAmountUpdate = this.userAmountUpdateObserver.subscribe;
-  public unsubscribeFromUserAmountUpdate = this.userAmountUpdateObserver.unsubscribe;
-
-  public subscribeToUserJoined = this.userJoinedObserver.subscribe;
-  public unsubscribeFromUserJoined = this.userJoinedObserver.unsubscribe;
-
-  public subscribeToUserLeft = this.userLeftObserver.subscribe;
-  public unsubscribeFromUserLeft = this.userLeftObserver.unsubscribe;
-
-  public subscribeToUserListUpdate = this.userListObserver.subscribe;
-  public unsubscribeFromUserListUpdate = this.userListObserver.unsubscribe;
 }

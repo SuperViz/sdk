@@ -10,6 +10,8 @@ import { User, UserGroup } from './common/types/user.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
+import { BrowserService } from './services/browser';
+import { BrowserStats } from './services/browser/types';
 import Communicator from './services/communicator';
 import { SuperVizSdk, AdapterOptions } from './services/communicator/types';
 import { AdapterMethods, Adapter } from './services/integration/base-adapter/types';
@@ -82,4 +84,6 @@ export {
   Adapter,
   UserOn3D,
   UserTo3D,
+  BrowserService,
+  BrowserStats,
 };
