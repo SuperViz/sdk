@@ -32,7 +32,7 @@ export interface AdapterMethods {
 }
 
 export type Adapter = {
-  setSyncProperty: (property: SyncProperty) => void;
+  setSyncProperty: <T>(name: string, property: T) => void;
   createPointer: (user: UserOn3D) => void;
   destroyPointer: (user: UserOn3D) => void;
 
@@ -44,7 +44,8 @@ export type Adapter = {
 };
 
 export interface RealtimeAdapterMethods {
-  setSyncProperty: (prop: SyncProperty) => void;
+  setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
+  userIdToSlotIndex: Object;
 }

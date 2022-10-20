@@ -1,7 +1,9 @@
 export enum MeetingEvent {
   FRAME_LOAD = 'frame.load',
   FRAME_SIZE_UPDATE = 'frame.size-update',
-
+  FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',
+  MEETING_ENABLE_SCREEN_SHARE = 'frame.enable-screen-share',
+  MEETING_DISABLE_SCREEN_SHARE = 'frame.disable-screen-share',
   MEETING_START = 'meeting.start',
   MEETING_LEAVE = 'meeting.leave',
   MEETING_USER_AMOUNT_UPDATE = 'meeting.amount-of-users-update',
@@ -17,11 +19,9 @@ export enum MeetingEvent {
   MEETING_KICK_USERS = 'meeting.kick-all-users',
   MEETING_STATE_UPDATE = 'meeting.state-update',
   MEETING_CONNECTION_STATUS_CHANGE = 'meeting.connection-status-change',
-
   MY_USER_UPDATED = 'my-user.update',
   MY_USER_LEFT = 'my-user.left',
   MY_USER_JOINED = 'my-user.joined',
-
   HEARTBEAT = 'heartbeat',
   DESTROY = 'destroy',
 }
@@ -59,7 +59,8 @@ export enum MeetingState {
  * * POOR: Poor connection. User connection and/or PC not meet the minimum requirements;
  * * DISCONNECTED: Audio/video is not able to send/receive network packets for at least 10 secs;
  * * RECONNECTING: Reconnecting due to loss of connection.
- * * LOST_CONNECTION: The connection to the audio/video service was lost. You must end the meeting and start again.
+ * * LOST_CONNECTION: The connection to the audio/video service was lost.
+ * * You must end the meeting and start again.
  */
 export enum MeetingConnectionStatus {
   NOT_AVAILABLE = 0,
@@ -79,3 +80,8 @@ export enum DeviceEvent {
   DEVICES_INITIALIZATION_ERROR = 'devices.inititalization-error',
   DEVICES_UNKNOWN_ERROR = 'devices.unknown-error',
 }
+
+export type Dimensions = {
+  width: number | null;
+  height: number | null;
+};

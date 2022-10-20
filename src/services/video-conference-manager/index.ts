@@ -7,6 +7,7 @@ import {
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
+  Dimensions,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { User } from '../../common/types/user.types';
@@ -15,6 +16,10 @@ import { logger } from '../../common/utils';
 import { VideoFrameState, VideoManagerOptions, FrameSize } from './types';
 
 const FRAME_ID = 'sv-video-frame';
+const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
+const FULL_VIEWPORT_HEIGHT = '100vh';
+const FULL_PERCENT = '100%';
+
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
@@ -107,8 +112,23 @@ export default class VideoConfereceManager {
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
+    this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
+  };
+
+  private onFrameDimensionsUpdate = ({ width, height }: Dimensions) => {
+    const frame = document.getElementById(FRAME_ID);
+
+    const SET_UPDATE_WIDTH = width !== null;
+    const FULL_WIDTH = width === 0;
+    if (SET_UPDATE_WIDTH) frame.style.width = `${width}px`;
+    if (FULL_WIDTH) frame.style.width = FULL_PERCENT;
+
+    const SET_UPDATE_HEIGHT = !!height;
+    const FULL_HEIGHT = height === 0;
+    if (SET_UPDATE_HEIGHT) frame.style.height = `${height}px`;
+    if (FULL_HEIGHT) frame.style.height = FULL_VIEWPORT_HEIGHT;
   };
 
   private onUserAmountUpdate = (users: Array<User>): void => {
@@ -129,13 +149,13 @@ export default class VideoConfereceManager {
 
   private updateFrameSize = (size: FrameSize): void => {
     const frame = document.getElementById(FRAME_ID);
-    const isExpanded = frame.classList.contains('sv-video-frame--expansive-mode');
+    const isExpanded = frame.classList.contains(FRAME_EXPANSIVE_CLASS);
 
     if (size === FrameSize.LARGE && isExpanded) return;
 
     if (size === FrameSize.SMALL && !isExpanded) return;
 
-    frame.classList.toggle('sv-video-frame--expansive-mode');
+    frame.classList.toggle(FRAME_EXPANSIVE_CLASS);
   };
 
   private updateFrameState(state: VideoFrameState): void {
@@ -144,19 +164,13 @@ export default class VideoConfereceManager {
       this.frameStateObserver.publish(this.frameState);
     }
 
-    switch (state) {
-      case VideoFrameState.INITIALIZING:
-        this.meetingStateUpdate(MeetingState.FRAME_INITIALIZING);
-        break;
-      case VideoFrameState.INITIALIZED:
-        this.meetingStateUpdate(MeetingState.FRAME_INITIALIZED);
-        break;
-      case VideoFrameState.UNINITIALIZED:
-        this.meetingStateUpdate(MeetingState.FRAME_UNINITIALIZED);
-        break;
-      default:
-        break;
-    }
+    const states = {
+      [VideoFrameState.INITIALIZING]: MeetingState.FRAME_INITIALIZING,
+      [VideoFrameState.INITIALIZED]: MeetingState.FRAME_INITIALIZED,
+      [VideoFrameState.UNINITIALIZED]: MeetingState.FRAME_UNINITIALIZED,
+    };
+
+    this.meetingStateUpdate(states[state]);
   }
 
   private realtimeJoin = (userInfo = {}): void => {
