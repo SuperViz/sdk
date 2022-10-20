@@ -11,7 +11,9 @@ import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import Communicator from './services/communicator';
-import { SuperVizSdk } from './services/communicator/types';
+import { SuperVizSdk, AdapterOptions } from './services/communicator/types';
+import { AdapterMethods, Adapter } from './services/integration/base-adapter/types';
+import { UserOn3D, UserTo3D } from './services/integration/users/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
@@ -43,12 +45,12 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
 
   const environment = await ApiService.fetchConfig(apiKey);
 
-  if (!environment || !environment.photonAppId) {
+  if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
-  const { photonAppId } = environment;
-  return Communicator(Object.assign({}, options, { apiKey, photonAppId }));
+  const { ablyKey } = environment;
+  return Communicator(Object.assign({}, options, { apiKey, ablyKey }));
 };
 
 if (window) {
@@ -59,6 +61,7 @@ if (window) {
     DeviceEvent,
     RealtimeEvent,
     MeetingState,
+    MeetingConnectionStatus,
   };
 }
 
@@ -74,4 +77,9 @@ export {
   User,
   UserGroup,
   MeetingConnectionStatus,
+  AdapterMethods,
+  AdapterOptions,
+  Adapter,
+  UserOn3D,
+  UserTo3D,
 };

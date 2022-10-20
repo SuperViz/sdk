@@ -7,13 +7,11 @@ import { DefaultConnectionService, WindowConnectionStatus } from './types';
 
 export class ConnectionService implements DefaultConnectionService {
   connectionStatus: MeetingConnectionStatus;
-  navigatorOnline: boolean;
 
   connectionStatusObserver = new ObserverHelper({ logger });
 
   constructor() {
     this.connectionStatus = MeetingConnectionStatus.NOT_AVAILABLE;
-    this.navigatorOnline = false;
   }
 
   /**
