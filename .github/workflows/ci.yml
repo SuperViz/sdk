@@ -80,7 +80,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm whoami && npm publish
   slackNotification:
-    needs: build
+    needs: main
     name: Slack Notification
     runs-on: ubuntu-latest
     steps:
