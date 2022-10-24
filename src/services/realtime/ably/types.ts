@@ -15,12 +15,11 @@ export interface AblyActor extends Ably.Types.PresenceMessage {
 }
 
 export interface AblyRealtimeData {
-  hostConnectionId?: string;
+  hostClientId?: string;
   isGridModeEnable?: boolean;
   syncProperties?: SyncProperty;
 
   slots?: AblySlot[];
-  userIdToSlotIndex?: { [id: string]: number };
 }
 
 export interface AblySlot {
