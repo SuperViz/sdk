@@ -8,22 +8,13 @@ import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ActorInfo, RealtimeJoinOptions, StartRealtimeType } from '../base/types';
 
-import {
-  AblyChannelState,
-  AblyConnectionState,
-  AblyRealtime,
-  AblyActors,
-  AblyRealtimeData,
-  AblyActor,
-  AblyTokenCallBack,
-} from './types';
+import { AblyRealtime, AblyActors, AblyRealtimeData, AblyActor, AblyTokenCallBack } from './types';
 
 const KICK_USERS_TIME = 1000 * 60;
 let KICK_USERS_TIMEOUT = null;
 
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
-  private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private actors: AblyActors;
   private hostUserId: string = null;
   private myActorProperties: ActorInfo = null;
@@ -37,6 +28,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
   private apiKey: string;
+
+  private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
+  private roomChannelState: Ably.Types.ChannelStateChange;
+  private connectionState: Ably.Types.ConnectionStateChange;
 
   constructor(ablyKey: string) {
     super();
@@ -80,8 +75,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
     this.shouldKickUsersOnHostLeave = shouldKickUsersOnHostLeave;
     this.apiKey = apiKey;
-
-    logger.log('REALTIME START', `room id: ${this.roomId}`);
 
     if (!this.client) {
       this.buildClient();
@@ -622,7 +615,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.state = state;
 
-    logger.log('REALTIME', `Realtime state did change. New state: ${this.state}`);
+    logger.log(
+      'REALTIME',
+      `Realtime state did change. New state: ${RealtimeStateTypes[this.state]}`,
+    );
 
     this.realtimeStateObserver.publish(this.state);
   }
@@ -713,43 +709,67 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function onAblyConnectionStateChange
-   * @param {Ably.Types.ConnectionStateChange} state
-   * @description gets ably's new connection state
+   * @function onStateChange
+   * @description Translates connection state and channel state into realtime state
    * @returns {void}
    */
-  private onAblyConnectionStateChange(state: Ably.Types.ConnectionStateChange): void {
-    const stateName = state.current;
-    const newState = AblyConnectionState[stateName as keyof typeof RealtimeStateTypes];
+  onStateChange(): void {
+    const roomChannelCurrentState = this.roomChannelState?.current;
+    const connectionCurrentState = this.connectionState?.current;
+    const isConnectedToAblyService = connectionCurrentState === 'connected';
+    const isInitializing = ['initialized', 'connecting'].includes(connectionCurrentState);
+    const isDisconnected =
+      ['closed', 'closing'].includes(connectionCurrentState) ||
+      ['detaching', 'detached'].includes(roomChannelCurrentState);
+
+    const avaliableStates = {
+      [RealtimeStateTypes.DISCONNECTED]: isDisconnected,
+      [RealtimeStateTypes.INITIALIZING]: isInitializing,
+      [RealtimeStateTypes.READY_TO_JOIN]: !roomChannelCurrentState && isConnectedToAblyService,
+      [RealtimeStateTypes.CONNECTING]: roomChannelCurrentState === 'attaching',
+      [RealtimeStateTypes.CONNECTED]:
+        roomChannelCurrentState === 'attached' && isConnectedToAblyService,
+      [RealtimeStateTypes.FAILED]:
+        roomChannelCurrentState === 'failed' || connectionCurrentState === 'failed',
+      [RealtimeStateTypes.RETRYING]:
+        connectionCurrentState === 'suspended' || roomChannelCurrentState === 'suspended',
+    };
+
+    const currentState = Object.entries(avaliableStates).find(([key, value]) => value && key)[0];
+    const newState = Number(currentState);
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.currentReconnecAttempt = 0;
     }
 
-    if (state.current === 'connected' && this.isReconnecting) {
+    if (isConnectedToAblyService && this.isReconnecting) {
       this.onJoinRoom(this.getMyActor);
     }
 
-    if (this.state === RealtimeStateTypes.RETRYING) {
+    if (newState === RealtimeStateTypes.RETRYING || newState === RealtimeStateTypes.FAILED) {
       // rejoin room
       this.forceReconnect();
     }
 
-    if (newState === RealtimeStateTypes.FAILED) {
-      this.forceReconnect();
-      return;
-    }
-
-    if (state.retryIn) {
+    if (this.connectionState?.retryIn) {
       this.currentReconnecAttempt++;
       this.isReconnecting = true;
       this.publishStateUpdate(RealtimeStateTypes.RETRYING);
       this.reconnectObserver.publish(this.currentReconnecAttempt);
     }
 
-    if (newState !== this.state) {
-      this.publishStateUpdate(newState);
-    }
+    this.publishStateUpdate(newState);
+  }
+
+  /**
+   * @function onAblyConnectionStateChange
+   * @param {Ably.Types.ConnectionStateChange} state
+   * @description gets ably's new connection state
+   * @returns {void}
+   */
+  private onAblyConnectionStateChange(state: Ably.Types.ConnectionStateChange): void {
+    this.connectionState = state;
+    this.onStateChange();
   }
 
   /**
@@ -759,12 +779,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyChannelStateChange(state: Ably.Types.ChannelStateChange): void {
-    const stateName = state.current;
-    const newState = AblyChannelState[stateName as keyof typeof RealtimeStateTypes];
-
-    if (newState !== this.state) {
-      this.publishStateUpdate(newState);
-    }
+    this.roomChannelState = state;
+    this.onStateChange();
   }
 
   /**
