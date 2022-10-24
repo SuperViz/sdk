@@ -38,7 +38,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     });
 
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
-    this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
 
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
@@ -92,8 +91,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   private createLocalUser = (localUser: UserTo3D): void => {
     const user = this.IntegrationUsersService.createUserOn3D(localUser);
 
-    this.createAvatar(user, user.avatarUrl);
-    this.createPointer(user);
+    this.createAvatar(user, user.avatarUrl); // not necessary
+    this.createPointer(user); // not necessary
     this.IntegrationUsersService.setLocalUser(user);
   };
 
@@ -104,7 +103,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private createUserList = (userList: UserTo3D[]): void => {
+    console.log('createUserList');
     const userOn3DList = userList.map((user) => this.IntegrationUsersService.createUserOn3D(user));
+    console.log('userOn3DList', userOn3DList);
     userOn3DList.forEach((user) => {
       this.createAvatar(user);
       this.createPointer(user);

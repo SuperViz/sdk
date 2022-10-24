@@ -17,6 +17,7 @@ export enum MeetingEvent {
   MEETING_KICK_USERS = 'meeting.kick-all-users',
   MEETING_STATE_UPDATE = 'meeting.state-update',
   MEETING_CONNECTION_STATUS_CHANGE = 'meeting.connection-status-change',
+  MEETING_GOTO = 'meeting.go-to',
 
   MY_USER_UPDATED = 'my-user.update',
   MY_USER_LEFT = 'my-user.left',
@@ -59,7 +60,8 @@ export enum MeetingState {
  * * POOR: Poor connection. User connection and/or PC not meet the minimum requirements;
  * * DISCONNECTED: Audio/video is not able to send/receive network packets for at least 10 secs;
  * * RECONNECTING: Reconnecting due to loss of connection.
- * * LOST_CONNECTION: The connection to the audio/video service was lost. You must end the meeting and start again.
+ * * LOST_CONNECTION: The connection to the audio/video service was lost. Y
+ * ou must end the meeting and start again.
  */
 export enum MeetingConnectionStatus {
   NOT_AVAILABLE = 0,

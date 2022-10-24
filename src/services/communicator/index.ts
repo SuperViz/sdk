@@ -81,6 +81,7 @@ class Communicator {
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
+    this.videoManager.subscribeToGoToEvent(this.onGoToEvent);
 
     // Realtime observers
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onActorsListDidChange);
@@ -188,6 +189,10 @@ class Communicator {
 
   private onHostDidChange = (hostId: string): void => {
     this.realtime.setHost(hostId);
+  };
+
+  private onGoToEvent = (userId: string): void => {
+    this.integrationManager.adapter.goTo(userId);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {

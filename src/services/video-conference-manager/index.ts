@@ -32,6 +32,7 @@ export default class VideoConfereceManager {
   private userJoinedObserver = new ObserverHelper({ logger });
   private userLeftObserver = new ObserverHelper({ logger });
   private userListObserver = new ObserverHelper({ logger });
+  private goToEventObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -107,6 +108,8 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_USER_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
+    this.messageBridge.listen(MeetingEvent.MEETING_GOTO, this.onClickedGoTo);
+
     this.messageBridge.listen(
       MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE,
       this.onConnectionStatusChange,
@@ -171,6 +174,10 @@ export default class VideoConfereceManager {
 
   private onMeetingHostChange = (hostId: string): void => {
     this.hostChangeObserver.publish(hostId);
+  };
+
+  private onClickedGoTo = (userId: string): void => {
+    this.goToEventObserver.publish(userId);
   };
 
   private onGridModeChange = (isGridModeEnable: boolean): void => {
@@ -238,4 +245,7 @@ export default class VideoConfereceManager {
 
   public subscribeToUserListUpdate = this.userListObserver.subscribe;
   public unsubscribeFromUserListUpdate = this.userListObserver.unsubscribe;
+
+  public subscribeToGoToEvent = this.goToEventObserver.subscribe;
+  public unsubscribeToGoToEvent = this.goToEventObserver.unsubscribe;
 }
