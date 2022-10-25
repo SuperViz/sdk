@@ -791,7 +791,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private async onJoinRoom(actor: Ably.Types.PresenceMessage): Promise<void> {
     this.localRoomProperties = await this.fetchRoomProperties();
 
-    if (!this.localRoomProperties) {
+    if (!this.localRoomProperties || !this.localRoomProperties?.slots) {
       this.initializeRoomProperties(actor);
     }
 
