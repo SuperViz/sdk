@@ -41,7 +41,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
       },
       subscribe: RealtimeService.syncPropertiesObserver.subscribe,
       unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
-      userIdToSlotIndex: RealtimeService.localRoomProperties.userIdToSlotIndex,
+      slots: RealtimeService.localRoomProperties.slots,
     });
   }
 

@@ -15,12 +15,11 @@ export interface AblyActor extends Ably.Types.PresenceMessage {
 }
 
 export interface AblyRealtimeData {
-  hostConnectionId?: string;
+  hostClientId?: string;
   isGridModeEnable?: boolean;
   syncProperties?: SyncProperty;
 
   slots?: AblySlot[];
-  userIdToSlotIndex?: { [id: string]: number };
 }
 
 export interface AblySlot {
@@ -34,23 +33,3 @@ export type AblyTokenCallBack = (
   error: Ably.Types.ErrorInfo | string,
   tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string,
 ) => void;
-
-export enum AblyConnectionState {
-  failed = RealtimeStateTypes.FAILED,
-  closed = RealtimeStateTypes.DISCONNECTED,
-  initialized = RealtimeStateTypes.DISCONNECTED,
-  connecting = RealtimeStateTypes.DISCONNECTED,
-  connected = RealtimeStateTypes.CONNECTED,
-  disconnected = RealtimeStateTypes.DISCONNECTED,
-  closing = RealtimeStateTypes.DISCONNECTED,
-  suspended = RealtimeStateTypes.DISCONNECTED,
-}
-export enum AblyChannelState {
-  initialized = RealtimeStateTypes.CONNECTING,
-  attaching = RealtimeStateTypes.CONNECTING,
-  attached = RealtimeStateTypes.JOINED,
-  detaching = RealtimeStateTypes.DISCONNECTED,
-  detached = RealtimeStateTypes.READY_TO_JOIN,
-  failed = RealtimeStateTypes.FAILED,
-  suspended = RealtimeStateTypes.RETRYING,
-}
