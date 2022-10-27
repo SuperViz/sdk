@@ -5,6 +5,7 @@ export interface VideoManagerConfig {
   debug: boolean;
   language: Language;
   roomId: string;
+  broadcast: boolean;
 }
 
 export enum VideoFrameState {

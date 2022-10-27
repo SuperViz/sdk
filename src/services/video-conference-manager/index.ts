@@ -38,10 +38,14 @@ export default class VideoConfereceManager {
   private userLeftObserver = new ObserverHelper({ logger });
   private userListObserver = new ObserverHelper({ logger });
 
+  private isBroadcast = false;
+
   frameState = VideoFrameState.UNINITIALIZED;
 
   constructor(config: VideoManagerConfig) {
-    const { apiKey, language, debug } = config;
+    const { apiKey, language, debug, broadcast } = config;
+
+    this.isBroadcast = broadcast;
 
     const wrapper = document.createElement('div');
     const style = document.createElement('style');

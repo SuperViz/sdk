@@ -41,6 +41,10 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
     throw new Error('Failed to validate API key');
   }
 
+  if (options.broadcast) {
+    logger.log('Broadcast mode is enabled');
+  }
+
   const environment = await ApiService.fetchConfig(apiKey);
 
   if (!environment || !environment.photonAppId) {
