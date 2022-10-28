@@ -103,9 +103,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private createUserList = (userList: UserTo3D[]): void => {
-    console.log('createUserList');
     const userOn3DList = userList.map((user) => this.IntegrationUsersService.createUserOn3D(user));
-    console.log('userOn3DList', userOn3DList);
     userOn3DList.forEach((user) => {
       this.createAvatar(user);
       this.createPointer(user);
