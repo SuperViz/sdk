@@ -3,8 +3,47 @@ on:
   push:
     branches:
       - main
+      - dev
 jobs:
-  build:
+  development:
+    if: "github.ref == 'refs/heads/dev'"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - name: create environment files
+        env:
+          DEPLOY_ENV_FILE: ${{ secrets.DEPLOY_DEV_ENV_FILE }}
+        run: |
+          echo $DEPLOY_ENV_FILE | base64 --decode > ./.env
+      - name: Build and run e2e tests
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_ROOM_ID: ${{ secrets.E2E_ROOM_ID }}
+          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
+          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
+        run: source ./e2e/build-e2e.sh
+      - name: Install dependencies
+        run: yarn install
+        env:
+          NPM_CONFIG_USERCONFIG: .npmrc.ci
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: git config --global user.name SuperViz
+      - run: git config --global user.email ci@superviz.com
+      - run: yarn release:dev
+        env:
+          NPM_CONFIG_USERCONFIG: .npmrc.ci
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish npm package
+        env:
+          NPM_CONFIG_USERCONFIG: .npmrc.ci
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm whoami && npm publish
+  main:
+    if: "github.ref == 'refs/heads/main'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -41,7 +80,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm whoami && npm publish
   slackNotification:
-    needs: build
+    needs: main
     name: Slack Notification
     runs-on: ubuntu-latest
     steps:
