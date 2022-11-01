@@ -83,7 +83,7 @@ class Communicator {
     this.realtime.start({
       actorInfo: {
         userId: this.user.id,
-        ...this.user
+        ...this.user,
       },
       roomId: this.roomId,
       apiKey,
@@ -285,7 +285,7 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
-    const actors = Object.values(this.realtime.getActors)
+    const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
       adapter,
       ...adapterOptions,
@@ -295,7 +295,7 @@ class Communicator {
         avatarUrl: this.user.avatarUrl,
       },
       userList: actors.map((actor) => {
-        const id = actor.userId
+        const id = actor.userId;
         const { name, avatarUrl } = actor.customProperties;
         return {
           id,
