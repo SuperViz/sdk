@@ -44,7 +44,6 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
       id,
       name,
       avatarUrl,
-      color: 'yellow',
       position: {
         x: 0,
         y: 0,
