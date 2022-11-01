@@ -65,7 +65,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.localRoomProperties?.hostClientId === this.getMyActor?.clientId;
   }
 
-  public get getActors() {
+  public get getActors() : AblyActors {
     return this.actors;
   }
 
