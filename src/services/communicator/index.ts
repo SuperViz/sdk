@@ -17,7 +17,11 @@ import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import {
+  VideoFrameState,
+  VideoManagerOptions,
+  WindowSize,
+} from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
@@ -46,6 +50,7 @@ class Communicator {
     shouldKickUsersOnHostLeave,
     camsOff,
     screenshareOff,
+    framePosition: position,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -56,6 +61,7 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
+    const framePosition = position ?? 'right';
 
     this.connectionService = new ConnectionService();
     this.connectionService.addListerners();
@@ -70,6 +76,8 @@ class Communicator {
       debug,
       language,
       roomId,
+      position: framePosition,
+      browserService: this.browserService,
     });
 
     // Realtime observers
@@ -119,6 +127,7 @@ class Communicator {
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
+    this.videoManager.frameHostSizeUpdate.unsubscribe(this.onWindowSizeUpdate);
 
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onActorsListDidChange);
     this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
@@ -172,6 +181,7 @@ class Communicator {
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
+    this.videoManager.frameHostSizeUpdate.unsubscribe(this.onWindowSizeUpdate);
   };
 
   private publish = (type: string, data: any): void => {
@@ -279,6 +289,10 @@ class Communicator {
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
+
+  private onWindowSizeUpdate(size: WindowSize): void {
+    this.publish(MeetingEvent.FRAME_HOST_SIZE_UPDATE, size);
+  }
 
   // Integrator methods
   public connectAdapter(adapter: Adapter, adapterOptions: AdapterOptions): AdapterMethods {

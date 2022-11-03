@@ -1,3 +1,7 @@
-import { SuperVizSdkOptions } from './sdk-options.types';
+import { User, UserGroup } from './user.types';
 
-export interface StartMeetingOptions extends Omit<SuperVizSdkOptions, 'debug'> {}
+export interface StartMeetingOptions {
+  roomId: string;
+  user: User;
+  userGroup: UserGroup;
+}

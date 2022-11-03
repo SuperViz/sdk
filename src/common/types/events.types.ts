@@ -2,6 +2,7 @@ export enum MeetingEvent {
   FRAME_LOAD = 'frame.load',
   FRAME_SIZE_UPDATE = 'frame.size-update',
   FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',
+  FRAME_HOST_SIZE_UPDATE = 'frame.host-size-update',
   MEETING_ENABLE_SCREEN_SHARE = 'frame.enable-screen-share',
   MEETING_DISABLE_SCREEN_SHARE = 'frame.disable-screen-share',
   COLLAPSED_CAMERAS = 'frame.collapsed-cameras',

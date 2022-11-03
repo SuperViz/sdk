@@ -12,6 +12,7 @@ import {
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
+import { BrowserService } from '../browser';
 
 import { VideoFrameState, VideoManagerOptions, FrameSize } from './types';
 
@@ -23,8 +24,11 @@ const FULL_PERCENT = '100%';
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
+  private browserService: BrowserService;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
+  public readonly frameHostSizeUpdate = new ObserverHelper({ logger });
+
   public readonly realtimeObserver = new ObserverHelper({ logger });
   public readonly hostChangeObserver = new ObserverHelper({ logger });
   public readonly gridModeChangeObserver = new ObserverHelper({ logger });
@@ -52,7 +56,11 @@ export default class VideoConfereceManager {
     document.body.appendChild(wrapper);
     document.head.appendChild(style);
 
+    window.addEventListener('resize', this.onFrameHostSizeDidChange);
+
     this.updateFrameState(VideoFrameState.INITIALIZING);
+
+    this.browserService = options.browserService;
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
@@ -66,6 +74,13 @@ export default class VideoConfereceManager {
     );
 
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
+
+    if (this.browserService.isMobileDevice) {
+      this.bricklayer.element.classList.add('sv-video-frame--bottom');
+      return;
+    }
+
+    this.bricklayer.element.classList.add(`sv-video-frame--${options.position}`);
   }
 
   start(options: StartMeetingOptions) {
@@ -115,6 +130,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
+    this.onFrameHostSizeDidChange();
   };
 
   private onFrameDimensionsUpdate = ({ width, height }: Dimensions) => {
@@ -126,7 +142,7 @@ export default class VideoConfereceManager {
     if (FULL_WIDTH) frame.style.width = FULL_PERCENT;
 
     const SET_UPDATE_HEIGHT = !!height;
-    const FULL_HEIGHT = height === 0;
+    const FULL_HEIGHT = height === 0 || height > window.innerHeight;
     if (SET_UPDATE_HEIGHT) frame.style.height = `${height}px`;
     if (FULL_HEIGHT) frame.style.height = FULL_VIEWPORT_HEIGHT;
   };
@@ -193,6 +209,21 @@ export default class VideoConfereceManager {
     this.devicesObserver.publish(state);
   };
 
+  private meetingStateUpdate = (newState: MeetingState): void => {
+    this.meetingStateObserver.publish(newState);
+  };
+
+  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
+    this.meetingConnectionObserver.publish(newStatus);
+  };
+
+  private onFrameHostSizeDidChange = (): void => {
+    const { innerHeight: height, innerWidth: width } = window;
+
+    this.frameHostSizeUpdate.publish({ height, width });
+    this.messageBridge.publish(MeetingEvent.FRAME_HOST_SIZE_UPDATE, { height, width });
+  };
+
   public waitForHostDidChange = (isWating: boolean): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_WAIT_FOR_HOST, isWating);
   };
@@ -207,13 +238,5 @@ export default class VideoConfereceManager {
 
   public onMasterActorDidChange = (hostId: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
-  };
-
-  private meetingStateUpdate = (newState: MeetingState): void => {
-    this.meetingStateObserver.publish(newState);
-  };
-
-  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
-    this.meetingConnectionObserver.publish(newStatus);
   };
 }
