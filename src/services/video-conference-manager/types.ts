@@ -1,11 +1,13 @@
 import { Language } from '../communicator/types';
 
-export interface VideoManagerConfig {
+export interface VideoManagerOptions {
   apiKey: string;
   debug: boolean;
   language: Language;
   roomId: string;
   broadcast: boolean;
+  canUseCams?: boolean;
+  canUseScreenshare?: boolean;
 }
 
 export enum VideoFrameState {
