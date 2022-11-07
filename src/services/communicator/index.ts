@@ -15,6 +15,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
+import { AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
@@ -73,7 +74,8 @@ class Communicator {
     });
 
     // Realtime observers
-    this.realtime.roomInfoUpdatedObserver.subscribe(this.onActorsListDidChange);
+    this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
+    this.realtime.actorsObserver.subscribe(this.onActorsDidChange);
     this.realtime.masterActorObserver.subscribe(this.onMasterActorDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
     this.realtime.waitForHostObserver.subscribe(this.onWaitForHostDidChange);
@@ -120,7 +122,8 @@ class Communicator {
       this.connectionService.updateMeetingConnectionStatus,
     );
 
-    this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onActorsListDidChange);
+    this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
+    this.realtime.actorsObserver.unsubscribe(this.onActorsDidChange);
     this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
     this.realtime.waitForHostObserver.unsubscribe(this.onWaitForHostDidChange);
@@ -207,9 +210,21 @@ class Communicator {
     }
   };
 
-  private onActorsListDidChange = (room) => {
-    this.videoManager.actorsListDidChange(room._customProperties.slots);
+  private onRoomInfoUpdated = (room) => {
     this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
+  };
+
+  private onActorsDidChange = (actors) => {
+    const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
+      return {
+        timestamp: actor.timestamp,
+        connectionId: actor.connectionId,
+        userId: actor.clientId,
+        color: this.realtime.getActorColor(actor.customProperties.slotIndex),
+      };
+    });
+    console.log('onActorsDidChange', userListForVideoFrame);
+    this.videoManager.actorsListDidChange(userListForVideoFrame);
   };
 
   private onMasterActorDidChange = (masterActor) => {
