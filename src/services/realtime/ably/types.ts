@@ -17,7 +17,6 @@ export interface AblyActor extends Ably.Types.PresenceMessage {
 export interface AblyRealtimeData {
   hostClientId?: string;
   isGridModeEnable?: boolean;
-  syncProperties?: SyncProperty;
 }
 
 export type AblyTokenCallBack = (

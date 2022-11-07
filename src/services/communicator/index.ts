@@ -223,7 +223,6 @@ class Communicator {
         color: this.realtime.getActorColor(actor.customProperties.slotIndex),
       };
     });
-    console.log('onActorsDidChange', userListForVideoFrame);
     this.videoManager.actorsListDidChange(userListForVideoFrame);
   };
 
