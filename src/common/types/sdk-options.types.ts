@@ -1,6 +1,6 @@
 import { User, UserGroup } from './user.types';
 
-export type FramePosition = 'right' | 'left';
+export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 export interface SuperVizSdkOptions {
   debug?: boolean;
   roomId: string;

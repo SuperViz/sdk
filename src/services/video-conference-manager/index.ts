@@ -62,12 +62,17 @@ export default class VideoConfereceManager {
 
     this.browserService = options.browserService;
 
+    const camerasOrientation =
+      ['right', 'left'].includes(options.position) && !this.browserService.isMobileDevice
+        ? 'vertical'
+        : 'horizontal';
+
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
-      options,
+      { ...options, camerasOrientation },
       {
         allow: 'camera *;microphone *; display-capture *;',
       },
