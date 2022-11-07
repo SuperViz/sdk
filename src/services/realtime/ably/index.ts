@@ -54,6 +54,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.onAblySyncChannelUpdate = this.onAblySyncChannelUpdate.bind(this);
     this.onAblyChannelStateChange = this.onAblyChannelStateChange.bind(this);
     this.onAblyConnectionStateChange = this.onAblyConnectionStateChange.bind(this);
+    this.getUserSlot = this.getUserSlot.bind(this);
     this.auth = this.auth.bind(this);
   }
 
@@ -854,7 +855,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   getUserSlot(userId) {
     const id = userId.toString();
     // eslint-disable-next-line no-prototype-builtins
-    const exists = this.actors && this.actors[userId];
+    const exists = this.actors && this.actors[id];
     if (exists) {
       return this.actors[userId]?.customProperties?.slotIndex;
     }
