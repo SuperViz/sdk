@@ -69,6 +69,7 @@ export default class VideoConfereceManager {
         apiKey,
         debug,
         language,
+        isBroadcast: broadcast,
       },
       {
         allow: 'camera *;microphone *; display-capture *;',

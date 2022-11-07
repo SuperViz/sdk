@@ -39,7 +39,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-    broadcast,
+    isBroadcast,
   }: CommunicatorType) {
     this.debug = debug;
     this.language = language;
@@ -54,7 +54,7 @@ class Communicator {
       debug,
       language,
       roomId,
-      broadcast,
+      broadcast: isBroadcast || false,
     });
 
     this.connectionService = new ConnectionService();

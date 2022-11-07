@@ -6,5 +6,5 @@ export interface SuperVizSdkOptions {
   user: User;
   userGroup: UserGroup;
   shouldKickUsersOnHostLeave?: boolean;
-  broadcast?: boolean;
+  isBroadcast?: boolean;
 }
