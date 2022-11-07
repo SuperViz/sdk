@@ -55,13 +55,6 @@ class Communicator {
     this.realtime = new AblyRealtimeService(ablyKey);
     this.browserService = new BrowserService();
 
-    this.videoManager = new VideoConferencingManager({
-      apiKey,
-      debug,
-      language,
-      roomId,
-      broadcast: isBroadcast || false,
-    });
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
 
@@ -78,7 +71,7 @@ class Communicator {
       debug,
       language,
       roomId,
-      broadcast: false,
+      broadcast: isBroadcast || false,
     });
 
     // Realtime observers
