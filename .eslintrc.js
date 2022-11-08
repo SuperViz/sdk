@@ -27,6 +27,8 @@ module.exports = {
     'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'no-unused-vars': 'off',
     'no-shadow': 'off',
+    'no-prototype-builtins': 'off',
+    'prefer-spread': 'off',
     'no-console': 'off',
     'class-methods-use-this': 'off',
     'import/prefer-default-export': 'off',

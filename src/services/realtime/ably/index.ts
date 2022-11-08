@@ -620,7 +620,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = async (myPresenceParam: Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
-    // eslint-disable-next-line prefer-spread
     const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
     await this.roomChannel.presence.get((err, members) => members.forEach((member) => {
       if (err) {
@@ -629,7 +628,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       if (member.connectionId === myPresence.connectionId) {
         myPresence = member;
       }
-      // eslint-disable-next-line no-prototype-builtins
       if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
         availableSlots.splice(availableSlots.indexOf(member.data.slotIndex), 1);
       }
@@ -668,7 +666,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       if (member.connectionId === myPresence.connectionId) {
         myPresence = member;
       }
-      // eslint-disable-next-line no-prototype-builtins
       if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
         usedSlots.push(member.data.slotIndex);
       }
@@ -854,7 +851,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   getUserSlot(userId) {
     const id = userId.toString();
-    // eslint-disable-next-line no-prototype-builtins
     const exists = this.actors && this.actors[id];
     if (exists) {
       return this.actors[userId]?.customProperties?.slotIndex;
