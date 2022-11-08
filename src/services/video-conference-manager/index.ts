@@ -193,10 +193,6 @@ export default class VideoConfereceManager {
     this.devicesObserver.publish(state);
   };
 
-  public waitForHostDidChange = (isWating: boolean): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_WAIT_FOR_HOST, isWating);
-  };
-
   public gridModeDidChange = (isGridModeEnable: boolean): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
   };

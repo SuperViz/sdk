@@ -78,7 +78,6 @@ class Communicator {
     this.realtime.actorsObserver.subscribe(this.onActorsDidChange);
     this.realtime.masterActorObserver.subscribe(this.onMasterActorDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
-    this.realtime.waitForHostObserver.subscribe(this.onWaitForHostDidChange);
     this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
@@ -126,7 +125,6 @@ class Communicator {
     this.realtime.actorsObserver.unsubscribe(this.onActorsDidChange);
     this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
-    this.realtime.waitForHostObserver.unsubscribe(this.onWaitForHostDidChange);
     this.realtime.kickAllUsersObserver.unsubscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
 
@@ -232,10 +230,6 @@ class Communicator {
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
-  };
-
-  private onWaitForHostDidChange = (isWaiting: boolean): void => {
-    this.videoManager.waitForHostDidChange(isWaiting);
   };
 
   private onSameAccountError = (error: string): void => {
