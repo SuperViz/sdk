@@ -42,7 +42,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
-
     this.createUserList(userList);
     this.createLocalUser(localUser);
   }
@@ -91,9 +90,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    */
   private createLocalUser = (localUser: UserTo3D): void => {
     const user = this.IntegrationUsersService.createUserOn3D(localUser);
-
-    this.createAvatar(user, user.avatarUrl);
-    this.createPointer(user);
     this.IntegrationUsersService.setLocalUser(user);
   };
 

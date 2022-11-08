@@ -17,7 +17,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public masterActorObserver: ObserverHelper;
   public realtimeStateObserver: ObserverHelper;
   public syncPropertiesObserver: ObserverHelper;
-  public waitForHostObserver: ObserverHelper;
   public kickAllUsersObserver: ObserverHelper;
   public authenticationObserver: ObserverHelper;
 
@@ -36,7 +35,6 @@ export class RealtimeService implements DefaultRealtimeService {
     this.roomListUpdatedObserver = new ObserverHelper({ logger });
     this.masterActorObserver = new ObserverHelper({ logger });
     this.realtimeStateObserver = new ObserverHelper({ logger });
-    this.waitForHostObserver = new ObserverHelper({ logger });
     this.kickAllUsersObserver = new ObserverHelper({ logger });
     this.authenticationObserver = new ObserverHelper({ logger });
   }
