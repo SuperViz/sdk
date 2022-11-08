@@ -1,5 +1,4 @@
 import { AblyRealtimeService } from '../../realtime';
-import { AblySlot } from '../../realtime/ably/types';
 import { UserOn3D } from '../users/types';
 
 export interface DefaultAdapterManager {
@@ -47,5 +46,5 @@ export interface RealtimeAdapterMethods {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
-  slots: AblySlot[];
+  getUserSlot: (callback: Function) => Number;
 }

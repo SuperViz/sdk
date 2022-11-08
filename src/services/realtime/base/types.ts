@@ -14,7 +14,6 @@ export interface DefaultRealtimeService {
   masterActorObserver: ObserverHelper;
   realtimeStateObserver: ObserverHelper;
   syncPropertiesObserver: ObserverHelper;
-  waitForHostObserver: ObserverHelper;
   kickAllUsersObserver: ObserverHelper;
   authenticationObserver: ObserverHelper;
 }
