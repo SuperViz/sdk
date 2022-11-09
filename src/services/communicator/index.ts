@@ -15,6 +15,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
+import { AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
@@ -73,10 +74,10 @@ class Communicator {
     });
 
     // Realtime observers
-    this.realtime.roomInfoUpdatedObserver.subscribe(this.onActorsListDidChange);
+    this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
+    this.realtime.actorsObserver.subscribe(this.onActorsDidChange);
     this.realtime.masterActorObserver.subscribe(this.onMasterActorDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
-    this.realtime.waitForHostObserver.subscribe(this.onWaitForHostDidChange);
     this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
@@ -120,10 +121,10 @@ class Communicator {
       this.connectionService.updateMeetingConnectionStatus,
     );
 
-    this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onActorsListDidChange);
+    this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
+    this.realtime.actorsObserver.unsubscribe(this.onActorsDidChange);
     this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
-    this.realtime.waitForHostObserver.unsubscribe(this.onWaitForHostDidChange);
     this.realtime.kickAllUsersObserver.unsubscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
 
@@ -207,9 +208,20 @@ class Communicator {
     }
   };
 
-  private onActorsListDidChange = (room) => {
-    this.videoManager.actorsListDidChange(room._customProperties.slots);
+  private onRoomInfoUpdated = (room) => {
     this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
+  };
+
+  private onActorsDidChange = (actors) => {
+    const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
+      return {
+        timestamp: actor.timestamp,
+        connectionId: actor.connectionId,
+        userId: actor.clientId,
+        color: this.realtime.getActorColor(actor.customProperties.slotIndex),
+      };
+    });
+    this.videoManager.actorsListDidChange(userListForVideoFrame);
   };
 
   private onMasterActorDidChange = (masterActor) => {
@@ -218,10 +230,6 @@ class Communicator {
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
-  };
-
-  private onWaitForHostDidChange = (isWaiting: boolean): void => {
-    this.videoManager.waitForHostDidChange(isWaiting);
   };
 
   private onSameAccountError = (error: string): void => {
@@ -285,6 +293,7 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
+    const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
       adapter,
       ...adapterOptions,
@@ -293,8 +302,9 @@ class Communicator {
         name: this.user.name,
         avatarUrl: this.user.avatarUrl,
       },
-      userList: this.userList.map((user) => {
-        const { id, name, avatarUrl }: User = user;
+      userList: actors.map((actor) => {
+        const id = actor.userId;
+        const { name, avatarUrl } = actor.customProperties;
         return {
           id,
           name,

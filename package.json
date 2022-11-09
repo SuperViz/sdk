@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "0.1.1",
+  "version": "0.1.1-rc.9",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "test": "jest",
     "release": "release-it --ci",
     "release:dev": "release-it --preRelease=rc --ci",
+    "release:major": "release-it major --ci",
     "release:preview": "release-it --ci --dry-run",
     "test:e2e": "playwright test ./e2e",
     "test:e2e:pt-br": "E2E_LOCALE=pt-BR yarn test:e2e",

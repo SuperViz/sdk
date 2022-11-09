@@ -10,7 +10,6 @@ export interface UserTo3D {
 }
 
 export interface UserOn3D extends UserTo3D {
-  color: string;
   position: UserPosition;
   rotation: UserRotation;
 }
