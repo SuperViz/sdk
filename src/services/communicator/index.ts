@@ -288,6 +288,9 @@ class Communicator {
       throw new Error('the 3D adapter has already been started');
     }
     this.integrationManager = new IntegrationManager({
+      isAvatarsEnabled: !this.user.isAudience,
+      isFollowAvailable: !this.user.isAudience,
+      isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {
