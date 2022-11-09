@@ -289,7 +289,6 @@ class Communicator {
     }
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
-      isFollowAvailable: !this.user.isAudience,
       isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
