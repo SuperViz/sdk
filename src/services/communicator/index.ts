@@ -218,9 +218,22 @@ class Communicator {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
         userId: actor.clientId,
-        color: this.realtime.getActorColor(actor.customProperties.slotIndex),
+        color: this.realtime.getSlotColor(actor.customProperties.slotIndex),
       };
     });
+    const getSlot = (id : string) => {
+      return actors[id]?.customProperties?.slotIndex;
+    };
+    const userListForSdk = this.userList.map((user: User) => {
+      const slotIndex = getSlot(user.id) ? getSlot(user.id) : 0;
+      return {
+        ...user,
+        color: this.realtime.getSlotHexColor(slotIndex),
+      };
+    });
+
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, userListForSdk);
+
     this.videoManager.actorsListDidChange(userListForVideoFrame);
   };
 
@@ -270,8 +283,6 @@ class Communicator {
       this.user = myUser;
       this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
     }
-
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
   };
 
   private onAuthenticationFailed = (event: RealtimeEvent): void => {
