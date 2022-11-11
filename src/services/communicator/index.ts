@@ -235,7 +235,6 @@ class Communicator {
         isHost: (this.realtime.localRoomProperties.hostClientId === actor.clientId),
       });
     });
-    console.log('this.userList vai', this.userList);
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     this.videoManager.actorsListDidChange(userListForVideoFrame);
