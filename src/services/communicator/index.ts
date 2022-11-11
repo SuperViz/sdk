@@ -225,7 +225,7 @@ class Communicator {
       return actors[id]?.customProperties?.slotIndex;
     };
     const userListForSdk = this.userList.map((user: User) => {
-      const slotIndex = getSlot(user.id) ? getSlot(user.id) : 16;
+      const slotIndex = getSlot(user.id) ?? MeetingColors['gray'];
       return {
         ...user,
         color: this.realtime.getSlotHexColor(slotIndex),
