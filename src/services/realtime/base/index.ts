@@ -1,6 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { MeetingColors } from '../../../common/types/meeting-colors.types';
+import { MeetingColors, MeetingColorsHex } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
 
 import { DefaultRealtimeService } from './types';
@@ -67,13 +67,25 @@ export class RealtimeService implements DefaultRealtimeService {
 
   /**
    * @function getActorColor
-   * @description get user color
+   * @description get slot color string
    * @param {number} index
    * @returns {string}
    */
-  public getActorColor(index: number): string {
-    let avatarColorIndex = index;
-    avatarColorIndex %= 16;
-    return MeetingColors[avatarColorIndex];
+  public getSlotColor(slotIndex: number): string {
+    let index = slotIndex;
+    index %= 17;
+    return MeetingColors[index];
+  }
+
+  /**
+   * @function getActorHexColor
+   * @description get slot color hex
+   * @param {number} index
+   * @returns {string}
+   */
+  public getSlotHexColor(slotIndex: number): string {
+    let index = slotIndex;
+    index %= 17;
+    return MeetingColorsHex[index];
   }
 }
