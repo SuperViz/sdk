@@ -38,7 +38,7 @@ export interface ActorInfo extends User {
 }
 
 export interface StartRealtimeType {
-  actorInfo: ActorInfo;
+  initialActorData: ActorInfo;
   roomId: string;
   apiKey: string;
   shouldKickUsersOnHostLeave: boolean;

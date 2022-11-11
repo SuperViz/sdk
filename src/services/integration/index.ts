@@ -116,7 +116,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorJoined = (actor): void => {
-    const { id, name, avatarUrl } = actor.customProperties;
+    const { id, name, avatarUrl } = actor.data;
 
     this.addUser({
       id,
@@ -132,7 +132,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorLeave = (actor): void => {
-    const user = this.users.find((user) => user.id === actor.customProperties.id);
+    const user = this.users.find((user) => user.id === actor.clientId);
 
     if (!user) {
       return;

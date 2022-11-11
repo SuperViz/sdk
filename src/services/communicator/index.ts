@@ -83,7 +83,7 @@ class Communicator {
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
-      actorInfo: {
+      initialActorData: {
         userId: this.user.id,
         ...this.user,
       },
@@ -219,7 +219,7 @@ class Communicator {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
         userId: actor.clientId,
-        color: this.realtime.getSlotColor(actor.customProperties.slotIndex).name,
+        color: this.realtime.getSlotColor(actor.data.slotIndex).name,
       };
     });
 
@@ -227,11 +227,11 @@ class Communicator {
     this.userList = [];
     Object.values(actors).forEach((actor: AblyActor) => {
       this.userList.push({
-        color: this.realtime.getSlotColor(actor.customProperties?.slotIndex).color,
+        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
         id: actor.clientId,
-        avatarUrl: actor.customProperties.avatarUrl,
-        isHostCandidate: actor.customProperties.isHostCandidate,
-        name: actor.customProperties.name,
+        avatarUrl: actor.data.avatarUrl,
+        isHostCandidate: actor.data.isHostCandidate,
+        name: actor.data.name,
         isHost: (this.realtime.localRoomProperties.hostClientId === actor.clientId),
       });
     });
@@ -316,8 +316,8 @@ class Communicator {
         avatarUrl: this.user.avatarUrl,
       },
       userList: actors.map((actor) => {
-        const id = actor.userId;
-        const { name, avatarUrl, slotIndex } = actor.customProperties;
+        const id = actor.clientId;
+        const { name, avatarUrl, slotIndex } = actor.data;
         return {
           id,
           name,
