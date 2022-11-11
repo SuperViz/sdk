@@ -18,7 +18,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private client: Ably.Realtime;
   private actors: AblyActors;
   private hostUserId: string = null;
-  private myActor: any = null;
+  private myActor: AblyActor = null;
 
   private localUserId: string = null;
   private isBroadcastMeeting: boolean = false;
@@ -78,6 +78,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   void {
     this.myActor = {
       data: initialActorData,
+      timestamp: null,
+      action: null,
+      clientId: initialActorData.userId,
+      connectionId: null,
+      encoding: null,
+      id: null,
     };
 
     // @TODO
