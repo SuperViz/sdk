@@ -59,7 +59,10 @@ export default class VideoConfereceManager {
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
-      options,
+      {
+        isBroadcast: options.broadcast,
+        ...options,
+      },
       {
         allow: 'camera *;microphone *; display-capture *;',
       },

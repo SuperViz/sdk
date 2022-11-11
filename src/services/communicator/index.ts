@@ -46,6 +46,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
+    isBroadcast,
     camsOff,
     screenshareOff,
   }: CommunicatorOptions) {
@@ -72,6 +73,7 @@ class Communicator {
       debug,
       language,
       roomId,
+      broadcast: isBroadcast || false,
     });
 
     // Realtime observers
@@ -308,6 +310,8 @@ class Communicator {
     }
     const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
+      isAvatarsEnabled: !this.user.isAudience,
+      isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {

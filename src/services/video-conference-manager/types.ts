@@ -5,8 +5,9 @@ export interface VideoManagerOptions {
   debug: boolean;
   language: Language;
   roomId: string;
-  canUseCams: boolean;
-  canUseScreenshare: boolean;
+  broadcast: boolean;
+  canUseCams?: boolean;
+  canUseScreenshare?: boolean;
 }
 
 export enum VideoFrameState {
