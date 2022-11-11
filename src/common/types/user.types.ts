@@ -4,6 +4,7 @@ export interface User {
   isHost: boolean;
   isHostCandidate: boolean;
   avatarUrl?: string;
+  color?: string
 }
 
 export interface UserGroup {
