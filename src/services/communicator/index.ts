@@ -8,6 +8,7 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
+import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
@@ -225,7 +226,7 @@ class Communicator {
       return actors[id]?.customProperties?.slotIndex;
     };
     const userListForSdk = this.userList.map((user: User) => {
-      const slotIndex = getSlot(user.id) ?? MeetingColors['gray'];
+      const slotIndex = getSlot(user.id) ?? MeetingColors.gray;
       return {
         ...user,
         color: this.realtime.getSlotHexColor(slotIndex),
