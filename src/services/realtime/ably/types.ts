@@ -10,8 +10,6 @@ export interface AblyActors {
 }
 
 export interface AblyActor extends Ably.Types.PresenceMessage {
-  userId: string;
-  customProperties: any;
 }
 
 export interface AblyRealtimeData {
