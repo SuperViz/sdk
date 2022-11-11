@@ -8,6 +8,7 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
+import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
@@ -218,21 +219,24 @@ class Communicator {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
         userId: actor.clientId,
-        color: this.realtime.getSlotColor(actor.customProperties.slotIndex),
-      };
-    });
-    const getSlot = (id : string) => {
-      return actors[id]?.customProperties?.slotIndex;
-    };
-    const userListForSdk = this.userList.map((user: User) => {
-      const slotIndex = getSlot(user.id) ?? MeetingColors['gray'];
-      return {
-        ...user,
-        color: this.realtime.getSlotHexColor(slotIndex),
+        color: this.realtime.getSlotColor(actor.customProperties.slotIndex).name,
       };
     });
 
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, userListForSdk);
+    // update user list
+    this.userList = [];
+    Object.values(actors).forEach((actor: AblyActor) => {
+      this.userList.push({
+        color: this.realtime.getSlotColor(actor.customProperties?.slotIndex).color,
+        id: actor.clientId,
+        avatarUrl: actor.customProperties.avatarUrl,
+        isHostCandidate: actor.customProperties.isHostCandidate,
+        name: actor.customProperties.name,
+        isHost: (this.realtime.localRoomProperties.hostClientId === actor.clientId),
+      });
+    });
+    console.log('this.userList vai', this.userList);
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     this.videoManager.actorsListDidChange(userListForVideoFrame);
   };
@@ -276,8 +280,7 @@ class Communicator {
   };
 
   private onUserListUpdate = (users: Array<User>): void => {
-    this.userList = users;
-    const myUser = this.userList.find((user) => user.id === this.user.id);
+    const myUser = users.find((user) => user.id === this.user.id);
 
     if (!isEqual(myUser, this.user)) {
       this.user = myUser;
@@ -315,11 +318,12 @@ class Communicator {
       },
       userList: actors.map((actor) => {
         const id = actor.userId;
-        const { name, avatarUrl } = actor.customProperties;
+        const { name, avatarUrl, slotIndex } = actor.customProperties;
         return {
           id,
           name,
           avatarUrl,
+          slotIndex,
         };
       }),
       RealtimeService: this.realtime,

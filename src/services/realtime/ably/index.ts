@@ -644,7 +644,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.myActor.customProperties = newProperties;
     await this.updateMyProperties(newProperties);
-    const timeToWait = (myPresence.timestamp) % 100;
+    const timeToWait = (myPresence.timestamp) % 500;
     setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);
@@ -765,16 +765,18 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (this.enableSync) {
       await this.findSlotIndex(myPresence);
     }
-
-    if (!this.localRoomProperties) {
+    const isNewRoom = !this.localRoomProperties;
+    if (isNewRoom) {
       await this.initializeRoomProperties(myPresence);
     } else {
       await this.updateActors();
       if (this.localRoomProperties?.hostClientId) {
-        this.updateHostInfo(this.localRoomProperties?.hostClientId);
+        await this.updateHostInfo(this.localRoomProperties?.hostClientId);
       } else if (this.myActor.customProperties.isHostCandidate) {
-        this.setHost(this.myActor.customProperties.userId);
+        await this.setHost(this.myActor.customProperties.userId);
       }
+      this.localRoomProperties = await this.fetchRoomProperties();
+      this.updateLocalRoomState(this.localRoomProperties);
     }
 
     this.isReconnecting = false;
@@ -791,11 +793,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onActorJoin = async (presence: Ably.Types.PresenceMessage): Promise<void> => {
-    await this.updateActors();
     const actor = Object.assign({}, presence, { customProperties: presence.data,
       userId: presence.clientId });
 
     this.actorJoinedObserver.publish(actor);
+    await this.updateActors();
   };
 
   /**
