@@ -27,7 +27,6 @@ export default class VideoConfereceManager {
   private browserService: BrowserService;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
-  public readonly frameHostSizeUpdate = new ObserverHelper({ logger });
 
   public readonly realtimeObserver = new ObserverHelper({ logger });
   public readonly hostChangeObserver = new ObserverHelper({ logger });
@@ -56,8 +55,6 @@ export default class VideoConfereceManager {
     document.body.appendChild(wrapper);
     document.head.appendChild(style);
 
-    window.addEventListener('resize', this.onFrameHostSizeDidChange);
-
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.browserService = options.browserService;
@@ -79,6 +76,7 @@ export default class VideoConfereceManager {
     );
 
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
+    window.addEventListener('resize', this.onWindowResize);
 
     if (this.browserService.isMobileDevice) {
       this.bricklayer.element.classList.add('sv-video-frame--bottom');
@@ -135,7 +133,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
-    this.onFrameHostSizeDidChange();
+    this.onWindowResize();
   };
 
   private onFrameDimensionsUpdate = ({ width, height }: Dimensions) => {
@@ -222,11 +220,10 @@ export default class VideoConfereceManager {
     this.meetingConnectionObserver.publish(newStatus);
   };
 
-  private onFrameHostSizeDidChange = (): void => {
+  private onWindowResize = (): void => {
     const { innerHeight: height, innerWidth: width } = window;
 
-    this.frameHostSizeUpdate.publish({ height, width });
-    this.messageBridge.publish(MeetingEvent.FRAME_HOST_SIZE_UPDATE, { height, width });
+    this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
 
   public waitForHostDidChange = (isWating: boolean): void => {

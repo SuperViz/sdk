@@ -128,7 +128,6 @@ class Communicator {
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
-    this.videoManager.frameHostSizeUpdate.unsubscribe(this.onWindowSizeUpdate);
 
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
     this.realtime.actorsObserver.unsubscribe(this.onActorsDidChange);
@@ -182,7 +181,6 @@ class Communicator {
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
-    this.videoManager.frameHostSizeUpdate.unsubscribe(this.onWindowSizeUpdate);
   };
 
   private publish = (type: string, data: any): void => {
@@ -223,7 +221,7 @@ class Communicator {
   };
 
   private onActorsDidChange = (actors) => {
-    const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
+    const userListForVideoFrame = Object.values(actors).map((actor: AblyActor) => {
       return {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
@@ -297,10 +295,6 @@ class Communicator {
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
-
-  private onWindowSizeUpdate(size: WindowSize): void {
-    this.publish(MeetingEvent.FRAME_HOST_SIZE_UPDATE, size);
-  }
 
   // Integrator methods
   public connectAdapter(adapter: Adapter, adapterOptions: AdapterOptions): AdapterMethods {
