@@ -8,6 +8,7 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
+import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
@@ -49,6 +50,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
+    isBroadcast,
     camsOff,
     screenshareOff,
     framePosition: position,
@@ -79,6 +81,7 @@ class Communicator {
       roomId,
       position: framePosition,
       browserService: this.browserService,
+      broadcast: isBroadcast || false,
     });
 
     // Realtime observers
@@ -90,7 +93,7 @@ class Communicator {
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
-      actorInfo: {
+      initialActorData: {
         userId: this.user.id,
         ...this.user,
       },
@@ -226,9 +229,24 @@ class Communicator {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
         userId: actor.clientId,
-        color: this.realtime.getActorColor(actor.customProperties.slotIndex),
+        color: this.realtime.getSlotColor(actor.data.slotIndex).name,
       };
     });
+
+    // update user list
+    this.userList = [];
+    Object.values(actors).forEach((actor: AblyActor) => {
+      this.userList.push({
+        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
+        id: actor.clientId,
+        avatarUrl: actor.data.avatarUrl,
+        isHostCandidate: actor.data.isHostCandidate,
+        name: actor.data.name,
+        isHost: this.realtime.localRoomProperties.hostClientId === actor.clientId,
+      });
+    });
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
+
     this.videoManager.actorsListDidChange(userListForVideoFrame);
   };
 
@@ -271,15 +289,12 @@ class Communicator {
   };
 
   private onUserListUpdate = (users: Array<User>): void => {
-    this.userList = users;
-    const myUser = this.userList.find((user) => user.id === this.user.id);
+    const myUser = users.find((user) => user.id === this.user.id);
 
     if (!isEqual(myUser, this.user)) {
       this.user = myUser;
       this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
     }
-
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
   };
 
   private onAuthenticationFailed = (event: RealtimeEvent): void => {
@@ -303,6 +318,8 @@ class Communicator {
     }
     const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
+      isAvatarsEnabled: !this.user.isAudience,
+      isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {
@@ -311,12 +328,13 @@ class Communicator {
         avatarUrl: this.user.avatarUrl,
       },
       userList: actors.map((actor) => {
-        const id = actor.userId;
-        const { name, avatarUrl } = actor.customProperties;
+        const id = actor.clientId;
+        const { name, avatarUrl, slotIndex } = actor.data;
         return {
           id,
           name,
           avatarUrl,
+          slotIndex,
         };
       }),
       RealtimeService: this.realtime,

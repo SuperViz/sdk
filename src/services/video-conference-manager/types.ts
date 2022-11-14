@@ -11,6 +11,7 @@ export interface VideoManagerOptions {
   canUseScreenshare: boolean;
   position: FramePosition;
   browserService: BrowserService;
+  broadcast: boolean;
 }
 
 export interface WindowSize {
