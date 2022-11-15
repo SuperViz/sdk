@@ -852,10 +852,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   getUserSlot(userId) {
-    const id = userId.toString();
-    const exists = this.actors && this.actors[id];
-    if (exists) {
-      return this.actors[userId]?.data?.slotIndex;
+    if (userId) {
+      const id = userId.toString();
+      const exists = this.actors && this.actors[id];
+      if (exists) {
+        return this.actors[userId]?.data?.slotIndex;
+      }
+      return 16; // GRAY COLOR
     }
     return 16; // GRAY COLOR
   }
