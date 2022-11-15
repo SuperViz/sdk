@@ -18,7 +18,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private client: Ably.Realtime;
   private actors: AblyActors;
   private hostUserId: string = null;
-  private myActor: AblyActor = null;
+  public myActor: AblyActor = null;
 
   private localUserId: string = null;
   private isBroadcastMeeting: boolean = false;
@@ -36,7 +36,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
   private apiKey: string;
-  private left: boolean;
+  private left: boolean = false;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private roomChannelState: Ably.Types.ChannelStateChange;
@@ -373,7 +373,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (!this.isJoinedRoom || !this.enableSync) {
-      console.warn('not ready to update properties');
       return;
     }
 

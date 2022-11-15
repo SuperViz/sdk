@@ -315,11 +315,13 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
+    // this forces the initial property
+    this.realtime.myActor.data.avatarUrl = adapterOptions.avatarUrl;
+
     let actors = [];
     if (this.realtime.getActors) {
       actors = Object.values(this.realtime.getActors);
     }
-    this.realtime.updateMyProperties({ avatarUrl: adapterOptions.avatarUrl });
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
       isPointersEnabled: !this.user.isAudience,
