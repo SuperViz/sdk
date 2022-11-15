@@ -36,6 +36,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
   private apiKey: string;
+  private left: boolean;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private roomChannelState: Ably.Types.ChannelStateChange;
@@ -179,6 +180,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leave(): void {
     logger.log('REALTIME', 'Disconnecting from ably servers');
     this.client.close();
+    this.isJoinedRoom = false;
     this.isReconnecting = false;
     this.roomId = null;
     this.actors = {};
@@ -187,6 +189,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomChannel = null;
     this.roomSyncChannel = null;
     this.client = null;
+    this.left = true;
   }
 
   /**
@@ -357,6 +360,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       properties = Object.assign({}, properties, { noSlotRequired: true });
     }
 
+    if (this.left) {
+      return;
+    }
+
     this.myActor.data = {
       ...this.myActor.data,
       ...newProperties,
@@ -381,7 +388,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   private updateRoomProperties = async (properties: AblyRealtimeData, merge : boolean = true):
   Promise<void> => {
-    if (!this.enableSync) {
+    if (!this.enableSync || this.left) {
       return;
     }
 
