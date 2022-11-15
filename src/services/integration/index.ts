@@ -69,11 +69,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
-    if (user.id !== this.localUser.id) {
-      this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
-      this.createAvatar(userOn3D);
-      this.createPointer(userOn3D);
-    }
+    this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
+    this.createAvatar(userOn3D);
+    this.createPointer(userOn3D);
   };
 
   /**
@@ -105,7 +103,12 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const userToBeUpdated = this.users.find((oldUser) => oldUser.id ===
     user.id);
 
-    if (userToBeUpdated && userToBeUpdated.avatarUrl !== user.avatarUrl) {
+    if (!userToBeUpdated) {
+      this.addUser(user);
+      return;
+    }
+
+    if (userToBeUpdated.avatarUrl !== user.avatarUrl) {
       this.removeUser(user, false);
       const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
       this.IntegrationUsersService.addUserToList(userOn3D);
@@ -113,8 +116,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       this.createAvatar(userOn3D);
       this.createPointer(userOn3D);
     } else {
-      this.IntegrationUsersService.users.map((userToBeUpdated) => this.IntegrationUsersService.users
-        .find((o) => o.id === userToBeUpdated.id) || userToBeUpdated);
+      const index = this.IntegrationUsersService.users.findIndex(((u) => u.id === user.id));
+      if (index !== -1) {
+        this.IntegrationUsersService.users[index] = user;
+      }
     }
   };
 

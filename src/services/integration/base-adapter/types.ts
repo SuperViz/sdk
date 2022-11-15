@@ -39,7 +39,6 @@ export type Adapter = {
   setSyncProperty: <T>(name: string, property: T) => void;
   createPointer: (user: UserOn3D) => void;
   destroyPointer: (user: UserOn3D) => void;
-
   createAvatar: (user: UserOn3D) => void;
   destroyAvatar: (user: UserOn3D) => void;
   enableAvatars: () => void;
@@ -47,6 +46,7 @@ export type Adapter = {
   enablePointers: () => void;
   disablePointers: () => void;
   init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
+  destroy: () => void;
 };
 
 export interface RealtimeAdapterMethods {

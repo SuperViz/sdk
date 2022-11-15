@@ -62,7 +62,9 @@ export class RealtimeService implements DefaultRealtimeService {
    * @returns {void}
    */
   public unsubscribeFromActorUpdate(userId: string, callback: Function): void {
-    this.actorObservers[userId].unsubscribe(callback);
+    if (this.actorObservers[userId]) {
+      this.actorObservers[userId].unsubscribe(callback);
+    }
   }
 
   /**

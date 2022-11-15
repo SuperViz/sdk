@@ -16,6 +16,6 @@ export type SuperVizSdk = {
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
-
   connectAdapter: (adapter: Adapter, props: DefaultAdapterOptions) => AdapterMethods;
+  disconnectAdapter: () => void;
 };
