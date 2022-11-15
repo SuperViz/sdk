@@ -216,7 +216,6 @@ class Communicator {
   };
 
   private onActorsDidChange = (actors) => {
-    console.log('onActorsDidChange', actors);
     const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
       return {
         timestamp: actor.timestamp,
@@ -314,6 +313,8 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
+    this.realtime.updateMyProperties({ avatarUrl: adapterOptions.avatarUrl });
+
     const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
@@ -337,15 +338,13 @@ class Communicator {
       }),
       RealtimeService: this.realtime,
     });
-    this.userList = this.updateUserListFromActors(actors);
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     return {
       enableAvatars: this.integrationManager.enableAvatars,
       disableAvatars: this.integrationManager.disableAvatars,
       enablePointers: this.integrationManager.enablePointers,
       disablePointers: this.integrationManager.disablePointers,
-      getUsersOn3D: () => this.integrationManager.users,
+      getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
     };
   }
 }

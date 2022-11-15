@@ -253,12 +253,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceUpdate(presenceMessage: Ably.Types.PresenceMessage): void {
+    if (!this.isJoinedRoom) {
+      return;
+    }
     const { clientId } = presenceMessage;
     const user: AblyActor = Object.assign({}, presenceMessage, {
       userId: presenceMessage.clientId,
     });
 
-    if (this.actors[clientId]) {
+    if (this.actors.hasOwnProperty(clientId)) {
       this.actors[clientId] = user;
       this.publishActorUpdate(this.actors[clientId]);
       this.actorsObserver.publish(this.actors); // update actors list
@@ -358,6 +361,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       ...this.myActor.data,
       ...newProperties,
     };
+    if (newProperties.avatarUrl) {
+      this.myActor.data.avatarUrl = newProperties.avatarUrl;
+    }
 
     if (!this.isJoinedRoom || !this.enableSync) {
       console.warn('not ready to update properties');
@@ -642,14 +648,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       console.error('no slots available!');
       return;
     }
-    const newProperties = {
-      ...this.myActor.data,
-      ...myPresence.data,
-      slotIndex: availableSlots[0],
-    };
 
-    this.myActor.data = newProperties;
-    await this.updateMyProperties(newProperties);
+    await this.updateMyProperties({ slotIndex: availableSlots[0] });
     const timeToWait = (myPresence.timestamp) % 250;
     setTimeout(() => {
       this.confirmSlot(myPresence);
