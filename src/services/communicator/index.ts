@@ -109,6 +109,8 @@ class Communicator {
 
   public destroy() {
     this.publish(MeetingEvent.DESTROY, undefined);
+    this.disconnectAdapter();
+
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
@@ -313,9 +315,11 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
+    let actors = [];
+    if (this.realtime.getActors) {
+      actors = Object.values(this.realtime.getActors);
+    }
     this.realtime.updateMyProperties({ avatarUrl: adapterOptions.avatarUrl });
-
-    const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
       isPointersEnabled: !this.user.isAudience,
@@ -347,6 +351,13 @@ class Communicator {
       getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
     };
   }
+
+  public disconnectAdapter() : void {
+    if (this.integrationManager) {
+      this.integrationManager.adapter.destroy();
+      this.integrationManager = null;
+    }
+  }
 }
 
 export default (params: CommunicatorOptions): SuperVizSdk => {
@@ -359,5 +370,6 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     destroy: () => communicator.destroy(),
 
     connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
+    disconnectAdapter: () => communicator.disconnectAdapter(),
   };
 };
