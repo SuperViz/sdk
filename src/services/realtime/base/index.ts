@@ -55,7 +55,7 @@ export class RealtimeService implements DefaultRealtimeService {
   }
 
   /**
-   * @function subscribeToActorUpdate
+   * @function unsubscribeFromActorUpdate
    * @description unsubscribe to a user's events
    * @param {string} userId
    * @param {Function} callback

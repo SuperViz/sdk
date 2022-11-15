@@ -234,7 +234,7 @@ class Communicator {
         avatarUrl: actor.data.avatarUrl,
         isHostCandidate: actor.data.isHostCandidate,
         name: actor.data.name,
-        isHost: (this.realtime.localRoomProperties.hostClientId === actor.clientId),
+        isHost: (this.realtime.localRoomProperties?.hostClientId === actor.clientId),
       });
     });
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
@@ -317,7 +317,7 @@ class Communicator {
       localUser: {
         id: this.user.id,
         name: this.user.name,
-        avatarUrl: this.user.avatarUrl,
+        avatarUrl: adapterOptions.avatarUrl,
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
@@ -335,6 +335,8 @@ class Communicator {
     return {
       enableAvatars: this.integrationManager.enableAvatars,
       disableAvatars: this.integrationManager.disableAvatars,
+      enablePointers: this.integrationManager.enablePointers,
+      disablePointers: this.integrationManager.disablePointers,
       getUsersOn3D: () => this.integrationManager.users,
     };
   }

@@ -258,11 +258,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       userId: presenceMessage.clientId,
     });
 
-    this.actors[clientId] = user;
-    this.publishActorUpdate(this.actors[clientId]);
+    if (this.actors[clientId]) {
+      this.actors[clientId] = user;
+      this.publishActorUpdate(this.actors[clientId]);
 
-    if (this.hostUserId === this.localUserId && this.isBroadcastMeeting) {
-      this.syncAmphitheater();
+      if (this.hostUserId === this.localUserId && this.isBroadcastMeeting) {
+        this.syncAmphitheater();
+      }
     }
   }
 
@@ -344,7 +346,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates local actor properties
    * @returns {void}
    */
-  private updateMyProperties(newProperties: ActorInfo | RealtimeJoinOptions): void {
+  public updateMyProperties = throttle((newProperties: ActorInfo | RealtimeJoinOptions | any):
+  void => {
     let properties = newProperties;
 
     if (!this.enableSync) {
@@ -357,11 +360,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     if (!this.isJoinedRoom || !this.enableSync) {
+      console.warn('not ready to update properties');
       return;
     }
 
     this.roomChannel.presence.update(this.myActor.data);
-  }
+  }, SYNC_PROPERTY_INTERVAL);
 
   /**
    * @function updateRoomProperties
