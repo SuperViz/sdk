@@ -36,7 +36,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
   private apiKey: string;
-  private left: boolean;
+  private left: boolean = false;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private roomChannelState: Ably.Types.ChannelStateChange;
