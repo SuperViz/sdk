@@ -261,7 +261,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (this.actors[clientId]) {
       this.actors[clientId] = user;
       this.publishActorUpdate(this.actors[clientId]);
-
+      this.actorsObserver.publish(this.actors); // update actors list
       if (this.hostUserId === this.localUserId && this.isBroadcastMeeting) {
         this.syncAmphitheater();
       }
@@ -650,7 +650,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.myActor.data = newProperties;
     await this.updateMyProperties(newProperties);
-    const timeToWait = (myPresence.timestamp) % 500;
+    const timeToWait = (myPresence.timestamp) % 250;
     setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);

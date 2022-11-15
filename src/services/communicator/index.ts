@@ -216,6 +216,7 @@ class Communicator {
   };
 
   private onActorsDidChange = (actors) => {
+    console.log('onActorsDidChange', actors);
     const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
       return {
         timestamp: actor.timestamp,
@@ -226,17 +227,7 @@ class Communicator {
     });
 
     // update user list
-    this.userList = [];
-    Object.values(actors).forEach((actor: AblyActor) => {
-      this.userList.push({
-        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
-        id: actor.clientId,
-        avatarUrl: actor.data.avatarUrl,
-        isHostCandidate: actor.data.isHostCandidate,
-        name: actor.data.name,
-        isHost: (this.realtime.localRoomProperties?.hostClientId === actor.clientId),
-      });
-    });
+    this.userList = this.updateUserListFromActors(actors);
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     this.videoManager.actorsListDidChange(userListForVideoFrame);
@@ -248,6 +239,21 @@ class Communicator {
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  private updateUserListFromActors = (actors: AblyActor[]): User[] => {
+    const userList = [];
+    Object.values(actors).forEach((actor: AblyActor) => {
+      userList.push({
+        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
+        id: actor.clientId,
+        avatarUrl: actor.data.avatarUrl,
+        isHostCandidate: actor.data.isHostCandidate,
+        name: actor.data.name,
+        isHost: (this.realtime.localRoomProperties?.hostClientId === actor.clientId),
+      });
+    });
+    return userList;
   };
 
   private onSameAccountError = (error: string): void => {
@@ -331,6 +337,8 @@ class Communicator {
       }),
       RealtimeService: this.realtime,
     });
+    this.userList = this.updateUserListFromActors(actors);
+    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     return {
       enableAvatars: this.integrationManager.enableAvatars,
