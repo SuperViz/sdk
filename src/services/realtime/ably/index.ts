@@ -163,6 +163,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     // presence only in the main channel
     this.roomChannel.presence.subscribe('enter', this.onAblyPresenceEnter);
     if (this.enableSync) {
+      console.log('enable sync! onAblyPresenceUpdate');
       this.roomChannel.presence.subscribe('update', this.onAblyPresenceUpdate);
     }
     this.roomChannel.presence.subscribe('leave', this.onAblyPresenceLeave);
@@ -253,16 +254,19 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceUpdate(presenceMessage: Ably.Types.PresenceMessage): void {
+    console.log('onAblyPresenceUpdate', presenceMessage);
     const { clientId } = presenceMessage;
     const user: AblyActor = Object.assign({}, presenceMessage, {
       userId: presenceMessage.clientId,
     });
 
-    this.actors[clientId] = user;
-    this.publishActorUpdate(this.actors[clientId]);
+    if (this.actors[clientId]) {
+      this.actors[clientId] = user;
+      this.publishActorUpdate(this.actors[clientId]);
 
-    if (this.hostUserId === this.localUserId && this.isBroadcastMeeting) {
-      this.syncAmphitheater();
+      if (this.hostUserId === this.localUserId && this.isBroadcastMeeting) {
+        this.syncAmphitheater();
+      }
     }
   }
 
@@ -344,7 +348,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates local actor properties
    * @returns {void}
    */
-  private updateMyProperties(newProperties: ActorInfo | RealtimeJoinOptions): void {
+  public updateMyProperties = throttle((newProperties: ActorInfo | RealtimeJoinOptions | any):
+  void => {
     let properties = newProperties;
 
     if (!this.enableSync) {
@@ -357,11 +362,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     if (!this.isJoinedRoom || !this.enableSync) {
+      console.warn('not ready to update properties');
       return;
     }
 
     this.roomChannel.presence.update(this.myActor.data);
-  }
+  }, SYNC_PROPERTY_INTERVAL);
 
   /**
    * @function updateRoomProperties
@@ -415,6 +421,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private publishActorUpdate(actor: AblyActor): void {
+    console.log('publish actor update');
     if (this.actorObservers[actor.data.userId]) {
       this.actorObservers[actor.data.userId].publish(actor);
     }

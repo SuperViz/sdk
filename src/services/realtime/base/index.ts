@@ -48,6 +48,7 @@ export class RealtimeService implements DefaultRealtimeService {
    */
   public subscribeToActorUpdate(userId: string, callback: Function): void {
     if (!this.actorObservers[userId]) {
+      console.log('created suscription', userId);
       this.actorObservers[userId] = new ObserverHelper({ logger });
     }
 
@@ -55,13 +56,14 @@ export class RealtimeService implements DefaultRealtimeService {
   }
 
   /**
-   * @function subscribeToActorUpdate
+   * @function unsubscribeFromActorUpdate
    * @description unsubscribe to a user's events
    * @param {string} userId
    * @param {Function} callback
    * @returns {void}
    */
   public unsubscribeFromActorUpdate(userId: string, callback: Function): void {
+    console.log('unsubscribeFromActorUpdate');
     this.actorObservers[userId].unsubscribe(callback);
   }
 

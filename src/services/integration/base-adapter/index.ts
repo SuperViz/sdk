@@ -24,6 +24,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     isGoToAvailable,
     adapter,
     RealtimeService,
+    localUser,
   }: DefaultAdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
@@ -35,14 +36,30 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this.adapter = adapter;
 
     this.RealtimeService = RealtimeService;
-    this.adapter.setRealtimeMethods({
+
+    if (!this.isAvatarsEnabled) {
+      this.adapter.disableAvatars();
+    }
+    if (!this.isPointersEnabled) {
+      this.adapter.disablePointers();
+    }
+    this.adapter.init({
       setSyncProperty: <T>(name: string, property: T) => {
         RealtimeService.setSyncProperty(name, property);
+      },
+      subscribeToActorUpdate: <T>(id: string, callback: Function) => {
+        RealtimeService.subscribeToActorUpdate(id, callback);
+      },
+      unsubscribeToActorUpdate: <T>(id: string, callback: Function) => {
+        RealtimeService.unsubscribeFromActorUpdate(id, callback);
+      },
+      updateMyProperties: <T> (properties: T) => {
+        RealtimeService.updateMyProperties(properties);
       },
       subscribe: RealtimeService.syncPropertiesObserver.subscribe,
       unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
       getUserSlot: RealtimeService.getUserSlot,
-    });
+    }, localUser);
   }
 
   public get isAvatarsEnabled(): boolean {
@@ -86,14 +103,33 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   };
 
   /**
+   * @function enablePointers
+   * @description enable avatars in 3D space;
+   * @returns {void}
+   */
+  public enablePointers = (): void => {
+    this._isPointersEnabled = true;
+    this.adapter.enablePointers();
+  };
+
+  /**
+     * @function disablePointers
+     * @description disable avatars in 3D space;
+     * @returns {void}
+     */
+  public disablePointers = (): void => {
+    this._isPointersEnabled = false;
+    this.adapter.disablePointers();
+  };
+
+  /**
    * @function createAvatar
    * @description create an avatar for the user in 3D space;
    * @param {UserOn3D} user;
-   * @param {string} avatarUrl
    * @returns {void}
    */
-  public createAvatar = (user: UserOn3D, avatarUrl?: string): void => {
-    this.adapter.createAvatar(user, avatarUrl);
+  public createAvatar = (user: UserOn3D): void => {
+    this.adapter.createAvatar(user);
   };
 
   /**

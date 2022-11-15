@@ -39,7 +39,6 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
    * @returns {UserOn3D}
    */
   public createUserOn3D = ({ id, name, avatarUrl }: UserTo3D): UserOn3D => {
-    // @TODO - get color from RealtimeService
     const userOn3D: UserOn3D = {
       id,
       name,
