@@ -13,13 +13,16 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
   }
 
   /**
-   * @function setUserList
+   * @function addUserToList
    * @description add user list in 3D space
    * @param {UserOn3D[]} users
    * @returns {void}
    */
-  public setUserList = (users: UserOn3D[]): void => {
-    this._users = users;
+  public addUserToList = (user: UserOn3D): void => {
+    if (!this._users) {
+      this._users = [];
+    }
+    this._users = [...this._users, user];
   };
 
   /**

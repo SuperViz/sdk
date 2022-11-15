@@ -308,9 +308,6 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
-    console.log('adapterOptions', adapterOptions);
-    console.log('update my real avatar', adapterOptions.avatarUrl);
-    this.realtime.updateMyProperties({ avatarUrl: adapterOptions.avatarUrl });
     const actors = Object.values(this.realtime.getActors);
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
