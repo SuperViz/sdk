@@ -319,6 +319,7 @@ class Communicator {
     if (this.realtime.getActors) {
       actors = Object.values(this.realtime.getActors);
     }
+    this.realtime.updateMyProperties({ avatarUrl: adapterOptions.avatarUrl });
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
       isPointersEnabled: !this.user.isAudience,
@@ -341,15 +342,13 @@ class Communicator {
       }),
       RealtimeService: this.realtime,
     });
-    this.userList = this.updateUserListFromActors(actors);
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     return {
       enableAvatars: this.integrationManager.enableAvatars,
       disableAvatars: this.integrationManager.disableAvatars,
       enablePointers: this.integrationManager.enablePointers,
       disablePointers: this.integrationManager.disablePointers,
-      getUsersOn3D: () => this.integrationManager.users,
+      getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
     };
   }
 

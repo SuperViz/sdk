@@ -45,8 +45,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.IntegrationUsersService = new IntegrationUsersManager();
     this.createLocalUser(localUserWithAvatar);
     this.createUserList(userList);
-
-    this.RealtimeService.updateMyProperties({ avatarUrl });
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
   }
