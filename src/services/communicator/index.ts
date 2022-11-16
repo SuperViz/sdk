@@ -117,6 +117,8 @@ class Communicator {
 
   public destroy() {
     this.publish(MeetingEvent.DESTROY, undefined);
+    this.disconnectAdapter();
+
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
@@ -234,17 +236,7 @@ class Communicator {
     });
 
     // update user list
-    this.userList = [];
-    Object.values(actors).forEach((actor: AblyActor) => {
-      this.userList.push({
-        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
-        id: actor.clientId,
-        avatarUrl: actor.data.avatarUrl,
-        isHostCandidate: actor.data.isHostCandidate,
-        name: actor.data.name,
-        isHost: this.realtime.localRoomProperties.hostClientId === actor.clientId,
-      });
-    });
+    this.userList = this.updateUserListFromActors(actors);
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     this.videoManager.actorsListDidChange(userListForVideoFrame);
@@ -256,6 +248,21 @@ class Communicator {
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  private updateUserListFromActors = (actors: AblyActor[]): User[] => {
+    const userList = [];
+    Object.values(actors).forEach((actor: AblyActor) => {
+      userList.push({
+        id: actor.clientId,
+        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
+        avatarUrl: actor.data.avatarUrl,
+        isHostCandidate: actor.data.isHostCandidate,
+        name: actor.data.name,
+        isHost: this.realtime.localRoomProperties?.hostClientId === actor.clientId,
+      });
+    });
+    return userList;
   };
 
   private onSameAccountError = (error: string): void => {
@@ -316,7 +323,13 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
-    const actors = Object.values(this.realtime.getActors);
+    // this forces the initial property
+    this.realtime.myActor.data.avatarUrl = adapterOptions.avatarUrl;
+
+    let actors = [];
+    if (this.realtime.getActors) {
+      actors = Object.values(this.realtime.getActors);
+    }
     this.integrationManager = new IntegrationManager({
       isAvatarsEnabled: !this.user.isAudience,
       isPointersEnabled: !this.user.isAudience,
@@ -325,7 +338,7 @@ class Communicator {
       localUser: {
         id: this.user.id,
         name: this.user.name,
-        avatarUrl: this.user.avatarUrl,
+        avatarUrl: adapterOptions.avatarUrl,
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
@@ -343,8 +356,17 @@ class Communicator {
     return {
       enableAvatars: this.integrationManager.enableAvatars,
       disableAvatars: this.integrationManager.disableAvatars,
-      getUsersOn3D: () => this.integrationManager.users,
+      enablePointers: this.integrationManager.enablePointers,
+      disablePointers: this.integrationManager.disablePointers,
+      getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
     };
+  }
+
+  public disconnectAdapter(): void {
+    if (this.integrationManager) {
+      this.integrationManager.adapter.destroy();
+      this.integrationManager = null;
+    }
   }
 }
 
@@ -358,5 +380,6 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     destroy: () => communicator.destroy(),
 
     connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
+    disconnectAdapter: () => communicator.disconnectAdapter(),
   };
 };

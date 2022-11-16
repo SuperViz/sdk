@@ -37,8 +37,3 @@ export enum MeetingColorsHex {
   '#BB813F',
   '#878291',
 }
-
-export interface SlotColor {
-  color,
-  name
-}
