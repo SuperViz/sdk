@@ -53,7 +53,6 @@ class Communicator {
     isBroadcast,
     camsOff,
     screenshareOff,
-    framePosition: position,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -64,7 +63,10 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
-    const framePosition = position ?? 'right';
+
+    // @TODO - turn this into a parameter when support for changing frame position is implemented.
+    // request: https://github.com/SuperViz/sdk/issues/33
+    const framePosition = 'right';
 
     this.connectionService = new ConnectionService();
     this.connectionService.addListerners();

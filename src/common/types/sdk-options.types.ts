@@ -10,5 +10,4 @@ export interface SuperVizSdkOptions {
   isBroadcast?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;
-  framePosition: FramePosition;
 }

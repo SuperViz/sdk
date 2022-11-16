@@ -59,6 +59,10 @@ export default class VideoConfereceManager {
 
     this.browserService = options.browserService;
 
+    /**
+     * @TODO - add full horizontal view support on desktop, currently only works on mobile.
+     * request: https://github.com/SuperViz/sdk/issues/33
+     */
     const camerasOrientation =
       ['right', 'left'].includes(options.position) && !this.browserService.isMobileDevice
         ? 'vertical'
