@@ -1,3 +1,5 @@
+import { FramePosition } from '../../common/types/sdk-options.types';
+import { BrowserService } from '../browser';
 import { Language } from '../communicator/types';
 
 export interface VideoManagerOptions {
@@ -5,9 +7,16 @@ export interface VideoManagerOptions {
   debug: boolean;
   language: Language;
   roomId: string;
+  canUseCams: boolean;
+  canUseScreenshare: boolean;
+  position: FramePosition;
+  browserService: BrowserService;
   broadcast: boolean;
-  canUseCams?: boolean;
-  canUseScreenshare?: boolean;
+}
+
+export interface WindowSize {
+  height: number;
+  width: number;
 }
 
 export enum VideoFrameState {

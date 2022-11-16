@@ -12,6 +12,7 @@ import {
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
+import { BrowserService } from '../browser';
 
 import { VideoFrameState, VideoManagerOptions, FrameSize } from './types';
 
@@ -23,8 +24,10 @@ const FULL_PERCENT = '100%';
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
+  private browserService: BrowserService;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
+
   public readonly realtimeObserver = new ObserverHelper({ logger });
   public readonly hostChangeObserver = new ObserverHelper({ logger });
   public readonly gridModeChangeObserver = new ObserverHelper({ logger });
@@ -54,21 +57,37 @@ export default class VideoConfereceManager {
 
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
+    this.browserService = options.browserService;
+
+    /**
+     * @TODO - add full horizontal view support on desktop, currently only works on mobile.
+     * request: https://github.com/SuperViz/sdk/issues/33
+     */
+    const camerasOrientation =
+      ['right', 'left'].includes(options.position) && !this.browserService.isMobileDevice
+        ? 'vertical'
+        : 'horizontal';
+
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
-      {
-        isBroadcast: options.broadcast,
-        ...options,
-      },
+      { ...options, camerasOrientation, isBroadcast: options.broadcast },
       {
         allow: 'camera *;microphone *; display-capture *;',
       },
     );
 
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
+    window.addEventListener('resize', this.onWindowResize);
+
+    if (this.browserService.isMobileDevice) {
+      this.bricklayer.element.classList.add('sv-video-frame--bottom');
+      return;
+    }
+
+    this.bricklayer.element.classList.add(`sv-video-frame--${options.position}`);
   }
 
   start(options: StartMeetingOptions) {
@@ -118,6 +137,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
+    this.onWindowResize();
   };
 
   private onFrameDimensionsUpdate = ({ width, height }: Dimensions) => {
@@ -129,7 +149,7 @@ export default class VideoConfereceManager {
     if (FULL_WIDTH) frame.style.width = FULL_PERCENT;
 
     const SET_UPDATE_HEIGHT = !!height;
-    const FULL_HEIGHT = height === 0;
+    const FULL_HEIGHT = height === 0 || height > window.innerHeight;
     if (SET_UPDATE_HEIGHT) frame.style.height = `${height}px`;
     if (FULL_HEIGHT) frame.style.height = FULL_VIEWPORT_HEIGHT;
   };
@@ -196,6 +216,24 @@ export default class VideoConfereceManager {
     this.devicesObserver.publish(state);
   };
 
+  private meetingStateUpdate = (newState: MeetingState): void => {
+    this.meetingStateObserver.publish(newState);
+  };
+
+  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
+    this.meetingConnectionObserver.publish(newStatus);
+  };
+
+  private onWindowResize = (): void => {
+    const { innerHeight: height, innerWidth: width } = window;
+
+    this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
+  };
+
+  public waitForHostDidChange = (isWating: boolean): void => {
+    this.messageBridge.publish(RealtimeEvent.REALTIME_WAIT_FOR_HOST, isWating);
+  };
+
   public gridModeDidChange = (isGridModeEnable: boolean): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
   };
@@ -206,13 +244,5 @@ export default class VideoConfereceManager {
 
   public onMasterActorDidChange = (hostId: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
-  };
-
-  private meetingStateUpdate = (newState: MeetingState): void => {
-    this.meetingStateObserver.publish(newState);
-  };
-
-  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
-    this.meetingConnectionObserver.publish(newStatus);
   };
 }

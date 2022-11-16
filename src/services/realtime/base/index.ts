@@ -1,9 +1,9 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { MeetingColors, MeetingColorsHex, SlotColor } from '../../../common/types/meeting-colors.types';
+import { MeetingColors, MeetingColorsHex } from '../../../common/types/meeting-colors.types';
 import { logger } from '../../../common/utils';
 
-import { DefaultRealtimeService } from './types';
+import { DefaultRealtimeService, SlotColor } from './types';
 
 export class RealtimeService implements DefaultRealtimeService {
   public actorObservers: ObserverHelper[];

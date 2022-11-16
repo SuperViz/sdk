@@ -19,7 +19,11 @@ import { AblyRealtimeService } from '../realtime';
 import { AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import {
+  VideoFrameState,
+  VideoManagerOptions,
+  WindowSize,
+} from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
@@ -60,6 +64,10 @@ class Communicator {
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
 
+    // @TODO - turn this into a parameter when support for changing frame position is implemented.
+    // request: https://github.com/SuperViz/sdk/issues/33
+    const framePosition = 'right';
+
     this.connectionService = new ConnectionService();
     this.connectionService.addListerners();
 
@@ -73,6 +81,8 @@ class Communicator {
       debug,
       language,
       roomId,
+      position: framePosition,
+      browserService: this.browserService,
       broadcast: isBroadcast || false,
     });
 
@@ -218,7 +228,7 @@ class Communicator {
   };
 
   private onActorsDidChange = (actors) => {
-    const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
+    const userListForVideoFrame = Object.values(actors).map((actor: AblyActor) => {
       return {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
@@ -246,12 +256,12 @@ class Communicator {
     const userList = [];
     Object.values(actors).forEach((actor: AblyActor) => {
       userList.push({
-        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
         id: actor.clientId,
+        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
         avatarUrl: actor.data.avatarUrl,
         isHostCandidate: actor.data.isHostCandidate,
         name: actor.data.name,
-        isHost: (this.realtime.localRoomProperties?.hostClientId === actor.clientId),
+        isHost: this.realtime.localRoomProperties?.hostClientId === actor.clientId,
       });
     });
     return userList;
@@ -354,7 +364,7 @@ class Communicator {
     };
   }
 
-  public disconnectAdapter() : void {
+  public disconnectAdapter(): void {
     if (this.integrationManager) {
       this.integrationManager.adapter.destroy();
       this.integrationManager = null;
