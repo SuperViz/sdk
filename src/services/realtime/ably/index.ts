@@ -364,14 +364,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
-    if (newProperties.avatarUrl === undefined) {
-      delete newProperties.avatarUrl;
+    if (properties.avatarUrl === undefined) {
+      delete properties.avatarUrl;
     }
     this.myActor.data = {
       ...this.myActor.data,
       ...newProperties,
     };
-
 
     if (!this.isJoinedRoom || !this.enableSync) {
       return;
@@ -655,6 +654,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       console.error('no slots available!');
       return;
     }
+    const slotChosen = availableSlots[0];
+    this.myActor.data.slotIndex = slotChosen;
 
     await this.updateMyProperties({ slotIndex: availableSlots[0] });
     const timeToWait = (myPresence.timestamp) % 250;
@@ -683,7 +684,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         usedSlots.push(member.data.slotIndex);
       }
     }));
-    if (usedSlots.includes(this.myActor.data.slotIndex)) {
+    if (this.myActor.data.slotIndex === undefined ||
+      usedSlots.includes(this.myActor.data.slotIndex)) {
       this.findSlotIndex(myPresence);
     } else {
       // confirm slot and propagate
