@@ -3,9 +3,10 @@ export interface User {
   name: string;
   isHost: boolean;
   isHostCandidate: boolean;
-  isAudience?: boolean;
+  // @TODO enable the flag when the feature is complete
+  // isAudience?: boolean;
   avatarUrl?: string;
-  color?: string
+  color?: string;
 }
 
 export interface UserGroup {
