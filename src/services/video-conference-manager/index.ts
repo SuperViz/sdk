@@ -1,4 +1,5 @@
 import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
+import NoSleep from 'nosleep.js';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
 import {
@@ -117,6 +118,17 @@ export default class VideoConfereceManager {
       logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
+
+    if (this.browserService.isMobileDevice) {
+      const noSleep = new NoSleep();
+
+      const enableNoSleep = () => {
+        noSleep.enable();
+        this.bricklayer.element.removeEventListener('click', enableNoSleep, false);
+      };
+
+      this.bricklayer.element.addEventListener('click', enableNoSleep, false);
+    }
 
     // @TODO: create option to destroy all these listens.
     this.messageBridge.listen(MeetingEvent.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
