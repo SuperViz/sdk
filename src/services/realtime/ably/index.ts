@@ -246,6 +246,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.onJoinRoom(presenceMessage);
     } else {
       this.onActorJoin(presenceMessage);
+      this.confirmSlot(this.myActor);
     }
   }
 
@@ -658,7 +659,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.myActor.data.slotIndex = slotChosen;
 
     await this.updateMyProperties({ slotIndex: availableSlots[0] });
-    const timeToWait = (myPresence.timestamp) % 250;
+    const timeToWait = (myPresence.timestamp) % 500;
     setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);
