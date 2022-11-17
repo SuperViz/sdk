@@ -18,7 +18,6 @@ import { VideoFrameState, VideoManagerOptions, FrameSize } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
-const FULL_VIEWPORT_HEIGHT = '100vh';
 const FULL_PERCENT = '100%';
 
 export default class VideoConfereceManager {
@@ -27,6 +26,7 @@ export default class VideoConfereceManager {
   private browserService: BrowserService;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
+  public readonly frameSizeObserver = new ObserverHelper({ logger });
 
   public readonly realtimeObserver = new ObserverHelper({ logger });
   public readonly hostChangeObserver = new ObserverHelper({ logger });
@@ -145,13 +145,22 @@ export default class VideoConfereceManager {
 
     const SET_UPDATE_WIDTH = width !== null;
     const FULL_WIDTH = width === 0;
-    if (SET_UPDATE_WIDTH) frame.style.width = `${width}px`;
-    if (FULL_WIDTH) frame.style.width = FULL_PERCENT;
-
     const SET_UPDATE_HEIGHT = !!height;
     const FULL_HEIGHT = height === 0 || height > window.innerHeight;
-    if (SET_UPDATE_HEIGHT) frame.style.height = `${height}px`;
-    if (FULL_HEIGHT) frame.style.height = FULL_VIEWPORT_HEIGHT;
+
+    let frameWidth;
+    let frameHeight;
+
+    if (SET_UPDATE_WIDTH) frameWidth = `${width}px`;
+    if (FULL_WIDTH) frameWidth = FULL_PERCENT;
+
+    if (SET_UPDATE_HEIGHT) frameHeight = `${height}px`;
+    if (FULL_HEIGHT) frameHeight = FULL_PERCENT;
+
+    frame.style.width = frameWidth;
+    frame.style.height = frameHeight;
+
+    this.frameSizeObserver.publish({ width: frameWidth, height: frameHeight });
   };
 
   private onUserAmountUpdate = (users: Array<User>): void => {
