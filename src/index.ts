@@ -45,10 +45,6 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
     throw new Error('Failed to validate API key');
   }
 
-  if (options.isBroadcast) {
-    logger.log('Broadcast mode is enabled');
-  }
-
   const environment = await ApiService.fetchConfig(apiKey);
 
   if (!environment || !environment.ablyKey) {

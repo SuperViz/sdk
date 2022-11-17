@@ -50,7 +50,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-    isBroadcast,
+    // isBroadcast,
     camsOff,
     screenshareOff,
   }: CommunicatorOptions) {
@@ -83,7 +83,7 @@ class Communicator {
       roomId,
       position: framePosition,
       browserService: this.browserService,
-      broadcast: isBroadcast || false,
+      broadcast: false,
     });
 
     // Realtime observers
@@ -333,8 +333,9 @@ class Communicator {
       actors = Object.values(this.realtime.getActors);
     }
     this.integrationManager = new IntegrationManager({
-      isAvatarsEnabled: !this.user.isAudience,
-      isPointersEnabled: !this.user.isAudience,
+      // @TODO - enable the flag when the feature is complete
+      // isAvatarsEnabled: !this.user.isAudience,
+      // isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {
