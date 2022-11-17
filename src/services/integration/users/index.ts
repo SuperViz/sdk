@@ -47,8 +47,8 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
       id,
       name,
       avatarUrl,
-      avatarScale: avatarScale ?? 1,
-      avatarHeight: avatarHeight ?? 0,
+      avatarScale,
+      avatarHeight,
       position: {
         x: 0,
         y: 0,

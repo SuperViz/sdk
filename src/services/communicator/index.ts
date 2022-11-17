@@ -346,14 +346,18 @@ class Communicator {
         id: this.user.id,
         name: this.user.name,
         avatarUrl: adapterOptions.avatarUrl,
+        avatarScale: adapterOptions.avatarScale,
+        avatarHeight: adapterOptions.avatarHeight,
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
-        const { name, avatarUrl, slotIndex } = actor.data;
+        const { name, avatarUrl, avatarScale, avatarHeight, slotIndex } = actor.data;
         return {
           id,
           name,
           avatarUrl,
+          avatarScale,
+          avatarHeight,
           slotIndex,
         };
       }),
