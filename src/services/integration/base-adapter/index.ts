@@ -1,3 +1,4 @@
+import { AdapterOptions } from '../../communicator/types';
 import { AblyRealtimeService } from '../../realtime';
 import { SyncProperty } from '../../realtime/base/types';
 import { UserOn3D } from '../users/types';
@@ -25,7 +26,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     adapter,
     RealtimeService,
     localUser,
-  }: DefaultAdapterOptions) {
+  }: AdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
 

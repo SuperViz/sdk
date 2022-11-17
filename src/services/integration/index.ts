@@ -16,6 +16,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
     RealtimeService,
     avatarUrl,
+    avatarScale,
+    avatarHeight,
     localUser,
     userList,
   }: DefaultIntegrationManagerOptions) {
@@ -37,10 +39,15 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       isFollowAvailable: canUseFollow,
       localUser,
       avatarUrl,
+      avatarScale,
+      avatarHeight,
     });
 
     const localUserWithAvatar = localUser;
     localUserWithAvatar.avatarUrl = avatarUrl;
+    localUserWithAvatar.avatarScale = avatarScale;
+    localUserWithAvatar.avatarHeight = avatarHeight;
+
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
     this.createLocalUser(localUserWithAvatar);
@@ -184,13 +191,15 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorUpdated = (actor): void => {
-    const { userId, name, avatarUrl, position, rotation } = actor.data;
+    const { userId, name, avatarUrl, avatarHeight, avatarScale, position, rotation } = actor.data;
     this.updateUser({
       position,
       rotation,
       id: userId,
       name,
       avatarUrl,
+      avatarScale,
+      avatarHeight,
     });
   };
 }

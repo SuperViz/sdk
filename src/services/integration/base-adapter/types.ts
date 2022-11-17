@@ -20,10 +20,7 @@ export interface DefaultAdapterOptions {
 
   // Adapter settings
   adapter: Adapter;
-
   localUser: UserTo3D;
-  avatarUrl: string;
-
   RealtimeService: AblyRealtimeService;
 }
 

@@ -1,3 +1,5 @@
+import { AdapterOptions } from '../communicator/types';
+
 import { DefaultAdapterManager, DefaultAdapterOptions } from './base-adapter/types';
 import { UserOn3D, UserTo3D } from './users/types';
 
@@ -9,6 +11,6 @@ export interface DefaultIntegrationManager extends DefaultAdapterManager {
   isPointersEnabled: boolean;
 }
 
-export interface DefaultIntegrationManagerOptions extends DefaultAdapterOptions {
+export interface DefaultIntegrationManagerOptions extends AdapterOptions {
   userList: UserTo3D[];
 }

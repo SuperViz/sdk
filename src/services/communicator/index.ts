@@ -259,6 +259,8 @@ class Communicator {
         id: actor.clientId,
         color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
         avatarUrl: actor.data.avatarUrl,
+        avatarScale: actor.data.avatarScale,
+        avatarHeight: actor.data.avatarHeight,
         isHostCandidate: actor.data.isHostCandidate,
         name: actor.data.name,
         isHost: this.realtime.localRoomProperties?.hostClientId === actor.clientId,
@@ -327,6 +329,8 @@ class Communicator {
     }
     // this forces the initial property
     this.realtime.myActor.data.avatarUrl = adapterOptions.avatarUrl;
+    this.realtime.myActor.data.avatarScale = adapterOptions.avatarScale;
+    this.realtime.myActor.data.avatarHeight = adapterOptions.avatarHeight;
 
     let actors = [];
     if (this.realtime.getActors) {
