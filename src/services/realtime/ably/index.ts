@@ -376,7 +376,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
-    this.roomChannel.presence.update(this.myActor.data);
+    return this.roomChannel.presence.update(this.myActor.data);
   }, SYNC_PROPERTY_INTERVAL);
 
   /**
@@ -638,29 +638,28 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = async (myPresenceParam: Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
-    const timeToWait = (myPresence.timestamp) % 500;
-    setTimeout(async () => {
-      const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
-      await this.roomChannel.presence.get((err, members) => members.forEach((member) => {
-        if (err) {
-          return;
-        }
-        if (member.connectionId === myPresence.connectionId) {
-          myPresence = member;
-        }
-        if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
-          availableSlots.splice(availableSlots.indexOf(member.data.slotIndex), 1);
-        }
-      }));
-      if (availableSlots.length === 0) {
-        console.error('no slots available!');
+    const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
+    await this.roomChannel.presence.get((err, members) => members.forEach((member) => {
+      if (err) {
         return;
       }
-      const slotChosen = availableSlots[0];
-      this.myActor.data.slotIndex = slotChosen;
+      if (member.connectionId === myPresence.connectionId) {
+        myPresence = member;
+      }
+      if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
+        availableSlots.splice(availableSlots.indexOf(member.data.slotIndex), 1);
+      }
+    }));
+    if (availableSlots.length === 0) {
+      console.error('no slots available!');
+      return;
+    }
+    const slotChosen = availableSlots[0];
+    this.myActor.data.slotIndex = slotChosen;
 
-      await this.updateMyProperties({ slotIndex: availableSlots[0] });
-
+    await this.updateMyProperties({ slotIndex: availableSlots[0] });
+    const timeToWait = myPresence.timestamp % 500;
+    setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);
   };
@@ -675,13 +674,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const usedSlots : Ably.Types.PresenceMessage[] = [];
     let myPresence = myPresenceParam;
     await this.roomChannel.presence.get((err, members) => members.forEach((member) => {
-      if (err) {
-        return;
-      }
       if (member.connectionId === myPresence.connectionId) {
         myPresence = member;
       }
-      if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
+      if (member.connectionId !== myPresence.connectionId && member.data.slotIndex !== undefined) {
         usedSlots.push(member.data.slotIndex);
       }
     }));
