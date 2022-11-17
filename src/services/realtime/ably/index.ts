@@ -364,13 +364,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
+    if (newProperties.avatarUrl === undefined) {
+      delete newProperties.avatarUrl;
+    }
     this.myActor.data = {
       ...this.myActor.data,
       ...newProperties,
     };
-    if (newProperties.avatarUrl) {
-      this.myActor.data.avatarUrl = newProperties.avatarUrl;
-    }
+
 
     if (!this.isJoinedRoom || !this.enableSync) {
       return;
