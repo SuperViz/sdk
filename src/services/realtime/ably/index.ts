@@ -246,7 +246,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.onJoinRoom(presenceMessage);
     } else {
       this.onActorJoin(presenceMessage);
-      this.confirmSlot(this.myActor);
     }
   }
 
@@ -639,28 +638,29 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = async (myPresenceParam: Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
-    const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
-    await this.roomChannel.presence.get((err, members) => members.forEach((member) => {
-      if (err) {
+    const timeToWait = (myPresence.timestamp) % 500;
+    setTimeout(async () => {
+      const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
+      await this.roomChannel.presence.get((err, members) => members.forEach((member) => {
+        if (err) {
+          return;
+        }
+        if (member.connectionId === myPresence.connectionId) {
+          myPresence = member;
+        }
+        if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
+          availableSlots.splice(availableSlots.indexOf(member.data.slotIndex), 1);
+        }
+      }));
+      if (availableSlots.length === 0) {
+        console.error('no slots available!');
         return;
       }
-      if (member.connectionId === myPresence.connectionId) {
-        myPresence = member;
-      }
-      if (member.connectionId !== myPresence.connectionId && member.data.hasOwnProperty('slotIndex')) {
-        availableSlots.splice(availableSlots.indexOf(member.data.slotIndex), 1);
-      }
-    }));
-    if (availableSlots.length === 0) {
-      console.error('no slots available!');
-      return;
-    }
-    const slotChosen = availableSlots[0];
-    this.myActor.data.slotIndex = slotChosen;
+      const slotChosen = availableSlots[0];
+      this.myActor.data.slotIndex = slotChosen;
 
-    await this.updateMyProperties({ slotIndex: availableSlots[0] });
-    const timeToWait = (myPresence.timestamp) % 500;
-    setTimeout(() => {
+      await this.updateMyProperties({ slotIndex: availableSlots[0] });
+
       this.confirmSlot(myPresence);
     }, timeToWait);
   };
