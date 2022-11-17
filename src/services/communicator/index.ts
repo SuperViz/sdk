@@ -3,6 +3,7 @@ import isEqual from 'lodash.isequal';
 
 import {
   DeviceEvent,
+  Dimensions,
   MeetingConnectionStatus,
   MeetingEvent,
   MeetingState,
@@ -122,6 +123,8 @@ class Communicator {
     this.disconnectAdapter();
 
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
+    this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
+
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
@@ -175,6 +178,8 @@ class Communicator {
 
     // Video observers
     this.videoManager.frameStateObserver.subscribe(this.onFrameStateDidChange);
+    this.videoManager.frameSizeObserver.subscribe(this.onFrameSizeDidChange);
+
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
@@ -221,6 +226,10 @@ class Communicator {
     if (state === VideoFrameState.INITIALIZED) {
       this.start();
     }
+  };
+
+  private onFrameSizeDidChange = (dimensions: Dimensions): void => {
+    this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
   private onRoomInfoUpdated = (room) => {

@@ -9,7 +9,6 @@ const styles = `
     position: fixed;
     
     border: none;
-    overflow: hidden;
 
     margin: 0; 
     padding: 0; 
@@ -31,12 +30,7 @@ const styles = `
     width: 100%;
   }
 
-  #sv-video-wrapper iframe {
-    width: 225px;
-  }
-
   #sv-video-wrapper iframe.sv-video-frame--expansive-mode {
-    top: 0; 
     bottom: 0; 
     right: 0; 
     width: 100%;
