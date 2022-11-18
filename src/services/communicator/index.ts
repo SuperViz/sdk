@@ -42,6 +42,7 @@ class Communicator {
 
   private observerHelpers: { string?: ObserverHelper } = {};
   private user: User;
+  private hasJoined: Boolean = false;
   private userList: User[] = [];
 
   constructor({
@@ -156,6 +157,7 @@ class Communicator {
     this.videoManager.leave();
     this.realtime.leave();
     this.connectionService.removeListeners();
+    this.hasJoined = false;
   }
 
   public setSyncProperty = <T>(name: string, property: T): void => {
@@ -241,6 +243,10 @@ class Communicator {
   };
 
   private onActorsDidChange = (actors) => {
+    if (actors[this.user.id] && !this.hasJoined) {
+      this.publish(MeetingEvent.MY_USER_JOINED, this.user);
+      this.hasJoined = true;
+    }
     const userListForVideoFrame = Object.values(actors).map((actor: AblyActor) => {
       return {
         timestamp: actor.timestamp,
@@ -296,10 +302,6 @@ class Communicator {
   };
 
   private onUserJoined = (user: User): void => {
-    if (user.id === this.user.id) {
-      this.publish(MeetingEvent.MY_USER_JOINED, user);
-    }
-
     this.publish(MeetingEvent.MEETING_USER_JOINED, user);
   };
 
