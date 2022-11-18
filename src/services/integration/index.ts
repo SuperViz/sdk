@@ -50,6 +50,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
+    console.log('userList', userList);
     this.createLocalUser(localUserWithAvatar);
     this.createUserList(userList);
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
@@ -71,6 +72,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public addUser = (user: UserTo3D): void => {
+    console.log('add user', user);
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
@@ -113,8 +115,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       return;
     }
 
-    if (userToBeUpdated.avatarUrl !== user.avatarUrl) {
-      console.log('avatar was updated', user.avatarUrl);
+    if (userToBeUpdated.avatarUrl !== user.avatarUrl && user.avatarUrl !== undefined) {
+      console.log('avatar was updated from undefined', user.avatarUrl);
       this.removeUser(user, false);
       const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
       this.IntegrationUsersService.addUserToList(userOn3D);
