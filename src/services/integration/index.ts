@@ -15,7 +15,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     adapter,
 
     RealtimeService,
-
+    avatarUrl,
+    avatarScale,
+    avatarHeight,
     localUser,
     userList,
   }: DefaultIntegrationManagerOptions) {
@@ -35,15 +37,23 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       isGatherAvailable: canUseGather,
       isGoToAvailable: canUseGoTo,
       isFollowAvailable: canUseFollow,
+      localUser,
+      avatarUrl,
+      avatarScale,
+      avatarHeight,
     });
 
-    this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
-    this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
+    const localUserWithAvatar = localUser;
+    localUserWithAvatar.avatarUrl = avatarUrl;
+    localUserWithAvatar.avatarScale = avatarScale;
+    localUserWithAvatar.avatarHeight = avatarHeight;
 
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
+    this.createLocalUser(localUserWithAvatar);
     this.createUserList(userList);
-    this.createLocalUser(localUser);
+    this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
+    this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
   }
 
   public get users(): UserOn3D[] {
@@ -63,9 +73,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   public addUser = (user: UserTo3D): void => {
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
-    this.IntegrationUsersService.setUserList([...this.users, userOn3D]);
-
-    this.createAvatar(userOn3D, user.avatarUrl);
+    this.IntegrationUsersService.addUserToList(userOn3D);
+    this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
+    this.createAvatar(userOn3D);
     this.createPointer(userOn3D);
   };
 
@@ -75,16 +85,52 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @param {UserOn3D} user
    * @returns {void}
    */
-  public removeUser = (user: UserOn3D): void => {
+  public removeUser = (user: UserOn3D, unsubscribe): void => {
     this.IntegrationUsersService.removeUser(user);
 
     this.destroyAvatar(user);
     this.destroyPointer(user);
+    if (unsubscribe) {
+      this.RealtimeService.unsubscribeFromActorUpdate(user.id, this.onActorUpdated);
+    }
+  };
+
+  /**
+   * @function updateUser
+   * @description update user
+   * @param {UserOn3D} user
+   * @returns {void}
+   */
+  public updateUser = (user: UserOn3D): void => {
+    if (!this.users || this.users.length === 0) {
+      return;
+    }
+    const userToBeUpdated = this.users.find((oldUser) => oldUser.id ===
+    user.id);
+
+    if (!userToBeUpdated) {
+      this.addUser(user);
+      return;
+    }
+
+    if (userToBeUpdated.avatarUrl !== user.avatarUrl && user.avatarUrl !== undefined) {
+      this.removeUser(user, false);
+      const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
+      this.IntegrationUsersService.addUserToList(userOn3D);
+
+      this.createAvatar(userOn3D);
+      this.createPointer(userOn3D);
+    } else {
+      const index = this.IntegrationUsersService.users.findIndex(((u) => u.id === user.id));
+      if (index !== -1) {
+        this.IntegrationUsersService.users[index] = user;
+      }
+    }
   };
 
   /**
    * @function createLocalUser
-   * @description creates the user list with what is needed for the 3D environment
+   * @description creates the user with what is needed for the 3D environment
    * @param {UserTo3D} localUser
    * @returns {void}
    */
@@ -95,18 +141,15 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
   /**
    * @function createUserList
-   * @description creates the local user with what is needed for the 3D environment
+   * @description creates the local user list that is needed for the 3D environment
    * @param {UserOn3D[]} userList
    * @returns {void}
    */
   private createUserList = (userList: UserTo3D[]): void => {
     const userOn3DList = userList.map((user) => this.IntegrationUsersService.createUserOn3D(user));
     userOn3DList.forEach((user) => {
-      this.createAvatar(user);
-      this.createPointer(user);
+      this.addUser(user);
     });
-
-    this.IntegrationUsersService.setUserList(userOn3DList);
   };
 
   /**
@@ -116,12 +159,14 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorJoined = (actor): void => {
-    const { id, name, avatarUrl } = actor.data;
+    const { userId, name, avatarUrl, avatarHeight, avatarScale } = actor.data;
 
     this.addUser({
-      id,
+      id: userId,
       name,
       avatarUrl,
+      avatarHeight,
+      avatarScale,
     });
   };
 
@@ -138,6 +183,25 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       return;
     }
 
-    this.removeUser(user);
+    this.removeUser(user, true);
+  };
+
+  /**
+   * @function onActorUpdated
+   * @description update user
+   * @param {} actor
+   * @returns {void}
+   */
+  private onActorUpdated = (actor): void => {
+    const { userId, name, avatarUrl, avatarHeight, avatarScale, position, rotation } = actor.data;
+    this.updateUser({
+      position,
+      rotation,
+      id: userId,
+      name,
+      avatarUrl,
+      avatarScale,
+      avatarHeight,
+    });
   };
 }

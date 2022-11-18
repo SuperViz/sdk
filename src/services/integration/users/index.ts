@@ -13,13 +13,16 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
   }
 
   /**
-   * @function setUserList
+   * @function addUserToList
    * @description add user list in 3D space
    * @param {UserOn3D[]} users
    * @returns {void}
    */
-  public setUserList = (users: UserOn3D[]): void => {
-    this._users = users;
+  public addUserToList = (user: UserOn3D): void => {
+    if (!this._users) {
+      this._users = [];
+    }
+    this._users = [...this._users, user];
   };
 
   /**
@@ -38,12 +41,14 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
    * @param {UserTo3D} user
    * @returns {UserOn3D}
    */
-  public createUserOn3D = ({ id, name, avatarUrl }: UserTo3D): UserOn3D => {
-    // @TODO - get color from RealtimeService
+  public createUserOn3D = ({ id, name, avatarUrl, avatarScale, avatarHeight }: UserTo3D):
+  UserOn3D => {
     const userOn3D: UserOn3D = {
       id,
       name,
       avatarUrl,
+      avatarScale,
+      avatarHeight,
       position: {
         x: 0,
         y: 0,

@@ -47,3 +47,8 @@ export interface StartRealtimeType {
 export interface SyncProperty {
   [key: string]: unknown;
 }
+
+export interface SlotColor {
+  color: string;
+  name: string;
+}

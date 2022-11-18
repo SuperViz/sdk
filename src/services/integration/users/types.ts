@@ -7,6 +7,8 @@ export interface UserTo3D {
   id: string;
   name: string;
   avatarUrl?: string;
+  avatarScale?: number;
+  avatarHeight?: number;
 }
 
 export interface UserOn3D extends UserTo3D {

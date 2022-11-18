@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "2.0.0",
+  "version": "2.2.0-beta.0",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "watch:types": "tsc --watch",
     "test": "jest",
     "release": "release-it --ci",
-    "release:dev": "release-it --preRelease=rc --ci",
+    "release:dev": "release-it preminor --preRelease=beta --npm.tag=beta --ci",
+    "release:minor": "release-it minor --ci",
     "release:major": "release-it major --ci",
     "release:preview": "release-it --ci --dry-run",
     "test:e2e": "playwright test ./e2e",
@@ -68,6 +69,7 @@
     "debug": "^4.3.4",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
-    "lodash.isequal": "^4.5.0"
+    "lodash.isequal": "^4.5.0",
+    "nosleep.js": "^0.12.0"
   }
 }

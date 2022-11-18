@@ -9,13 +9,17 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
   ablyKey: string;
 }
 
-export interface AdapterOptions extends Omit<DefaultAdapterOptions, 'RealtimeService'> {}
+export interface AdapterOptions extends DefaultAdapterOptions {
+  avatarScale: number,
+  avatarHeight: number,
+  avatarUrl: string,
+}
 
 export type SuperVizSdk = {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
-
-  connectAdapter: (adapter: Adapter, props: DefaultAdapterOptions) => AdapterMethods;
+  connectAdapter: (adapter: Adapter, props: AdapterOptions) => AdapterMethods;
+  disconnectAdapter: () => void;
 };

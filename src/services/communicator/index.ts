@@ -3,6 +3,7 @@ import isEqual from 'lodash.isequal';
 
 import {
   DeviceEvent,
+  Dimensions,
   MeetingConnectionStatus,
   MeetingEvent,
   MeetingState,
@@ -19,9 +20,15 @@ import { AblyRealtimeService } from '../realtime';
 import { AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import {
+  VideoFrameState,
+  VideoManagerOptions,
+  WindowSize,
+} from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
+
+const pjson = require('../../../package.json');
 
 class Communicator {
   private readonly realtime: AblyRealtimeService;
@@ -35,6 +42,7 @@ class Communicator {
 
   private observerHelpers: { string?: ObserverHelper } = {};
   private user: User;
+  private hasJoined: Boolean = false;
   private userList: User[] = [];
 
   constructor({
@@ -46,6 +54,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
+    // isBroadcast,
     camsOff,
     screenshareOff,
   }: CommunicatorOptions) {
@@ -58,6 +67,10 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
+
+    // @TODO - turn this into a parameter when support for changing frame position is implemented.
+    // request: https://github.com/SuperViz/sdk/issues/33
+    const framePosition = 'right';
 
     this.connectionService = new ConnectionService();
     this.connectionService.addListerners();
@@ -72,6 +85,9 @@ class Communicator {
       debug,
       language,
       roomId,
+      position: framePosition,
+      browserService: this.browserService,
+      broadcast: false,
     });
 
     // Realtime observers
@@ -98,6 +114,8 @@ class Communicator {
   }
 
   public start() {
+    // log sdk version
+    logger.log('SUPERVIZ SDK VERSION', pjson.version);
     this.videoManager.start({
       roomId: this.roomId,
       user: this.user,
@@ -107,7 +125,11 @@ class Communicator {
 
   public destroy() {
     this.publish(MeetingEvent.DESTROY, undefined);
+    this.disconnectAdapter();
+
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
+    this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
+
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
@@ -135,6 +157,7 @@ class Communicator {
     this.videoManager.leave();
     this.realtime.leave();
     this.connectionService.removeListeners();
+    this.hasJoined = false;
   }
 
   public setSyncProperty = <T>(name: string, property: T): void => {
@@ -161,6 +184,8 @@ class Communicator {
 
     // Video observers
     this.videoManager.frameStateObserver.subscribe(this.onFrameStateDidChange);
+    this.videoManager.frameSizeObserver.subscribe(this.onFrameSizeDidChange);
+
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
@@ -209,12 +234,20 @@ class Communicator {
     }
   };
 
+  private onFrameSizeDidChange = (dimensions: Dimensions): void => {
+    this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
+  };
+
   private onRoomInfoUpdated = (room) => {
     this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
   };
 
   private onActorsDidChange = (actors) => {
-    const userListForVideoFrame = Object.values(actors).map((actor : AblyActor) => {
+    if (actors[this.user.id] && !this.hasJoined) {
+      this.publish(MeetingEvent.MY_USER_JOINED, this.user);
+      this.hasJoined = true;
+    }
+    const userListForVideoFrame = Object.values(actors).map((actor: AblyActor) => {
       return {
         timestamp: actor.timestamp,
         connectionId: actor.connectionId,
@@ -224,17 +257,7 @@ class Communicator {
     });
 
     // update user list
-    this.userList = [];
-    Object.values(actors).forEach((actor: AblyActor) => {
-      this.userList.push({
-        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
-        id: actor.clientId,
-        avatarUrl: actor.data.avatarUrl,
-        isHostCandidate: actor.data.isHostCandidate,
-        name: actor.data.name,
-        isHost: (this.realtime.localRoomProperties.hostClientId === actor.clientId),
-      });
-    });
+    this.userList = this.updateUserListFromActors(actors);
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
     this.videoManager.actorsListDidChange(userListForVideoFrame);
@@ -246,6 +269,23 @@ class Communicator {
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  private updateUserListFromActors = (actors: AblyActor[]): User[] => {
+    const userList = [];
+    Object.values(actors).forEach((actor: AblyActor) => {
+      userList.push({
+        id: actor.clientId,
+        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
+        avatarUrl: actor.data.avatarUrl,
+        avatarScale: actor.data.avatarScale,
+        avatarHeight: actor.data.avatarHeight,
+        isHostCandidate: actor.data.isHostCandidate,
+        name: actor.data.name,
+        isHost: this.realtime.localRoomProperties?.hostClientId === actor.clientId,
+      });
+    });
+    return userList;
   };
 
   private onSameAccountError = (error: string): void => {
@@ -262,10 +302,6 @@ class Communicator {
   };
 
   private onUserJoined = (user: User): void => {
-    if (user.id === this.user.id) {
-      this.publish(MeetingEvent.MY_USER_JOINED, user);
-    }
-
     this.publish(MeetingEvent.MEETING_USER_JOINED, user);
   };
 
@@ -306,22 +342,38 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
-    const actors = Object.values(this.realtime.getActors);
+
+    // this forces the initial property
+    this.realtime.myActor.data.avatarUrl = adapterOptions.avatarUrl;
+    this.realtime.myActor.data.avatarScale = adapterOptions.avatarScale;
+    this.realtime.myActor.data.avatarHeight = adapterOptions.avatarHeight;
+
+    let actors = [];
+    if (this.realtime.getActors) {
+      actors = Object.values(this.realtime.getActors);
+    }
     this.integrationManager = new IntegrationManager({
+      // @TODO - enable the flag when the feature is complete
+      // isAvatarsEnabled: !this.user.isAudience,
+      // isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {
         id: this.user.id,
         name: this.user.name,
-        avatarUrl: this.user.avatarUrl,
+        avatarUrl: adapterOptions.avatarUrl,
+        avatarScale: adapterOptions.avatarScale,
+        avatarHeight: adapterOptions.avatarHeight,
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
-        const { name, avatarUrl, slotIndex } = actor.data;
+        const { name, avatarUrl, avatarScale, avatarHeight, slotIndex } = actor.data;
         return {
           id,
           name,
           avatarUrl,
+          avatarScale,
+          avatarHeight,
           slotIndex,
         };
       }),
@@ -331,8 +383,17 @@ class Communicator {
     return {
       enableAvatars: this.integrationManager.enableAvatars,
       disableAvatars: this.integrationManager.disableAvatars,
-      getUsersOn3D: () => this.integrationManager.users,
+      enablePointers: this.integrationManager.enablePointers,
+      disablePointers: this.integrationManager.disablePointers,
+      getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
     };
+  }
+
+  public disconnectAdapter(): void {
+    if (this.integrationManager) {
+      this.integrationManager.adapter.destroy();
+      this.integrationManager = null;
+    }
   }
 }
 
@@ -346,5 +407,6 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     destroy: () => communicator.destroy(),
 
     connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
+    disconnectAdapter: () => communicator.disconnectAdapter(),
   };
 };

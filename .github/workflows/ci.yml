@@ -69,7 +69,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: git config --global user.name SuperViz
       - run: git config --global user.email ci@superviz.com
-      - run: yarn release:major
+      - run: yarn release:minor
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
