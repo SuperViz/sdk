@@ -11,7 +11,7 @@
     "watch:types": "tsc --watch",
     "test": "jest",
     "release": "release-it --ci",
-    "release:dev": "release-it preminor --preRelease=beta --ci",
+    "release:dev": "release-it preminor --preRelease=beta --npm.tag=beta --ci",
     "release:minor": "release-it minor --ci",
     "release:major": "release-it major --ci",
     "release:preview": "release-it --ci --dry-run",
