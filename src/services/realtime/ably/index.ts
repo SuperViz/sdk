@@ -264,7 +264,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       userId: presenceMessage.clientId,
     });
 
-    if (this.actors.hasOwnProperty(clientId)) {
+    if (this.actors && this.actors[clientId]) {
       this.actors[clientId] = user;
       this.publishActorUpdate(this.actors[clientId]);
       this.actorsObserver.publish(this.actors); // update actors list
@@ -658,7 +658,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.myActor.data.slotIndex = slotChosen;
 
     await this.updateMyProperties({ slotIndex: availableSlots[0] });
-    const timeToWait = myPresence.timestamp % 500;
+    const timeToWait = Math.floor(Math.random() * (500 - 0 + 1) + 0);
     setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);

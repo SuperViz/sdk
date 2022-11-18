@@ -28,6 +28,8 @@ import {
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
+const pjson = require('../../../package.json');
+
 class Communicator {
   private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
@@ -111,6 +113,8 @@ class Communicator {
   }
 
   public start() {
+    // log sdk version
+    logger.log('SUPERVIZ SDK VERSION', pjson.version);
     this.videoManager.start({
       roomId: this.roomId,
       user: this.user,
@@ -336,6 +340,7 @@ class Communicator {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
+
     // this forces the initial property
     this.realtime.myActor.data.avatarUrl = adapterOptions.avatarUrl;
     this.realtime.myActor.data.avatarScale = adapterOptions.avatarScale;
