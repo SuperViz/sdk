@@ -1,14 +1,20 @@
+import { Avatar } from '../../../common/types/user.types';
+
 export interface DefaultUsersOn3DManager {
   user: UserOn3D;
   users: UserOn3D[];
 }
 
+export interface AvatarConfig {
+  height: number;
+  scale: number;
+}
+
 export interface UserTo3D {
   id: string;
   name: string;
-  avatarUrl?: string;
-  avatarScale?: number;
-  avatarHeight?: number;
+  avatar?: Avatar;
+  avatarConfig?: AvatarConfig;
 }
 
 export interface UserOn3D extends UserTo3D {
