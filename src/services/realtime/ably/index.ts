@@ -252,6 +252,23 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
+   * @function getUserSlot
+   * @param {string} userId
+   * @returns {void}
+   */
+  public getUserSlot(userId: string): number {
+    if (userId) {
+      const id = userId.toString();
+      const exists = this.actors && this.actors[id];
+      if (exists) {
+        return this.actors[userId]?.data?.slotIndex;
+      }
+      return 16; // GRAY COLOR
+    }
+    return 16; // GRAY COLOR
+  }
+
+  /**
    * @function onAblyPresenceEnter
    * @description callback that receives the event that a user has entered the room
    * @param {Ably.Types.PresenceMessage} presenceMessage
@@ -887,21 +904,4 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         this.roomAmphitheaterSyncChannel.publish('sync', participants);
       });
   }, 1000);
-
-  /**
-   * @function getUserSlot
-   * @param {string} userId
-   * @returns {void}
-   */
-  private getUserSlot(userId: string): number {
-    if (userId) {
-      const id = userId.toString();
-      const exists = this.actors && this.actors[id];
-      if (exists) {
-        return this.actors[userId]?.data?.slotIndex;
-      }
-      return 16; // GRAY COLOR
-    }
-    return 16; // GRAY COLOR
-  }
 }
