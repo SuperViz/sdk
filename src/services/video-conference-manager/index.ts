@@ -32,6 +32,7 @@ export default class VideoConfereceManager {
   public readonly realtimeObserver = new ObserverHelper({ logger });
   public readonly hostChangeObserver = new ObserverHelper({ logger });
   public readonly gridModeChangeObserver = new ObserverHelper({ logger });
+  public readonly followUserObserver = new ObserverHelper({ logger });
   public readonly sameAccountErrorObserver = new ObserverHelper({ logger });
   public readonly devicesObserver = new ObserverHelper({ logger });
   public readonly meetingStateObserver = new ObserverHelper({ logger });
@@ -108,6 +109,7 @@ export default class VideoConfereceManager {
     this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
     this.gridModeChangeObserver.destroy();
+    this.followUserObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;
@@ -147,6 +149,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_FOLLOW_USER, this.onFollowUserDidChange);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
     this.onWindowResize();
@@ -225,6 +228,10 @@ export default class VideoConfereceManager {
     this.hostChangeObserver.publish(hostId);
   };
 
+  private onFollowUserDidChange = (userId: string): void => {
+    this.followUserObserver.publish(userId);
+  };
+
   private onGridModeChange = (isGridModeEnable: boolean): void => {
     this.gridModeChangeObserver.publish(isGridModeEnable);
   };
@@ -265,5 +272,9 @@ export default class VideoConfereceManager {
 
   public onMasterActorDidChange = (hostId: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
+  };
+
+  public followUserDidChange = (userId: string | null): void => {
+    this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_USER, userId);
   };
 }
