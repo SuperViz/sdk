@@ -1,3 +1,5 @@
+import { string } from 'yargs';
+
 export interface User {
   id: string;
   name: string;
@@ -5,11 +7,16 @@ export interface User {
   isHostCandidate: boolean;
   // @TODO enable the flag when the feature is complete
   // isAudience?: boolean;
-  avatarUrl?: string;
   color?: string;
+  avatar: Avatar;
 }
 
 export interface UserGroup {
   id: string;
   name: string;
+}
+
+export interface Avatar {
+  model: string;
+  thumbnail: string;
 }

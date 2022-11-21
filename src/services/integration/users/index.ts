@@ -41,14 +41,13 @@ export class IntegrationUsersManager implements DefaultUsersOn3DManager {
    * @param {UserTo3D} user
    * @returns {UserOn3D}
    */
-  public createUserOn3D = ({ id, name, avatarUrl, avatarScale, avatarHeight }: UserTo3D):
+  public createUserOn3D = ({ id, name, avatar, avatarConfig }: UserTo3D):
   UserOn3D => {
     const userOn3D: UserOn3D = {
       id,
       name,
-      avatarUrl,
-      avatarScale,
-      avatarHeight,
+      avatar,
+      avatarConfig,
       position: {
         x: 0,
         y: 0,

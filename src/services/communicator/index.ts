@@ -277,9 +277,8 @@ class Communicator {
       userList.push({
         id: actor.clientId,
         color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
-        avatarUrl: actor.data.avatarUrl,
-        avatarScale: actor.data.avatarScale,
-        avatarHeight: actor.data.avatarHeight,
+        avatarConfig: actor.data.avatarConfig,
+        avatar: actor.data.avatar,
         isHostCandidate: actor.data.isHostCandidate,
         name: actor.data.name,
         isHost: this.realtime.localRoomProperties?.hostClientId === actor.clientId,
@@ -343,10 +342,8 @@ class Communicator {
       throw new Error('the 3D adapter has already been started');
     }
 
-    // this forces the initial property
-    this.realtime.myActor.data.avatarUrl = adapterOptions.avatarUrl;
-    this.realtime.myActor.data.avatarScale = adapterOptions.avatarScale;
-    this.realtime.myActor.data.avatarHeight = adapterOptions.avatarHeight;
+    // this forces the initial property to sync
+    this.realtime.myActor.data.avatarConfig = adapterOptions.avatarConfig;
 
     let actors = [];
     if (this.realtime.getActors) {
@@ -361,19 +358,17 @@ class Communicator {
       localUser: {
         id: this.user.id,
         name: this.user.name,
-        avatarUrl: adapterOptions.avatarUrl,
-        avatarScale: adapterOptions.avatarScale,
-        avatarHeight: adapterOptions.avatarHeight,
+        avatar: this.user.avatar,
+        avatarConfig: adapterOptions.avatarConfig,
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
-        const { name, avatarUrl, avatarScale, avatarHeight, slotIndex } = actor.data;
+        const { name, avatar, avatarConfig, slotIndex } = actor.data;
         return {
           id,
           name,
-          avatarUrl,
-          avatarScale,
-          avatarHeight,
+          avatar,
+          avatarConfig,
           slotIndex,
         };
       }),
