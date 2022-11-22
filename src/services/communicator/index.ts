@@ -63,7 +63,15 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
-    const canUseDefaultAvatars = defaultAvatars && !user?.avatar?.model;
+    const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+
+    if (user?.avatar === undefined) {
+      this.user = Object.assign({}, this.user, {
+        avatar: {
+          model: '',
+        },
+      });
+    }
 
     // @TODO - turn this into a parameter when support for changing frame position is implemented.
     // request: https://github.com/SuperViz/sdk/issues/33
@@ -137,6 +145,8 @@ class Communicator {
     this.videoManager.userListObserver.unsubscribe(this.onUserListUpdate);
     this.videoManager.userJoinedObserver.unsubscribe(this.onUserJoined);
     this.videoManager.userLeftObserver.unsubscribe(this.onUserLeft);
+    this.videoManager.userAvatarObserver.unsubscribe(this.onUserAvatarUpdate);
+
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -193,6 +203,7 @@ class Communicator {
     this.videoManager.userListObserver.subscribe(this.onUserListUpdate);
     this.videoManager.userJoinedObserver.subscribe(this.onUserJoined);
     this.videoManager.userLeftObserver.subscribe(this.onUserLeft);
+    this.videoManager.userAvatarObserver.subscribe(this.onUserAvatarUpdate);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -311,11 +322,15 @@ class Communicator {
     this.destroy();
   };
 
+  private onUserAvatarUpdate = (avatarLink: string): void => {
+    this.user.avatar.model = avatarLink;
+  };
+
   private onUserListUpdate = (users: Array<User>): void => {
     const myUser = users.find((user) => user.id === this.user.id);
 
     if (!isEqual(myUser, this.user)) {
-      this.user = myUser;
+      this.user = Object.assign({}, this.user, myUser);
       this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
     }
   };
