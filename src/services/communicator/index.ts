@@ -9,7 +9,6 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
-import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
@@ -20,15 +19,11 @@ import { AblyRealtimeService } from '../realtime';
 import { AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import {
-  VideoFrameState,
-  VideoManagerOptions,
-  WindowSize,
-} from '../video-conference-manager/types';
+import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
-const pjson = require('../../../package.json');
+const PACKAGE_JSON = require('../../../package.json');
 
 class Communicator {
   private readonly realtime: AblyRealtimeService;
@@ -57,6 +52,7 @@ class Communicator {
     // isBroadcast,
     camsOff,
     screenshareOff,
+    defaultAvatars,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -67,6 +63,7 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
+    const canUseDefaultAvatars = defaultAvatars && !user?.avatar?.model;
 
     // @TODO - turn this into a parameter when support for changing frame position is implemented.
     // request: https://github.com/SuperViz/sdk/issues/33
@@ -81,6 +78,7 @@ class Communicator {
     this.startVideo({
       canUseCams,
       canUseScreenshare,
+      canUseDefaultAvatars,
       apiKey,
       debug,
       language,
@@ -115,7 +113,7 @@ class Communicator {
 
   public start() {
     // log sdk version
-    logger.log('SUPERVIZ SDK VERSION', pjson.version);
+    logger.log('SUPERVIZ SDK VERSION', PACKAGE_JSON.version);
     this.videoManager.start({
       roomId: this.roomId,
       user: this.user,
