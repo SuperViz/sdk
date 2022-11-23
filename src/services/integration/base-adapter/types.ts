@@ -1,5 +1,5 @@
 import { AblyRealtimeService } from '../../realtime';
-import { UserOn3D, UserTo3D } from '../users/types';
+import { UserOn3D, UserTo3D, AvatarConfig } from '../users/types';
 
 export interface DefaultAdapterManager {
   isAvatarsEnabled: boolean;

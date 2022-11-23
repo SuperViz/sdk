@@ -1,3 +1,5 @@
+import { buffer } from 'stream/consumers';
+
 import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
@@ -397,8 +399,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         return;
       }
 
-      if (properties.avatarUrl === undefined) {
-        delete properties.avatarUrl;
+      if (properties.avatar === undefined) {
+        delete properties.avatar;
       }
       this.myActor.data = {
         ...this.myActor.data,
@@ -632,8 +634,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   /**
    * @function hostPassingHandle
    * @description
-    determines when guest users should wait for the host before entering the meeting room
-   * @param {Ably.Types.PresenceMessage} user
+     determines when guest users should wait for the host before entering the meeting room
    * @returns {void}
    */
   private hostPassingHandle = throttle(async (): Promise<void> => {
@@ -649,8 +650,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
           return member.data.isHostCandidate;
         })
         .map((member) => member.clientId);
+
       // no proper host candidate, kick everyone
-      if (hostCandidates.length === 0) {
+      if (this.shouldKickUsersOnHostLeave && hostCandidates.length === 0) {
         KICK_USERS_TIMEOUT = setTimeout(() => {
           this.kickAllUsersObserver.publish(true);
         }, KICK_USERS_TIME);

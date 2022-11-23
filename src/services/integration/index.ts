@@ -1,3 +1,5 @@
+import { isEqual } from 'lodash';
+
 import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
@@ -15,9 +17,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     adapter,
 
     RealtimeService,
-    avatarUrl,
-    avatarScale,
-    avatarHeight,
+    avatarConfig,
     localUser,
     userList,
   }: DefaultIntegrationManagerOptions) {
@@ -38,19 +38,12 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       isGoToAvailable: canUseGoTo,
       isFollowAvailable: canUseFollow,
       localUser,
-      avatarUrl,
-      avatarScale,
-      avatarHeight,
+      avatarConfig,
     });
-
-    const localUserWithAvatar = localUser;
-    localUserWithAvatar.avatarUrl = avatarUrl;
-    localUserWithAvatar.avatarScale = avatarScale;
-    localUserWithAvatar.avatarHeight = avatarHeight;
 
     // Users on 3D space service
     this.IntegrationUsersService = new IntegrationUsersManager();
-    this.createLocalUser(localUserWithAvatar);
+    this.createLocalUser(localUser);
     this.createUserList(userList);
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
@@ -112,8 +105,12 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       this.addUser(user);
       return;
     }
-
-    if (userToBeUpdated.avatarUrl !== user.avatarUrl && user.avatarUrl !== undefined) {
+    let hasDifferenteAvatarProperties = false;
+    if (userToBeUpdated.avatar?.model !== user.avatar?.model ||
+      !isEqual(userToBeUpdated.avatarConfig, user.avatarConfig)) {
+      hasDifferenteAvatarProperties = true;
+    }
+    if (hasDifferenteAvatarProperties) {
       this.removeUser(user, false);
       const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
       this.IntegrationUsersService.addUserToList(userOn3D);
@@ -159,14 +156,13 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorJoined = (actor): void => {
-    const { userId, name, avatarUrl, avatarHeight, avatarScale } = actor.data;
+    const { userId, name, avatar, avatarConfig } = actor.data;
 
     this.addUser({
       id: userId,
       name,
-      avatarUrl,
-      avatarHeight,
-      avatarScale,
+      avatar,
+      avatarConfig,
     });
   };
 
@@ -193,15 +189,14 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorUpdated = (actor): void => {
-    const { userId, name, avatarUrl, avatarHeight, avatarScale, position, rotation } = actor.data;
+    const { userId, name, avatar, avatarConfig, position, rotation } = actor.data;
     this.updateUser({
       position,
       rotation,
       id: userId,
       name,
-      avatarUrl,
-      avatarScale,
-      avatarHeight,
+      avatar,
+      avatarConfig,
     });
   };
 }

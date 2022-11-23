@@ -1,5 +1,6 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Adapter, AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
+import { AvatarConfig } from '../integration/users/types';
 
 export type Language = 'pt' | 'en' | 'zh';
 
@@ -10,9 +11,7 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
 }
 
 export interface AdapterOptions extends DefaultAdapterOptions {
-  avatarScale: number,
-  avatarHeight: number,
-  avatarUrl: string,
+  avatarConfig: AvatarConfig,
 }
 
 export type SuperVizSdk = {
