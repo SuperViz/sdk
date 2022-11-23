@@ -47,11 +47,11 @@ export type Adapter = {
 };
 
 export interface RealtimeAdapterMethods {
-  subscribeToActorUpdate: <T>(id: string, callback: Function) => void,
-  unsubscribeToActorUpdate: <T>(id: string, callback: Function) => void,
-  updateMyProperties: <T> (properties: T) => void;
+  subscribeToActorUpdate: (id: string, callback: Function) => void;
+  unsubscribeToActorUpdate: (id: string, callback: Function) => void;
+  updateMyProperties: <T>(properties: T) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
-  getUserSlot: (callback: Function) => Number;
+  getUserSlot: (userId: string) => number;
 }

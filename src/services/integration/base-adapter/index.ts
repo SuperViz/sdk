@@ -44,23 +44,26 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     if (!this.isPointersEnabled) {
       this.adapter.disablePointers();
     }
-    this.adapter.init({
-      setSyncProperty: <T>(name: string, property: T) => {
-        RealtimeService.setSyncProperty(name, property);
+    this.adapter.init(
+      {
+        setSyncProperty: <T>(name: string, property: T) => {
+          RealtimeService.setSyncProperty(name, property);
+        },
+        subscribeToActorUpdate: (id: string, callback: Function) => {
+          RealtimeService.subscribeToActorUpdate(id, callback);
+        },
+        unsubscribeToActorUpdate: (id: string, callback: Function) => {
+          RealtimeService.unsubscribeFromActorUpdate(id, callback);
+        },
+        updateMyProperties: <T>(properties: T) => {
+          RealtimeService.updateMyProperties(properties);
+        },
+        subscribe: RealtimeService.syncPropertiesObserver.subscribe,
+        unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
+        getUserSlot: RealtimeService.getUserSlot,
       },
-      subscribeToActorUpdate: <T>(id: string, callback: Function) => {
-        RealtimeService.subscribeToActorUpdate(id, callback);
-      },
-      unsubscribeToActorUpdate: <T>(id: string, callback: Function) => {
-        RealtimeService.unsubscribeFromActorUpdate(id, callback);
-      },
-      updateMyProperties: <T> (properties: T) => {
-        RealtimeService.updateMyProperties(properties);
-      },
-      subscribe: RealtimeService.syncPropertiesObserver.subscribe,
-      unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
-      getUserSlot: RealtimeService.getUserSlot,
-    }, localUser);
+      localUser,
+    );
   }
 
   public get isAvatarsEnabled(): boolean {
@@ -114,10 +117,10 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   };
 
   /**
-     * @function disablePointers
-     * @description disable avatars in 3D space;
-     * @returns {void}
-     */
+   * @function disablePointers
+   * @description disable avatars in 3D space;
+   * @returns {void}
+   */
   public disablePointers = (): void => {
     this._isPointersEnabled = false;
     this.adapter.disablePointers();

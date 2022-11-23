@@ -138,6 +138,7 @@ class Communicator {
 
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
+    this.videoManager.followUserObserver.unsubscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
@@ -196,6 +197,7 @@ class Communicator {
 
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
+    this.videoManager.followUserObserver.subscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
@@ -237,6 +239,10 @@ class Communicator {
     this.realtime.setHost(hostId);
   };
 
+  private onFollowUserDidChange = (userId: string | null): void => {
+    this.realtime.setFollowUser(userId);
+  };
+
   private onFrameStateDidChange = (state: VideoFrameState): void => {
     if (state === VideoFrameState.INITIALIZED) {
       this.start();
@@ -248,7 +254,10 @@ class Communicator {
   };
 
   private onRoomInfoUpdated = (room) => {
-    this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
+    const { isGridModeEnable, followUserId } = room._customProperties;
+
+    this.videoManager.gridModeDidChange(isGridModeEnable);
+    this.videoManager.followUserDidChange(followUserId);
   };
 
   private onActorsDidChange = (actors) => {
