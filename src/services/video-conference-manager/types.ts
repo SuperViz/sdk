@@ -9,6 +9,7 @@ export interface VideoManagerOptions {
   roomId: string;
   canUseCams: boolean;
   canUseScreenshare: boolean;
+  canUseDefaultAvatars: boolean;
   position: FramePosition;
   browserService: BrowserService;
   broadcast: boolean;

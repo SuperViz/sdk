@@ -39,6 +39,7 @@ export default class VideoConfereceManager {
 
   public readonly userAmountUpdateObserver = new ObserverHelper({ logger });
   public readonly userJoinedObserver = new ObserverHelper({ logger });
+  public readonly userAvatarObserver = new ObserverHelper({ logger });
   public readonly userLeftObserver = new ObserverHelper({ logger });
   public readonly userListObserver = new ObserverHelper({ logger });
 
@@ -147,6 +148,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onUserAvatarChange);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
     this.onWindowResize();
@@ -189,6 +191,10 @@ export default class VideoConfereceManager {
 
   private onUserListUpdate = (users: Array<User>): void => {
     this.userListObserver.publish(users);
+  };
+
+  private onUserAvatarChange = (avatarLink: string): void => {
+    this.userAvatarObserver.publish(avatarLink);
   };
 
   private updateFrameSize = (size: FrameSize): void => {
