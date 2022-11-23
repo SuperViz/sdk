@@ -32,6 +32,7 @@ export enum RealtimeEvent {
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
   REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',
+  REALTIME_GO_TO_USER = 'realtime.go-to-user',
   REALTIME_FOLLOW_USER = 'realtime.follow-user',
   REALTIME_SET_AVATAR = 'realtime.set-avatar',
 }
