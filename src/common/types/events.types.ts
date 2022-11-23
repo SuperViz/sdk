@@ -33,6 +33,7 @@ export enum RealtimeEvent {
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
   REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',
   REALTIME_FOLLOW_USER = 'realtime.follow-user',
+  REALTIME_SET_AVATAR = 'realtime.set-avatar',
 }
 
 export enum MeetingState {
