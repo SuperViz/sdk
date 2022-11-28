@@ -1,5 +1,7 @@
 import { isEqual } from 'lodash';
 
+import { AblyRealtimeData } from '../realtime/ably/types';
+
 import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
@@ -204,10 +206,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   /**
    * @function onRoomInfoUpdate
    * @description room update
-   * @param {} room
+   * @param {} room : AblyRealtimeData
    * @returns {void}
    */
-  private onRoomInfoUpdate = (room): void => {
+  private onRoomInfoUpdate = (room : AblyRealtimeData): void => {
     this.adapter.setFollow(room.followUserId);
   };
 }
