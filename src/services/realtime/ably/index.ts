@@ -369,9 +369,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private updateLocalRoomState = (data: AblyRealtimeData): void => {
     this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
-    this.roomInfoUpdatedObserver.publish({
-      _customProperties: this.localRoomProperties,
-    });
+    this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
 
     if (data.hostClientId) {
       this.updateHostInfo(data.hostClientId);

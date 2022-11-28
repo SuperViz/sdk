@@ -254,7 +254,7 @@ class Communicator {
   };
 
   private onRoomInfoUpdated = (room) => {
-    const { isGridModeEnable, followUserId } = room._customProperties;
+    const { isGridModeEnable, followUserId } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
     this.videoManager.followUserDidChange(followUserId);

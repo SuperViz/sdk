@@ -208,7 +208,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onRoomInfoUpdate = (room): void => {
-    const properties = room._customProperties;
-    this.adapter.setFollow(properties.followUserId);
+    this.adapter.setFollow(room.followUserId);
   };
 }
