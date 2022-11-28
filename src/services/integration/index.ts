@@ -47,6 +47,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.createUserList(userList);
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
+    this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
   }
 
   public get users(): UserOn3D[] {
@@ -198,5 +199,16 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       avatar,
       avatarConfig,
     });
+  };
+
+  /**
+   * @function onRoomInfoUpdate
+   * @description room update
+   * @param {} room
+   * @returns {void}
+   */
+  private onRoomInfoUpdate = (room): void => {
+    const properties = room._customProperties;
+    this.adapter.setFollow(properties.followUserId);
   };
 }
