@@ -1,5 +1,7 @@
 import { isEqual } from 'lodash';
 
+import { AblyRealtimeData } from '../realtime/ably/types';
+
 import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
@@ -47,6 +49,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.createUserList(userList);
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
+    this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
   }
 
   public get users(): UserOn3D[] {
@@ -198,5 +201,15 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       avatar,
       avatarConfig,
     });
+  };
+
+  /**
+   * @function onRoomInfoUpdate
+   * @description room update
+   * @param {} room : AblyRealtimeData
+   * @returns {void}
+   */
+  private onRoomInfoUpdate = (room : AblyRealtimeData): void => {
+    this.adapter.setFollow(room.followUserId);
   };
 }

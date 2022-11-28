@@ -16,7 +16,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
-import { AblyActor } from '../realtime/ably/types';
+import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
@@ -253,8 +253,8 @@ class Communicator {
     this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
-  private onRoomInfoUpdated = (room) => {
-    const { isGridModeEnable, followUserId } = room._customProperties;
+  private onRoomInfoUpdated = (room : AblyRealtimeData) => {
+    const { isGridModeEnable, followUserId } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
     this.videoManager.followUserDidChange(followUserId);

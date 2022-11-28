@@ -44,6 +44,7 @@ export type Adapter = {
   disablePointers: () => void;
   init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
   destroy: () => void;
+  setFollow: (userId?: string) => void;
 };
 
 export interface RealtimeAdapterMethods {
