@@ -13,9 +13,10 @@ import { ActorInfo, RealtimeJoinOptions, StartRealtimeType } from '../base/types
 import { AblyRealtime, AblyActors, AblyRealtimeData, AblyActor, AblyTokenCallBack } from './types';
 
 const KICK_USERS_TIME = 1000 * 60;
-let KICK_USERS_TIMEOUT = null;
-
+const MESSAGE_SIZE_LIMIT = 2000;
 const SYNC_PROPERTY_INTERVAL = 1000;
+
+let KICK_USERS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
   private actors: AblyActors;
@@ -234,6 +235,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
+    if (this.isMessageInsideLimit(property)) {
+      console.error('message too big');
+      return;
+    }
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
       if (!error) return;
 
@@ -389,14 +394,16 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     (newProperties: ActorInfo | RealtimeJoinOptions | any): void => {
       let properties = newProperties;
 
-      if (!this.enableSync) {
-        properties = Object.assign({}, properties, { noSlotRequired: true });
+      if (this.isMessageInsideLimit(newProperties)) {
+        console.error('message too big');
+        return;
       }
-
       if (this.left) {
         return;
       }
-
+      if (!this.enableSync) {
+        properties = Object.assign({}, properties, { noSlotRequired: true });
+      }
       if (properties.avatar === undefined) {
         delete properties.avatar;
       }
@@ -425,6 +432,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     merge: boolean = true,
   ): Promise<void> => {
     if (!this.enableSync || this.left) {
+      return;
+    }
+
+    if (this.isMessageInsideLimit(properties)) {
+      console.error('message too big');
       return;
     }
 
@@ -904,4 +916,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         this.roomAmphitheaterSyncChannel.publish('sync', participants);
       });
   }, 1000);
+
+  private isMessageInsideLimit = (msg) => {
+    const messageString = JSON.stringify(msg);
+    const size = (new TextEncoder().encode(messageString)).length;
+    return size > MESSAGE_SIZE_LIMIT;
+  };
 }
