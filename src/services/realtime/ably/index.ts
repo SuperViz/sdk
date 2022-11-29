@@ -236,7 +236,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
     if (this.isMessageInsideLimit(property)) {
-      console.error('message too big');
       return;
     }
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
@@ -395,7 +394,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       let properties = newProperties;
 
       if (this.isMessageInsideLimit(newProperties)) {
-        console.error('message too big');
         return;
       }
       if (this.left) {
@@ -436,7 +434,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (this.isMessageInsideLimit(properties)) {
-      console.error('message too big');
       return;
     }
 
@@ -917,9 +914,18 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       });
   }, 1000);
 
-  private isMessageInsideLimit = (msg) => {
+  /**
+   * @function isMessageInsideLimit
+   * @description calculates the size of a sync message and checks if its bigger than limit
+   * @returns {boolean}
+   */
+  private isMessageInsideLimit = (msg : Object | string) => {
     const messageString = JSON.stringify(msg);
     const size = (new TextEncoder().encode(messageString)).length;
-    return size > MESSAGE_SIZE_LIMIT;
+    if (size > MESSAGE_SIZE_LIMIT) {
+      console.error('Message to long, the message limit size is 2kb.');
+      return false;
+    }
+    return true;
   };
 }
