@@ -54,6 +54,7 @@ class Communicator {
     screenshareOff,
     defaultAvatars,
     offset,
+    enableFollow,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -65,6 +66,8 @@ class Communicator {
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
     const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+
+    const canUseFollow = !!enableFollow;
 
     if (user?.avatar === undefined) {
       this.user = Object.assign({}, this.user, {
@@ -88,6 +91,7 @@ class Communicator {
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
+      canUseFollow,
       apiKey,
       debug,
       language,

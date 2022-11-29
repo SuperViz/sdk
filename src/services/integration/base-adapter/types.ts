@@ -4,19 +4,11 @@ import { UserOn3D, UserTo3D, AvatarConfig } from '../users/types';
 export interface DefaultAdapterManager {
   isAvatarsEnabled: boolean;
   isPointersEnabled: boolean;
-
-  isFollowAvailable: boolean;
-  isGatherAvailable: boolean;
-  isGoToAvailable: boolean;
 }
 
 export interface DefaultAdapterOptions {
   isAvatarsEnabled?: boolean;
   isPointersEnabled?: boolean;
-
-  isFollowAvailable?: boolean;
-  isGatherAvailable?: boolean;
-  isGoToAvailable?: boolean;
 
   // Adapter settings
   adapter: Adapter;

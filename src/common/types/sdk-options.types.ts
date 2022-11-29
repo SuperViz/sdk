@@ -16,4 +16,5 @@ export interface SuperVizSdkOptions {
   defaultAvatars?: boolean;
 
   offset: Offset;
+  enableFollow?: boolean;
 }
