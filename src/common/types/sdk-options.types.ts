@@ -12,4 +12,5 @@ export interface SuperVizSdkOptions {
   camsOff?: boolean;
   screenshareOff?: boolean;
   defaultAvatars?: boolean;
+  enableFollow?: boolean;
 }
