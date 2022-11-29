@@ -15,11 +15,10 @@ import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import { VideoFrameState, VideoManagerOptions, FrameSize } from './types';
+import { VideoFrameState, VideoManagerOptions, FrameSize, Offset } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
-const FULL_PERCENT = '100%';
 
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
@@ -47,50 +46,65 @@ export default class VideoConfereceManager {
   frameState = VideoFrameState.UNINITIALIZED;
 
   constructor(options: VideoManagerOptions) {
+    const {
+      apiKey,
+      debug,
+      language,
+      roomId,
+      canUseCams,
+      canUseScreenshare,
+      canUseDefaultAvatars,
+      position,
+      browserService,
+      broadcast,
+      offset,
+    } = options;
+
+    this.browserService = browserService;
+
     const wrapper = document.createElement('div');
-    const style = document.createElement('style');
-
-    style.innerHTML = videoConferenceStyle;
-
-    wrapper.classList.add('sv_video_wrapper');
-    wrapper.id = 'sv-video-wrapper';
-
-    document.body.appendChild(wrapper);
-    document.head.appendChild(style);
-
-    this.updateFrameState(VideoFrameState.INITIALIZING);
-
-    this.browserService = options.browserService;
 
     /**
      * @TODO - add full horizontal view support on desktop, currently only works on mobile.
      * request: https://github.com/SuperViz/sdk/issues/33
      */
     const camerasOrientation =
-      ['right', 'left'].includes(options.position) && !this.browserService.isMobileDevice
+      ['right', 'left'].includes(position) && !this.browserService.isMobileDevice
         ? 'vertical'
         : 'horizontal';
+
+    const frameOptions = {
+      apiKey,
+      debug,
+      canUseCams,
+      canUseScreenshare,
+      canUseDefaultAvatars,
+      camerasOrientation,
+      isBroadcast: broadcast,
+      roomId,
+    };
+
+    wrapper.classList.add('sv_video_wrapper');
+    wrapper.id = 'sv-video-wrapper';
+
+    document.body.appendChild(wrapper);
+
+    this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
       wrapper.id,
       process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
       FRAME_ID,
-      { ...options, camerasOrientation, isBroadcast: options.broadcast },
+      frameOptions,
       {
         allow: 'camera *;microphone *; display-capture *;',
       },
     );
 
+    this.setFrameStyle({ offset, position });
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
     window.addEventListener('resize', this.onWindowResize);
-
-    if (this.browserService.isMobileDevice) {
-      this.bricklayer.element.classList.add('sv-video-frame--bottom');
-      return;
-    }
-
-    this.bricklayer.element.classList.add(`sv-video-frame--${options.position}`);
   }
 
   start(options: StartMeetingOptions) {
@@ -157,6 +171,49 @@ export default class VideoConfereceManager {
     this.onWindowResize();
   };
 
+  private setFrameStyle = ({
+    offset: customOffset,
+    position,
+  }: {
+    offset?: Offset;
+    position: string;
+  }): void => {
+    const defaultOffset = {
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    };
+    const offset = customOffset ?? defaultOffset;
+
+    Object.keys(customOffset ?? defaultOffset).map((key) => {
+      console.log(key);
+
+      return key;
+    });
+
+    const style = document.createElement('style');
+    const { bottom, left, right, top } = offset;
+    const variables = `
+      :root {
+        --superviz-offset-top: ${top}px;
+        --superviz-offset-right: ${right}px;
+        --superviz-offset-left: ${left}px;
+        --superviz-offset-bottom: ${bottom}px;
+      }
+    `;
+
+    style.innerHTML = `${variables} ${videoConferenceStyle}`;
+    document.head.appendChild(style);
+
+    if (this.browserService.isMobileDevice) {
+      this.bricklayer.element.classList.add('sv-video-frame--bottom');
+      return;
+    }
+
+    this.bricklayer.element.classList.add(`sv-video-frame--${position}`);
+  };
+
   private onFrameDimensionsUpdate = ({ width, height }: Dimensions) => {
     const frame = document.getElementById(FRAME_ID);
 
@@ -164,6 +221,7 @@ export default class VideoConfereceManager {
     const FULL_WIDTH = width === 0;
     const SET_UPDATE_HEIGHT = !!height;
     const FULL_HEIGHT = height === 0 || height > window.innerHeight;
+    const FULL_PERCENT = '100%';
 
     let frameWidth;
     let frameHeight;

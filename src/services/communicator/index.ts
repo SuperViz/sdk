@@ -53,6 +53,7 @@ class Communicator {
     camsOff,
     screenshareOff,
     defaultAvatars,
+    offset,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -94,6 +95,7 @@ class Communicator {
       position: framePosition,
       browserService: this.browserService,
       broadcast: false,
+      offset,
     });
 
     // Realtime observers
@@ -253,7 +255,7 @@ class Communicator {
     this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
-  private onRoomInfoUpdated = (room : AblyRealtimeData) => {
+  private onRoomInfoUpdated = (room: AblyRealtimeData) => {
     const { isGridModeEnable, followUserId } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);

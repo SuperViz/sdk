@@ -13,11 +13,19 @@ export interface VideoManagerOptions {
   position: FramePosition;
   browserService: BrowserService;
   broadcast: boolean;
+  offset?: Offset;
 }
 
 export interface WindowSize {
   height: number;
   width: number;
+}
+
+export interface Offset {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
 }
 
 export enum VideoFrameState {
