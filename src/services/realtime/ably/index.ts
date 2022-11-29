@@ -211,7 +211,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const actor = this.actors[actorUserId];
     await this.updateRoomProperties({
       hostClientId: actor.clientId,
-    });
+    }, true);
   };
 
   /**
@@ -250,7 +250,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public setFollowUser(userId: string | null): void {
     this.updateRoomProperties({
       followUserId: userId,
-    });
+    }, true);
   }
 
   /**
@@ -735,7 +735,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     } else {
       // confirm slot and propagate
       const roomProperties = await this.fetchRoomProperties();
-      this.updateRoomProperties(roomProperties);
+      this.updateRoomProperties(roomProperties, true);
     }
   }, 1000);
 
@@ -884,7 +884,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onHostLeft(actor: Ably.Types.PresenceMessage): void {
-    this.updateRoomProperties({ hostClientId: null });
+    this.updateRoomProperties({ hostClientId: null }, true);
   }
 
   /**
