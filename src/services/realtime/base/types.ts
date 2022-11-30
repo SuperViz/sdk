@@ -1,6 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { User } from '../../../common/types/user.types';
+import { Avatar, User } from '../../../common/types/user.types';
 
 export interface DefaultRealtimeService {
   actorObservers: ObserverHelper[];
@@ -35,6 +35,7 @@ export interface RealtimeJoinOptions {
 export interface ActorInfo extends User {
   userId: string;
   noSlotRequired?: boolean;
+  slotIndex?: number;
 }
 
 export interface StartRealtimeType {

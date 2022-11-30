@@ -9,10 +9,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isAvatarsEnabled: boolean;
   private _isPointersEnabled: boolean;
 
-  private _isFollowAvailable: boolean;
-  private _isGatherAvailable: boolean;
-  private _isGoToAvailable: boolean;
-
   public adapter: Adapter;
 
   public RealtimeService: AblyRealtimeService;
@@ -20,19 +16,12 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
-    isFollowAvailable,
-    isGatherAvailable,
-    isGoToAvailable,
     adapter,
     RealtimeService,
     localUser,
   }: AdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
-
-    this._isFollowAvailable = isFollowAvailable;
-    this._isGatherAvailable = isGatherAvailable;
-    this._isGoToAvailable = isGoToAvailable;
 
     this.adapter = adapter;
 
@@ -44,23 +33,26 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     if (!this.isPointersEnabled) {
       this.adapter.disablePointers();
     }
-    this.adapter.init({
-      setSyncProperty: <T>(name: string, property: T) => {
-        RealtimeService.setSyncProperty(name, property);
+    this.adapter.init(
+      {
+        setSyncProperty: <T>(name: string, property: T) => {
+          RealtimeService.setSyncProperty(name, property);
+        },
+        subscribeToActorUpdate: (id: string, callback: Function) => {
+          RealtimeService.subscribeToActorUpdate(id, callback);
+        },
+        unsubscribeToActorUpdate: (id: string, callback: Function) => {
+          RealtimeService.unsubscribeFromActorUpdate(id, callback);
+        },
+        updateMyProperties: <T>(properties: T) => {
+          RealtimeService.updateMyProperties(properties);
+        },
+        subscribe: RealtimeService.syncPropertiesObserver.subscribe,
+        unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
+        getUserSlot: RealtimeService.getUserSlot,
       },
-      subscribeToActorUpdate: <T>(id: string, callback: Function) => {
-        RealtimeService.subscribeToActorUpdate(id, callback);
-      },
-      unsubscribeToActorUpdate: <T>(id: string, callback: Function) => {
-        RealtimeService.unsubscribeFromActorUpdate(id, callback);
-      },
-      updateMyProperties: <T> (properties: T) => {
-        RealtimeService.updateMyProperties(properties);
-      },
-      subscribe: RealtimeService.syncPropertiesObserver.subscribe,
-      unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
-      getUserSlot: RealtimeService.getUserSlot,
-    }, localUser);
+      localUser,
+    );
   }
 
   public get isAvatarsEnabled(): boolean {
@@ -69,18 +61,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
   public get isPointersEnabled(): boolean {
     return this._isPointersEnabled;
-  }
-
-  public get isFollowAvailable(): boolean {
-    return this._isFollowAvailable;
-  }
-
-  public get isGatherAvailable(): boolean {
-    return this._isGatherAvailable;
-  }
-
-  public get isGoToAvailable(): boolean {
-    return this._isGoToAvailable;
   }
 
   /**
@@ -114,10 +94,10 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   };
 
   /**
-     * @function disablePointers
-     * @description disable avatars in 3D space;
-     * @returns {void}
-     */
+   * @function disablePointers
+   * @description disable avatars in 3D space;
+   * @returns {void}
+   */
   public disablePointers = (): void => {
     this._isPointersEnabled = false;
     this.adapter.disablePointers();

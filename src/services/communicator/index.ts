@@ -9,7 +9,6 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
-import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { User, UserGroup } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
@@ -17,18 +16,14 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
-import { AblyActor } from '../realtime/ably/types';
+import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import {
-  VideoFrameState,
-  VideoManagerOptions,
-  WindowSize,
-} from '../video-conference-manager/types';
+import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
 
-const pjson = require('../../../package.json');
+const PACKAGE_JSON = require('../../../package.json');
 
 class Communicator {
   private readonly realtime: AblyRealtimeService;
@@ -57,6 +52,8 @@ class Communicator {
     // isBroadcast,
     camsOff,
     screenshareOff,
+    defaultAvatars,
+    enableFollow,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -67,6 +64,17 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
+    const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+
+    const canUseFollow = !!enableFollow;
+
+    if (user?.avatar === undefined) {
+      this.user = Object.assign({}, this.user, {
+        avatar: {
+          model: '',
+        },
+      });
+    }
 
     // @TODO - turn this into a parameter when support for changing frame position is implemented.
     // request: https://github.com/SuperViz/sdk/issues/33
@@ -81,6 +89,8 @@ class Communicator {
     this.startVideo({
       canUseCams,
       canUseScreenshare,
+      canUseDefaultAvatars,
+      canUseFollow,
       apiKey,
       debug,
       language,
@@ -115,7 +125,7 @@ class Communicator {
 
   public start() {
     // log sdk version
-    logger.log('SUPERVIZ SDK VERSION', pjson.version);
+    logger.log('SUPERVIZ SDK VERSION', PACKAGE_JSON.version);
     this.videoManager.start({
       roomId: this.roomId,
       user: this.user,
@@ -132,6 +142,7 @@ class Communicator {
 
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
+    this.videoManager.followUserObserver.unsubscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
@@ -139,6 +150,8 @@ class Communicator {
     this.videoManager.userListObserver.unsubscribe(this.onUserListUpdate);
     this.videoManager.userJoinedObserver.unsubscribe(this.onUserJoined);
     this.videoManager.userLeftObserver.unsubscribe(this.onUserLeft);
+    this.videoManager.userAvatarObserver.unsubscribe(this.onUserAvatarUpdate);
+
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -188,6 +201,7 @@ class Communicator {
 
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
+    this.videoManager.followUserObserver.subscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
@@ -195,6 +209,7 @@ class Communicator {
     this.videoManager.userListObserver.subscribe(this.onUserListUpdate);
     this.videoManager.userJoinedObserver.subscribe(this.onUserJoined);
     this.videoManager.userLeftObserver.subscribe(this.onUserLeft);
+    this.videoManager.userAvatarObserver.subscribe(this.onUserAvatarUpdate);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -228,6 +243,10 @@ class Communicator {
     this.realtime.setHost(hostId);
   };
 
+  private onFollowUserDidChange = (userId: string | null): void => {
+    this.realtime.setFollowUser(userId);
+  };
+
   private onFrameStateDidChange = (state: VideoFrameState): void => {
     if (state === VideoFrameState.INITIALIZED) {
       this.start();
@@ -238,8 +257,11 @@ class Communicator {
     this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
-  private onRoomInfoUpdated = (room) => {
-    this.videoManager.gridModeDidChange(room._customProperties.isGridModeEnable);
+  private onRoomInfoUpdated = (room: AblyRealtimeData) => {
+    const { isGridModeEnable, followUserId } = room;
+
+    this.videoManager.gridModeDidChange(isGridModeEnable);
+    this.videoManager.followUserDidChange(followUserId);
   };
 
   private onActorsDidChange = (actors) => {
@@ -313,11 +335,15 @@ class Communicator {
     this.destroy();
   };
 
+  private onUserAvatarUpdate = (avatarLink: string): void => {
+    this.user.avatar.model = avatarLink;
+  };
+
   private onUserListUpdate = (users: Array<User>): void => {
     const myUser = users.find((user) => user.id === this.user.id);
 
     if (!isEqual(myUser, this.user)) {
-      this.user = myUser;
+      this.user = Object.assign({}, this.user, myUser);
       this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
     }
   };

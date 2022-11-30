@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "2.8.0",
+  "version": "2.11.0-rc.4",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "watch:types": "tsc --watch",
     "test": "jest",
     "release": "release-it --ci",
-    "release:dev": "release-it minor --preRelease=beta --npm.tag=beta --ci",
+    "release:dev": "release-it --preRelease=rc --ci",
     "release:minor": "release-it minor --ci",
     "release:major": "release-it major --ci",
     "release:preview": "release-it --ci --dry-run",

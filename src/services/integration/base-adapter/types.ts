@@ -4,19 +4,11 @@ import { UserOn3D, UserTo3D, AvatarConfig } from '../users/types';
 export interface DefaultAdapterManager {
   isAvatarsEnabled: boolean;
   isPointersEnabled: boolean;
-
-  isFollowAvailable: boolean;
-  isGatherAvailable: boolean;
-  isGoToAvailable: boolean;
 }
 
 export interface DefaultAdapterOptions {
   isAvatarsEnabled?: boolean;
   isPointersEnabled?: boolean;
-
-  isFollowAvailable?: boolean;
-  isGatherAvailable?: boolean;
-  isGoToAvailable?: boolean;
 
   // Adapter settings
   adapter: Adapter;
@@ -44,14 +36,15 @@ export type Adapter = {
   disablePointers: () => void;
   init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
   destroy: () => void;
+  setFollow: (userId?: string) => void;
 };
 
 export interface RealtimeAdapterMethods {
-  subscribeToActorUpdate: <T>(id: string, callback: Function) => void,
-  unsubscribeToActorUpdate: <T>(id: string, callback: Function) => void,
-  updateMyProperties: <T> (properties: T) => void;
+  subscribeToActorUpdate: (id: string, callback: Function) => void;
+  unsubscribeToActorUpdate: (id: string, callback: Function) => void;
+  updateMyProperties: <T>(properties: T) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
-  getUserSlot: (callback: Function) => Number;
+  getUserSlot: (userId: string) => number;
 }
