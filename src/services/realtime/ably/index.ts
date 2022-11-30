@@ -13,9 +13,10 @@ import { ActorInfo, RealtimeJoinOptions, StartRealtimeType } from '../base/types
 import { AblyRealtime, AblyActors, AblyRealtimeData, AblyActor, AblyTokenCallBack } from './types';
 
 const KICK_USERS_TIME = 1000 * 60;
-let KICK_USERS_TIMEOUT = null;
-
+const MESSAGE_SIZE_LIMIT = 2000;
 const SYNC_PROPERTY_INTERVAL = 1000;
+
+let KICK_USERS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
   private actors: AblyActors;
@@ -234,6 +235,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
+    if (this.isMessageTooBig(property)) {
+      return;
+    }
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
       if (!error) return;
 
@@ -389,14 +393,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     (newProperties: ActorInfo | RealtimeJoinOptions | any): void => {
       let properties = newProperties;
 
-      if (!this.enableSync) {
-        properties = Object.assign({}, properties, { noSlotRequired: true });
+      if (this.isMessageTooBig(newProperties)) {
+        return;
       }
-
       if (this.left) {
         return;
       }
-
+      if (!this.enableSync) {
+        properties = Object.assign({}, properties, { noSlotRequired: true });
+      }
       if (properties.avatar === undefined) {
         delete properties.avatar;
       }
@@ -425,6 +430,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     merge: boolean = true,
   ): Promise<void> => {
     if (!this.enableSync || this.left) {
+      return;
+    }
+
+    if (this.isMessageTooBig(properties)) {
       return;
     }
 
@@ -904,4 +913,19 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         this.roomAmphitheaterSyncChannel.publish('sync', participants);
       });
   }, 1000);
+
+  /**
+   * @function isMessageTooBig
+   * @description calculates the size of a sync message and checks if its bigger than limit
+   * @returns {boolean}
+   */
+  private isMessageTooBig = (msg : Object | string) => {
+    const messageString = JSON.stringify(msg);
+    const size = (new TextEncoder().encode(messageString)).length;
+    if (size > MESSAGE_SIZE_LIMIT) {
+      console.error('Message to long, the message limit size is 2kb.');
+      return true;
+    }
+    return false;
+  };
 }
