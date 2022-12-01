@@ -146,6 +146,7 @@ class Communicator {
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
     this.videoManager.followUserObserver.unsubscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
+    this.videoManager.goToUserObserver.unsubscribe(this.onGoToUserDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
     this.videoManager.userAmountUpdateObserver.unsubscribe(this.onUserAmountUpdate);
@@ -204,6 +205,7 @@ class Communicator {
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
     this.videoManager.followUserObserver.subscribe(this.onFollowUserDidChange);
+    this.videoManager.goToUserObserver.subscribe(this.onGoToUserDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
@@ -247,6 +249,11 @@ class Communicator {
 
   private onFollowUserDidChange = (userId: string | null): void => {
     this.realtime.setFollowUser(userId);
+  };
+
+  private onGoToUserDidChange = (userId: string): void => {
+    // @TODO add the go to option to the adapter and uncomment the line below
+    // this.integrationManager.goToUSer(userId);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {

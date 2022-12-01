@@ -142,4 +142,14 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   public destroyPointer = (user: UserOn3D): void => {
     this.adapter.destroyPointer(user);
   };
+
+  /**
+   * @function goToUSer
+   * @description goes to the user's position in 3D space
+   * @param {string} userId
+   * @returns {void}
+   */
+  public goToUSer = (userId: string): void => {
+    this.adapter.goToUser(userId);
+  };
 }
