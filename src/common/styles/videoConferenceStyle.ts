@@ -16,23 +16,23 @@ const styles = `
   }
 
   #sv-video-wrapper iframe.sv-video-frame--right { 
-    top: 0;
-    right: 0;
+    top: var(--superviz-offset-top);
+    right: var(--superviz-offset-right);
   }
 
   #sv-video-wrapper iframe.sv-video-frame--left { 
-    top: 0; 
-    left: 0;
+    top: var(--superviz-offset-top);
+    left: var(--superviz-offset-left);
   }
 
   #sv-video-wrapper iframe.sv-video-frame--bottom { 
-    bottom: 0;
+    bottom: var(--superviz-offset-bottom);
     width: 100%;
   }
 
   #sv-video-wrapper iframe.sv-video-frame--expansive-mode {
-    bottom: 0; 
-    right: 0; 
+    bottom: var(--superviz-offset-bottom); 
+    right: var(--superviz-offset-right);
     width: 100%;
   }
 

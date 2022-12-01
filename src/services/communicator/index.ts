@@ -53,6 +53,7 @@ class Communicator {
     camsOff,
     screenshareOff,
     defaultAvatars,
+    offset,
     enableFollow,
   }: CommunicatorOptions) {
     this.roomId = roomId;
@@ -98,6 +99,7 @@ class Communicator {
       position: framePosition,
       browserService: this.browserService,
       broadcast: false,
+      offset,
     });
 
     // Realtime observers
