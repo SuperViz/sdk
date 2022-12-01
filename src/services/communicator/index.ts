@@ -55,6 +55,7 @@ class Communicator {
     defaultAvatars,
     offset,
     enableFollow,
+    enableGoTo,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -68,6 +69,7 @@ class Communicator {
     const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
 
     const canUseFollow = !!enableFollow;
+    const canUseGoTo = !!enableGoTo;
 
     if (user?.avatar === undefined) {
       this.user = Object.assign({}, this.user, {
@@ -92,6 +94,7 @@ class Communicator {
       canUseScreenshare,
       canUseDefaultAvatars,
       canUseFollow,
+      canUseGoTo,
       apiKey,
       debug,
       language,

@@ -56,6 +56,8 @@ export default class VideoConfereceManager {
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
+      canUseFollow,
+      canUseGoTo,
       position,
       browserService,
       broadcast,
@@ -78,6 +80,8 @@ export default class VideoConfereceManager {
     const frameOptions = {
       apiKey,
       debug,
+      canUseFollow,
+      canUseGoTo,
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
