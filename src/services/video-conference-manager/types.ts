@@ -11,6 +11,7 @@ export interface VideoManagerOptions {
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
   canUseFollow: boolean;
+  canUseGoTo: boolean;
   position: FramePosition;
   browserService: BrowserService;
   broadcast: boolean;
