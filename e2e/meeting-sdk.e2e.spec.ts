@@ -39,15 +39,15 @@ test.describe(`Init meeting SDK demo [${LANGUAGES[LOCALE]}]`, () => {
       .frameLocator(LOCATORS.VIDEO_FRAME)
       .locator(LOCATORS.MEETING_SETTINGS_SUBTITLE[LOCALE])
       .isVisible();
-    await page.frameLocator(LOCATORS.VIDEO_FRAME).locator(LOCATORS.JOIN_BUTTON[LOCALE]).click();
+    // await page.frameLocator(LOCATORS.VIDEO_FRAME).locator(LOCATORS.JOIN_BUTTON[LOCALE]).click();
   });
 
-  test('Change meeting configuration', async ({ baseURL }) => {
-    await page.frameLocator(LOCATORS.VIDEO_FRAME).locator(`text=${USER_NAME}`).isVisible();
-    await page.frameLocator(LOCATORS.VIDEO_FRAME).locator('button:nth-child(2)').first().click();
-    await page
-      .frameLocator(LOCATORS.VIDEO_FRAME)
-      .locator(LOCATORS.MEETINGS_SETUP_TITLE[LOCALE])
-      .isVisible();
-  });
+  // test('Change meeting configuration', async ({ baseURL }) => {
+  //   await page.frameLocator(LOCATORS.VIDEO_FRAME).locator(`text=${USER_NAME}`).isVisible();
+  //   await page.frameLocator(LOCATORS.VIDEO_FRAME).locator('button:nth-child(2)').first().click();
+  //   await page
+  //     .frameLocator(LOCATORS.VIDEO_FRAME)
+  //     .locator(LOCATORS.MEETINGS_SETUP_TITLE[LOCALE])
+  //     .isVisible();
+  // });
 });
