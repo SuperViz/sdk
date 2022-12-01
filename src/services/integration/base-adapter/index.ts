@@ -9,10 +9,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isAvatarsEnabled: boolean;
   private _isPointersEnabled: boolean;
 
-  private _isFollowAvailable: boolean;
-  private _isGatherAvailable: boolean;
-  private _isGoToAvailable: boolean;
-
   public adapter: Adapter;
 
   public RealtimeService: AblyRealtimeService;
@@ -20,19 +16,12 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
-    isFollowAvailable,
-    isGatherAvailable,
-    isGoToAvailable,
     adapter,
     RealtimeService,
     localUser,
   }: AdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
-
-    this._isFollowAvailable = isFollowAvailable;
-    this._isGatherAvailable = isGatherAvailable;
-    this._isGoToAvailable = isGoToAvailable;
 
     this.adapter = adapter;
 
@@ -72,18 +61,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
   public get isPointersEnabled(): boolean {
     return this._isPointersEnabled;
-  }
-
-  public get isFollowAvailable(): boolean {
-    return this._isFollowAvailable;
-  }
-
-  public get isGatherAvailable(): boolean {
-    return this._isGatherAvailable;
-  }
-
-  public get isGoToAvailable(): boolean {
-    return this._isGoToAvailable;
   }
 
   /**

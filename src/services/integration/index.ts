@@ -1,5 +1,7 @@
 import { isEqual } from 'lodash';
 
+import { AblyRealtimeData } from '../realtime/ably/types';
+
 import { BaseAdapterManager } from './base-adapter';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
@@ -11,9 +13,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
-    isFollowAvailable,
-    isGatherAvailable,
-    isGoToAvailable,
     adapter,
 
     RealtimeService,
@@ -25,18 +24,11 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const avatars = isAvatarsEnabled ?? true;
     const pointers = isPointersEnabled ?? true;
 
-    const canUseFollow = isFollowAvailable ?? true;
-    const canUseGather = isGatherAvailable ?? true;
-    const canUseGoTo = isGoToAvailable ?? true;
-
     super({
       adapter,
       RealtimeService,
       isAvatarsEnabled: avatars,
       isPointersEnabled: pointers,
-      isGatherAvailable: canUseGather,
-      isGoToAvailable: canUseGoTo,
-      isFollowAvailable: canUseFollow,
       localUser,
       avatarConfig,
     });
@@ -47,6 +39,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.createUserList(userList);
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
+    this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
   }
 
   public get users(): UserOn3D[] {
@@ -98,16 +91,17 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     if (!this.users || this.users.length === 0) {
       return;
     }
-    const userToBeUpdated = this.users.find((oldUser) => oldUser.id ===
-    user.id);
+    const userToBeUpdated = this.users.find((oldUser) => oldUser.id === user.id);
 
     if (!userToBeUpdated) {
       this.addUser(user);
       return;
     }
     let hasDifferenteAvatarProperties = false;
-    if (userToBeUpdated.avatar?.model !== user.avatar?.model ||
-      !isEqual(userToBeUpdated.avatarConfig, user.avatarConfig)) {
+    if (
+      userToBeUpdated.avatar?.model !== user.avatar?.model ||
+      !isEqual(userToBeUpdated.avatarConfig, user.avatarConfig)
+    ) {
       hasDifferenteAvatarProperties = true;
     }
     if (hasDifferenteAvatarProperties) {
@@ -118,7 +112,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       this.createAvatar(userOn3D);
       this.createPointer(userOn3D);
     } else {
-      const index = this.IntegrationUsersService.users.findIndex(((u) => u.id === user.id));
+      const index = this.IntegrationUsersService.users.findIndex((u) => u.id === user.id);
       if (index !== -1) {
         this.IntegrationUsersService.users[index] = user;
       }
@@ -198,5 +192,15 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       avatar,
       avatarConfig,
     });
+  };
+
+  /**
+   * @function onRoomInfoUpdate
+   * @description room update
+   * @param {} room : AblyRealtimeData
+   * @returns {void}
+   */
+  private onRoomInfoUpdate = (room: AblyRealtimeData): void => {
+    this.adapter.setFollow(room.followUserId);
   };
 }

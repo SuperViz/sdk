@@ -6,7 +6,7 @@ import {
   MeetingConnectionStatus,
 } from './common/types/events.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
-import { User, UserGroup } from './common/types/user.types';
+import { User, UserGroup, Avatar } from './common/types/user.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
@@ -86,4 +86,5 @@ export {
   UserTo3D,
   BrowserService,
   BrowserStats,
+  Avatar,
 };

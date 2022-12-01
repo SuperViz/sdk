@@ -1,4 +1,6 @@
-import { User, UserGroup } from './user.types';
+import type { Offset } from '../../services/video-conference-manager/types';
+
+import type { User, UserGroup } from './user.types';
 
 export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 export interface SuperVizSdkOptions {
@@ -12,4 +14,7 @@ export interface SuperVizSdkOptions {
   camsOff?: boolean;
   screenshareOff?: boolean;
   defaultAvatars?: boolean;
+
+  offset: Offset;
+  enableFollow?: boolean;
 }

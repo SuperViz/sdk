@@ -16,7 +16,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
-import { AblyActor } from '../realtime/ably/types';
+import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
 import { RealtimeJoinOptions } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
@@ -53,6 +53,8 @@ class Communicator {
     camsOff,
     screenshareOff,
     defaultAvatars,
+    offset,
+    enableFollow,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -64,6 +66,8 @@ class Communicator {
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
     const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+
+    const canUseFollow = !!enableFollow;
 
     if (user?.avatar === undefined) {
       this.user = Object.assign({}, this.user, {
@@ -87,6 +91,7 @@ class Communicator {
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
+      canUseFollow,
       apiKey,
       debug,
       language,
@@ -94,6 +99,7 @@ class Communicator {
       position: framePosition,
       browserService: this.browserService,
       broadcast: false,
+      offset,
     });
 
     // Realtime observers
@@ -260,8 +266,8 @@ class Communicator {
     this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
-  private onRoomInfoUpdated = (room) => {
-    const { isGridModeEnable, followUserId } = room._customProperties;
+  private onRoomInfoUpdated = (room: AblyRealtimeData) => {
+    const { isGridModeEnable, followUserId } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
     this.videoManager.followUserDidChange(followUserId);
