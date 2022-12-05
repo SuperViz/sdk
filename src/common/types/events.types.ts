@@ -25,6 +25,14 @@ export enum MeetingEvent {
   DESTROY = 'destroy',
 }
 
+export enum MeetingControlsEvent {
+  TOGGLE_MEETING_SETUP = 'meeting-controls.toggle-setup',
+  TOGGLE_MICROPHONE = 'meeting-controle.toggle-microphone',
+  TOGGLE_CAM = 'meeting-controle.toggle-cam',
+  TOGGLE_SCREENSHARE = 'meeting-controle.toggle-screenshare',
+  HANG_UP = 'hang-up',
+}
+
 export enum RealtimeEvent {
   REALTIME_JOIN = 'realtime.join',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',

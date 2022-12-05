@@ -11,7 +11,7 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
 }
 
 export interface AdapterOptions extends DefaultAdapterOptions {
-  avatarConfig: AvatarConfig,
+  avatarConfig: AvatarConfig;
 }
 
 export type SuperVizSdk = {
@@ -19,6 +19,13 @@ export type SuperVizSdk = {
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
+
+  toggleMeetingSetup: () => void;
+  toggleMicrophone: () => void;
+  toggleScreenShare: () => void;
+  hangUp: () => void;
+  toggleCam: () => void;
+
   connectAdapter: (adapter: Adapter, props: AdapterOptions) => AdapterMethods;
   disconnectAdapter: () => void;
 };

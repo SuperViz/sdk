@@ -9,6 +9,7 @@ import {
   MeetingState,
   RealtimeEvent,
   Dimensions,
+  MeetingControlsEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { User } from '../../common/types/user.types';
@@ -63,6 +64,7 @@ export default class VideoConfereceManager {
       browserService,
       broadcast,
       offset,
+      canUseDefaultToolbar,
     } = options;
 
     this.browserService = browserService;
@@ -87,6 +89,7 @@ export default class VideoConfereceManager {
       canUseScreenshare,
       canUseDefaultAvatars,
       camerasOrientation,
+      canUseDefaultToolbar,
       isBroadcast: broadcast,
       roomId,
     };
@@ -516,5 +519,45 @@ export default class VideoConfereceManager {
 
     this.bricklayer = null;
     this.frameState = null;
+  }
+
+  /**
+   * @funciton toggleMeetingSetup
+   * @returns {void}
+   */
+  public toggleMeetingSetup(): void {
+    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MEETING_SETUP);
+  }
+
+  /**
+   * @funciton toggleMicrophone
+   * @returns {void}
+   */
+  public toggleMicrophone(): void {
+    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MICROPHONE);
+  }
+
+  /**
+   * @funciton toggleScreenShare
+   * @returns {void}
+   */
+  public toggleScreenShare(): void {
+    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_SCREENSHARE);
+  }
+
+  /**
+   * @funciton hangUp
+   * @returns {void}
+   */
+  public hangUp(): void {
+    this.messageBridge.publish(MeetingControlsEvent.HANG_UP);
+  }
+
+  /**
+   * @funciton toggleCam
+   * @returns {void}
+   */
+  public toggleCam(): void {
+    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_CAM);
   }
 }
