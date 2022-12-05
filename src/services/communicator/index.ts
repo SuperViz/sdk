@@ -255,8 +255,7 @@ class Communicator {
   };
 
   private onGoToUserDidChange = (userId: string): void => {
-    // @TODO add the go to option to the adapter and uncomment the line below
-    // this.integrationManager.goToUSer(userId);
+    this.integrationManager.goToUser(userId);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {
