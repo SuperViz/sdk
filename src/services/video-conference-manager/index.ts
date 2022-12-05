@@ -35,6 +35,8 @@ export default class VideoConfereceManager {
   public readonly gridModeChangeObserver = new ObserverHelper({ logger });
   public readonly followUserObserver = new ObserverHelper({ logger });
   public readonly goToUserObserver = new ObserverHelper({ logger });
+  public readonly gatherUsersObserver = new ObserverHelper({ logger });
+
   public readonly sameAccountErrorObserver = new ObserverHelper({ logger });
   public readonly devicesObserver = new ObserverHelper({ logger });
   public readonly meetingStateObserver = new ObserverHelper({ logger });
@@ -156,6 +158,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(RealtimeEvent.REALTIME_FOLLOW_USER, this.onFollowUserDidChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onUserAvatarChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_USER, this.onGoToDidChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
     this.onWindowResize();
@@ -390,6 +393,14 @@ export default class VideoConfereceManager {
    */
   private onGoToDidChange = (userId: string): void => {
     this.goToUserObserver.publish(userId);
+  };
+
+  /**
+   * @function onGather
+   * @returns {void}
+   */
+  private onGather = (): void => {
+    this.gatherUsersObserver.publish();
   };
 
   /**

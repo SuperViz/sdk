@@ -258,6 +258,18 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
+   * @function setGather
+   * @param {boolean} active
+   * @description sync to all actors to go to the host position
+   * @returns {void}
+   */
+  public setGather(active: boolean): void {
+    this.updateRoomProperties({
+      gather: active,
+    });
+  }
+
+  /**
    * @function getUserSlot
    * @param {string} userId
    * @returns {void}
