@@ -152,6 +152,4 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   public goToUser = (userId: string): void => {
     this.adapter.goToUser(userId);
   };
-
-  
 }

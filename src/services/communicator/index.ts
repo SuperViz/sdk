@@ -150,6 +150,7 @@ class Communicator {
     this.videoManager.followUserObserver.unsubscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
     this.videoManager.goToUserObserver.unsubscribe(this.onGoToUserDidChange);
+    this.videoManager.gatherUsersObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
     this.videoManager.userAmountUpdateObserver.unsubscribe(this.onUserAmountUpdate);
@@ -209,6 +210,7 @@ class Communicator {
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
     this.videoManager.followUserObserver.subscribe(this.onFollowUserDidChange);
     this.videoManager.goToUserObserver.subscribe(this.onGoToUserDidChange);
+    this.videoManager.gatherUsersObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
@@ -258,6 +260,10 @@ class Communicator {
     this.integrationManager.goToUser(userId);
   };
 
+  private onGatherDidChange = (): void => {
+    this.realtime.setGather(true);
+  };
+
   private onFrameStateDidChange = (state: VideoFrameState): void => {
     if (state === VideoFrameState.INITIALIZED) {
       this.start();
@@ -269,10 +275,13 @@ class Communicator {
   };
 
   private onRoomInfoUpdated = (room: AblyRealtimeData) => {
-    const { isGridModeEnable, followUserId } = room;
+    const { isGridModeEnable, followUserId, gather } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
     this.videoManager.followUserDidChange(followUserId);
+    if (this.realtime.localRoomProperties?.hostClientId === this.user.id && gather) {
+      this.realtime.setGather(false);
+    }
   };
 
   private onActorsDidChange = (actors) => {

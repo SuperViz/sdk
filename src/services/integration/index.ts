@@ -201,6 +201,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onRoomInfoUpdate = (room: AblyRealtimeData): void => {
-    this.adapter.setFollow(room.followUserId);
+    const { gather, hostClientId, followUserId } = room;
+    this.adapter.setFollow(followUserId);
+    if (gather) {
+      this.adapter.gather(hostClientId);
+    }
   };
 }
