@@ -56,6 +56,7 @@ class Communicator {
     offset,
     enableFollow,
     enableGoTo,
+    defaultToolbar,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -67,6 +68,7 @@ class Communicator {
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
     const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+    const canUseDefaultToolbar = defaultToolbar ?? true;
 
     const canUseFollow = !!enableFollow;
     const canUseGoTo = !!enableGoTo;
@@ -95,6 +97,7 @@ class Communicator {
       canUseDefaultAvatars,
       canUseFollow,
       canUseGoTo,
+      canUseDefaultToolbar,
       apiKey,
       debug,
       language,
@@ -198,6 +201,46 @@ class Communicator {
       delete this.observerHelpers[type];
     }
   };
+
+  /**
+   * @funciton toggleMeetingSetup
+   * @returns {void}
+   */
+  public toggleMeetingSetup(): void {
+    this.videoManager.toggleMeetingSetup();
+  }
+
+  /**
+   * @funciton toggleCam
+   * @returns {void}
+   */
+  public toggleCam(): void {
+    this.videoManager.toggleCam();
+  }
+
+  /**
+   * @funciton toggleMicrophone
+   * @returns {void}
+   */
+  public toggleMicrophone(): void {
+    this.videoManager.toggleMicrophone();
+  }
+
+  /**
+   * @funciton toggleScreenShare
+   * @returns {void}
+   */
+  public toggleScreenShare(): void {
+    this.videoManager.toggleScreenShare();
+  }
+
+  /**
+   * @funciton hangUp
+   * @returns {void}
+   */
+  public hangUp(): void {
+    this.videoManager.hangUp();
+  }
 
   private startVideo = (options: VideoManagerOptions): void => {
     this.videoManager = new VideoConferencingManager(options);
@@ -451,6 +494,12 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
+
+    toggleMeetingSetup: () => communicator.toggleMeetingSetup(),
+    toggleMicrophone: () => communicator.toggleMicrophone(),
+    toggleCam: () => communicator.toggleCam(),
+    toggleScreenShare: () => communicator.toggleScreenShare(),
+    hangUp: () => communicator.hangUp(),
 
     connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
     disconnectAdapter: () => communicator.disconnectAdapter(),

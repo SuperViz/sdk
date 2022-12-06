@@ -12,6 +12,7 @@ export interface VideoManagerOptions {
   canUseDefaultAvatars: boolean;
   canUseFollow: boolean;
   canUseGoTo: boolean;
+  canUseDefaultToolbar: boolean;
   position: FramePosition;
   browserService: BrowserService;
   broadcast: boolean;

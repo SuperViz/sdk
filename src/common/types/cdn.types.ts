@@ -7,6 +7,7 @@ import {
   RealtimeEvent,
   MeetingState,
   MeetingConnectionStatus,
+  MeetingControlsEvent,
 } from './events.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
 
@@ -18,4 +19,5 @@ export interface SuperVizCdn {
   DeviceEvent: typeof DeviceEvent;
   MeetingState: typeof MeetingState;
   MeetingConnectionStatus: typeof MeetingConnectionStatus;
+  MeetingControlsEvent: typeof MeetingControlsEvent;
 }
