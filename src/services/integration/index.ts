@@ -57,6 +57,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public addUser = (user: UserTo3D): void => {
+    if (user.isAudience) {
+      return;
+    }
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
