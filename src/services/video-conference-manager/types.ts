@@ -10,6 +10,7 @@ export interface VideoManagerOptions {
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
+  canUseGather: boolean;
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
