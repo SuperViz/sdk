@@ -876,6 +876,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private onActorJoin = async (presence: Ably.Types.PresenceMessage): Promise<void> => {
     this.actorJoinedObserver.publish(presence);
     await this.updateActors();
+    this.updateMyProperties({}); // send a sync
   };
 
   /**
@@ -931,9 +932,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description calculates the size of a sync message and checks if its bigger than limit
    * @returns {boolean}
    */
-  private isMessageTooBig = (msg : Object | string) => {
+  private isMessageTooBig = (msg: Object | string) => {
     const messageString = JSON.stringify(msg);
-    const size = (new TextEncoder().encode(messageString)).length;
+    const size = new TextEncoder().encode(messageString).length;
     if (size > MESSAGE_SIZE_LIMIT) {
       console.error('Message to long, the message limit size is 2kb.');
       return true;

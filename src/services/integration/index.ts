@@ -204,7 +204,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const { gather, hostClientId, followUserId } = room;
     this.adapter.setFollow(followUserId);
     if (gather) {
-      this.adapter.gather(hostClientId);
+      this.adapter.goToUser(hostClientId);
     }
   };
 }
