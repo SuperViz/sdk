@@ -9,8 +9,7 @@ export interface SuperVizSdkOptions {
   user: User;
   userGroup: UserGroup;
   shouldKickUsersOnHostLeave?: boolean;
-  // @TODO - enable the flag when the feature is complete
-  // isBroadcast?: boolean;
+  isBroadcast?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;
   defaultAvatars?: boolean;

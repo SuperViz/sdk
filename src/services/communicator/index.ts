@@ -17,7 +17,7 @@ import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
-import { RealtimeJoinOptions } from '../realtime/base/types';
+import { ActorInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
@@ -49,7 +49,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-    // isBroadcast,
+    isBroadcast,
     camsOff,
     screenshareOff,
     defaultAvatars,
@@ -104,7 +104,7 @@ class Communicator {
       roomId,
       position: framePosition,
       browserService: this.browserService,
-      broadcast: false,
+      isBroadcast,
       offset,
     });
 
@@ -124,6 +124,7 @@ class Communicator {
       roomId: this.roomId,
       apiKey,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
+      isBroadcast,
     });
   }
 
@@ -287,7 +288,7 @@ class Communicator {
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo: RealtimeJoinOptions) => {
+  private onRealtimeJoin = (userInfo: ActorInfo) => {
     this.realtime.join(userInfo);
   };
 
