@@ -37,7 +37,7 @@ export class BrowserService {
     const isMobile =
       this.browser.is(Bowser.PLATFORMS_MAP.mobile) || this.browser.is(Bowser.PLATFORMS_MAP.tablet);
 
-    return isMobile && !this.isIpad;
+    return isMobile && !!navigator.userAgent.match(/iPad/i);
   }
 
   public get isTabletDevice(): boolean {
