@@ -18,5 +18,6 @@ export interface SuperVizSdkOptions {
   offset: Offset;
   enableFollow?: boolean;
   enableGoTo?: boolean;
+  enableGather?: boolean;
   defaultToolbar?: boolean;
 }

@@ -56,6 +56,7 @@ class Communicator {
     offset,
     enableFollow,
     enableGoTo,
+    enableGather,
     defaultToolbar,
   }: CommunicatorOptions) {
     this.roomId = roomId;
@@ -72,6 +73,7 @@ class Communicator {
 
     const canUseFollow = !!enableFollow;
     const canUseGoTo = !!enableGoTo;
+    const canUseGather = !!enableGather;
 
     if (user?.avatar === undefined) {
       this.user = Object.assign({}, this.user, {
@@ -97,6 +99,7 @@ class Communicator {
       canUseDefaultAvatars,
       canUseFollow,
       canUseGoTo,
+      canUseGather,
       canUseDefaultToolbar,
       apiKey,
       debug,
