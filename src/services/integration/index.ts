@@ -9,6 +9,7 @@ import { UserTo3D, UserOn3D } from './users/types';
 
 export class IntegrationManager extends BaseAdapterManager implements DefaultIntegrationManager {
   private IntegrationUsersService: IntegrationUsersManager;
+  private followUserId = null;
 
   constructor({
     isAvatarsEnabled,
@@ -192,6 +193,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       avatar,
       avatarConfig,
     });
+    if (this.followUserId) {
+      this.adapter.goToUser(this.followUserId);
+    }
   };
 
   /**
@@ -202,7 +206,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    */
   private onRoomInfoUpdate = (room: AblyRealtimeData): void => {
     const { gather, hostClientId, followUserId } = room;
-    this.adapter.setFollow(followUserId);
+    this.followUserId = followUserId;
     if (gather) {
       this.adapter.goToUser(hostClientId);
     }
