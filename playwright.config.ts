@@ -50,7 +50,7 @@ const config: PlaywrightTestConfig = {
   fullyParallel: true,
   forbidOnly: !!process.env.E2E_CI,
   retries: process.env.E2E_CI ? 2 : 0,
-  workers: process.env.E2E_CI ? 1 : undefined,
+  workers: undefined,
   reporter: process.env.E2E_CI ? 'dot' : 'list',
   use: {
     actionTimeout: 0,
