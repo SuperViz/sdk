@@ -7,7 +7,7 @@ const ROOM_ID = process.env.E2E_ROOM_ID || 'test-room';
 const USER_NAME = process.env.E2E_USER_NAME || 'test-user';
 const USER_ID = process.env.E2E_USER_ID || 'test-user-id';
 
-test.describe(`test SDK demo [${LANGUAGES[LOCALE]}]`, () => {
+test.describe(`SDK demo [${LANGUAGES[LOCALE]}]`, () => {
   test.describe.configure({ mode: 'serial' });
   let page: Page;
 
@@ -19,8 +19,8 @@ test.describe(`test SDK demo [${LANGUAGES[LOCALE]}]`, () => {
     await browser.close();
   });
 
-  test.describe('🟢 avatars', () => {
-    test('Open SDK demo page with avatars', async ({ baseURL }) => {
+  test.describe('🟢 with avatars', () => {
+    test('Open SDK demo page', async ({ baseURL }) => {
       await page.goto(`${baseURL}?defaultAvatars=true`);
     });
 

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+const CI_ENABLED = process.env.E2E_CI === 'true';
 
 // WEBRTC Test configuration options.
 // https://webrtc.org/getting-started/testing
@@ -48,10 +49,10 @@ const config: PlaywrightTestConfig = {
     timeout: 5000,
   },
   fullyParallel: true,
-  forbidOnly: !!process.env.E2E_CI,
-  retries: process.env.E2E_CI ? 2 : 0,
+  forbidOnly: !!CI_ENABLED,
+  retries: CI_ENABLED ? 2 : 0,
   workers: undefined,
-  reporter: process.env.E2E_CI ? 'dot' : 'list',
+  reporter: CI_ENABLED ? 'dot' : 'list',
   use: {
     actionTimeout: 0,
     baseURL: BASE_URL,
