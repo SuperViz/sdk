@@ -26,4 +26,8 @@ export const LOCATORS = {
     [LANG_ENG]: 'text=Join',
     [LANG_PT_BR]: 'text=Entrar',
   },
+  NEXT_BUTTON: {
+    [LANG_ENG]: 'text=Next',
+    [LANG_PT_BR]: 'text=Próximo',
+  },
 };
