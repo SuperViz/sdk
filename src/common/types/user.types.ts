@@ -1,12 +1,11 @@
 export interface User {
-  id: string;
-  name: string;
-  isHost: boolean;
-  isHostCandidate: boolean;
-  // @TODO enable the flag when the feature is complete
-  // isAudience?: boolean;
+  id?: string;
+  name?: string;
+  isHost?: boolean;
+  isHostCandidate?: boolean;
+  isAudience?: boolean;
   color?: string;
-  avatar: Avatar;
+  avatar?: Avatar;
 }
 
 export interface UserGroup {

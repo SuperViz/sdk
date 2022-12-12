@@ -65,7 +65,7 @@ export default class VideoConfereceManager {
       canUseGather,
       position,
       browserService,
-      broadcast,
+      isBroadcast,
       offset,
       canUseDefaultToolbar,
     } = options;
@@ -94,7 +94,7 @@ export default class VideoConfereceManager {
       canUseDefaultAvatars,
       camerasOrientation,
       canUseDefaultToolbar,
-      isBroadcast: broadcast,
+      isBroadcast,
       roomId,
     };
 

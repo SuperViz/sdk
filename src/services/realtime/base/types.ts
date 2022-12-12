@@ -29,12 +29,12 @@ export interface DefaultRealtimeMethods {
 
 export interface RealtimeJoinOptions {
   isHostCandidate: boolean;
+  isAudience: boolean;
   name: string;
 }
 
 export interface ActorInfo extends User {
-  userId: string;
-  noSlotRequired?: boolean;
+  userId?: string;
   slotIndex?: number;
 }
 
@@ -43,6 +43,7 @@ export interface StartRealtimeType {
   roomId: string;
   apiKey: string;
   shouldKickUsersOnHostLeave: boolean;
+  isBroadcast: boolean;
 }
 
 export interface SyncProperty {

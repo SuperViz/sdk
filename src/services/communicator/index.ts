@@ -17,7 +17,7 @@ import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
-import { RealtimeJoinOptions } from '../realtime/base/types';
+import { ActorInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
@@ -49,7 +49,7 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-    // isBroadcast,
+    isBroadcast,
     camsOff,
     screenshareOff,
     defaultAvatars,
@@ -107,7 +107,7 @@ class Communicator {
       roomId,
       position: framePosition,
       browserService: this.browserService,
-      broadcast: false,
+      isBroadcast,
       offset,
     });
 
@@ -127,6 +127,7 @@ class Communicator {
       roomId: this.roomId,
       apiKey,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
+      isBroadcast,
     });
   }
 
@@ -290,7 +291,7 @@ class Communicator {
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo: RealtimeJoinOptions) => {
+  private onRealtimeJoin = (userInfo: ActorInfo) => {
     this.realtime.join(userInfo);
   };
 
@@ -428,13 +429,11 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
 
-  // Integrator methods
   public connectAdapter(adapter: Adapter, adapterOptions: AdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
 
-    // this forces the initial property to sync
     if (adapterOptions.avatarConfig) {
       this.realtime.myActor.data.avatarConfig = adapterOptions.avatarConfig;
     }
@@ -447,9 +446,6 @@ class Communicator {
       actors = Object.values(this.realtime.getActors);
     }
     this.integrationManager = new IntegrationManager({
-      // @TODO - enable the flag when the feature is complete
-      // isAvatarsEnabled: !this.user.isAudience,
-      // isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {
@@ -460,13 +456,14 @@ class Communicator {
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
-        const { name, avatar, avatarConfig, slotIndex } = actor.data;
+        const { name, avatar, avatarConfig, slotIndex, isAudience } = actor.data;
         return {
           id,
           name,
           avatar,
           avatarConfig,
           slotIndex,
+          isAudience,
         };
       }),
       RealtimeService: this.realtime,

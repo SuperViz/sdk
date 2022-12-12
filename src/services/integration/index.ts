@@ -58,10 +58,18 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public addUser = (user: UserTo3D): void => {
+    if (!user || !user.id) {
+      return;
+    }
+    if (user.isAudience) {
+      return;
+    }
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
+    // audience listens to the hosts broadcast channel
     this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
+
     this.createAvatar(userOn3D);
     this.createPointer(userOn3D);
   };
@@ -89,7 +97,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public updateUser = (user: UserOn3D): void => {
-    if (!this.users || this.users.length === 0) {
+    if (!this.users || this.users.length === 0 || !user || !user.id) {
       return;
     }
     const userToBeUpdated = this.users.find((oldUser) => oldUser.id === user.id);
@@ -151,13 +159,14 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorJoined = (actor): void => {
-    const { userId, name, avatar, avatarConfig } = actor.data;
+    const { userId, name, avatar, avatarConfig, isAudience } = actor.data;
 
     this.addUser({
       id: userId,
       name,
       avatar,
       avatarConfig,
+      isAudience,
     });
   };
 

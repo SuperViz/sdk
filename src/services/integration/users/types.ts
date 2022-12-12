@@ -15,6 +15,7 @@ export interface UserTo3D {
   name: string;
   avatar?: Avatar;
   avatarConfig?: AvatarConfig;
+  isAudience?: boolean;
 }
 
 export interface UserOn3D extends UserTo3D {
