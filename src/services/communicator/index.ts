@@ -326,7 +326,7 @@ class Communicator {
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
     this.videoManager.followUserDidChange(followUserId);
-    if (this.realtime.localRoomProperties?.hostClientId === this.user.id && gather) {
+    if (this.realtime.hostClientId === this.user.id && gather) {
       this.realtime.setGather(false);
     }
   };
@@ -370,7 +370,7 @@ class Communicator {
         avatar: actor.data.avatar,
         isHostCandidate: actor.data.isHostCandidate,
         name: actor.data.name,
-        isHost: this.realtime.localRoomProperties?.hostClientId === actor.clientId,
+        isHost: this.realtime.hostClientId === actor.clientId,
       });
     });
     return userList;
@@ -426,6 +426,24 @@ class Communicator {
   };
 
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
+    const connectionProblemStatus = [
+      MeetingConnectionStatus.BAD,
+      MeetingConnectionStatus.DISCONNECTED,
+      MeetingConnectionStatus.POOR,
+      MeetingConnectionStatus.LOST_CONNECTION,
+    ];
+
+    if (connectionProblemStatus.includes(newStatus)) {
+      this.realtime.freezeSync(true);
+    }
+
+    if (
+      connectionProblemStatus.includes(this.connectionService.oldConnectionStatus) &&
+      !connectionProblemStatus.includes(newStatus)
+    ) {
+      this.realtime.freezeSync(false);
+    }
+
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
 
