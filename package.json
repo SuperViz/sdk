@@ -14,6 +14,7 @@
     "release:dev": "release-it --preRelease=rc --ci",
     "release:minor": "release-it minor --ci",
     "release:major": "release-it major --ci",
+    "release:prod": "release-it --ci --no-increment",
     "release:preview": "release-it --ci --dry-run",
     "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright test ./e2e",
     "test:e2e:pt-br": "E2E_LOCALE=pt-BR yarn test:e2e",
