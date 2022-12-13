@@ -41,6 +41,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
     this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
+
+    this.onRoomInfoUpdate(this.RealtimeService.localRoomProperties);
   }
 
   public get users(): UserOn3D[] {
@@ -78,6 +80,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @function removeUser
    * @description remove user from list
    * @param {UserOn3D} user
+   * @param unsubscribe
    * @returns {void}
    */
   public removeUser = (user: UserOn3D, unsubscribe): void => {
@@ -106,14 +109,14 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       this.addUser(user);
       return;
     }
-    let hasDifferenteAvatarProperties = false;
+    let hasDifferentAvatarProperties = false;
     if (
       userToBeUpdated.avatar?.model !== user.avatar?.model ||
       !isEqual(userToBeUpdated.avatarConfig, user.avatarConfig)
     ) {
-      hasDifferenteAvatarProperties = true;
+      hasDifferentAvatarProperties = true;
     }
-    if (hasDifferenteAvatarProperties) {
+    if (hasDifferentAvatarProperties) {
       this.removeUser(user, false);
       const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
       this.IntegrationUsersService.addUserToList(userOn3D);
