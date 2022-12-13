@@ -33,7 +33,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private currentReconnecAttempt: number = 0;
   private localRoomProperties?: AblyRealtimeData = null;
   private enableSync: boolean = true;
-  private isSyncFreezed: boolean = true;
+  private isSyncFreezed: boolean = false;
   private roomId: string;
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
@@ -234,7 +234,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
-    if (this.isMessageTooBig(property)) {
+    if (this.isMessageTooBig(property) || this.isSyncFreezed) {
       return;
     }
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
@@ -290,10 +290,21 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {boolean} isFreezed
    * @returns {void}
    */
-  public freezeSync(isFreezed: boolean): void {
+  public freezeSync = (isFreezed: boolean): void => {
     this.isSyncFreezed = isFreezed;
-    console.log('RELTIME', 'Pause sync', isFreezed);
-  }
+
+    if (isFreezed) {
+      this.roomChannel.detach();
+      this.roomSyncChannel.detach();
+      this.roomBroadcastChannel?.detach();
+      this.roomChannel.unsubscribe();
+      this.roomSyncChannel.unsubscribe();
+      this.roomBroadcastChannel?.unsubscribe();
+      return;
+    }
+
+    this.join(this.myActor.data);
+  };
 
   /**
    * @function onAblyPresenceEnter
@@ -339,7 +350,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceLeave(presenceMessage: Ably.Types.PresenceMessage): void {
-    this.onActorLeave(presenceMessage, false);
+    this.onActorLeave(presenceMessage);
   }
 
   /**
@@ -412,7 +423,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public updateMyProperties = throttle((newProperties: ActorInfo): void => {
     const properties = newProperties;
 
-    if (this.isMessageTooBig(newProperties) || this.left || !this.enableSync) {
+    if (
+      this.isMessageTooBig(newProperties) ||
+      this.left ||
+      !this.enableSync ||
+      this.isSyncFreezed
+    ) {
       return;
     }
     if (properties.avatar === undefined) {
@@ -444,7 +460,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
-    if (this.isMessageTooBig(properties)) {
+    if (this.isMessageTooBig(properties) || this.isSyncFreezed) {
       return;
     }
 
@@ -883,7 +899,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
    */
-  private onActorLeave(presence: Ably.Types.PresenceMessage, cleanup: boolean): void {
+  private onActorLeave(presence: Ably.Types.PresenceMessage): void {
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
       return;
     }
