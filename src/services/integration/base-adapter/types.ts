@@ -34,9 +34,10 @@ export type Adapter = {
   disableAvatars: () => void;
   enablePointers: () => void;
   disablePointers: () => void;
+  goToUser: (userId: string) => void;
+  gather: (hostId: string) => void;
   init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
   destroy: () => void;
-  setFollow: (userId?: string) => void;
 };
 
 export interface RealtimeAdapterMethods {

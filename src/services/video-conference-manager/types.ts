@@ -10,15 +10,26 @@ export interface VideoManagerOptions {
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
+  canUseGather: boolean;
   canUseFollow: boolean;
+  canUseGoTo: boolean;
+  canUseDefaultToolbar: boolean;
   position: FramePosition;
   browserService: BrowserService;
-  broadcast: boolean;
+  isBroadcast: boolean;
+  offset?: Offset;
 }
 
 export interface WindowSize {
   height: number;
   width: number;
+}
+
+export interface Offset {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
 }
 
 export enum VideoFrameState {

@@ -25,6 +25,14 @@ export enum MeetingEvent {
   DESTROY = 'destroy',
 }
 
+export enum MeetingControlsEvent {
+  TOGGLE_MEETING_SETUP = 'meeting-controls.toggle-setup',
+  TOGGLE_MICROPHONE = 'meeting-controle.toggle-microphone',
+  TOGGLE_CAM = 'meeting-controle.toggle-cam',
+  TOGGLE_SCREENSHARE = 'meeting-controle.toggle-screenshare',
+  HANG_UP = 'hang-up',
+}
+
 export enum RealtimeEvent {
   REALTIME_JOIN = 'realtime.join',
   REALTIME_USER_LIST_UPDATE = 'realtime.user-list-update',
@@ -32,6 +40,8 @@ export enum RealtimeEvent {
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
   REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',
+  REALTIME_GO_TO_USER = 'realtime.go-to-user',
+  REALTIME_GATHER = 'realtime.gather',
   REALTIME_FOLLOW_USER = 'realtime.follow-user',
   REALTIME_SET_AVATAR = 'realtime.set-avatar',
 }

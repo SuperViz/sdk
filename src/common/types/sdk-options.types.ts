@@ -1,4 +1,6 @@
-import { User, UserGroup } from './user.types';
+import type { Offset } from '../../services/video-conference-manager/types';
+
+import type { User, UserGroup } from './user.types';
 
 export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 export interface SuperVizSdkOptions {
@@ -7,10 +9,14 @@ export interface SuperVizSdkOptions {
   user: User;
   userGroup: UserGroup;
   shouldKickUsersOnHostLeave?: boolean;
-  // @TODO - enable the flag when the feature is complete
-  // isBroadcast?: boolean;
+  isBroadcast?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;
   defaultAvatars?: boolean;
+
+  offset: Offset;
   enableFollow?: boolean;
+  enableGoTo?: boolean;
+  enableGather?: boolean;
+  defaultToolbar?: boolean;
 }

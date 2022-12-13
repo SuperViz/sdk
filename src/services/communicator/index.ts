@@ -17,7 +17,7 @@ import { IntegrationManager } from '../integration';
 import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
 import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
-import { RealtimeJoinOptions } from '../realtime/base/types';
+import { ActorInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
@@ -49,11 +49,15 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-    // isBroadcast,
+    isBroadcast,
     camsOff,
     screenshareOff,
     defaultAvatars,
+    offset,
     enableFollow,
+    enableGoTo,
+    enableGather,
+    defaultToolbar,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -65,8 +69,11 @@ class Communicator {
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
     const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+    const canUseDefaultToolbar = defaultToolbar ?? true;
 
     const canUseFollow = !!enableFollow;
+    const canUseGoTo = !!enableGoTo;
+    const canUseGather = !!enableGather;
 
     if (user?.avatar === undefined) {
       this.user = Object.assign({}, this.user, {
@@ -91,13 +98,17 @@ class Communicator {
       canUseScreenshare,
       canUseDefaultAvatars,
       canUseFollow,
+      canUseGoTo,
+      canUseGather,
+      canUseDefaultToolbar,
       apiKey,
       debug,
       language,
       roomId,
       position: framePosition,
       browserService: this.browserService,
-      broadcast: false,
+      isBroadcast,
+      offset,
     });
 
     // Realtime observers
@@ -116,6 +127,7 @@ class Communicator {
       roomId: this.roomId,
       apiKey,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
+      isBroadcast,
     });
   }
 
@@ -144,6 +156,8 @@ class Communicator {
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
     this.videoManager.followUserObserver.unsubscribe(this.onFollowUserDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
+    this.videoManager.goToUserObserver.unsubscribe(this.onGoToUserDidChange);
+    this.videoManager.gatherUsersObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
     this.videoManager.userAmountUpdateObserver.unsubscribe(this.onUserAmountUpdate);
@@ -192,6 +206,46 @@ class Communicator {
     }
   };
 
+  /**
+   * @funciton toggleMeetingSetup
+   * @returns {void}
+   */
+  public toggleMeetingSetup(): void {
+    this.videoManager.toggleMeetingSetup();
+  }
+
+  /**
+   * @funciton toggleCam
+   * @returns {void}
+   */
+  public toggleCam(): void {
+    this.videoManager.toggleCam();
+  }
+
+  /**
+   * @funciton toggleMicrophone
+   * @returns {void}
+   */
+  public toggleMicrophone(): void {
+    this.videoManager.toggleMicrophone();
+  }
+
+  /**
+   * @funciton toggleScreenShare
+   * @returns {void}
+   */
+  public toggleScreenShare(): void {
+    this.videoManager.toggleScreenShare();
+  }
+
+  /**
+   * @funciton hangUp
+   * @returns {void}
+   */
+  public hangUp(): void {
+    this.videoManager.hangUp();
+  }
+
   private startVideo = (options: VideoManagerOptions): void => {
     this.videoManager = new VideoConferencingManager(options);
 
@@ -202,6 +256,8 @@ class Communicator {
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
     this.videoManager.followUserObserver.subscribe(this.onFollowUserDidChange);
+    this.videoManager.goToUserObserver.subscribe(this.onGoToUserDidChange);
+    this.videoManager.gatherUsersObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
@@ -235,7 +291,7 @@ class Communicator {
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo: RealtimeJoinOptions) => {
+  private onRealtimeJoin = (userInfo: ActorInfo) => {
     this.realtime.join(userInfo);
   };
 
@@ -245,6 +301,14 @@ class Communicator {
 
   private onFollowUserDidChange = (userId: string | null): void => {
     this.realtime.setFollowUser(userId);
+  };
+
+  private onGoToUserDidChange = (userId: string): void => {
+    this.integrationManager.goToUser(userId);
+  };
+
+  private onGatherDidChange = (): void => {
+    this.realtime.setGather(true);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {
@@ -258,10 +322,13 @@ class Communicator {
   };
 
   private onRoomInfoUpdated = (room: AblyRealtimeData) => {
-    const { isGridModeEnable, followUserId } = room;
+    const { isGridModeEnable, followUserId, gather } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
     this.videoManager.followUserDidChange(followUserId);
+    if (this.realtime.localRoomProperties?.hostClientId === this.user.id && gather) {
+      this.realtime.setGather(false);
+    }
   };
 
   private onActorsDidChange = (actors) => {
@@ -362,13 +429,11 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
 
-  // Integrator methods
   public connectAdapter(adapter: Adapter, adapterOptions: AdapterOptions): AdapterMethods {
     if (this.isIntegrationManagerInitializated) {
       throw new Error('the 3D adapter has already been started');
     }
 
-    // this forces the initial property to sync
     if (adapterOptions.avatarConfig) {
       this.realtime.myActor.data.avatarConfig = adapterOptions.avatarConfig;
     }
@@ -381,9 +446,6 @@ class Communicator {
       actors = Object.values(this.realtime.getActors);
     }
     this.integrationManager = new IntegrationManager({
-      // @TODO - enable the flag when the feature is complete
-      // isAvatarsEnabled: !this.user.isAudience,
-      // isPointersEnabled: !this.user.isAudience,
       adapter,
       ...adapterOptions,
       localUser: {
@@ -394,13 +456,14 @@ class Communicator {
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
-        const { name, avatar, avatarConfig, slotIndex } = actor.data;
+        const { name, avatar, avatarConfig, slotIndex, isAudience } = actor.data;
         return {
           id,
           name,
           avatar,
           avatarConfig,
           slotIndex,
+          isAudience,
         };
       }),
       RealtimeService: this.realtime,
@@ -431,6 +494,12 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
+
+    toggleMeetingSetup: () => communicator.toggleMeetingSetup(),
+    toggleMicrophone: () => communicator.toggleMicrophone(),
+    toggleCam: () => communicator.toggleCam(),
+    toggleScreenShare: () => communicator.toggleScreenShare(),
+    hangUp: () => communicator.hangUp(),
 
     connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
     disconnectAdapter: () => communicator.disconnectAdapter(),

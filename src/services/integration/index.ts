@@ -9,6 +9,7 @@ import { UserTo3D, UserOn3D } from './users/types';
 
 export class IntegrationManager extends BaseAdapterManager implements DefaultIntegrationManager {
   private IntegrationUsersService: IntegrationUsersManager;
+  private followUserId = null;
 
   constructor({
     isAvatarsEnabled,
@@ -40,6 +41,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
     this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
+
+    this.onRoomInfoUpdate(this.RealtimeService.localRoomProperties);
   }
 
   public get users(): UserOn3D[] {
@@ -57,10 +60,18 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public addUser = (user: UserTo3D): void => {
+    if (!user || !user.id) {
+      return;
+    }
+    if (user.isAudience) {
+      return;
+    }
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
+    // audience listens to the hosts broadcast channel
     this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
+
     this.createAvatar(userOn3D);
     this.createPointer(userOn3D);
   };
@@ -69,6 +80,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @function removeUser
    * @description remove user from list
    * @param {UserOn3D} user
+   * @param unsubscribe
    * @returns {void}
    */
   public removeUser = (user: UserOn3D, unsubscribe): void => {
@@ -88,7 +100,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public updateUser = (user: UserOn3D): void => {
-    if (!this.users || this.users.length === 0) {
+    if (!this.users || this.users.length === 0 || !user || !user.id) {
       return;
     }
     const userToBeUpdated = this.users.find((oldUser) => oldUser.id === user.id);
@@ -97,14 +109,14 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       this.addUser(user);
       return;
     }
-    let hasDifferenteAvatarProperties = false;
+    let hasDifferentAvatarProperties = false;
     if (
       userToBeUpdated.avatar?.model !== user.avatar?.model ||
       !isEqual(userToBeUpdated.avatarConfig, user.avatarConfig)
     ) {
-      hasDifferenteAvatarProperties = true;
+      hasDifferentAvatarProperties = true;
     }
-    if (hasDifferenteAvatarProperties) {
+    if (hasDifferentAvatarProperties) {
       this.removeUser(user, false);
       const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
       this.IntegrationUsersService.addUserToList(userOn3D);
@@ -150,13 +162,14 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorJoined = (actor): void => {
-    const { userId, name, avatar, avatarConfig } = actor.data;
+    const { userId, name, avatar, avatarConfig, isAudience } = actor.data;
 
     this.addUser({
       id: userId,
       name,
       avatar,
       avatarConfig,
+      isAudience,
     });
   };
 
@@ -192,6 +205,9 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       avatar,
       avatarConfig,
     });
+    if (this.followUserId) {
+      this.adapter.goToUser(this.followUserId);
+    }
   };
 
   /**
@@ -201,6 +217,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onRoomInfoUpdate = (room: AblyRealtimeData): void => {
-    this.adapter.setFollow(room.followUserId);
+    const { gather, hostClientId, followUserId } = room;
+    this.followUserId = followUserId;
+    if (gather) {
+      this.adapter.goToUser(hostClientId);
+    }
   };
 }

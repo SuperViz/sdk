@@ -1,6 +1,6 @@
 {
   "name": "@superviz/sdk",
-  "version": "2.11.0",
+  "version": "2.12.1-rc.1",
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
@@ -14,12 +14,13 @@
     "release:dev": "release-it --preRelease=rc --ci",
     "release:minor": "release-it minor --ci",
     "release:major": "release-it major --ci",
+    "release:prod": "release-it --ci --no-increment",
     "release:preview": "release-it --ci --dry-run",
-    "test:e2e": "playwright test ./e2e",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright test ./e2e",
     "test:e2e:pt-br": "E2E_LOCALE=pt-BR yarn test:e2e",
     "test:e2e:en": "E2E_LOCALE=en yarn test:e2e",
     "test:e2e:all": "yarn test:e2e:pt-br && yarn test:e2e:en",
-    "test:e2e:install": "npx playwright install",
+    "test:e2e:install": "PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install",
     "test:e2e:generate": "eval $(cat .env | xargs) && npx playwright codegen $E2E_BASE_URL",
     "test:e2e:debug": "eval $(cat .env | xargs) && PWDEBUG=1 yarn test:e2e",
     "test:e2e:headed": "eval $(cat .env | xargs) && yarn test:e2e --headed"
@@ -39,7 +40,7 @@
   },
   "homepage": "https://github.com/SuperViz/sdk#readme",
   "devDependencies": {
-    "@playwright/test": "^1.26.1",
+    "@playwright/test": "^1.28.1",
     "@release-it/conventional-changelog": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
@@ -51,7 +52,6 @@
     "eslint-plugin-import": "^2.25.2",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
-    "playwright": "^1.26.1",
     "release-it": "^14.14.3",
     "ts-jest": "^28.0.5",
     "tsc": "^2.0.4",

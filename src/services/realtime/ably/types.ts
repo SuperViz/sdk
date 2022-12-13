@@ -15,6 +15,7 @@ export interface AblyRealtimeData {
   hostClientId?: string;
   isGridModeEnable?: boolean;
   followUserId?: string | null;
+  gather?: boolean;
 }
 
 export type AblyTokenCallBack = (
