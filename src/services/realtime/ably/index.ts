@@ -1,5 +1,3 @@
-import { buffer } from 'stream/consumers';
-
 import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
@@ -21,6 +19,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private client: Ably.Realtime;
   private actors: AblyActors = {};
   private hostUserId: string = null;
+  public myActor: AblyActor = null;
 
   private localUserId: string = null;
   private isBroadcast: boolean = false;
@@ -32,14 +31,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private isReconnecting: boolean = false;
   private isJoinedRoom: boolean = false;
   private currentReconnecAttempt: number = 0;
-  public localRoomProperties?: AblyRealtimeData = null;
+  private localRoomProperties?: AblyRealtimeData = null;
   private enableSync: boolean = true;
+  private isSyncFreezed: boolean = false;
   private roomId: string;
   private shouldKickUsersOnHostLeave: boolean;
   private ablyKey: string;
   private apiKey: string;
   private left: boolean = false;
-  public myActor: AblyActor = null;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private roomChannelState: Ably.Types.ChannelStateChange;
@@ -63,20 +62,24 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.auth = this.auth.bind(this);
   }
 
-  private get getMyActor() {
+  public get roomProperties() {
+    return this.localRoomProperties;
+  }
+
+  public get getMyActor() {
     return this.myActor;
   }
 
-  private get host() {
-    return this.actors[this.localRoomProperties?.hostClientId];
-  }
-
-  private get isHost() {
-    return this.localRoomProperties?.hostClientId === this.myActor?.clientId;
+  public get hostClientId() {
+    return this.roomProperties?.hostClientId;
   }
 
   public get getActors(): AblyActors {
     return this.actors;
+  }
+
+  public get userData(): unknown {
+    return this.myActor.data;
   }
 
   public start({
@@ -231,7 +234,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
-    if (this.isMessageTooBig(property)) {
+    if (this.isMessageTooBig(property) || this.isSyncFreezed) {
       return;
     }
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
@@ -283,6 +286,27 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
+   * @function freezeSync
+   * @param {boolean} isFreezed
+   * @returns {void}
+   */
+  public freezeSync = (isFreezed: boolean): void => {
+    this.isSyncFreezed = isFreezed;
+
+    if (isFreezed) {
+      this.roomChannel.detach();
+      this.roomSyncChannel.detach();
+      this.roomBroadcastChannel?.detach();
+      this.roomChannel.unsubscribe();
+      this.roomSyncChannel.unsubscribe();
+      this.roomBroadcastChannel?.unsubscribe();
+      return;
+    }
+
+    this.join(this.myActor.data);
+  };
+
+  /**
    * @function onAblyPresenceEnter
    * @description callback that receives the event that a user has entered the room
    * @param {Ably.Types.PresenceMessage} presenceMessage
@@ -326,7 +350,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceLeave(presenceMessage: Ably.Types.PresenceMessage): void {
-    this.onActorLeave(presenceMessage, false);
+    this.onActorLeave(presenceMessage);
   }
 
   /**
@@ -399,7 +423,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public updateMyProperties = throttle((newProperties: ActorInfo): void => {
     const properties = newProperties;
 
-    if (this.isMessageTooBig(newProperties) || this.left || !this.enableSync) {
+    if (
+      this.isMessageTooBig(newProperties) ||
+      this.left ||
+      !this.enableSync ||
+      this.isSyncFreezed
+    ) {
       return;
     }
     if (properties.avatar === undefined) {
@@ -431,7 +460,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
-    if (this.isMessageTooBig(properties)) {
+    if (this.isMessageTooBig(properties) || this.isSyncFreezed) {
       return;
     }
 
@@ -589,7 +618,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function forceReconnect
+   * @function throw
+   * @param {string} message
    * @returns {void}
    */
   private throw(message: string): void {
@@ -647,12 +677,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private hostPassingHandle = throttle(async (): Promise<void> => {
     this.localRoomProperties = await this.fetchRoomProperties();
 
-    this.roomChannel.presence.get((err, members) => {
-      if (err) {
-        console.error(err);
-      }
-      let hostCandidates = [];
-      hostCandidates = members
+    this.roomChannel.presence.get((_, members) => {
+      const hostCandidates = members
         .filter((member) => {
           return member.data.isHostCandidate;
         })
@@ -684,11 +710,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   findSlotIndex = async (myPresenceParam: Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
     const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
-    await this.roomChannel.presence.get((err, members) => {
+    await this.roomChannel.presence.get((error, members) => {
+      if (error) {
+        return;
+      }
+
       members.forEach((member) => {
-        if (err) {
-          return;
-        }
         if (member.connectionId === myPresence.connectionId) {
           myPresence = member;
         }
@@ -872,7 +899,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
    */
-  private onActorLeave(presence: Ably.Types.PresenceMessage, cleanup: boolean): void {
+  private onActorLeave(presence: Ably.Types.PresenceMessage): void {
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
       return;
     }
