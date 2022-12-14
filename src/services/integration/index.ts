@@ -42,7 +42,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
     this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
 
-    this.onRoomInfoUpdate(this.RealtimeService.localRoomProperties);
+    this.onRoomInfoUpdate(this.RealtimeService.roomProperties);
   }
 
   public get users(): UserOn3D[] {
