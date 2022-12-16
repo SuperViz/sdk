@@ -78,7 +78,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.actors;
   }
 
-  public get userData(): unknown {
+  public get userData(): any {
     return this.myActor.data;
   }
 

@@ -11,8 +11,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isPointersEnabled: boolean;
 
   public adapter: Adapter;
-  public localUser: UserTo3D;
-
   public RealtimeService: AblyRealtimeService;
 
   constructor({
@@ -26,7 +24,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this._isPointersEnabled = isPointersEnabled;
 
     this.adapter = adapter;
-    this.localUser = localUser;
 
     this.RealtimeService = RealtimeService;
 
@@ -113,7 +110,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public createAvatar = (user: UserOn3D): void => {
-    if (this.localUser.id === user.id || !this.isAvatarsEnabled) {
+    if (this.RealtimeService.userData.userId === user.id || !this.isAvatarsEnabled) {
       return;
     }
     this.adapter.createAvatar(user);
@@ -136,7 +133,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public createPointer = (user: UserOn3D): void => {
-    if (this.localUser.id === user.id || !this.isPointersEnabled) {
+    if (this.RealtimeService.userData.userId === user.id || !this.isPointersEnabled) {
       return;
     }
     this.adapter.createPointer(user);
