@@ -33,6 +33,11 @@ export interface Offset {
   right: number;
 }
 
+export interface Locale {
+  locale: string;
+  locales: object;
+}
+
 export enum VideoFrameState {
   UNINITIALIZED,
   INITIALIZING,
