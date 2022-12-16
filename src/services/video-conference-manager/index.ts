@@ -27,6 +27,7 @@ export default class VideoConfereceManager {
   private browserService: BrowserService;
 
   private frameOffset: Offset;
+  private frameLocale: object;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -97,7 +98,6 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       isBroadcast,
       roomId,
-      locales: JSON.stringify(locales),
       language,
     };
 
@@ -122,6 +122,7 @@ export default class VideoConfereceManager {
     this.setFrameOffset(offset);
     this.setFrameStyle(position);
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
+    this.frameLocale = locales;
     window.addEventListener('resize', this.onWindowResize);
   }
 
@@ -169,6 +170,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
+    this.updateFrameLocale();
     this.onWindowResize();
   };
 
@@ -294,6 +296,10 @@ export default class VideoConfereceManager {
     width = width - offsetLeft - offsetRight;
 
     this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
+  };
+
+  private updateFrameLocale = (): void => {
+    this.messageBridge.publish(MeetingEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
   };
 
   /**

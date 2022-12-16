@@ -3,6 +3,7 @@ export enum MeetingEvent {
   FRAME_SIZE_UPDATE = 'frame.size-update',
   FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',
   FRAME_PARENT_SIZE_UPDATE = 'frame.parante-window-size-update',
+  FRAME_LOCALE_UPDATE = 'frame.locales-update',
   MEETING_START = 'meeting.start',
   MEETING_LEAVE = 'meeting.leave',
   MEETING_USER_AMOUNT_UPDATE = 'meeting.amount-of-users-update',
