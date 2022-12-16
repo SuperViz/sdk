@@ -68,6 +68,7 @@ export default class VideoConfereceManager {
       isBroadcast,
       offset,
       canUseDefaultToolbar,
+      locales,
     } = options;
 
     this.browserService = browserService;
@@ -96,6 +97,8 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       isBroadcast,
       roomId,
+      locales: JSON.stringify(locales),
+      language,
     };
 
     wrapper.classList.add('sv_video_wrapper');

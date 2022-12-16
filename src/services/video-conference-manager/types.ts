@@ -18,6 +18,7 @@ export interface VideoManagerOptions {
   browserService: BrowserService;
   isBroadcast: boolean;
   offset?: Offset;
+  locales: object;
 }
 
 export interface WindowSize {

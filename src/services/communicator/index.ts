@@ -58,6 +58,7 @@ class Communicator {
     enableGoTo,
     enableGather,
     defaultToolbar,
+    locales = {},
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -109,6 +110,7 @@ class Communicator {
       browserService: this.browserService,
       isBroadcast,
       offset,
+      locales,
     });
 
     // Realtime observers
