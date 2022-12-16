@@ -69,7 +69,6 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
-    // audience listens to the hosts broadcast channel
     this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
 
     this.createAvatar(userOn3D);
