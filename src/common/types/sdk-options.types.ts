@@ -19,6 +19,4 @@ export interface SuperVizSdkOptions {
   enableGoTo?: boolean;
   enableGather?: boolean;
   defaultToolbar?: boolean;
-
-  locales: object;
 }

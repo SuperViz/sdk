@@ -16,7 +16,7 @@ import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import { VideoFrameState, VideoManagerOptions, FrameSize, Offset, Locale } from './types';
+import { VideoFrameState, VideoManagerOptions, FrameSize, Offset, FrameLocale } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
@@ -27,7 +27,7 @@ export default class VideoConfereceManager {
   private browserService: BrowserService;
 
   private frameOffset: Offset;
-  private frameLocale: Locale;
+  private frameLocale: FrameLocale;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -121,7 +121,10 @@ export default class VideoConfereceManager {
     this.setFrameOffset(offset);
     this.setFrameStyle(position);
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
-    this.frameLocale = { locale: language, locales };
+    this.frameLocale = {
+      language,
+      locales,
+    };
     window.addEventListener('resize', this.onWindowResize);
   }
 

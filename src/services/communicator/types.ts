@@ -1,12 +1,12 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Adapter, AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
 import { AvatarConfig } from '../integration/users/types';
-
-export type Language = 'pt' | 'en' | 'zh';
+import { Locale } from '../video-conference-manager/types';
 
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
-  language?: Language;
+  language?: string;
+  locales: Locale[];
   ablyKey: string;
 }
 

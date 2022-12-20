@@ -58,7 +58,7 @@ class Communicator {
     enableGoTo,
     enableGather,
     defaultToolbar,
-    locales = {},
+    locales,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
