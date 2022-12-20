@@ -1,4 +1,4 @@
-import type { Offset } from '../../services/video-conference-manager/types';
+import type { Locale, Offset } from '../../services/video-conference-manager/types';
 
 import type { User, UserGroup } from './user.types';
 
@@ -19,4 +19,7 @@ export interface SuperVizSdkOptions {
   enableGoTo?: boolean;
   enableGather?: boolean;
   defaultToolbar?: boolean;
+
+  language?: string;
+  locales: Locale[];
 }
