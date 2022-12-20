@@ -300,7 +300,20 @@ export default class VideoConfereceManager {
     this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
 
+  /**
+   * @function updateFrameLocale
+   * @description update default language and locales
+   * @returns {void}
+   */
   private updateFrameLocale = (): void => {
+    const { language, locales } = this.frameLocale;
+    const languages = locales.map((locale) => locale?.language);
+    const availableLanguages = ['pt', 'en', ...languages];
+
+    if (!availableLanguages.includes(language)) {
+      throw new Error('The default language is not available in the language listing.');
+    }
+
     this.messageBridge.publish(MeetingEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
   };
 
