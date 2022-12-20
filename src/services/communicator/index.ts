@@ -110,7 +110,7 @@ class Communicator {
       browserService: this.browserService,
       isBroadcast,
       offset,
-      locales,
+      locales: locales ?? [],
     });
 
     // Realtime observers

@@ -21,5 +21,5 @@ export interface SuperVizSdkOptions {
   defaultToolbar?: boolean;
 
   language?: string;
-  locales: Locale[];
+  locales?: Locale[];
 }
