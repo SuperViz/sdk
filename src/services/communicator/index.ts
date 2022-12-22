@@ -43,7 +43,7 @@ class Communicator {
   constructor({
     apiKey,
     debug = false,
-    language = 'en',
+    language,
     roomId,
     ablyKey,
     userGroup,
