@@ -22,3 +22,7 @@ export type AblyTokenCallBack = (
   error: Ably.Types.ErrorInfo | string,
   tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string,
 ) => void;
+
+export interface UserDataInput {
+  [key: string]: string | number | Array<unknown> | Object;
+}
