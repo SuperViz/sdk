@@ -33,7 +33,7 @@ export interface Offset {
 }
 
 export interface FrameLocale {
-  language: string;
+  language?: string;
   locales: Locale[];
 }
 

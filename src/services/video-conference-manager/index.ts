@@ -308,9 +308,9 @@ export default class VideoConfereceManager {
   private updateFrameLocale = (): void => {
     const { language, locales } = this.frameLocale;
     const languages = locales.map((locale) => locale?.language);
-    const availableLanguages = ['pt', 'en', ...languages];
+    const availableLanguages = ['en', ...languages];
 
-    if (!availableLanguages.includes(language)) {
+    if (language && !availableLanguages.includes(language)) {
       throw new Error('The default language is not available in the language listing.');
     }
 
