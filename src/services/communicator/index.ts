@@ -453,10 +453,10 @@ class Communicator {
     }
 
     if (adapterOptions.avatarConfig) {
-      this.realtime.myActor.data.avatarConfig = adapterOptions.avatarConfig;
+      this.realtime.setUserData({ avatarConfig: adapterOptions.avatarConfig });
     }
     if (this.user.avatar && this.user.avatar.model) {
-      this.realtime.myActor.data.avatar.model = this.user.avatar.model;
+      this.realtime.setUserData({ avatar: { model: this.user.avatar.model } });
     }
 
     let actors = [];

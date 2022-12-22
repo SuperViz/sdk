@@ -8,7 +8,14 @@ import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ActorInfo, StartRealtimeType } from '../base/types';
 
-import { AblyRealtime, AblyActors, AblyRealtimeData, AblyActor, AblyTokenCallBack } from './types';
+import {
+  AblyRealtime,
+  AblyActors,
+  AblyRealtimeData,
+  AblyActor,
+  AblyTokenCallBack,
+  UserDataInput,
+} from './types';
 
 const KICK_USERS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 2000;
@@ -19,7 +26,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private client: Ably.Realtime;
   private actors: AblyActors = {};
   private hostUserId: string = null;
-  public myActor: AblyActor = null;
+  private myActor: AblyActor = null;
 
   private localUserId: string = null;
   private isBroadcast: boolean = false;
@@ -78,8 +85,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.actors;
   }
 
-  public get userData(): unknown {
-    return this.myActor.data;
+  public get user(): unknown {
+    return this.myActor;
   }
 
   public start({
@@ -205,9 +212,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setHost = async (actorUserId: string): Promise<void> => {
-    if (!actorUserId) {
-      return;
-    }
+    if (!actorUserId) return;
+
     const actor = this.actors[actorUserId];
     await this.updateRoomProperties({
       hostClientId: actor.clientId,
@@ -234,9 +240,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
-    if (this.isMessageTooBig(property) || this.isSyncFreezed) {
-      return;
-    }
+    if (this.isMessageTooBig(property) || this.isSyncFreezed) return;
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
       if (!error) return;
 
@@ -307,6 +311,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
+   * @function setUserData
+   * @param {UserDataInput} data
+   * @returns {void}
+   */
+  public setUserData = (data: UserDataInput): void => {
+    this.myActor.data = Object.assign({}, this.myActor.data, data);
+  };
+
+  /**
    * @function onAblyPresenceEnter
    * @description callback that receives the event that a user has entered the room
    * @param {Ably.Types.PresenceMessage} presenceMessage
@@ -327,9 +340,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceUpdate(presenceMessage: Ably.Types.PresenceMessage): void {
-    if (!this.isJoinedRoom) {
-      return;
-    }
+    if (!this.isJoinedRoom) return;
+
     const { clientId } = presenceMessage;
     const user: AblyActor = Object.assign({}, presenceMessage, {
       userId: presenceMessage.clientId,
@@ -431,6 +443,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     ) {
       return;
     }
+
     if (properties.avatar === undefined) {
       delete properties.avatar;
     }
@@ -452,25 +465,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates room properties
    * @returns {void}
    */
-  private updateRoomProperties = async (
-    properties: AblyRealtimeData,
-    merge: boolean = true,
-  ): Promise<void> => {
-    if (!this.enableSync || this.left) {
-      return;
-    }
+  private updateRoomProperties = async (properties: AblyRealtimeData): Promise<void> => {
+    if (this.isMessageTooBig(properties) || this.isSyncFreezed || this.left) return;
 
-    if (this.isMessageTooBig(properties) || this.isSyncFreezed) {
-      return;
-    }
+    const newProperties = {
+      ...this.localRoomProperties,
+      ...properties,
+    };
 
-    let newProperties = properties;
-    if (merge) {
-      newProperties = {
-        ...this.localRoomProperties,
-        ...properties,
-      };
-    }
     await this.roomChannel.publish('update', newProperties);
   };
 
