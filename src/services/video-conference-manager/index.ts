@@ -16,7 +16,7 @@ import { User } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import { VideoFrameState, VideoManagerOptions, FrameSize, Offset } from './types';
+import { VideoFrameState, VideoManagerOptions, FrameSize, Offset, FrameLocale } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
@@ -27,6 +27,7 @@ export default class VideoConfereceManager {
   private browserService: BrowserService;
 
   private frameOffset: Offset;
+  private frameLocale: FrameLocale;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -68,6 +69,7 @@ export default class VideoConfereceManager {
       isBroadcast,
       offset,
       canUseDefaultToolbar,
+      locales,
     } = options;
 
     this.browserService = browserService;
@@ -119,6 +121,10 @@ export default class VideoConfereceManager {
     this.setFrameOffset(offset);
     this.setFrameStyle(position);
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
+    this.frameLocale = {
+      language,
+      locales,
+    };
     window.addEventListener('resize', this.onWindowResize);
   }
 
@@ -166,6 +172,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
+    this.updateFrameLocale();
     this.onWindowResize();
   };
 
@@ -291,6 +298,23 @@ export default class VideoConfereceManager {
     width = width - offsetLeft - offsetRight;
 
     this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
+  };
+
+  /**
+   * @function updateFrameLocale
+   * @description update default language and locales
+   * @returns {void}
+   */
+  private updateFrameLocale = (): void => {
+    const { language, locales } = this.frameLocale;
+    const languages = locales.map((locale) => locale?.language);
+    const availableLanguages = ['en', ...languages];
+
+    if (language && !availableLanguages.includes(language)) {
+      throw new Error('The default language is not available in the language listing.');
+    }
+
+    this.messageBridge.publish(MeetingEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
   };
 
   /**

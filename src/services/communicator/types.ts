@@ -2,11 +2,8 @@ import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Adapter, AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
 import { AvatarConfig } from '../integration/users/types';
 
-export type Language = 'pt' | 'en' | 'zh';
-
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
-  language?: Language;
   ablyKey: string;
 }
 
