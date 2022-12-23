@@ -59,6 +59,7 @@ class Communicator {
     enableGather,
     defaultToolbar,
     locales,
+    avatars,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.userGroup = userGroup;
@@ -111,6 +112,7 @@ class Communicator {
       isBroadcast,
       offset,
       locales: locales ?? [],
+      avatars: avatars ?? [],
     });
 
     // Realtime observers

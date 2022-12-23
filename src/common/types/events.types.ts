@@ -19,6 +19,7 @@ export enum MeetingEvent {
   MEETING_KICK_USERS = 'meeting.kick-all-users',
   MEETING_STATE_UPDATE = 'meeting.state-update',
   MEETING_CONNECTION_STATUS_CHANGE = 'meeting.connection-status-change',
+  MEETING_AVATAR_UPDATE = 'meeting.avatar-update',
   MY_USER_UPDATED = 'my-user.update',
   MY_USER_LEFT = 'my-user.left',
   MY_USER_JOINED = 'my-user.joined',

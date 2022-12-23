@@ -17,7 +17,8 @@ export interface VideoManagerOptions {
   browserService: BrowserService;
   isBroadcast: boolean;
   offset?: Offset;
-  locales: Locale[];
+  locales?: Locale[];
+  avatars?: Avatar[];
 }
 
 export interface WindowSize {
@@ -42,6 +43,11 @@ export interface Locale {
   messages: {
     [key: string]: string;
   };
+}
+
+export interface Avatar {
+  thumb: string;
+  link: string;
 }
 
 export enum VideoFrameState {
