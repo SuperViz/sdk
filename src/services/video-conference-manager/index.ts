@@ -12,7 +12,7 @@ import {
   MeetingControlsEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
-import { User } from '../../common/types/user.types';
+import { User, Avatar } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
@@ -28,6 +28,8 @@ export default class VideoConfereceManager {
 
   private frameOffset: Offset;
   private frameLocale: FrameLocale;
+
+  private meetingAvatars: Avatar[];
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -70,6 +72,7 @@ export default class VideoConfereceManager {
       offset,
       canUseDefaultToolbar,
       locales,
+      avatars,
     } = options;
 
     this.browserService = browserService;
@@ -125,6 +128,7 @@ export default class VideoConfereceManager {
       language,
       locales,
     };
+    this.meetingAvatars = avatars;
     window.addEventListener('resize', this.onWindowResize);
   }
 
@@ -173,6 +177,8 @@ export default class VideoConfereceManager {
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
     this.updateFrameLocale();
+    this.updateMeetingAvatars();
+
     this.onWindowResize();
   };
 
@@ -315,6 +321,15 @@ export default class VideoConfereceManager {
     }
 
     this.messageBridge.publish(MeetingEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
+  };
+
+  /**
+   * @function updateMeetingAvatar
+   * @description update list of avatars
+   * @returns {void}
+   */
+  private updateMeetingAvatars = (): void => {
+    this.messageBridge.publish(MeetingEvent.MEETING_AVATAR_LIST_UPDATE, this.meetingAvatars);
   };
 
   /**
