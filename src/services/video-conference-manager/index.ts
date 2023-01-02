@@ -184,7 +184,7 @@ export default class VideoConfereceManager {
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
     this.updateFrameLocale();
-    this.updateMeetingAvatar();
+    this.updateMeetingAvatars();
 
     this.onWindowResize();
   };
@@ -335,8 +335,8 @@ export default class VideoConfereceManager {
    * @description update list of avatars
    * @returns {void}
    */
-  private updateMeetingAvatar = (): void => {
-    this.messageBridge.publish(MeetingEvent.MEETING_AVATAR_UPDATE, this.meetingAvatars);
+  private updateMeetingAvatars = (): void => {
+    this.messageBridge.publish(MeetingEvent.MEETING_AVATARS_UPDATE, this.meetingAvatars);
   };
 
   /**
