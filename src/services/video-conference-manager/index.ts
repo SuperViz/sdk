@@ -12,18 +12,11 @@ import {
   MeetingControlsEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
-import { User } from '../../common/types/user.types';
+import { User, Avatar } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import {
-  VideoFrameState,
-  VideoManagerOptions,
-  FrameSize,
-  Offset,
-  FrameLocale,
-  Avatar,
-} from './types';
+import { VideoFrameState, VideoManagerOptions, FrameSize, Offset, FrameLocale } from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
@@ -336,7 +329,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private updateMeetingAvatars = (): void => {
-    this.messageBridge.publish(MeetingEvent.MEETING_AVATARS_UPDATE, this.meetingAvatars);
+    this.messageBridge.publish(MeetingEvent.MEETING_AVATAR_LIST_UPDATE, this.meetingAvatars);
   };
 
   /**

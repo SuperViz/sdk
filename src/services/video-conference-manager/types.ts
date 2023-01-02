@@ -1,4 +1,5 @@
 import { FramePosition } from '../../common/types/sdk-options.types';
+import type { Avatar } from '../../common/types/user.types';
 import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
@@ -43,11 +44,6 @@ export interface Locale {
   messages: {
     [key: string]: string;
   };
-}
-
-export interface Avatar {
-  thumb: string;
-  link: string;
 }
 
 export enum VideoFrameState {

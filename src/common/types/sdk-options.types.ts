@@ -1,6 +1,6 @@
-import type { Locale, Avatar, Offset } from '../../services/video-conference-manager/types';
+import type { Locale, Offset } from '../../services/video-conference-manager/types';
 
-import type { User, UserGroup } from './user.types';
+import type { User, UserGroup, Avatar } from './user.types';
 
 export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 export interface SuperVizSdkOptions {
