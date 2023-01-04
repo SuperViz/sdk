@@ -1,11 +1,11 @@
 import { FramePosition } from '../../common/types/sdk-options.types';
+import type { Avatar } from '../../common/types/user.types';
 import { BrowserService } from '../browser';
-import { Language } from '../communicator/types';
 
 export interface VideoManagerOptions {
   apiKey: string;
   debug: boolean;
-  language: Language;
+  language?: string;
   roomId: string;
   canUseCams: boolean;
   canUseScreenshare: boolean;
@@ -18,6 +18,8 @@ export interface VideoManagerOptions {
   browserService: BrowserService;
   isBroadcast: boolean;
   offset?: Offset;
+  locales?: Locale[];
+  avatars?: Avatar[];
 }
 
 export interface WindowSize {
@@ -30,6 +32,18 @@ export interface Offset {
   bottom: number;
   left: number;
   right: number;
+}
+
+export interface FrameLocale {
+  language?: string;
+  locales: Locale[];
+}
+
+export interface Locale {
+  language: string;
+  messages: {
+    [key: string]: string;
+  };
 }
 
 export enum VideoFrameState {

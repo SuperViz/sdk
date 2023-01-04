@@ -42,7 +42,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
     this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
 
-    this.onRoomInfoUpdate(this.RealtimeService.localRoomProperties);
+    this.onRoomInfoUpdate(this.RealtimeService.roomProperties);
   }
 
   public get users(): UserOn3D[] {
@@ -60,12 +60,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   public addUser = (user: UserTo3D): void => {
-    if (!user || !user.id) {
-      return;
-    }
-    if (user.isAudience) {
-      return;
-    }
+    if (!user || !user.id || user.isAudience) return;
+
     const userOn3D = this.IntegrationUsersService.createUserOn3D(user);
 
     this.IntegrationUsersService.addUserToList(userOn3D);
@@ -180,11 +176,11 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onActorLeave = (actor): void => {
+    if (!this.users?.length) return;
+
     const user = this.users.find((user) => user.id === actor.clientId);
 
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     this.removeUser(user, true);
   };
@@ -217,6 +213,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
    * @returns {void}
    */
   private onRoomInfoUpdate = (room: AblyRealtimeData): void => {
+    if (!room) return;
     const { gather, hostClientId, followUserId } = room;
     this.followUserId = followUserId;
     if (gather) {

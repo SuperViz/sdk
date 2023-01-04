@@ -7,6 +7,7 @@ import { DefaultConnectionService, WindowConnectionStatus } from './types';
 
 export class ConnectionService implements DefaultConnectionService {
   connectionStatus: MeetingConnectionStatus;
+  oldConnectionStatus: MeetingConnectionStatus;
 
   connectionStatusObserver = new ObserverHelper({ logger });
 
@@ -41,6 +42,7 @@ export class ConnectionService implements DefaultConnectionService {
    * @returns {void}
    */
   public updateMeetingConnectionStatus = (newStatus: MeetingConnectionStatus): void => {
+    this.oldConnectionStatus = this.connectionStatus;
     this.connectionStatus = newStatus;
     this.connectionStatusObserver.publish(newStatus);
 
@@ -58,11 +60,10 @@ export class ConnectionService implements DefaultConnectionService {
     const status: WindowConnectionStatus = type as WindowConnectionStatus;
 
     if (status === 'online') {
-      this.connectionStatusObserver.publish(this.connectionStatus);
-    } else {
-      this.connectionStatusObserver.publish(MeetingConnectionStatus.DISCONNECTED);
+      this.updateMeetingConnectionStatus(MeetingConnectionStatus.GOOD);
+      return;
     }
 
-    logger.log('CONNECTION STATUS CHANGE', type);
+    this.updateMeetingConnectionStatus(MeetingConnectionStatus.DISCONNECTED);
   };
 }
