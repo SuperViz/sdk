@@ -28,6 +28,7 @@ export enum MeetingEvent {
 }
 
 export enum MeetingControlsEvent {
+  TOGGLE_MEETING_CHAT = 'meeting-controls.toggle-chat',
   TOGGLE_MEETING_SETUP = 'meeting-controls.toggle-setup',
   TOGGLE_MICROPHONE = 'meeting-controle.toggle-microphone',
   TOGGLE_CAM = 'meeting-controle.toggle-cam',
