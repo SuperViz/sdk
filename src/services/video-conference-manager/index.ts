@@ -574,6 +574,14 @@ export default class VideoConfereceManager {
   }
 
   /**
+   * @funciton toggleChat
+   * @returns {void}
+   */
+  public toggleChat(): void {
+    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
+  }
+
+  /**
    * @funciton toggleMeetingSetup
    * @returns {void}
    */
