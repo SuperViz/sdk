@@ -108,7 +108,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public createAvatar = (user: UserOn3D): void => {
     const isOwnAvatar = user.id === this._localUser.id;
-    if ((isOwnAvatar && !!user.avatarConfig?.hideOwnAvatar) || !this._isAvatarsEnabled) {
+    if ((isOwnAvatar && !user.avatarConfig?.renderLocalAvatar) || !this._isAvatarsEnabled) {
       return;
     }
     this.destroyAvatar(user);
@@ -134,7 +134,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   public createPointer = (user: UserOn3D): void => {
     const isOwnAvatar = user.id === this._localUser.id;
     if (
-      (isOwnAvatar && !!user.avatarConfig?.hideOwnAvatar) ||
+      (isOwnAvatar && !user.avatarConfig?.renderLocalAvatar) ||
       !this._isAvatarsEnabled ||
       !this._isPointersEnabled
     ) {
