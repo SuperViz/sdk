@@ -8,6 +8,8 @@ export interface DefaultUsersOn3DManager {
 export interface AvatarConfig {
   height: number;
   scale: number;
+  localAvatarPivotPoint?: UserPosition;
+  renderLocalAvatar?: boolean;
 }
 
 export interface UserTo3D {

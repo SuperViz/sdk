@@ -211,6 +211,14 @@ class Communicator {
   };
 
   /**
+   * @funciton toggleChat
+   * @returns {void}
+   */
+  public toggleChat(): void {
+    this.videoManager.toggleChat();
+  }
+
+  /**
    * @funciton toggleMeetingSetup
    * @returns {void}
    */
@@ -522,6 +530,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     toggleCam: () => communicator.toggleCam(),
     toggleScreenShare: () => communicator.toggleScreenShare(),
     hangUp: () => communicator.hangUp(),
+    toggleChat: () => communicator.toggleChat(),
 
     connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
     disconnectAdapter: () => communicator.disconnectAdapter(),

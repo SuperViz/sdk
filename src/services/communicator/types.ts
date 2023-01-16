@@ -22,6 +22,7 @@ export type SuperVizSdk = {
   toggleScreenShare: () => void;
   hangUp: () => void;
   toggleCam: () => void;
+  toggleChat: () => void;
 
   connectAdapter: (adapter: Adapter, props: AdapterOptions) => AdapterMethods;
   disconnectAdapter: () => void;

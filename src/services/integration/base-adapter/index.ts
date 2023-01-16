@@ -1,7 +1,7 @@
 import { AdapterOptions } from '../../communicator/types';
 import { AblyRealtimeService } from '../../realtime';
 import { SyncProperty } from '../../realtime/base/types';
-import { UserOn3D } from '../users/types';
+import { UserOn3D, UserTo3D } from '../users/types';
 
 import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
 
@@ -10,7 +10,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   private _isPointersEnabled: boolean;
 
   public adapter: Adapter;
-
+  private _localUser: UserTo3D;
   public RealtimeService: AblyRealtimeService;
 
   constructor({
@@ -24,6 +24,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     this._isPointersEnabled = isPointersEnabled;
 
     this.adapter = adapter;
+    this._localUser = localUser;
 
     this.RealtimeService = RealtimeService;
 
@@ -70,7 +71,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public enableAvatars = (): void => {
     this._isAvatarsEnabled = true;
-    this.adapter.enableAvatars();
   };
 
   /**
@@ -80,7 +80,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public disableAvatars = (): void => {
     this._isAvatarsEnabled = false;
-    this.adapter.disableAvatars();
   };
 
   /**
@@ -90,7 +89,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public enablePointers = (): void => {
     this._isPointersEnabled = true;
-    this.adapter.enablePointers();
   };
 
   /**
@@ -100,7 +98,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    */
   public disablePointers = (): void => {
     this._isPointersEnabled = false;
-    this.adapter.disablePointers();
   };
 
   /**
@@ -110,6 +107,11 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public createAvatar = (user: UserOn3D): void => {
+    const isOwnAvatar = user.id === this._localUser.id;
+    if ((isOwnAvatar && !user.avatarConfig?.renderLocalAvatar) || !this._isAvatarsEnabled) {
+      return;
+    }
+    this.destroyAvatar(user);
     this.adapter.createAvatar(user);
   };
 
@@ -130,6 +132,15 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public createPointer = (user: UserOn3D): void => {
+    const isOwnAvatar = user.id === this._localUser.id;
+    if (
+      (isOwnAvatar && !user.avatarConfig?.renderLocalAvatar) ||
+      !this._isAvatarsEnabled ||
+      !this._isPointersEnabled
+    ) {
+      return;
+    }
+    this.destroyPointer(user);
     this.adapter.createPointer(user);
   };
 
