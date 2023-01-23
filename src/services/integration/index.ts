@@ -49,6 +49,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     return this.IntegrationUsersService.users;
   }
 
+  public get getAvatars(): Object {
+    return this.adapter?.getAvatars();
+  }
+
   public get localUser(): UserOn3D {
     return this.IntegrationUsersService.user;
   }
