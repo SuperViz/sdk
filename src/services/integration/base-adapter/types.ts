@@ -22,6 +22,7 @@ export interface AdapterMethods {
   enablePointers: () => void;
   disablePointers: () => void;
   getUsersOn3D: () => UserOn3D[];
+  getAvatars: () => {};
 }
 
 export type Adapter = {
@@ -38,6 +39,7 @@ export type Adapter = {
   gather: (hostId: string) => void;
   init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
   destroy: () => void;
+  getAvatars: () => {};
 };
 
 export interface RealtimeAdapterMethods {
