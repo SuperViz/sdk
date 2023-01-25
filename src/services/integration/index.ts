@@ -14,6 +14,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
+    isNameEnabled,
+    renderLocalAvatar,
     adapter,
 
     RealtimeService,
@@ -30,6 +32,8 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       RealtimeService,
       isAvatarsEnabled: avatars,
       isPointersEnabled: pointers,
+      isNameEnabled,
+      renderLocalAvatar,
       localUser,
       avatarConfig,
     });
@@ -47,6 +51,10 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
 
   public get users(): UserOn3D[] {
     return this.IntegrationUsersService.users;
+  }
+
+  public get getAvatars(): Object {
+    return this.adapter?.getAvatars();
   }
 
   public get localUser(): UserOn3D {

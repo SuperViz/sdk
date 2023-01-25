@@ -9,6 +9,8 @@ export interface DefaultAdapterManager {
 export interface DefaultAdapterOptions {
   isAvatarsEnabled?: boolean;
   isPointersEnabled?: boolean;
+  isNameEnabled?: boolean;
+  renderLocalAvatar?: boolean;
 
   // Adapter settings
   adapter: Adapter;
@@ -22,6 +24,7 @@ export interface AdapterMethods {
   enablePointers: () => void;
   disablePointers: () => void;
   getUsersOn3D: () => UserOn3D[];
+  getAvatars: () => {};
 }
 
 export type Adapter = {
@@ -29,6 +32,7 @@ export type Adapter = {
   createPointer: (user: UserOn3D) => void;
   destroyPointer: (user: UserOn3D) => void;
   createAvatar: (user: UserOn3D) => void;
+  createName: (user: UserOn3D, model) => void;
   destroyAvatar: (user: UserOn3D) => void;
   enableAvatars: () => void;
   disableAvatars: () => void;
@@ -38,6 +42,7 @@ export type Adapter = {
   gather: (hostId: string) => void;
   init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
   destroy: () => void;
+  getAvatars: () => {};
 };
 
 export interface RealtimeAdapterMethods {

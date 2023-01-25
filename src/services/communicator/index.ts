@@ -505,6 +505,7 @@ class Communicator {
       enablePointers: this.integrationManager.enablePointers,
       disablePointers: this.integrationManager.disablePointers,
       getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
+      getAvatars: () => this.integrationManager.getAvatars,
     };
   }
 
