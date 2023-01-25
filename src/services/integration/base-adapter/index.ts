@@ -8,6 +8,8 @@ import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
 export class BaseAdapterManager implements DefaultAdapterManager {
   private _isAvatarsEnabled: boolean;
   private _isPointersEnabled: boolean;
+  private _isNameEnabled: boolean;
+  private _renderLocalAvatar: boolean;
 
   public adapter: Adapter;
   private _localUser: UserTo3D;
@@ -16,12 +18,16 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   constructor({
     isAvatarsEnabled,
     isPointersEnabled,
+    isNameEnabled,
+    renderLocalAvatar,
     adapter,
     RealtimeService,
     localUser,
   }: AdapterOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
+    this._renderLocalAvatar = renderLocalAvatar;
+    this._isNameEnabled = isNameEnabled;
 
     this.adapter = adapter;
     this._localUser = localUser;
@@ -100,13 +106,17 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @param {UserOn3D} user;
    * @returns {void}
    */
-  public createAvatar = (user: UserOn3D): void => {
+  public createAvatar = async (user: UserOn3D): Promise<void> => {
     const isOwnAvatar = user.id === this._localUser.id;
-    if ((isOwnAvatar && !user.avatarConfig?.renderLocalAvatar) || !this._isAvatarsEnabled) {
+    if ((isOwnAvatar && !this._renderLocalAvatar) || !this._isAvatarsEnabled) {
       return;
     }
     this.destroyAvatar(user);
-    this.adapter.createAvatar(user);
+    const model = await this.adapter.createAvatar(user);
+
+    if (this._isNameEnabled && this.adapter.createName) {
+      this.adapter.createName(user, model);
+    }
   };
 
   /**
@@ -128,7 +138,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
   public createPointer = (user: UserOn3D): void => {
     const isOwnAvatar = user.id === this._localUser.id;
     if (
-      (isOwnAvatar && !user.avatarConfig?.renderLocalAvatar) ||
+      (isOwnAvatar && !this._renderLocalAvatar) ||
       !this._isAvatarsEnabled ||
       !this._isPointersEnabled
     ) {
