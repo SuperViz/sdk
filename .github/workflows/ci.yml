@@ -4,15 +4,16 @@ on:
     branches:
       - main
       - dev
+      - beta
 jobs:
   development:
-    if: "github.ref == 'refs/heads/dev'"
+    if: "github.ref == 'refs/heads/beta'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.x'
+          node-version: '16.x'
       - name: create environment files
         env:
           DEPLOY_ENV_FILE: ${{ secrets.DEPLOY_DEV_ENV_FILE }}
@@ -32,7 +33,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: git config --global user.name SuperViz
       - run: git config --global user.email ci@superviz.com
-      - run: yarn release:dev
+      - run: yarn ci
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
@@ -41,7 +42,7 @@ jobs:
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm whoami && npm publish
+        run: npm whoami && npm semantic-release
   main:
     if: "github.ref == 'refs/heads/main'"
     runs-on: ubuntu-latest
