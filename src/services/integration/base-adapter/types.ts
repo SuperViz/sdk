@@ -9,6 +9,8 @@ export interface DefaultAdapterManager {
 export interface DefaultAdapterOptions {
   isAvatarsEnabled?: boolean;
   isPointersEnabled?: boolean;
+  isNameEnabled?: boolean;
+  renderLocalAvatar?: boolean;
 
   // Adapter settings
   adapter: Adapter;
@@ -30,6 +32,7 @@ export type Adapter = {
   createPointer: (user: UserOn3D) => void;
   destroyPointer: (user: UserOn3D) => void;
   createAvatar: (user: UserOn3D) => void;
+  createName: (user: UserOn3D, model) => void;
   destroyAvatar: (user: UserOn3D) => void;
   enableAvatars: () => void;
   disableAvatars: () => void;
