@@ -28,12 +28,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
 
     this.RealtimeService = RealtimeService;
 
-    if (!this.isAvatarsEnabled) {
-      this.adapter.disableAvatars();
-    }
-    if (!this.isPointersEnabled) {
-      this.adapter.disablePointers();
-    }
     this.adapter.init(
       {
         setSyncProperty: <T>(name: string, property: T) => {
