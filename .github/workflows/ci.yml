@@ -39,10 +39,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish npm package
+        run: npm whoami && npm run semantic-release
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm whoami && npm run semantic-release
   main:
     if: "github.ref == 'refs/heads/main'"
     runs-on: ubuntu-latest
