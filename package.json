@@ -4,6 +4,7 @@
   "description": "SuperViz SDK",
   "main": "dist/index.js",
   "scripts": {
+    "prepare": "husky install",
     "build": "node ./.esbuild/build.js",
     "postbuild": "tsc --emitDeclarationOnly --declaration",
     "watch": "concurrently -n code,types \"yarn watch:code\" \"yarn watch:types\"",
@@ -36,6 +37,8 @@
   },
   "homepage": "https://github.com/SuperViz/sdk#readme",
   "devDependencies": {
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
     "@playwright/test": "^1.28.1",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
@@ -46,6 +49,7 @@
     "eslint": "^7.32.0 || ^8.2.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.2",
+    "husky": "^8.0.3",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
     "semantic-release": "19.0.5",
@@ -71,6 +75,12 @@
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }
 }
