@@ -107,6 +107,10 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public createAvatar = async (user: UserOn3D): Promise<void> => {
+    if (!user.avatarConfig) {
+      return;
+    }
+
     const isOwnAvatar = user.id === this._localUser.id;
     if ((isOwnAvatar && !this._renderLocalAvatar) || !this._isAvatarsEnabled) {
       return;
@@ -136,6 +140,9 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public createPointer = (user: UserOn3D): void => {
+    if (!user.avatarConfig) {
+      return;
+    }
     const isOwnAvatar = user.id === this._localUser.id;
     if (
       (isOwnAvatar && !this._renderLocalAvatar) ||

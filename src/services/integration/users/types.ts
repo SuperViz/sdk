@@ -8,6 +8,7 @@ export interface DefaultUsersOn3DManager {
 export interface AvatarConfig {
   height: number;
   scale: number;
+  pointerOrigin: Position;
 }
 
 export interface UserTo3D {
@@ -19,17 +20,17 @@ export interface UserTo3D {
 }
 
 export interface UserOn3D extends UserTo3D {
-  position: UserPosition;
-  rotation: UserRotation;
+  position: Position;
+  rotation: Rotation;
 }
 
-export type UserPosition = {
+export type Position = {
   x: number;
   y: number;
   z: number;
 };
 
-export type UserRotation = {
+export type Rotation = {
   x: number;
   y: number;
 };
