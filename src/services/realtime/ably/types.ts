@@ -1,7 +1,6 @@
 import type Ably from 'ably';
 
-import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { DefaultRealtimeMethods, SyncProperty } from '../base/types';
+import { DefaultRealtimeMethods } from '../base/types';
 
 export interface AblyRealtime extends DefaultRealtimeMethods {}
 

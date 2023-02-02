@@ -150,9 +150,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function Join
-   * @param {ActorInfo} actor
    * @description join realtime room
    * @returns {void}
+   * @param joinProperties
    */
   public join(joinProperties: ActorInfo): void {
     logger.log('REALTIME', `Entering room. Room ID: ${this.roomId}`);
@@ -887,8 +887,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onActorJoin
-   * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
+   * @param presence
    */
   private onActorJoin = async (presence: Ably.Types.PresenceMessage): Promise<void> => {
     this.actorJoinedObserver.publish(presence);
@@ -898,8 +898,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onActorLeave
-   * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
+   * @param presence
    */
   private onActorLeave(presence: Ably.Types.PresenceMessage): void {
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
