@@ -1,6 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { Avatar, User } from '../../../common/types/user.types';
+import { User } from '../../../common/types/user.types';
 
 export interface DefaultRealtimeService {
   actorObservers: ObserverHelper[];
@@ -28,7 +28,6 @@ export interface DefaultRealtimeMethods {
 }
 
 export interface RealtimeJoinOptions {
-  isHostCandidate: boolean;
   isAudience: boolean;
   name: string;
 }

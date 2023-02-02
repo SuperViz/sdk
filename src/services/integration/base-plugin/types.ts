@@ -1,24 +1,24 @@
 import { AblyRealtimeService } from '../../realtime';
-import { UserOn3D, UserTo3D, AvatarConfig } from '../users/types';
+import { UserOn3D, UserTo3D } from '../users/types';
 
-export interface DefaultAdapterManager {
+export interface DefaultPluginManager {
   isAvatarsEnabled: boolean;
   isPointersEnabled: boolean;
 }
 
-export interface DefaultAdapterOptions {
+export interface DefaultPluginOptions {
   isAvatarsEnabled?: boolean;
   isPointersEnabled?: boolean;
   isNameEnabled?: boolean;
   renderLocalAvatar?: boolean;
 
-  // Adapter settings
-  adapter: Adapter;
+  // Plugin settings
+  plugin: Plugin;
   localUser: UserTo3D;
   RealtimeService: AblyRealtimeService;
 }
 
-export interface AdapterMethods {
+export interface PluginMethods {
   enableAvatars: () => void;
   disableAvatars: () => void;
   enablePointers: () => void;
@@ -27,7 +27,7 @@ export interface AdapterMethods {
   getAvatars: () => {};
 }
 
-export type Adapter = {
+export type Plugin = {
   setSyncProperty: <T>(name: string, property: T) => void;
   createPointer: (user: UserOn3D) => void;
   destroyPointer: (user: UserOn3D) => void;
@@ -40,12 +40,12 @@ export type Adapter = {
   disablePointers: () => void;
   goToUser: (userId: string) => void;
   gather: (hostId: string) => void;
-  init: (methods: RealtimeAdapterMethods, localUser: UserTo3D) => void;
+  init: (methods: RealtimePluginMethods, localUser: UserTo3D) => void;
   destroy: () => void;
   getAvatars: () => {};
 };
 
-export interface RealtimeAdapterMethods {
+export interface RealtimePluginMethods {
   subscribeToActorUpdate: (id: string, callback: Function) => void;
   unsubscribeToActorUpdate: (id: string, callback: Function) => void;
   updateMyProperties: <T>(properties: T) => void;

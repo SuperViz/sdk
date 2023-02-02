@@ -1,9 +1,13 @@
+export enum UserType {
+  HOST = 'host',
+  GUEST = 'guest',
+  AUDIENCE = 'audience'
+}
+
 export interface User {
   id?: string;
   name?: string;
-  isHost?: boolean;
-  isHostCandidate?: boolean;
-  isAudience?: boolean;
+  type?: UserType
   color?: string;
   avatar?: Avatar;
 }

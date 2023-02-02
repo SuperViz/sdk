@@ -14,14 +14,14 @@ import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
-import { Adapter, AdapterMethods } from '../integration/base-adapter/types';
+import { Plugin, PluginMethods } from '../integration/base-plugin/types';
 import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
 import { ActorInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorOptions, AdapterOptions } from './types';
+import { SuperVizSdk, CommunicatorOptions, PluginOptions } from './types';
 
 const PACKAGE_JSON = require('../../../package.json');
 
@@ -39,6 +39,7 @@ class Communicator {
   private user: User;
   private hasJoined: Boolean = false;
   private userList: User[] = [];
+  private isBroadcast: boolean = false;
 
   constructor({
     apiKey,
@@ -49,7 +50,6 @@ class Communicator {
     userGroup,
     user,
     shouldKickUsersOnHostLeave,
-    isBroadcast,
     camsOff,
     screenshareOff,
     defaultAvatars,
@@ -109,7 +109,6 @@ class Communicator {
       roomId,
       position: framePosition,
       browserService: this.browserService,
-      isBroadcast,
       offset,
       locales: locales ?? [],
       avatars: avatars ?? [],
@@ -131,12 +130,16 @@ class Communicator {
       roomId: this.roomId,
       apiKey,
       shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
-      isBroadcast,
+      isBroadcast: this.isBroadcast,
     });
   }
 
   private get isIntegrationManagerInitializated(): boolean {
     return !!this.integrationManager;
+  }
+
+  private checkBroadcastMode(): void {
+    this.isBroadcast = this.userList.some((user) => user.type === 'audience');
   }
 
   public start() {
@@ -151,7 +154,7 @@ class Communicator {
 
   public destroy() {
     this.publish(MeetingEvent.DESTROY, undefined);
-    this.disconnectAdapter();
+    this.unloadPlugin();
 
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
     this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
@@ -380,7 +383,7 @@ class Communicator {
         color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
         avatarConfig: actor.data.avatarConfig,
         avatar: actor.data.avatar,
-        isHostCandidate: actor.data.isHostCandidate,
+        type: actor.data.type,
         name: actor.data.name,
         isHost: this.realtime.hostClientId === actor.clientId,
       });
@@ -402,6 +405,7 @@ class Communicator {
   };
 
   private onUserJoined = (user: User): void => {
+    this.checkBroadcastMode();
     this.publish(MeetingEvent.MEETING_USER_JOINED, user);
   };
 
@@ -459,13 +463,13 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
   };
 
-  public connectAdapter(adapter: Adapter, adapterOptions: AdapterOptions): AdapterMethods {
+  public loadPlugin(plugin: Plugin, pluginOptions: PluginOptions): PluginMethods {
     if (this.isIntegrationManagerInitializated) {
-      throw new Error('the 3D adapter has already been started');
+      throw new Error('the 3D plugin has already been started');
     }
 
-    if (adapterOptions.avatarConfig) {
-      this.realtime.setUserData({ avatarConfig: adapterOptions.avatarConfig });
+    if (pluginOptions.avatarConfig) {
+      this.realtime.setUserData({ avatarConfig: pluginOptions.avatarConfig });
     }
     if (this.user.avatar && this.user.avatar.model) {
       this.realtime.setUserData({ avatar: { model: this.user.avatar.model } });
@@ -476,13 +480,13 @@ class Communicator {
       actors = Object.values(this.realtime.getActors);
     }
     this.integrationManager = new IntegrationManager({
-      adapter,
-      ...adapterOptions,
+      plugin,
+      ...pluginOptions,
       localUser: {
         id: this.user.id,
         name: this.user.name,
         avatar: this.user.avatar,
-        avatarConfig: adapterOptions.avatarConfig,
+        avatarConfig: pluginOptions.avatarConfig,
       },
       userList: actors.map((actor) => {
         const id = actor.clientId;
@@ -509,9 +513,9 @@ class Communicator {
     };
   }
 
-  public disconnectAdapter(): void {
+  public unloadPlugin(): void {
     if (this.integrationManager) {
-      this.integrationManager.adapter.destroy();
+      this.integrationManager.plugin.destroy();
       this.integrationManager = null;
     }
   }
@@ -533,7 +537,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     hangUp: () => communicator.hangUp(),
     toggleChat: () => communicator.toggleChat(),
 
-    connectAdapter: (adapter, props) => communicator.connectAdapter(adapter, props),
-    disconnectAdapter: () => communicator.disconnectAdapter(),
+    loadPlugin: (plugin, props) => communicator.loadPlugin(plugin, props),
+    unloadPlugin: () => communicator.unloadPlugin(),
   };
 };

@@ -16,7 +16,6 @@ export interface VideoManagerOptions {
   canUseDefaultToolbar: boolean;
   position: FramePosition;
   browserService: BrowserService;
-  isBroadcast: boolean;
   offset?: Offset;
   locales?: Locale[];
   avatars?: Avatar[];

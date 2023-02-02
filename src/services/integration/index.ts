@@ -2,12 +2,12 @@ import { isEqual } from 'lodash';
 
 import { AblyRealtimeData } from '../realtime/ably/types';
 
-import { BaseAdapterManager } from './base-adapter';
+import { BasePluginManager } from './base-plugin';
 import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationUsersManager } from './users';
 import { UserTo3D, UserOn3D } from './users/types';
 
-export class IntegrationManager extends BaseAdapterManager implements DefaultIntegrationManager {
+export class IntegrationManager extends BasePluginManager implements DefaultIntegrationManager {
   private IntegrationUsersService: IntegrationUsersManager;
   private followUserId = null;
 
@@ -16,19 +16,18 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     isPointersEnabled,
     isNameEnabled,
     renderLocalAvatar,
-    adapter,
-
+    plugin,
     RealtimeService,
     avatarConfig,
     localUser,
     userList,
   }: DefaultIntegrationManagerOptions) {
-    // Adapter manager
+    // Plugin manager
     const avatars = isAvatarsEnabled ?? true;
     const pointers = isPointersEnabled ?? true;
 
     super({
-      adapter,
+      plugin,
       RealtimeService,
       isAvatarsEnabled: avatars,
       isPointersEnabled: pointers,
@@ -54,7 +53,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
   }
 
   public get getAvatars(): Object {
-    return this.adapter?.getAvatars();
+    return this.plugin?.getAvatars();
   }
 
   public get localUser(): UserOn3D {
@@ -209,7 +208,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
       avatarConfig,
     });
     if (this.followUserId) {
-      this.adapter.goToUser(this.followUserId);
+      this.plugin.goToUser(this.followUserId);
     }
   };
 
@@ -224,7 +223,7 @@ export class IntegrationManager extends BaseAdapterManager implements DefaultInt
     const { gather, hostClientId, followUserId } = room;
     this.followUserId = followUserId;
     if (gather) {
-      this.adapter.goToUser(hostClientId);
+      this.plugin.goToUser(hostClientId);
     }
   };
 }

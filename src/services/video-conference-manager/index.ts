@@ -68,7 +68,6 @@ export default class VideoConfereceManager {
       canUseGather,
       position,
       browserService,
-      isBroadcast,
       offset,
       canUseDefaultToolbar,
       locales,
@@ -99,7 +98,6 @@ export default class VideoConfereceManager {
       canUseDefaultAvatars,
       camerasOrientation,
       canUseDefaultToolbar,
-      isBroadcast,
       roomId,
     };
 
@@ -374,9 +372,9 @@ export default class VideoConfereceManager {
 
   /**
    * @function onUserAvatarChange
-   * @param {avatarLink} string
    * @description update user avatar
    * @returns {void}
+   * @param avatarLink
    */
   private onUserAvatarChange = (avatarLink: string): void => {
     this.userAvatarObserver.publish(avatarLink);

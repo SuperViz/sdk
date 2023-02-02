@@ -3,19 +3,13 @@ import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { UserType } from '../../../common/types/user.types';
 import { logger } from '../../../common/utils';
 import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ActorInfo, StartRealtimeType } from '../base/types';
 
-import {
-  AblyRealtime,
-  AblyActors,
-  AblyRealtimeData,
-  AblyActor,
-  AblyTokenCallBack,
-  UserDataInput,
-} from './types';
+import { AblyActor, AblyActors, AblyRealtime, AblyRealtimeData, AblyTokenCallBack, UserDataInput } from './types';
 
 const KICK_USERS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 2000;
@@ -106,7 +100,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       id: null,
     };
     this.isBroadcast = isBroadcast;
-    this.enableSync = !initialActorData.isAudience;
+    this.enableSync = initialActorData.type !== UserType.AUDIENCE;
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
     this.localUserId = this.myActor.data.userId;
 
@@ -150,9 +144,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function Join
-   * @param {ActorInfo} actor
    * @description join realtime room
    * @returns {void}
+   * @param joinProperties
    */
   public join(joinProperties: ActorInfo): void {
     logger.log('REALTIME', `Entering room. Room ID: ${this.roomId}`);
@@ -316,6 +310,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setUserData = (data: UserDataInput): void => {
+    console.log('this.myActor.data', this.myActor.data);
     this.myActor.data = Object.assign({}, this.myActor.data, data);
   };
 
@@ -428,7 +423,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function updateMyProperties
-   * @param {ActorInfo | RealtimeJoinOptions} actorInfo
+   * @param {ActorInfo} actorInfo
    * @description updates local actor properties
    * @returns {void}
    */
@@ -523,8 +518,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     await this.roomChannel.presence.get((_, members) => {
       members.forEach((member) => {
-        const actor: AblyActor = { ...member };
-        actors[member.clientId] = actor;
+        actors[member.clientId] = { ...member };
       });
       this.actors = actors;
       this.actorsObserver.publish(this.actors);
@@ -585,7 +579,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     // set host to me if im candidate
-    if (this.myActor?.data.isHostCandidate) {
+    if (this.myActor?.data.user.type) {
       roomProperties.hostClientId = this.myActor.data.userId;
     }
     await this.updateActors();
@@ -682,7 +676,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomChannel.presence.get((_, members) => {
       const hostCandidates = members
         .filter((member) => {
-          return member.data.isHostCandidate;
+          // @Todo: change for use enum
+          return member.data.type === 'host';
         })
         .map((member) => member.clientId);
 
@@ -864,13 +859,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       await this.findSlotIndex(myPresence);
     }
     const isNewRoom = !this.localRoomProperties;
+    console.log('this.myActor.data', this.myActor.data);
     if (isNewRoom) {
       await this.initializeRoomProperties(myPresence);
     } else {
       await this.updateActors();
       if (this.localRoomProperties?.hostClientId) {
         await this.updateHostInfo(this.localRoomProperties?.hostClientId);
-      } else if (this.myActor.data.isHostCandidate) {
+        // @Todo: use enum
+      } else if (this.myActor.data.type === 'host') {
         await this.setHost(this.myActor.data.userId);
       }
       this.localRoomProperties = await this.fetchRoomProperties();
@@ -887,8 +884,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onActorJoin
-   * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
+   * @param presence
    */
   private onActorJoin = async (presence: Ably.Types.PresenceMessage): Promise<void> => {
     this.actorJoinedObserver.publish(presence);
@@ -898,8 +895,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onActorLeave
-   * @param {Ably.Types.PresenceMessage} actor
    * @returns {void}
+   * @param presence
    */
   private onActorLeave(presence: Ably.Types.PresenceMessage): void {
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {

@@ -14,8 +14,8 @@ import AuthService from './services/auth-service';
 import { BrowserService } from './services/browser';
 import { BrowserStats } from './services/browser/types';
 import Communicator from './services/communicator';
-import { SuperVizSdk, AdapterOptions } from './services/communicator/types';
-import { AdapterMethods, Adapter } from './services/integration/base-adapter/types';
+import { SuperVizSdk, PluginOptions } from './services/communicator/types';
+import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { UserOn3D, UserTo3D } from './services/integration/users/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
@@ -35,6 +35,7 @@ const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
 
 const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   validateOptions(options);
+  console.log('init', options);
 
   if (options.debug) {
     logger.enable('@superviz/*');
@@ -81,9 +82,9 @@ export {
   User,
   UserGroup,
   MeetingConnectionStatus,
-  AdapterMethods,
-  AdapterOptions,
-  Adapter,
+  PluginMethods,
+  PluginOptions,
+  Plugin,
   UserOn3D,
   UserTo3D,
   BrowserService,

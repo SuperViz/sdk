@@ -1,17 +1,16 @@
-import { AdapterOptions } from '../../communicator/types';
+import { PluginOptions } from '../../communicator/types';
 import { AblyRealtimeService } from '../../realtime';
-import { SyncProperty } from '../../realtime/base/types';
 import { UserOn3D, UserTo3D } from '../users/types';
 
-import { DefaultAdapterManager, DefaultAdapterOptions, Adapter } from './types';
+import { DefaultPluginManager, Plugin } from './types';
 
-export class BaseAdapterManager implements DefaultAdapterManager {
+export class BasePluginManager implements DefaultPluginManager {
   private _isAvatarsEnabled: boolean;
   private _isPointersEnabled: boolean;
   private _isNameEnabled: boolean;
   private _renderLocalAvatar: boolean;
 
-  public adapter: Adapter;
+  public plugin: Plugin;
   private _localUser: UserTo3D;
   public RealtimeService: AblyRealtimeService;
 
@@ -20,21 +19,21 @@ export class BaseAdapterManager implements DefaultAdapterManager {
     isPointersEnabled,
     isNameEnabled,
     renderLocalAvatar,
-    adapter,
+    plugin,
     RealtimeService,
     localUser,
-  }: AdapterOptions) {
+  }: PluginOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
     this._renderLocalAvatar = renderLocalAvatar;
     this._isNameEnabled = isNameEnabled;
 
-    this.adapter = adapter;
+    this.plugin = plugin;
     this._localUser = localUser;
 
     this.RealtimeService = RealtimeService;
 
-    this.adapter.init(
+    this.plugin.init(
       {
         setSyncProperty: <T>(name: string, property: T) => {
           RealtimeService.setSyncProperty(name, property);
@@ -116,10 +115,10 @@ export class BaseAdapterManager implements DefaultAdapterManager {
       return;
     }
     this.destroyAvatar(user);
-    const model = await this.adapter.createAvatar(user);
+    const model = await this.plugin.createAvatar(user);
 
-    if (this._isNameEnabled && this.adapter.createName) {
-      this.adapter.createName(user, model);
+    if (this._isNameEnabled && this.plugin.createName) {
+      this.plugin.createName(user, model);
     }
   };
 
@@ -130,7 +129,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public destroyAvatar = (user: UserOn3D): void => {
-    this.adapter.destroyAvatar(user);
+    this.plugin.destroyAvatar(user);
   };
 
   /**
@@ -152,7 +151,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
       return;
     }
     this.destroyPointer(user);
-    this.adapter.createPointer(user);
+    this.plugin.createPointer(user);
   };
 
   /**
@@ -162,7 +161,7 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public destroyPointer = (user: UserOn3D): void => {
-    this.adapter.destroyPointer(user);
+    this.plugin.destroyPointer(user);
   };
 
   /**
@@ -172,6 +171,6 @@ export class BaseAdapterManager implements DefaultAdapterManager {
    * @returns {void}
    */
   public goToUser = (userId: string): void => {
-    this.adapter.goToUser(userId);
+    this.plugin.goToUser(userId);
   };
 }
