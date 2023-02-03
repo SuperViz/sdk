@@ -7,7 +7,7 @@ import {
   MeetingControlsEvent,
 } from './common/types/events.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
-import { User, UserGroup, Avatar } from './common/types/user.types';
+import { User, Group, Avatar } from './common/types/user.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
@@ -19,9 +19,9 @@ import { PluginMethods, Plugin } from './services/integration/base-plugin/types'
 import { UserOn3D, UserTo3D } from './services/integration/users/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
-const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
-  if (!userGroup || !userGroup.name || !userGroup.id) {
-    throw new Error('userGroup fields is required');
+const validateOptions = ({ group, user, roomId }: SuperVizSdkOptions) => {
+  if (!group || !group.name || !group.id) {
+    throw new Error('group fields is required');
   }
 
   if (!user || !user.id) {
@@ -80,7 +80,7 @@ export {
   SuperVizSdk,
   MeetingState,
   User,
-  UserGroup,
+  Group,
   MeetingConnectionStatus,
   PluginMethods,
   PluginOptions,

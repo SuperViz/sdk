@@ -46,8 +46,8 @@ export type Plugin = {
 };
 
 export interface RealtimePluginMethods {
-  subscribeToActorUpdate: (id: string, callback: Function) => void;
-  unsubscribeToActorUpdate: (id: string, callback: Function) => void;
+  subscribeToParticipantUpdate: (id: string, callback: Function) => void;
+  unsubscribeToParticipantUpdate: (id: string, callback: Function) => void;
   updateMyProperties: <T>(properties: T) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;

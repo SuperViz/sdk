@@ -12,7 +12,7 @@ export interface User {
   avatar?: Avatar;
 }
 
-export interface UserGroup {
+export interface Group {
   id: string;
   name: string;
 }

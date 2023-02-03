@@ -41,8 +41,8 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     this.IntegrationUsersService = new IntegrationUsersManager();
     this.createLocalUser(localUser);
     this.createUserList(userList);
-    this.RealtimeService.actorJoinedObserver.subscribe(this.onActorJoined);
-    this.RealtimeService.actorLeaveObserver.subscribe(this.onActorLeave);
+    this.RealtimeService.participantJoinedObserver.subscribe(this.onParticipantJoined);
+    this.RealtimeService.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.RealtimeService.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdate);
 
     this.onRoomInfoUpdate(this.RealtimeService.roomProperties);
@@ -72,7 +72,7 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
 
     this.IntegrationUsersService.addUserToList(userOn3D);
     // audience listens to the hosts broadcast channel
-    this.RealtimeService.subscribeToActorUpdate(userOn3D.id, this.onActorUpdated);
+    this.RealtimeService.subscribeToParticipantUpdate(userOn3D.id, this.onParticipantUpdated);
 
     this.createAvatar(userOn3D);
     this.createPointer(userOn3D);
@@ -91,7 +91,7 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     this.destroyAvatar(user);
     this.destroyPointer(user);
     if (unsubscribe) {
-      this.RealtimeService.unsubscribeFromActorUpdate(user.id, this.onActorUpdated);
+      this.RealtimeService.unsubscribeFromParticipantUpdate(user.id, this.onParticipantUpdated);
     }
   };
 
@@ -158,13 +158,13 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   };
 
   /**
-   * @function onActorJoined
+   * @function onParticipantJoined
    * @description add users as they enter the RealtimeService
-   * @param {} actor
+   * @param {} Participant
    * @returns {void}
    */
-  private onActorJoined = (actor): void => {
-    const { userId, name, avatar, avatarConfig, isAudience } = actor.data;
+  private onParticipantJoined = (Participant): void => {
+    const { userId, name, avatar, avatarConfig, isAudience } = Participant.data;
 
     this.addUser({
       id: userId,
@@ -176,15 +176,15 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   };
 
   /**
-   * @function onActorLeave
+   * @function onParticipantLeave
    * @description removes users as they leave the RealtimeService
-   * @param {} actor
+   * @param {} Participant
    * @returns {void}
    */
-  private onActorLeave = (actor): void => {
+  private onParticipantLeave = (Participant): void => {
     if (!this.users?.length) return;
 
-    const user = this.users.find((user) => user.id === actor.clientId);
+    const user = this.users.find((user) => user.id === Participant.clientId);
 
     if (!user) return;
 
@@ -192,13 +192,13 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   };
 
   /**
-   * @function onActorUpdated
+   * @function onParticipantUpdated
    * @description update user
-   * @param {} actor
+   * @param {} Participant
    * @returns {void}
    */
-  private onActorUpdated = (actor): void => {
-    const { userId, name, avatar, avatarConfig, position, rotation } = actor.data;
+  private onParticipantUpdated = (Participant): void => {
+    const { userId, name, avatar, avatarConfig, position, rotation } = Participant.data;
     this.updateUser({
       position,
       rotation,

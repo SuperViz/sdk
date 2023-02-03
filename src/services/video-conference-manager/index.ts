@@ -509,20 +509,20 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function actorsListDidChange
-   * @param {} actorsList
+   * @function participantsListDidChange
+   * @param {} participantsList
    * @returns {void}
    */
-  public actorsListDidChange = (actorsList): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_USER_LIST_UPDATE, actorsList);
+  public participantsListDidChange = (participantsList): void => {
+    this.messageBridge.publish(RealtimeEvent.REALTIME_USER_LIST_UPDATE, participantsList);
   };
 
   /**
-   * @function onMasterActorDidChange
+   * @function onMasterParticipantDidChange
    * @param {string} hostId
    * @returns {void}
    */
-  public onMasterActorDidChange = (hostId: string): void => {
+  public onMasterParticipantDidChange = (hostId: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
   };
 

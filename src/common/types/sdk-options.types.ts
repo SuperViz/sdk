@@ -1,13 +1,13 @@
 import type { Locale, Offset } from '../../services/video-conference-manager/types';
 
-import type { User, UserGroup, Avatar } from './user.types';
+import type { User, Group, Avatar } from './user.types';
 
 export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 export interface SuperVizSdkOptions {
   debug?: boolean;
   roomId: string;
   user: User;
-  userGroup: UserGroup;
+  group: Group;
   shouldKickUsersOnHostLeave?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;

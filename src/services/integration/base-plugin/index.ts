@@ -38,11 +38,11 @@ export class BasePluginManager implements DefaultPluginManager {
         setSyncProperty: <T>(name: string, property: T) => {
           RealtimeService.setSyncProperty(name, property);
         },
-        subscribeToActorUpdate: (id: string, callback: Function) => {
-          RealtimeService.subscribeToActorUpdate(id, callback);
+        subscribeToParticipantUpdate: (id: string, callback: Function) => {
+          RealtimeService.subscribeToParticipantUpdate(id, callback);
         },
-        unsubscribeToActorUpdate: (id: string, callback: Function) => {
-          RealtimeService.unsubscribeFromActorUpdate(id, callback);
+        unsubscribeToParticipantUpdate: (id: string, callback: Function) => {
+          RealtimeService.unsubscribeFromParticipantUpdate(id, callback);
         },
         updateMyProperties: <T>(properties: T) => {
           RealtimeService.updateMyProperties(properties);

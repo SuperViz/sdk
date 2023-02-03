@@ -9,15 +9,15 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
-import { User, UserGroup } from '../../common/types/user.types';
+import { User, Group } from '../../common/types/user.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Plugin, PluginMethods } from '../integration/base-plugin/types';
 import { AblyRealtimeService } from '../realtime';
-import { AblyRealtimeData, AblyActor } from '../realtime/ably/types';
-import { ActorInfo } from '../realtime/base/types';
+import { AblyRealtimeData, AblyParticipant } from '../realtime/ably/types';
+import { ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
@@ -33,7 +33,7 @@ class Communicator {
   private videoManager: VideoConferencingManager;
 
   private readonly roomId: string;
-  private readonly userGroup: UserGroup;
+  private readonly group: Group;
 
   private observerHelpers: { string?: ObserverHelper } = {};
   private user: User;
@@ -47,7 +47,7 @@ class Communicator {
     language,
     roomId,
     ablyKey,
-    userGroup,
+    group,
     user,
     shouldKickUsersOnHostLeave,
     camsOff,
@@ -62,7 +62,7 @@ class Communicator {
     avatars,
   }: CommunicatorOptions) {
     this.roomId = roomId;
-    this.userGroup = userGroup;
+    this.group = group;
     this.user = user;
 
     this.realtime = new AblyRealtimeService(ablyKey);
@@ -116,14 +116,14 @@ class Communicator {
 
     // Realtime observers
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
-    this.realtime.actorsObserver.subscribe(this.onActorsDidChange);
-    this.realtime.masterActorObserver.subscribe(this.onMasterActorDidChange);
+    this.realtime.participantsObserver.subscribe(this.onParticipantsDidChange);
+    this.realtime.masterParticipantObserver.subscribe(this.onMasterParticipantDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
-      initialActorData: {
+      initialParticipantData: {
         userId: this.user.id,
         ...this.user,
       },
@@ -148,7 +148,7 @@ class Communicator {
     this.videoManager.start({
       roomId: this.roomId,
       user: this.user,
-      userGroup: this.userGroup,
+      group: this.group,
     });
   }
 
@@ -179,8 +179,8 @@ class Communicator {
     );
 
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
-    this.realtime.actorsObserver.unsubscribe(this.onActorsDidChange);
-    this.realtime.masterActorObserver.unsubscribe(this.onMasterActorDidChange);
+    this.realtime.participantsObserver.unsubscribe(this.onParticipantsDidChange);
+    this.realtime.masterParticipantObserver.unsubscribe(this.onMasterParticipantDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllUsersObserver.unsubscribe(this.onKickAllUsersDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
@@ -306,7 +306,7 @@ class Communicator {
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo: ActorInfo) => {
+  private onRealtimeJoin = (userInfo: ParticipantInfo) => {
     this.realtime.join(userInfo);
   };
 
@@ -346,46 +346,47 @@ class Communicator {
     }
   };
 
-  private onActorsDidChange = (actors) => {
-    if (actors[this.user.id] && !this.hasJoined) {
+  private onParticipantsDidChange = (participants) => {
+    if (participants[this.user.id] && !this.hasJoined) {
       this.publish(MeetingEvent.MY_USER_JOINED, this.user);
       this.hasJoined = true;
     }
-    const userListForVideoFrame = Object.values(actors).map((actor: AblyActor) => {
-      return {
-        timestamp: actor.timestamp,
-        connectionId: actor.connectionId,
-        userId: actor.clientId,
-        color: this.realtime.getSlotColor(actor.data.slotIndex).name,
-      };
-    });
+    const userListForVideoFrame = Object.values(participants)
+      .map((participant: AblyParticipant) => {
+        return {
+          timestamp: participant.timestamp,
+          connectionId: participant.connectionId,
+          userId: participant.clientId,
+          color: this.realtime.getSlotColor(participant.data.slotIndex).name,
+        };
+      });
 
     // update user list
-    this.userList = this.updateUserListFromActors(actors);
+    this.userList = this.updateUserListFromParticipants(participants);
     this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
 
-    this.videoManager.actorsListDidChange(userListForVideoFrame);
+    this.videoManager.participantsListDidChange(userListForVideoFrame);
   };
 
-  private onMasterActorDidChange = (masterActor) => {
-    this.videoManager.onMasterActorDidChange(masterActor?.newMasterActorUserId);
+  private onMasterParticipantDidChange = (masterParticipant) => {
+    this.videoManager.onMasterParticipantDidChange(masterParticipant?.newMasterParticipantUserId);
   };
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
   };
 
-  private updateUserListFromActors = (actors: AblyActor[]): User[] => {
+  private updateUserListFromParticipants = (participants: AblyParticipant[]): User[] => {
     const userList = [];
-    Object.values(actors).forEach((actor: AblyActor) => {
+    Object.values(participants).forEach((participant: AblyParticipant) => {
       userList.push({
-        id: actor.clientId,
-        color: this.realtime.getSlotColor(actor.data?.slotIndex).color,
-        avatarConfig: actor.data.avatarConfig,
-        avatar: actor.data.avatar,
-        type: actor.data.type,
-        name: actor.data.name,
-        isHost: this.realtime.hostClientId === actor.clientId,
+        id: participant.clientId,
+        color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
+        avatarConfig: participant.data.avatarConfig,
+        avatar: participant.data.avatar,
+        type: participant.data.type,
+        name: participant.data.name,
+        isHost: this.realtime.hostClientId === participant.clientId,
       });
     });
     return userList;
@@ -475,9 +476,9 @@ class Communicator {
       this.realtime.setUserData({ avatar: { model: this.user.avatar.model } });
     }
 
-    let actors = [];
-    if (this.realtime.getActors) {
-      actors = Object.values(this.realtime.getActors);
+    let participants = [];
+    if (this.realtime.getParticipants) {
+      participants = Object.values(this.realtime.getParticipants);
     }
     this.integrationManager = new IntegrationManager({
       plugin,
@@ -488,9 +489,9 @@ class Communicator {
         avatar: this.user.avatar,
         avatarConfig: pluginOptions.avatarConfig,
       },
-      userList: actors.map((actor) => {
-        const id = actor.clientId;
-        const { name, avatar, avatarConfig, slotIndex, isAudience } = actor.data;
+      userList: participants.map((participant) => {
+        const id = participant.clientId;
+        const { name, avatar, avatarConfig, slotIndex, isAudience } = participant.data;
         return {
           id,
           name,
