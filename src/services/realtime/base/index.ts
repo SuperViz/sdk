@@ -17,7 +17,7 @@ export class RealtimeService implements DefaultRealtimeService {
   public masterParticipantObserver: ObserverHelper;
   public realtimeStateObserver: ObserverHelper;
   public syncPropertiesObserver: ObserverHelper;
-  public kickAllUsersObserver: ObserverHelper;
+  public kickAllParticipantsObserver: ObserverHelper;
   public authenticationObserver: ObserverHelper;
 
   constructor() {
@@ -35,35 +35,35 @@ export class RealtimeService implements DefaultRealtimeService {
     this.roomListUpdatedObserver = new ObserverHelper({ logger });
     this.masterParticipantObserver = new ObserverHelper({ logger });
     this.realtimeStateObserver = new ObserverHelper({ logger });
-    this.kickAllUsersObserver = new ObserverHelper({ logger });
+    this.kickAllParticipantsObserver = new ObserverHelper({ logger });
     this.authenticationObserver = new ObserverHelper({ logger });
   }
 
   /**
    * @function subscribeToParticipantUpdate
-   * @description subscribe to a user's events
-   * @param {string} userId
+   * @description subscribe to a participant's events
+   * @param {string} participantId
    * @param {Function} callback
    * @returns {void}
    */
-  public subscribeToParticipantUpdate(userId: string, callback: Function): void {
-    if (!this.participantObservers[userId]) {
-      this.participantObservers[userId] = new ObserverHelper({ logger });
+  public subscribeToParticipantUpdate(participantId: string, callback: Function): void {
+    if (!this.participantObservers[participantId]) {
+      this.participantObservers[participantId] = new ObserverHelper({ logger });
     }
 
-    this.participantObservers[userId].subscribe(callback);
+    this.participantObservers[participantId].subscribe(callback);
   }
 
   /**
    * @function unsubscribeFromParticipantUpdate
-   * @description unsubscribe to a user's events
-   * @param {string} userId
+   * @description unsubscribe to a participant's events
+   * @param {string} participantId
    * @param {Function} callback
    * @returns {void}
    */
-  public unsubscribeFromParticipantUpdate(userId: string, callback: Function): void {
-    if (this.participantObservers[userId]) {
-      this.participantObservers[userId].unsubscribe(callback);
+  public unsubscribeFromParticipantUpdate(participantId: string, callback: Function): void {
+    if (this.participantObservers[participantId]) {
+      this.participantObservers[participantId].unsubscribe(callback);
     }
   }
 

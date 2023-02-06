@@ -1,6 +1,6 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { User } from '../../../common/types/user.types';
+import { Participant } from '../../../common/types/participant.types';
 
 export interface DefaultRealtimeService {
   participantObservers: ObserverHelper[];
@@ -14,7 +14,7 @@ export interface DefaultRealtimeService {
   masterParticipantObserver: ObserverHelper;
   realtimeStateObserver: ObserverHelper;
   syncPropertiesObserver: ObserverHelper;
-  kickAllUsersObserver: ObserverHelper;
+  kickAllParticipantsObserver: ObserverHelper;
   authenticationObserver: ObserverHelper;
 }
 
@@ -23,7 +23,7 @@ export interface DefaultRealtimeMethods {
   leave: () => void;
   join: (myParticipantProperties: any, additionalRoomProperties: any) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
-  setHost: (masterUserId: String) => void;
+  setHost: (masterParticipantId: String) => void;
   setGridMode: (value: boolean) => void;
 }
 
@@ -32,8 +32,8 @@ export interface RealtimeJoinOptions {
   name: string;
 }
 
-export interface ParticipantInfo extends User {
-  userId?: string;
+export interface ParticipantInfo extends Participant {
+  participantId?: string;
   slotIndex?: number;
 }
 
@@ -41,7 +41,7 @@ export interface StartRealtimeType {
   initialParticipantData: ParticipantInfo;
   roomId: string;
   apiKey: string;
-  shouldKickUsersOnHostLeave: boolean;
+  shouldKickParticipantsOnHostLeave: boolean;
   isBroadcast: boolean;
 }
 

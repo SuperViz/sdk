@@ -1,5 +1,5 @@
 import { AblyRealtimeService } from '../../realtime';
-import { UserOn3D, UserTo3D } from '../users/types';
+import { ParticipantOn3D, ParticipantTo3D } from '../participants/types';
 
 export interface DefaultPluginManager {
   isAvatarsEnabled: boolean;
@@ -14,7 +14,7 @@ export interface DefaultPluginOptions {
 
   // Plugin settings
   plugin: Plugin;
-  localUser: UserTo3D;
+  localParticipant: ParticipantTo3D;
   RealtimeService: AblyRealtimeService;
 }
 
@@ -23,24 +23,24 @@ export interface PluginMethods {
   disableAvatars: () => void;
   enablePointers: () => void;
   disablePointers: () => void;
-  getUsersOn3D: () => UserOn3D[];
+  getParticipantsOn3D: () => ParticipantOn3D[];
   getAvatars: () => {};
 }
 
 export type Plugin = {
   setSyncProperty: <T>(name: string, property: T) => void;
-  createPointer: (user: UserOn3D) => void;
-  destroyPointer: (user: UserOn3D) => void;
-  createAvatar: (user: UserOn3D) => void;
-  createName: (user: UserOn3D, model) => void;
-  destroyAvatar: (user: UserOn3D) => void;
+  createPointer: (participant: ParticipantOn3D) => void;
+  destroyPointer: (participant: ParticipantOn3D) => void;
+  createAvatar: (participant: ParticipantOn3D) => void;
+  createName: (participant: ParticipantOn3D, model) => void;
+  destroyAvatar: (participant: ParticipantOn3D) => void;
   enableAvatars: () => void;
   disableAvatars: () => void;
   enablePointers: () => void;
   disablePointers: () => void;
-  goToUser: (userId: string) => void;
+  goToParticipant: (participantId: string) => void;
   gather: (hostId: string) => void;
-  init: (methods: RealtimePluginMethods, localUser: UserTo3D) => void;
+  init: (methods: RealtimePluginMethods, localParticipant: ParticipantTo3D) => void;
   destroy: () => void;
   getAvatars: () => {};
 };
@@ -52,5 +52,5 @@ export interface RealtimePluginMethods {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
-  getUserSlot: (userId: string) => number;
+  getParticipantSlot: (participantId: string) => number;
 }

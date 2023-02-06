@@ -1,6 +1,6 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Plugin, PluginMethods, DefaultPluginOptions } from '../integration/base-plugin/types';
-import { AvatarConfig } from '../integration/users/types';
+import { AvatarConfig } from '../integration/participants/types';
 
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;

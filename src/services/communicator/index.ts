@@ -9,7 +9,7 @@ import {
   MeetingState,
   RealtimeEvent,
 } from '../../common/types/events.types';
-import { User, Group } from '../../common/types/user.types';
+import { Participant, Group } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
@@ -36,9 +36,9 @@ class Communicator {
   private readonly group: Group;
 
   private observerHelpers: { string?: ObserverHelper } = {};
-  private user: User;
+  private participant: Participant;
   private hasJoined: Boolean = false;
-  private userList: User[] = [];
+  private participantList: Participant[] = [];
   private isBroadcast: boolean = false;
 
   constructor({
@@ -48,8 +48,8 @@ class Communicator {
     roomId,
     ablyKey,
     group,
-    user,
-    shouldKickUsersOnHostLeave,
+    participant,
+    shouldKickParticipantsOnHostLeave,
     camsOff,
     screenshareOff,
     defaultAvatars,
@@ -63,22 +63,22 @@ class Communicator {
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
-    this.user = user;
+    this.participant = participant;
 
     this.realtime = new AblyRealtimeService(ablyKey);
     this.browserService = new BrowserService();
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
-    const canUseDefaultAvatars = !!defaultAvatars && !user?.avatar?.model;
+    const canUseDefaultAvatars = !!defaultAvatars && !participant?.avatar?.model;
     const canUseDefaultToolbar = defaultToolbar ?? true;
 
     const canUseFollow = !!enableFollow;
     const canUseGoTo = !!enableGoTo;
     const canUseGather = !!enableGather;
 
-    if (user?.avatar === undefined) {
-      this.user = Object.assign({}, this.user, {
+    if (participant?.avatar === undefined) {
+      this.participant = Object.assign({}, this.participant, {
         avatar: {
           model: '',
         },
@@ -119,17 +119,17 @@ class Communicator {
     this.realtime.participantsObserver.subscribe(this.onParticipantsDidChange);
     this.realtime.masterParticipantObserver.subscribe(this.onMasterParticipantDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
-    this.realtime.kickAllUsersObserver.subscribe(this.onKickAllUsersDidChange);
+    this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
       initialParticipantData: {
-        userId: this.user.id,
-        ...this.user,
+        participantId: this.participant.id,
+        ...this.participant,
       },
       roomId: this.roomId,
       apiKey,
-      shouldKickUsersOnHostLeave: shouldKickUsersOnHostLeave ?? true,
+      shouldKickParticipantsOnHostLeave: shouldKickParticipantsOnHostLeave ?? true,
       isBroadcast: this.isBroadcast,
     });
   }
@@ -139,7 +139,7 @@ class Communicator {
   }
 
   private checkBroadcastMode(): void {
-    this.isBroadcast = this.userList.some((user) => user.type === 'audience');
+    this.isBroadcast = this.participantList.some((participant) => participant.type === 'audience');
   }
 
   public start() {
@@ -147,7 +147,7 @@ class Communicator {
     logger.log('SUPERVIZ SDK VERSION', PACKAGE_JSON.version);
     this.videoManager.start({
       roomId: this.roomId,
-      user: this.user,
+      participant: this.participant,
       group: this.group,
     });
   }
@@ -161,17 +161,17 @@ class Communicator {
 
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
-    this.videoManager.followUserObserver.unsubscribe(this.onFollowUserDidChange);
+    this.videoManager.followParticipantObserver.unsubscribe(this.onFollowParticipantDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
-    this.videoManager.goToUserObserver.unsubscribe(this.onGoToUserDidChange);
-    this.videoManager.gatherUsersObserver.unsubscribe(this.onGatherDidChange);
+    this.videoManager.goToParticipantObserver.unsubscribe(this.onGoToParticipantDidChange);
+    this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
-    this.videoManager.userAmountUpdateObserver.unsubscribe(this.onUserAmountUpdate);
-    this.videoManager.userListObserver.unsubscribe(this.onUserListUpdate);
-    this.videoManager.userJoinedObserver.unsubscribe(this.onUserJoined);
-    this.videoManager.userLeftObserver.unsubscribe(this.onUserLeft);
-    this.videoManager.userAvatarObserver.unsubscribe(this.onUserAvatarUpdate);
+    this.videoManager.participantAmountUpdateObserver.unsubscribe(this.onParticipantAmountUpdate);
+    this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
+    this.videoManager.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
+    this.videoManager.participantLeftObserver.unsubscribe(this.onParticipantLeft);
+    this.videoManager.participantAvatarObserver.unsubscribe(this.onParticipantAvatarUpdate);
 
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.unsubscribe(
@@ -182,7 +182,7 @@ class Communicator {
     this.realtime.participantsObserver.unsubscribe(this.onParticipantsDidChange);
     this.realtime.masterParticipantObserver.unsubscribe(this.onMasterParticipantDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
-    this.realtime.kickAllUsersObserver.unsubscribe(this.onKickAllUsersDidChange);
+    this.realtime.kickAllParticipantsObserver.unsubscribe(this.onKickAllParticipantsDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
 
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
@@ -270,17 +270,17 @@ class Communicator {
 
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
-    this.videoManager.followUserObserver.subscribe(this.onFollowUserDidChange);
-    this.videoManager.goToUserObserver.subscribe(this.onGoToUserDidChange);
-    this.videoManager.gatherUsersObserver.subscribe(this.onGatherDidChange);
+    this.videoManager.followParticipantObserver.subscribe(this.onFollowParticipantDidChange);
+    this.videoManager.goToParticipantObserver.subscribe(this.onGoToParticipantDidChange);
+    this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
-    this.videoManager.userAmountUpdateObserver.subscribe(this.onUserAmountUpdate);
-    this.videoManager.userListObserver.subscribe(this.onUserListUpdate);
-    this.videoManager.userJoinedObserver.subscribe(this.onUserJoined);
-    this.videoManager.userLeftObserver.subscribe(this.onUserLeft);
-    this.videoManager.userAvatarObserver.subscribe(this.onUserAvatarUpdate);
+    this.videoManager.participantAmountUpdateObserver.subscribe(this.onParticipantAmountUpdate);
+    this.videoManager.participantListObserver.subscribe(this.onParticipantListUpdate);
+    this.videoManager.participantJoinedObserver.subscribe(this.onParticipantJoined);
+    this.videoManager.participantLeftObserver.subscribe(this.onParticipantLeft);
+    this.videoManager.participantAvatarObserver.subscribe(this.onParticipantAvatarUpdate);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -301,25 +301,25 @@ class Communicator {
     });
   };
 
-  private onKickAllUsersDidChange = (kick: boolean): void => {
-    this.publish(MeetingEvent.MEETING_KICK_USERS, kick);
+  private onKickAllParticipantsDidChange = (kick: boolean): void => {
+    this.publish(MeetingEvent.MEETING_KICK_PARTICIPANTS, kick);
     this.destroy();
   };
 
-  private onRealtimeJoin = (userInfo: ParticipantInfo) => {
-    this.realtime.join(userInfo);
+  private onRealtimeJoin = (participantInfo: ParticipantInfo) => {
+    this.realtime.join(participantInfo);
   };
 
   private onHostDidChange = (hostId: string): void => {
     this.realtime.setHost(hostId);
   };
 
-  private onFollowUserDidChange = (userId: string | null): void => {
-    this.realtime.setFollowUser(userId);
+  private onFollowParticipantDidChange = (participantId: string | null): void => {
+    this.realtime.setFollowParticipant(participantId);
   };
 
-  private onGoToUserDidChange = (userId: string): void => {
-    this.integrationManager.goToUser(userId);
+  private onGoToParticipantDidChange = (participantId: string): void => {
+    this.integrationManager.goToParticipant(participantId);
   };
 
   private onGatherDidChange = (): void => {
@@ -337,49 +337,50 @@ class Communicator {
   };
 
   private onRoomInfoUpdated = (room: AblyRealtimeData) => {
-    const { isGridModeEnable, followUserId, gather } = room;
+    const { isGridModeEnable, followParticipantId, gather } = room;
 
     this.videoManager.gridModeDidChange(isGridModeEnable);
-    this.videoManager.followUserDidChange(followUserId);
-    if (this.realtime.hostClientId === this.user.id && gather) {
+    this.videoManager.followParticipantDidChange(followParticipantId);
+    if (this.realtime.hostClientId === this.participant.id && gather) {
       this.realtime.setGather(false);
     }
   };
 
   private onParticipantsDidChange = (participants) => {
-    if (participants[this.user.id] && !this.hasJoined) {
-      this.publish(MeetingEvent.MY_USER_JOINED, this.user);
+    if (participants[this.participant.id] && !this.hasJoined) {
+      this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, this.participant);
       this.hasJoined = true;
     }
-    const userListForVideoFrame = Object.values(participants)
+    const participantListForVideoFrame = Object.values(participants)
       .map((participant: AblyParticipant) => {
+        console.log('onParticipantsDidChange', participant);
         return {
           timestamp: participant.timestamp,
           connectionId: participant.connectionId,
-          userId: participant.clientId,
+          participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
         };
       });
 
-    // update user list
-    this.userList = this.updateUserListFromParticipants(participants);
-    this.publish(MeetingEvent.MEETING_USER_LIST_UPDATE, this.userList);
+    // update participant list
+    this.participantList = this.updateParticipantListFromParticipants(participants);
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, this.participantList);
 
-    this.videoManager.participantsListDidChange(userListForVideoFrame);
+    this.videoManager.participantsListDidChange(participantListForVideoFrame);
   };
 
   private onMasterParticipantDidChange = (masterParticipant) => {
-    this.videoManager.onMasterParticipantDidChange(masterParticipant?.newMasterParticipantUserId);
+    this.videoManager.onMasterParticipantDidChange(masterParticipant?.newMasterParticipantParticipantId);
   };
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
   };
 
-  private updateUserListFromParticipants = (participants: AblyParticipant[]): User[] => {
-    const userList = [];
+  private updateParticipantListFromParticipants = (participants: AblyParticipant[]): Participant[] => {
+    const participantList = [];
     Object.values(participants).forEach((participant: AblyParticipant) => {
-      userList.push({
+      participantList.push({
         id: participant.clientId,
         color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
         avatarConfig: participant.data.avatarConfig,
@@ -389,11 +390,11 @@ class Communicator {
         isHost: this.realtime.hostClientId === participant.clientId,
       });
     });
-    return userList;
+    return participantList;
   };
 
   private onSameAccountError = (error: string): void => {
-    this.publish(MeetingEvent.MEETING_SAME_USER_ERROR, error);
+    this.publish(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, error);
     this.destroy();
   };
 
@@ -401,34 +402,34 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_DEVICES_CHANGE, state);
   };
 
-  private onUserAmountUpdate = (count: number): void => {
-    this.publish(MeetingEvent.MEETING_USER_AMOUNT_UPDATE, count);
+  private onParticipantAmountUpdate = (count: number): void => {
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, count);
   };
 
-  private onUserJoined = (user: User): void => {
+  private onParticipantJoined = (participant: Participant): void => {
     this.checkBroadcastMode();
-    this.publish(MeetingEvent.MEETING_USER_JOINED, user);
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
   };
 
-  private onUserLeft = (user: User): void => {
-    if (user.id === this.user.id) {
-      this.publish(MeetingEvent.MY_USER_LEFT, user);
+  private onParticipantLeft = (participant: Participant): void => {
+    if (participant.id === this.participant.id) {
+      this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, participant);
     }
 
-    this.publish(MeetingEvent.MEETING_USER_LEFT, user);
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_LEFT, participant);
     this.destroy();
   };
 
-  private onUserAvatarUpdate = (avatarLink: string): void => {
-    this.user.avatar.model = avatarLink;
+  private onParticipantAvatarUpdate = (avatarLink: string): void => {
+    this.participant.avatar.model = avatarLink;
   };
 
-  private onUserListUpdate = (users: Array<User>): void => {
-    const myUser = users.find((user) => user.id === this.user.id);
+  private onParticipantListUpdate = (participants: Array<Participant>): void => {
+    const myParticipant = participants.find((participant) => participant.id === this.participant.id);
 
-    if (!isEqual(myUser, this.user)) {
-      this.user = Object.assign({}, this.user, myUser);
-      this.publish(MeetingEvent.MY_USER_UPDATED, this.user);
+    if (!isEqual(myParticipant, this.participant)) {
+      this.participant = Object.assign({}, this.participant, myParticipant);
+      this.publish(MeetingEvent.MY_PARTICIPANT_UPDATED, this.participant);
     }
   };
 
@@ -470,10 +471,10 @@ class Communicator {
     }
 
     if (pluginOptions.avatarConfig) {
-      this.realtime.setUserData({ avatarConfig: pluginOptions.avatarConfig });
+      this.realtime.setParticipantData({ avatarConfig: pluginOptions.avatarConfig });
     }
-    if (this.user.avatar && this.user.avatar.model) {
-      this.realtime.setUserData({ avatar: { model: this.user.avatar.model } });
+    if (this.participant.avatar && this.participant.avatar.model) {
+      this.realtime.setParticipantData({ avatar: { model: this.participant.avatar.model } });
     }
 
     let participants = [];
@@ -483,13 +484,13 @@ class Communicator {
     this.integrationManager = new IntegrationManager({
       plugin,
       ...pluginOptions,
-      localUser: {
-        id: this.user.id,
-        name: this.user.name,
-        avatar: this.user.avatar,
+      localParticipant: {
+        id: this.participant.id,
+        name: this.participant.name,
+        avatar: this.participant.avatar,
         avatarConfig: pluginOptions.avatarConfig,
       },
-      userList: participants.map((participant) => {
+      participantList: participants.map((participant) => {
         const id = participant.clientId;
         const { name, avatar, avatarConfig, slotIndex, isAudience } = participant.data;
         return {
@@ -509,7 +510,7 @@ class Communicator {
       disableAvatars: this.integrationManager.disableAvatars,
       enablePointers: this.integrationManager.enablePointers,
       disablePointers: this.integrationManager.disablePointers,
-      getUsersOn3D: () => (this.integrationManager.users ? this.integrationManager.users : []),
+      getParticipantsOn3D: () => (this.integrationManager.participants ? this.integrationManager.participants : []),
       getAvatars: () => this.integrationManager.getAvatars,
     };
   }

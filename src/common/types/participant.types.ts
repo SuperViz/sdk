@@ -1,13 +1,13 @@
-export enum UserType {
+export enum ParticipantType {
   HOST = 'host',
   GUEST = 'guest',
   AUDIENCE = 'audience'
 }
 
-export interface User {
+export interface Participant {
   id?: string;
   name?: string;
-  type?: UserType
+  type?: ParticipantType
   color?: string;
   avatar?: Avatar;
 }

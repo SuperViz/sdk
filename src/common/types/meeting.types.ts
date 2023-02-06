@@ -1,7 +1,7 @@
-import { User, Group } from './user.types';
+import { Participant, Group } from './participant.types';
 
 export interface StartMeetingOptions {
   roomId: string;
-  user: User;
+  participant: Participant;
   group: Group;
 }

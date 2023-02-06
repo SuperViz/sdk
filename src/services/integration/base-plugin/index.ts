@@ -1,6 +1,6 @@
 import { PluginOptions } from '../../communicator/types';
 import { AblyRealtimeService } from '../../realtime';
-import { UserOn3D, UserTo3D } from '../users/types';
+import { ParticipantOn3D, ParticipantTo3D } from '../participants/types';
 
 import { DefaultPluginManager, Plugin } from './types';
 
@@ -11,7 +11,7 @@ export class BasePluginManager implements DefaultPluginManager {
   private _renderLocalAvatar: boolean;
 
   public plugin: Plugin;
-  private _localUser: UserTo3D;
+  private _localParticipant: ParticipantTo3D;
   public RealtimeService: AblyRealtimeService;
 
   constructor({
@@ -21,7 +21,7 @@ export class BasePluginManager implements DefaultPluginManager {
     renderLocalAvatar,
     plugin,
     RealtimeService,
-    localUser,
+    localParticipant,
   }: PluginOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
     this._isPointersEnabled = isPointersEnabled;
@@ -29,7 +29,7 @@ export class BasePluginManager implements DefaultPluginManager {
     this._isNameEnabled = isNameEnabled;
 
     this.plugin = plugin;
-    this._localUser = localUser;
+    this._localParticipant = localParticipant;
 
     this.RealtimeService = RealtimeService;
 
@@ -49,9 +49,9 @@ export class BasePluginManager implements DefaultPluginManager {
         },
         subscribe: RealtimeService.syncPropertiesObserver.subscribe,
         unsubscribe: RealtimeService.syncPropertiesObserver.unsubscribe,
-        getUserSlot: RealtimeService.getUserSlot,
+        getParticipantSlot: RealtimeService.getParticipantSlot,
       },
-      localUser,
+      localParticipant,
     );
   }
 
@@ -101,48 +101,48 @@ export class BasePluginManager implements DefaultPluginManager {
 
   /**
    * @function createAvatar
-   * @description create an avatar for the user in 3D space;
-   * @param {UserOn3D} user;
+   * @description create an avatar for the participant in 3D space;
+   * @param {ParticipantOn3D} participant;
    * @returns {void}
    */
-  public createAvatar = async (user: UserOn3D): Promise<void> => {
-    if (!user.avatarConfig) {
+  public createAvatar = async (participant: ParticipantOn3D): Promise<void> => {
+    if (!participant.avatarConfig) {
       return;
     }
 
-    const isOwnAvatar = user.id === this._localUser.id;
+    const isOwnAvatar = participant.id === this._localParticipant.id;
     if ((isOwnAvatar && !this._renderLocalAvatar) || !this._isAvatarsEnabled) {
       return;
     }
-    this.destroyAvatar(user);
-    const model = await this.plugin.createAvatar(user);
+    this.destroyAvatar(participant);
+    const model = await this.plugin.createAvatar(participant);
 
     if (this._isNameEnabled && this.plugin.createName) {
-      this.plugin.createName(user, model);
+      this.plugin.createName(participant, model);
     }
   };
 
   /**
    * @function destroyAvatar
-   * @description destroys a user's avatar in 3D space;
-   * @param {UserOn3D} user
+   * @description destroys a participant's avatar in 3D space;
+   * @param {ParticipantOn3D} participant
    * @returns {void}
    */
-  public destroyAvatar = (user: UserOn3D): void => {
-    this.plugin.destroyAvatar(user);
+  public destroyAvatar = (participant: ParticipantOn3D): void => {
+    this.plugin.destroyAvatar(participant);
   };
 
   /**
    * @function createPointer
-   * @description create an pointer for the user in 3D space;
-   * @param {UserOn3D} user
+   * @description create an pointer for the participant in 3D space;
+   * @param {ParticipantOn3D} participant
    * @returns {void}
    */
-  public createPointer = (user: UserOn3D): void => {
-    if (!user.avatarConfig) {
+  public createPointer = (participant: ParticipantOn3D): void => {
+    if (!participant.avatarConfig) {
       return;
     }
-    const isOwnAvatar = user.id === this._localUser.id;
+    const isOwnAvatar = participant.id === this._localParticipant.id;
     if (
       (isOwnAvatar && !this._renderLocalAvatar) ||
       !this._isAvatarsEnabled ||
@@ -150,27 +150,27 @@ export class BasePluginManager implements DefaultPluginManager {
     ) {
       return;
     }
-    this.destroyPointer(user);
-    this.plugin.createPointer(user);
+    this.destroyPointer(participant);
+    this.plugin.createPointer(participant);
   };
 
   /**
    * @function destroyPointer
-   * @description destroys a user's pointer in 3D space;
-   * @param {UserOn3D} user
+   * @description destroys a participant's pointer in 3D space;
+   * @param {ParticipantOn3D} participant
    * @returns {void}
    */
-  public destroyPointer = (user: UserOn3D): void => {
-    this.plugin.destroyPointer(user);
+  public destroyPointer = (participant: ParticipantOn3D): void => {
+    this.plugin.destroyPointer(participant);
   };
 
   /**
-   * @function goToUSer
-   * @description goes to the user's position in 3D space
-   * @param {string} userId
+   * @function goToParticipant
+   * @description goes to the participant's position in 3D space
+   * @param {string} participantId
    * @returns {void}
    */
-  public goToUser = (userId: string): void => {
-    this.plugin.goToUser(userId);
+  public goToParticipant = (participantId: string): void => {
+    this.plugin.goToParticipant(participantId);
   };
 }
