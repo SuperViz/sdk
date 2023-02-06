@@ -1,4 +1,4 @@
-name: Publish SDK
+name: Publish SDK Package
 on:
   push:
     branches:
