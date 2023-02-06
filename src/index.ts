@@ -6,7 +6,7 @@ import {
   MeetingConnectionStatus,
   MeetingControlsEvent,
 } from './common/types/events.types';
-import { Participant, Group, Avatar } from './common/types/participant.types';
+import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
