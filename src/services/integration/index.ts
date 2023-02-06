@@ -160,7 +160,7 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   /**
    * @function onParticipantJoined
    * @description add participants as they enter the RealtimeService
-   * @param {} Participant
+   * @param {AblyParticipant} participant
    * @returns {void}
    */
   private onParticipantJoined = (participant: AblyParticipant): void => {
