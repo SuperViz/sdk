@@ -2,14 +2,21 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
-import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { ParticipantType } from '../../../common/types/participant.types';
+import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
 import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
 
-import { AblyParticipant, AblyParticipants, AblyRealtime, AblyRealtimeData, AblyTokenCallBack, ParticipantDataInput } from './types';
+import {
+  AblyParticipant,
+  AblyParticipants,
+  AblyRealtime,
+  AblyRealtimeData,
+  AblyTokenCallBack,
+  ParticipantDataInput,
+} from './types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 2000;
@@ -206,8 +213,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setHost = async (participantParticipantId: string): Promise<void> => {
-    console.log('set host participantParticipantId', participantParticipantId);
-    console.log('set host participants', this.participants);
     if (!participantParticipantId) return;
 
     const participant = this.participants[participantParticipantId];
@@ -331,7 +336,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onAblyPresenceUpdate
-   * @description  callback that receives the event that a participant's properties have been updated
+   * @description  callback that receives the event that
+   * a participant's properties have been updated
    * @param {Ably.Types.PresenceMessage} presenceMessage
    * @returns {void}
    */
@@ -580,7 +586,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     // set host to me if im candidate
-    console.log('this.myParticipant initializeRoomProperties', this.myParticipant);
     if (this.myParticipant?.data.participant.type) {
       roomProperties.hostClientId = this.myParticipant.data.participantId;
     }
@@ -678,8 +683,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomChannel.presence.get((_, members) => {
       const hostCandidates = members
         .filter((member) => {
-          // @Todo: change for use enum
-          return member.data.type === 'host';
+          return member.data.type === ParticipantType.HOST;
         })
         .map((member) => member.clientId);
 
@@ -730,11 +734,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       console.error('no slots available!');
       return;
     }
-    const slotChosen = availableSlots[0];
+    const [slotChosen] = availableSlots[0];
     this.myParticipant.data.slotIndex = slotChosen;
 
     await this.updateMyProperties({ slotIndex: availableSlots[0] });
-    const timeToWait = Math.floor(Math.random() * (500 - 0 + 1) + 0);
+    const timeToWait = Math.floor(Math.random() * 500);
     setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);
@@ -861,15 +865,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       await this.findSlotIndex(myPresence);
     }
     const isNewRoom = !this.localRoomProperties;
-    console.log('this.myParticipant.data', this.myParticipant.data);
     if (isNewRoom) {
       await this.initializeRoomProperties(myPresence);
     } else {
       await this.updateParticipants();
       if (this.localRoomProperties?.hostClientId) {
         await this.updateHostInfo(this.localRoomProperties?.hostClientId);
-        // @Todo: use enum
-      } else if (this.myParticipant.data.type === 'host') {
+      } else if (this.myParticipant.data.type === ParticipantType.HOST) {
         await this.setHost(this.myParticipant.data.participantId);
       }
       this.localRoomProperties = await this.fetchRoomProperties();

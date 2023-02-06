@@ -6,8 +6,8 @@ import {
   MeetingConnectionStatus,
   MeetingControlsEvent,
 } from './common/types/events.types';
-import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { Participant, Group, Avatar } from './common/types/participant.types';
+import { SuperVizSdkOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
@@ -35,7 +35,6 @@ const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => 
 
 const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   validateOptions(options);
-  console.log('init', options);
 
   if (options.debug) {
     logger.enable('@superviz/*');

@@ -353,7 +353,6 @@ class Communicator {
     }
     const participantListForVideoFrame = Object.values(participants)
       .map((participant: AblyParticipant) => {
-        console.log('onParticipantsDidChange', participant);
         return {
           timestamp: participant.timestamp,
           connectionId: participant.connectionId,
@@ -370,14 +369,18 @@ class Communicator {
   };
 
   private onMasterParticipantDidChange = (masterParticipant) => {
-    this.videoManager.onMasterParticipantDidChange(masterParticipant?.newMasterParticipantParticipantId);
+    this.videoManager.onMasterParticipantDidChange(
+      masterParticipant?.newMasterParticipantParticipantId,
+    );
   };
 
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
   };
 
-  private updateParticipantListFromParticipants = (participants: AblyParticipant[]): Participant[] => {
+  private updateParticipantListFromParticipants = (
+    participants: AblyParticipant[],
+  ): Participant[] => {
     const participantList = [];
     Object.values(participants).forEach((participant: AblyParticipant) => {
       participantList.push({
@@ -425,7 +428,9 @@ class Communicator {
   };
 
   private onParticipantListUpdate = (participants: Array<Participant>): void => {
-    const myParticipant = participants.find((participant) => participant.id === this.participant.id);
+    const myParticipant = participants.find(
+      (participant) => participant.id === this.participant.id,
+    );
 
     if (!isEqual(myParticipant, this.participant)) {
       this.participant = Object.assign({}, this.participant, myParticipant);
@@ -510,7 +515,10 @@ class Communicator {
       disableAvatars: this.integrationManager.disableAvatars,
       enablePointers: this.integrationManager.enablePointers,
       disablePointers: this.integrationManager.disablePointers,
-      getParticipantsOn3D: () => (this.integrationManager.participants ? this.integrationManager.participants : []),
+      getParticipantsOn3D: () => (this.integrationManager.participants
+        ? this.integrationManager.participants
+        : []
+      ),
       getAvatars: () => this.integrationManager.getAvatars,
     };
   }
