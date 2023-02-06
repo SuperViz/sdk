@@ -23,7 +23,7 @@ export interface DefaultRealtimeMethods {
   leave: () => void;
   join: (myParticipantProperties: any, additionalRoomProperties: any) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
-  setHost: (masterParticipantId: String) => void;
+  setHost: (masterParticipantId: string) => void;
   setGridMode: (value: boolean) => void;
 }
 
