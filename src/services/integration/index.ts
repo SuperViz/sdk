@@ -194,7 +194,7 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   /**
    * @function onParticipantUpdated
    * @description update participant
-   * @param {} Participant
+   * @param {AblyParticipant} participant
    * @returns {void}
    */
   private onParticipantUpdated = (Participant): void => {
