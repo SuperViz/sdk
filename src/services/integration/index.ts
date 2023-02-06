@@ -163,8 +163,8 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
    * @param {} Participant
    * @returns {void}
    */
-  private onParticipantJoined = (Participant): void => {
-    const { participantId, name, avatar, avatarConfig, isAudience } = Participant.data;
+  private onParticipantJoined = (participant: AblyParticipant): void => {
+    const { participantId, name, avatar, avatarConfig, isAudience } = participant.data;
 
     this.addParticipant({
       id: participantId,
