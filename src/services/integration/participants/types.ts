@@ -1,8 +1,8 @@
-import { Avatar } from '../../../common/types/user.types';
+import { Avatar } from '../../../common/types/participant.types';
 
-export interface DefaultUsersOn3DManager {
-  user: UserOn3D;
-  users: UserOn3D[];
+export interface DefaultParticipantsOn3DManager {
+  participant: ParticipantOn3D;
+  participants: ParticipantOn3D[];
 }
 
 export interface AvatarConfig {
@@ -11,7 +11,7 @@ export interface AvatarConfig {
   pointerOrigin: Position;
 }
 
-export interface UserTo3D {
+export interface ParticipantTo3D {
   id: string;
   name: string;
   avatar?: Avatar;
@@ -19,7 +19,7 @@ export interface UserTo3D {
   isAudience?: boolean;
 }
 
-export interface UserOn3D extends UserTo3D {
+export interface ParticipantOn3D extends ParticipantTo3D {
   position: Position;
   rotation: Rotation;
 }

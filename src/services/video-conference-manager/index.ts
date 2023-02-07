@@ -12,7 +12,7 @@ import {
   MeetingControlsEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
-import { User, Avatar } from '../../common/types/user.types';
+import { Participant, Avatar } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
@@ -37,20 +37,20 @@ export default class VideoConfereceManager {
   public readonly realtimeObserver = new ObserverHelper({ logger });
   public readonly hostChangeObserver = new ObserverHelper({ logger });
   public readonly gridModeChangeObserver = new ObserverHelper({ logger });
-  public readonly followUserObserver = new ObserverHelper({ logger });
-  public readonly goToUserObserver = new ObserverHelper({ logger });
-  public readonly gatherUsersObserver = new ObserverHelper({ logger });
+  public readonly followParticipantObserver = new ObserverHelper({ logger });
+  public readonly goToParticipantObserver = new ObserverHelper({ logger });
+  public readonly gatherParticipantsObserver = new ObserverHelper({ logger });
 
   public readonly sameAccountErrorObserver = new ObserverHelper({ logger });
   public readonly devicesObserver = new ObserverHelper({ logger });
   public readonly meetingStateObserver = new ObserverHelper({ logger });
   public readonly meetingConnectionObserver = new ObserverHelper({ logger });
 
-  public readonly userAmountUpdateObserver = new ObserverHelper({ logger });
-  public readonly userJoinedObserver = new ObserverHelper({ logger });
-  public readonly userAvatarObserver = new ObserverHelper({ logger });
-  public readonly userLeftObserver = new ObserverHelper({ logger });
-  public readonly userListObserver = new ObserverHelper({ logger });
+  public readonly participantAmountUpdateObserver = new ObserverHelper({ logger });
+  public readonly participantJoinedObserver = new ObserverHelper({ logger });
+  public readonly participantAvatarObserver = new ObserverHelper({ logger });
+  public readonly participantLeftObserver = new ObserverHelper({ logger });
+  public readonly participantListObserver = new ObserverHelper({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -68,7 +68,6 @@ export default class VideoConfereceManager {
       canUseGather,
       position,
       browserService,
-      isBroadcast,
       offset,
       canUseDefaultToolbar,
       locales,
@@ -99,7 +98,6 @@ export default class VideoConfereceManager {
       canUseDefaultAvatars,
       camerasOrientation,
       canUseDefaultToolbar,
-      isBroadcast,
       roomId,
     };
 
@@ -154,14 +152,14 @@ export default class VideoConfereceManager {
     }
 
     // @TODO: create option to destroy all these listens.
-    this.messageBridge.listen(MeetingEvent.MEETING_USER_AMOUNT_UPDATE, this.onUserAmountUpdate);
-    this.messageBridge.listen(MeetingEvent.MEETING_USER_JOINED, this.onUserJoined);
-    this.messageBridge.listen(MeetingEvent.MEETING_USER_LEFT, this.onUserLeft);
-    this.messageBridge.listen(MeetingEvent.MEETING_USER_LIST_UPDATE, this.onUserListUpdate);
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, this.onParticipantAmountUpdate);
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, this.onParticipantListUpdate);
     this.messageBridge.listen(MeetingEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
-    this.messageBridge.listen(MeetingEvent.MEETING_SAME_USER_ERROR, this.onSameAccountError);
+    this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(
       MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE,
@@ -170,9 +168,9 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_FOLLOW_USER, this.onFollowUserDidChange);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onUserAvatarChange);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_USER, this.onGoToDidChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.onFollowParticipantDidChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onParticipantAvatarChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.onGoToDidChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
 
     this.updateFrameState(VideoFrameState.INITIALIZED);
@@ -333,53 +331,53 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function onUserAmountUpdate
-   * @param {Array<User>} users
-   * @description updates the number of users within the meeting
+   * @function onParticipantAmountUpdate
+   * @param {Array<Participant>} participants
+   * @description updates the number of participants within the meeting
    * @returns {void}
    */
-  private onUserAmountUpdate = (users: Array<User>): void => {
-    this.userAmountUpdateObserver.publish(users);
+  private onParticipantAmountUpdate = (participants: Array<Participant>): void => {
+    this.participantAmountUpdateObserver.publish(participants);
   };
 
   /**
-   * @function onUserJoined
-   * @param {User} user
-   * @description callback that is triggered whenever a user enters the meeting room
+   * @function onParticipantJoined
+   * @param {Participant} participant
+   * @description callback that is triggered whenever a participant enters the meeting room
    * @returns {void}
    */
-  private onUserJoined = (user: User): void => {
-    this.userJoinedObserver.publish(user);
+  private onParticipantJoined = (participant: Participant): void => {
+    this.participantJoinedObserver.publish(participant);
   };
 
   /**
-   * @function onUserLeft
-   * @param {User} user
-   * @description callback that is triggered whenever a user left the meeting room
+   * @function onParticipantLeft
+   * @param {Participant} participant
+   * @description callback that is triggered whenever a participant left the meeting room
    * @returns {void}
    */
-  private onUserLeft = (user: User): void => {
-    this.userLeftObserver.publish(user);
+  private onParticipantLeft = (participant: Participant): void => {
+    this.participantLeftObserver.publish(participant);
   };
 
   /**
-   * @function onUserListUpdate
-   * @param {Array<User>} users
-   * @description callback that is called whenever the list of users is updated
+   * @function onParticipantListUpdate
+   * @param {Array<Participant>} participants
+   * @description callback that is called whenever the list of participants is updated
    * @returns {void}
    */
-  private onUserListUpdate = (users: Array<User>): void => {
-    this.userListObserver.publish(users);
+  private onParticipantListUpdate = (participants: Array<Participant>): void => {
+    this.participantListObserver.publish(participants);
   };
 
   /**
-   * @function onUserAvatarChange
-   * @param {avatarLink} string
-   * @description update user avatar
+   * @function onParticipantAvatarChange
+   * @description update participant avatar
    * @returns {void}
+   * @param avatarLink
    */
-  private onUserAvatarChange = (avatarLink: string): void => {
-    this.userAvatarObserver.publish(avatarLink);
+  private onParticipantAvatarChange = (avatarLink: string): void => {
+    this.participantAvatarObserver.publish(avatarLink);
   };
 
   /**
@@ -405,11 +403,11 @@ export default class VideoConfereceManager {
 
   /**
    * @function realtimeJoin
-   * @param userInfo
+   * @param participantInfo
    * @returns {void}
    */
-  private realtimeJoin = (userInfo = {}): void => {
-    this.realtimeObserver.publish(userInfo);
+  private realtimeJoin = (participantInfo = {}): void => {
+    this.realtimeObserver.publish(participantInfo);
   };
 
   /**
@@ -422,21 +420,21 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function onFollowUserDidChange
-   * @param {string} userId
+   * @function onFollowParticipantDidChange
+   * @param {string} participantId
    * @returns {void}
    */
-  private onFollowUserDidChange = (userId: string): void => {
-    this.followUserObserver.publish(userId);
+  private onFollowParticipantDidChange = (participantId: string): void => {
+    this.followParticipantObserver.publish(participantId);
   };
 
   /**
    * @function onGoToDidChange
-   * @param {string} userId
+   * @param {string} participantId
    * @returns {void}
    */
-  private onGoToDidChange = (userId: string): void => {
-    this.goToUserObserver.publish(userId);
+  private onGoToDidChange = (participantId: string): void => {
+    this.goToParticipantObserver.publish(participantId);
   };
 
   /**
@@ -444,7 +442,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGather = (): void => {
-    this.gatherUsersObserver.publish();
+    this.gatherParticipantsObserver.publish();
   };
 
   /**
@@ -511,30 +509,30 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function actorsListDidChange
-   * @param {} actorsList
+   * @function participantsListDidChange
+   * @param {} participantsList
    * @returns {void}
    */
-  public actorsListDidChange = (actorsList): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_USER_LIST_UPDATE, actorsList);
+  public participantsListDidChange = (participantsList): void => {
+    this.messageBridge.publish(RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE, participantsList);
   };
 
   /**
-   * @function onMasterActorDidChange
+   * @function onMasterParticipantDidChange
    * @param {string} hostId
    * @returns {void}
    */
-  public onMasterActorDidChange = (hostId: string): void => {
+  public onMasterParticipantDidChange = (hostId: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
   };
 
   /**
-   * @function followUserDidChange
-   * @param {string | null} userId
+   * @function followParticipantDidChange
+   * @param {string | null} participantId
    * @returns {void}
    */
-  public followUserDidChange = (userId: string | null): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_USER, userId);
+  public followParticipantDidChange = (participantId: string | null): void => {
+    this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   /**
@@ -567,7 +565,7 @@ export default class VideoConfereceManager {
     this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
     this.gridModeChangeObserver.destroy();
-    this.followUserObserver.destroy();
+    this.followParticipantObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;

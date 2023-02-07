@@ -1,48 +1,47 @@
 import { ObserverHelper } from '@superviz/immersive-core';
 
-import { Avatar, User } from '../../../common/types/user.types';
+import { Participant } from '../../../common/types/participant.types';
 
 export interface DefaultRealtimeService {
-  actorObservers: ObserverHelper[];
-  actorsObserver: ObserverHelper;
-  actorJoinedObserver: ObserverHelper;
-  actorLeaveObserver: ObserverHelper;
+  participantObservers: ObserverHelper[];
+  participantsObserver: ObserverHelper;
+  participantJoinedObserver: ObserverHelper;
+  participantLeaveObserver: ObserverHelper;
   joinRoomObserver: ObserverHelper;
   reconnectObserver: ObserverHelper;
   roomInfoUpdatedObserver: ObserverHelper;
   roomListUpdatedObserver: ObserverHelper;
-  masterActorObserver: ObserverHelper;
+  masterParticipantObserver: ObserverHelper;
   realtimeStateObserver: ObserverHelper;
   syncPropertiesObserver: ObserverHelper;
-  kickAllUsersObserver: ObserverHelper;
+  kickAllParticipantsObserver: ObserverHelper;
   authenticationObserver: ObserverHelper;
 }
 
 export interface DefaultRealtimeMethods {
   start: (options: StartRealtimeType) => void;
   leave: () => void;
-  join: (myActorProperties: any, aditionalRoomProperties: any) => void;
+  join: (myParticipantProperties: any, additionalRoomProperties: any) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
-  setHost: (masterUserId: String) => void;
+  setHost: (masterParticipantId: string) => void;
   setGridMode: (value: boolean) => void;
 }
 
 export interface RealtimeJoinOptions {
-  isHostCandidate: boolean;
   isAudience: boolean;
   name: string;
 }
 
-export interface ActorInfo extends User {
-  userId?: string;
+export interface ParticipantInfo extends Participant {
+  participantId?: string;
   slotIndex?: number;
 }
 
 export interface StartRealtimeType {
-  initialActorData: ActorInfo;
+  initialParticipantData: ParticipantInfo;
   roomId: string;
   apiKey: string;
-  shouldKickUsersOnHostLeave: boolean;
+  shouldKickParticipantsOnHostLeave: boolean;
   isBroadcast: boolean;
 }
 
