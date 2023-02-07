@@ -154,7 +154,6 @@ class Communicator {
 
   public destroy() {
     this.publish(MeetingEvent.DESTROY, undefined);
-    this.unloadPlugin();
 
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateDidChange);
     this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
@@ -192,6 +191,7 @@ class Communicator {
     this.realtime.leave();
     this.connectionService.removeListeners();
     this.hasJoined = false;
+    this.unloadPlugin();
   }
 
   public setSyncProperty = <T>(name: string, property: T): void => {
@@ -511,15 +511,15 @@ class Communicator {
     });
 
     return {
-      enableAvatars: this.integrationManager.enableAvatars,
-      disableAvatars: this.integrationManager.disableAvatars,
-      enablePointers: this.integrationManager.enablePointers,
-      disablePointers: this.integrationManager.disablePointers,
-      getParticipantsOn3D: () => (this.integrationManager.participants
+      enableAvatars: this.integrationManager?.enableAvatars,
+      disableAvatars: this.integrationManager?.disableAvatars,
+      enablePointers: this.integrationManager?.enablePointers,
+      disablePointers: this.integrationManager?.disablePointers,
+      getParticipantsOn3D: () => (this.integrationManager?.participants
         ? this.integrationManager.participants
         : []
       ),
-      getAvatars: () => this.integrationManager.getAvatars,
+      getAvatars: () => this.integrationManager?.getAvatars,
     };
   }
 
