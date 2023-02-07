@@ -1,11 +1,11 @@
 import { isEqual } from 'lodash';
 
-import { AblyRealtimeData } from '../realtime/ably/types';
+import { AblyRealtimeData, AblyParticipant } from '../realtime/ably/types';
 
 import { BasePluginManager } from './base-plugin';
-import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 import { IntegrationParticipantsManager } from './participants';
 import { ParticipantTo3D, ParticipantOn3D } from './participants/types';
+import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './types';
 
 export class IntegrationManager extends BasePluginManager implements DefaultIntegrationManager {
   private IntegrationParticipantsService: IntegrationParticipantsManager;
@@ -72,7 +72,10 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
 
     this.IntegrationParticipantsService.addParticipantToList(participantOn3D);
     // audience listens to the hosts broadcast channel
-    this.RealtimeService.subscribeToParticipantUpdate(participantOn3D.id, this.onParticipantUpdated);
+    this.RealtimeService.subscribeToParticipantUpdate(
+      participantOn3D.id,
+      this.onParticipantUpdated,
+    );
 
     this.createAvatar(participantOn3D);
     this.createPointer(participantOn3D);
@@ -91,7 +94,10 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     this.destroyAvatar(participant);
     this.destroyPointer(participant);
     if (unsubscribe) {
-      this.RealtimeService.unsubscribeFromParticipantUpdate(participant.id, this.onParticipantUpdated);
+      this.RealtimeService.unsubscribeFromParticipantUpdate(
+        participant.id,
+        this.onParticipantUpdated,
+      );
     }
   };
 
@@ -105,7 +111,9 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     if (!this.participants || this.participants.length === 0 || !participant || !participant.id) {
       return;
     }
-    const participantToBeUpdated = this.participants.find((oldParticipant) => oldParticipant.id === participant.id);
+    const participantToBeUpdated = this.participants.find(
+      (oldParticipant) => oldParticipant.id === participant.id,
+    );
 
     if (!participantToBeUpdated) {
       this.addParticipant(participant);
@@ -120,13 +128,17 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     }
     if (hasDifferentAvatarProperties) {
       this.removeParticipant(participant, false);
-      const participantOn3D = this.IntegrationParticipantsService.createParticipantOn3D(participant);
+      const participantOn3D =
+        this.IntegrationParticipantsService.createParticipantOn3D(participant);
       this.IntegrationParticipantsService.addParticipantToList(participantOn3D);
 
       this.createAvatar(participantOn3D);
       this.createPointer(participantOn3D);
     } else {
-      const index = this.IntegrationParticipantsService.participants.findIndex((u) => u.id === participant.id);
+      const index =
+        this.IntegrationParticipantsService.participants.findIndex(
+          (u) => u.id === participant.id,
+        );
       if (index !== -1) {
         this.IntegrationParticipantsService.participants[index] = participant;
       }
@@ -151,7 +163,9 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
    * @returns {void}
    */
   private createParticipantList = (participantList: ParticipantTo3D[]): void => {
-    const participantOn3DList = participantList.map((participant) => this.IntegrationParticipantsService.createParticipantOn3D(participant));
+    const participantOn3DList = participantList.map(
+      (participant) => this.IntegrationParticipantsService.createParticipantOn3D(participant),
+    );
     participantOn3DList.forEach((participant) => {
       this.addParticipant(participant);
     });
@@ -184,7 +198,10 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   private onParticipantLeave = (Participant): void => {
     if (!this.participants?.length) return;
 
-    const participant = this.participants.find((participant) => participant.id === Participant.clientId);
+    const participant =
+      this.participants.find(
+        (participant) => participant.id === Participant.clientId,
+      );
 
     if (!participant) return;
 
