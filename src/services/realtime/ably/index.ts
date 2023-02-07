@@ -734,7 +734,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       console.error('no slots available!');
       return;
     }
-    const [slotChosen] = availableSlots[0];
+    const slotChosen = availableSlots[0];
     this.myParticipant.data.slotIndex = slotChosen;
 
     await this.updateMyProperties({ slotIndex: availableSlots[0] });
