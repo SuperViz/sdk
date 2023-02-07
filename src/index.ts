@@ -79,7 +79,7 @@ export {
   SuperVizSdk,
   MeetingState,
   Participant,
-  ParticipantType
+  ParticipantType,
   Group,
   MeetingConnectionStatus,
   PluginMethods,
