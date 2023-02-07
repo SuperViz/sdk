@@ -586,7 +586,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     // set host to me if im candidate
-    if (this.myParticipant?.data.participant.type) {
+    if (this.myParticipant?.data.type) {
       roomProperties.hostClientId = this.myParticipant.data.participantId;
     }
     await this.updateParticipants();
