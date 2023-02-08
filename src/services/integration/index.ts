@@ -13,7 +13,8 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
 
   constructor({
     isAvatarsEnabled,
-    isPointersEnabled,
+    isMouseEnabled,
+    isLaserEnabled,
     isNameEnabled,
     renderLocalAvatar,
     plugin,
@@ -24,13 +25,15 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
   }: DefaultIntegrationManagerOptions) {
     // Plugin manager
     const avatars = isAvatarsEnabled ?? true;
-    const pointers = isPointersEnabled ?? true;
+    const mouse = isMouseEnabled ?? true;
+    const laser = isLaserEnabled ?? true;
 
     super({
       plugin,
       RealtimeService,
       isAvatarsEnabled: avatars,
-      isPointersEnabled: pointers,
+      isMouseEnabled: mouse,
+      isLaserEnabled: laser,
       isNameEnabled,
       renderLocalAvatar,
       localParticipant,
@@ -78,7 +81,8 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     );
 
     this.createAvatar(participantOn3D);
-    this.createPointer(participantOn3D);
+    this.createMouse(participantOn3D);
+    this.createLaser(participantOn3D);
   };
 
   /**
@@ -92,7 +96,8 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
     this.IntegrationParticipantsService.removeParticipant(participant);
 
     this.destroyAvatar(participant);
-    this.destroyPointer(participant);
+    this.destroyMouse(participant);
+    this.destroyLaser(participant);
     if (unsubscribe) {
       this.RealtimeService.unsubscribeFromParticipantUpdate(
         participant.id,
@@ -133,7 +138,8 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
       this.IntegrationParticipantsService.addParticipantToList(participantOn3D);
 
       this.createAvatar(participantOn3D);
-      this.createPointer(participantOn3D);
+      this.createMouse(participantOn3D);
+      this.createLaser(participantOn3D);
     } else {
       const index =
         this.IntegrationParticipantsService.participants.findIndex(

@@ -8,7 +8,7 @@ export interface DefaultParticipantsOn3DManager {
 export interface AvatarConfig {
   height: number;
   scale: number;
-  pointerOrigin: Position;
+  laserOrigin: Position;
 }
 
 export interface ParticipantTo3D {

@@ -8,7 +8,8 @@ export interface DefaultIntegrationManager extends DefaultPluginManager {
   localParticipant: ParticipantTo3D;
 
   isAvatarsEnabled: boolean;
-  isPointersEnabled: boolean;
+  isMouseEnabled: boolean;
+  isLaserEnabled: boolean;
 }
 
 export interface DefaultIntegrationManagerOptions extends PluginOptions {

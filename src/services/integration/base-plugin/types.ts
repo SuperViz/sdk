@@ -3,12 +3,14 @@ import { ParticipantOn3D, ParticipantTo3D } from '../participants/types';
 
 export interface DefaultPluginManager {
   isAvatarsEnabled: boolean;
-  isPointersEnabled: boolean;
+  isMouseEnabled?: boolean;
+  isLaserEnabled?: boolean;
 }
 
 export interface DefaultPluginOptions {
   isAvatarsEnabled?: boolean;
-  isPointersEnabled?: boolean;
+  isMouseEnabled?: boolean;
+  isLaserEnabled?: boolean;
   isNameEnabled?: boolean;
   renderLocalAvatar?: boolean;
 
@@ -21,23 +23,29 @@ export interface DefaultPluginOptions {
 export interface PluginMethods {
   enableAvatars: () => void;
   disableAvatars: () => void;
-  enablePointers: () => void;
-  disablePointers: () => void;
+  enableMouse: () => void;
+  disableMouse: () => void;
+  enableLaser: () => void;
+  disableLaser: () => void;
   getParticipantsOn3D: () => ParticipantOn3D[];
   getAvatars: () => {};
 }
 
 export type Plugin = {
   setSyncProperty: <T>(name: string, property: T) => void;
-  createPointer: (participant: ParticipantOn3D) => void;
-  destroyPointer: (participant: ParticipantOn3D) => void;
+  createMouse: (participant: ParticipantOn3D) => void;
+  destroyMouse: (participant: ParticipantOn3D) => void;
+  createLaser: (participant: ParticipantOn3D) => void;
+  destroyLaser: (participant: ParticipantOn3D) => void;
   createAvatar: (participant: ParticipantOn3D) => void;
   createName: (participant: ParticipantOn3D, model) => void;
   destroyAvatar: (participant: ParticipantOn3D) => void;
   enableAvatars: () => void;
   disableAvatars: () => void;
-  enablePointers: () => void;
-  disablePointers: () => void;
+  enableMouse: () => void;
+  disableMouse: () => void;
+  enableLaser: () => void;
+  disableLaser: () => void;
   goToParticipant: (participantId: string) => void;
   gather: (hostId: string) => void;
   init: (methods: RealtimePluginMethods, localParticipant: ParticipantTo3D) => void;
