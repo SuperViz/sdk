@@ -513,8 +513,10 @@ class Communicator {
     return {
       enableAvatars: this.integrationManager?.enableAvatars,
       disableAvatars: this.integrationManager?.disableAvatars,
-      enablePointers: this.integrationManager?.enablePointers,
-      disablePointers: this.integrationManager?.disablePointers,
+      enableMouse: this.integrationManager?.enableMouse,
+      disableMouse: this.integrationManager?.disableMouse,
+      enableLaser: this.integrationManager?.enableLaser,
+      disableLaser: this.integrationManager?.disableLaser,
       getParticipantsOn3D: () => (this.integrationManager?.participants
         ? this.integrationManager.participants
         : []

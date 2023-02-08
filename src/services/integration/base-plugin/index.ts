@@ -6,7 +6,8 @@ import { DefaultPluginManager, Plugin } from './types';
 
 export class BasePluginManager implements DefaultPluginManager {
   private _isAvatarsEnabled: boolean;
-  private _isPointersEnabled: boolean;
+  private _isMouseEnabled: boolean;
+  private _isLaserEnabled: boolean;
   private _isNameEnabled: boolean;
   private _renderLocalAvatar: boolean;
 
@@ -16,7 +17,8 @@ export class BasePluginManager implements DefaultPluginManager {
 
   constructor({
     isAvatarsEnabled,
-    isPointersEnabled,
+    isMouseEnabled,
+    isLaserEnabled,
     isNameEnabled,
     renderLocalAvatar,
     plugin,
@@ -24,7 +26,8 @@ export class BasePluginManager implements DefaultPluginManager {
     localParticipant,
   }: PluginOptions) {
     this._isAvatarsEnabled = isAvatarsEnabled;
-    this._isPointersEnabled = isPointersEnabled;
+    this._isMouseEnabled = isMouseEnabled;
+    this._isLaserEnabled = isLaserEnabled;
     this._renderLocalAvatar = renderLocalAvatar;
     this._isNameEnabled = isNameEnabled;
 
@@ -59,8 +62,12 @@ export class BasePluginManager implements DefaultPluginManager {
     return this._isAvatarsEnabled;
   }
 
-  public get isPointersEnabled(): boolean {
-    return this._isPointersEnabled;
+  public get isMouseEnabled(): boolean {
+    return this._isMouseEnabled;
+  }
+
+  public get isLaserEnabled(): boolean {
+    return this._isLaserEnabled;
   }
 
   /**
@@ -82,21 +89,39 @@ export class BasePluginManager implements DefaultPluginManager {
   };
 
   /**
-   * @function enablePointers
-   * @description enable avatars in 3D space;
+   * @function enableMouse
+   * @description enable mouse in 3D space;
    * @returns {void}
    */
-  public enablePointers = (): void => {
-    this._isPointersEnabled = true;
+  public enableMouse = (): void => {
+    this._isMouseEnabled = true;
   };
 
   /**
-   * @function disablePointers
-   * @description disable avatars in 3D space;
+   * @function disableMouse
+   * @description disable mouse in 3D space;
    * @returns {void}
    */
-  public disablePointers = (): void => {
-    this._isPointersEnabled = false;
+  public disableMouse = (): void => {
+    this._isMouseEnabled = false;
+  };
+
+  /**
+   * @function enableLaser
+   * @description enable laser in 3D space;
+   * @returns {void}
+   */
+  public enableLaser = (): void => {
+    this._isLaserEnabled = true;
+  };
+
+  /**
+   * @function disableLaser
+   * @description disable laser in 3D space;
+   * @returns {void}
+   */
+  public disableLaser = (): void => {
+    this._isLaserEnabled = false;
   };
 
   /**
@@ -133,12 +158,12 @@ export class BasePluginManager implements DefaultPluginManager {
   };
 
   /**
-   * @function createPointer
-   * @description create an pointer for the participant in 3D space;
+   * @function createMouse
+   * @description create an mouse for the participant in 3D space;
    * @param {ParticipantOn3D} participant
    * @returns {void}
    */
-  public createPointer = (participant: ParticipantOn3D): void => {
+  public createMouse = (participant: ParticipantOn3D): void => {
     if (!participant.avatarConfig) {
       return;
     }
@@ -146,22 +171,54 @@ export class BasePluginManager implements DefaultPluginManager {
     if (
       (isOwnAvatar && !this._renderLocalAvatar) ||
       !this._isAvatarsEnabled ||
-      !this._isPointersEnabled
+      !this._isMouseEnabled
     ) {
       return;
     }
-    this.destroyPointer(participant);
-    this.plugin.createPointer(participant);
+    this.destroyMouse(participant);
+    this.plugin.createMouse(participant);
   };
 
   /**
-   * @function destroyPointer
-   * @description destroys a participant's pointer in 3D space;
+   * @function destroyMouse
+   * @description destroys a participant's mouse in 3D space;
    * @param {ParticipantOn3D} participant
    * @returns {void}
    */
-  public destroyPointer = (participant: ParticipantOn3D): void => {
-    this.plugin.destroyPointer(participant);
+  public destroyMouse = (participant: ParticipantOn3D): void => {
+    this.plugin.destroyMouse(participant);
+  };
+
+  /**
+   * @function createLaser
+   * @description create an laser for the participant in 3D space;
+   * @param {ParticipantOn3D} participant
+   * @returns {void}
+   */
+  public createLaser = (participant: ParticipantOn3D): void => {
+    if (!participant.avatarConfig) {
+      return;
+    }
+    const isOwnAvatar = participant.id === this._localParticipant.id;
+    if (
+      (isOwnAvatar && !this._renderLocalAvatar) ||
+      !this._isAvatarsEnabled ||
+      !this._isLaserEnabled
+    ) {
+      return;
+    }
+    this.destroyLaser(participant);
+    this.plugin.createLaser(participant);
+  };
+
+  /**
+   * @function destroyLaser
+   * @description destroys a participant's laser in 3D space;
+   * @param {ParticipantOn3D} participant
+   * @returns {void}
+   */
+  public destroyLaser = (participant: ParticipantOn3D): void => {
+    this.plugin.destroyLaser(participant);
   };
 
   /**
