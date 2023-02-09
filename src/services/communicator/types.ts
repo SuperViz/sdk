@@ -1,13 +1,13 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
-import { Adapter, AdapterMethods, DefaultAdapterOptions } from '../integration/base-adapter/types';
-import { AvatarConfig } from '../integration/users/types';
+import { Plugin, PluginMethods, DefaultPluginOptions } from '../integration/base-plugin/types';
+import { AvatarConfig } from '../integration/participants/types';
 
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
   ablyKey: string;
 }
 
-export interface AdapterOptions extends DefaultAdapterOptions {
+export interface PluginOptions extends DefaultPluginOptions {
   avatarConfig: AvatarConfig;
 }
 
@@ -24,6 +24,6 @@ export type SuperVizSdk = {
   toggleCam: () => void;
   toggleChat: () => void;
 
-  connectAdapter: (adapter: Adapter, props: AdapterOptions) => AdapterMethods;
-  disconnectAdapter: () => void;
+  loadPlugin: (plugin: Plugin, props: PluginOptions) => PluginMethods;
+  unloadPlugin: () => void;
 };

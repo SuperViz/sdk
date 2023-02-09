@@ -6,26 +6,26 @@ import { logger } from '../../../common/utils';
 import { DefaultRealtimeService, SlotColor } from './types';
 
 export class RealtimeService implements DefaultRealtimeService {
-  public actorObservers: ObserverHelper[];
-  public actorsObserver: ObserverHelper;
-  public actorJoinedObserver: ObserverHelper;
-  public actorLeaveObserver: ObserverHelper;
+  public participantObservers: ObserverHelper[];
+  public participantsObserver: ObserverHelper;
+  public participantJoinedObserver: ObserverHelper;
+  public participantLeaveObserver: ObserverHelper;
   public joinRoomObserver: ObserverHelper;
   public reconnectObserver: ObserverHelper;
   public roomInfoUpdatedObserver: ObserverHelper;
   public roomListUpdatedObserver: ObserverHelper;
-  public masterActorObserver: ObserverHelper;
+  public masterParticipantObserver: ObserverHelper;
   public realtimeStateObserver: ObserverHelper;
   public syncPropertiesObserver: ObserverHelper;
-  public kickAllUsersObserver: ObserverHelper;
+  public kickAllParticipantsObserver: ObserverHelper;
   public authenticationObserver: ObserverHelper;
 
   constructor() {
-    this.actorObservers = [];
+    this.participantObservers = [];
 
-    this.actorsObserver = new ObserverHelper({ logger });
-    this.actorJoinedObserver = new ObserverHelper({ logger });
-    this.actorLeaveObserver = new ObserverHelper({ logger });
+    this.participantsObserver = new ObserverHelper({ logger });
+    this.participantJoinedObserver = new ObserverHelper({ logger });
+    this.participantLeaveObserver = new ObserverHelper({ logger });
     this.joinRoomObserver = new ObserverHelper({ logger });
     this.syncPropertiesObserver = new ObserverHelper({ logger });
     this.reconnectObserver = new ObserverHelper({ logger });
@@ -33,45 +33,45 @@ export class RealtimeService implements DefaultRealtimeService {
     // Room info obervers helpers
     this.roomInfoUpdatedObserver = new ObserverHelper({ logger });
     this.roomListUpdatedObserver = new ObserverHelper({ logger });
-    this.masterActorObserver = new ObserverHelper({ logger });
+    this.masterParticipantObserver = new ObserverHelper({ logger });
     this.realtimeStateObserver = new ObserverHelper({ logger });
-    this.kickAllUsersObserver = new ObserverHelper({ logger });
+    this.kickAllParticipantsObserver = new ObserverHelper({ logger });
     this.authenticationObserver = new ObserverHelper({ logger });
   }
 
   /**
-   * @function subscribeToActorUpdate
-   * @description subscribe to a user's events
-   * @param {string} userId
+   * @function subscribeToParticipantUpdate
+   * @description subscribe to a participant's events
+   * @param {string} participantId
    * @param {Function} callback
    * @returns {void}
    */
-  public subscribeToActorUpdate(userId: string, callback: Function): void {
-    if (!this.actorObservers[userId]) {
-      this.actorObservers[userId] = new ObserverHelper({ logger });
+  public subscribeToParticipantUpdate(participantId: string, callback: Function): void {
+    if (!this.participantObservers[participantId]) {
+      this.participantObservers[participantId] = new ObserverHelper({ logger });
     }
 
-    this.actorObservers[userId].subscribe(callback);
+    this.participantObservers[participantId].subscribe(callback);
   }
 
   /**
-   * @function unsubscribeFromActorUpdate
-   * @description unsubscribe to a user's events
-   * @param {string} userId
+   * @function unsubscribeFromParticipantUpdate
+   * @description unsubscribe to a participant's events
+   * @param {string} participantId
    * @param {Function} callback
    * @returns {void}
    */
-  public unsubscribeFromActorUpdate(userId: string, callback: Function): void {
-    if (this.actorObservers[userId]) {
-      this.actorObservers[userId].unsubscribe(callback);
+  public unsubscribeFromParticipantUpdate(participantId: string, callback: Function): void {
+    if (this.participantObservers[participantId]) {
+      this.participantObservers[participantId].unsubscribe(callback);
     }
   }
 
   /**
-   * @function getActorColor
+   * @function getParticipantColor
    * @description get slot color string
-   * @param {number} index
    * @returns {string}
+   * @param slotIndex
    */
   public getSlotColor(slotIndex: number): SlotColor {
     const index = slotIndex ?? MeetingColors.gray;

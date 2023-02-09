@@ -1,16 +1,17 @@
-import { AdapterOptions } from '../communicator/types';
+import { PluginOptions } from '../communicator/types';
 
-import { DefaultAdapterManager, DefaultAdapterOptions } from './base-adapter/types';
-import { UserOn3D, UserTo3D } from './users/types';
+import { DefaultPluginManager } from './base-plugin/types';
+import { ParticipantOn3D, ParticipantTo3D } from './participants/types';
 
-export interface DefaultIntegrationManager extends DefaultAdapterManager {
-  users: UserOn3D[];
-  localUser: UserTo3D;
+export interface DefaultIntegrationManager extends DefaultPluginManager {
+  participants: ParticipantOn3D[];
+  localParticipant: ParticipantTo3D;
 
   isAvatarsEnabled: boolean;
-  isPointersEnabled: boolean;
+  isMouseEnabled: boolean;
+  isLaserEnabled: boolean;
 }
 
-export interface DefaultIntegrationManagerOptions extends AdapterOptions {
-  userList: UserTo3D[];
+export interface DefaultIntegrationManagerOptions extends PluginOptions {
+  participantList: ParticipantTo3D[];
 }

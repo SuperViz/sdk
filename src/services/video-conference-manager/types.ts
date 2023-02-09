@@ -1,5 +1,5 @@
 import { FramePosition } from '../../common/types/sdk-options.types';
-import type { Avatar } from '../../common/types/user.types';
+import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
@@ -16,7 +16,6 @@ export interface VideoManagerOptions {
   canUseDefaultToolbar: boolean;
   position: FramePosition;
   browserService: BrowserService;
-  isBroadcast: boolean;
   offset?: Offset;
   locales?: Locale[];
   avatars?: Avatar[];

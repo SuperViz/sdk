@@ -6,26 +6,26 @@ import {
   MeetingConnectionStatus,
   MeetingControlsEvent,
 } from './common/types/events.types';
+import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions } from './common/types/sdk-options.types';
-import { User, UserGroup, Avatar } from './common/types/user.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import { BrowserService } from './services/browser';
 import { BrowserStats } from './services/browser/types';
 import Communicator from './services/communicator';
-import { SuperVizSdk, AdapterOptions } from './services/communicator/types';
-import { AdapterMethods, Adapter } from './services/integration/base-adapter/types';
-import { UserOn3D, UserTo3D } from './services/integration/users/types';
+import { SuperVizSdk, PluginOptions } from './services/communicator/types';
+import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
+import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import { FrameSize } from './services/video-conference-manager/types';
 
-const validateOptions = ({ userGroup, user, roomId }: SuperVizSdkOptions) => {
-  if (!userGroup || !userGroup.name || !userGroup.id) {
-    throw new Error('userGroup fields is required');
+const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => {
+  if (!group || !group.name || !group.id) {
+    throw new Error('group fields is required');
   }
 
-  if (!user || !user.id) {
-    throw new Error('user fields is required');
+  if (!participant || !participant.id) {
+    throw new Error('participant fields is required');
   }
 
   if (!roomId) {
@@ -78,14 +78,15 @@ export {
   DeviceEvent,
   SuperVizSdk,
   MeetingState,
-  User,
-  UserGroup,
+  Participant,
+  ParticipantType,
+  Group,
   MeetingConnectionStatus,
-  AdapterMethods,
-  AdapterOptions,
-  Adapter,
-  UserOn3D,
-  UserTo3D,
+  PluginMethods,
+  PluginOptions,
+  Plugin,
+  ParticipantOn3D,
+  ParticipantTo3D,
   BrowserService,
   BrowserStats,
   Avatar,
