@@ -163,11 +163,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomSyncChannel = this.client.channels.get(`${this.roomId}:sync`);
     this.roomSyncChannel.subscribe(this.onAblySyncChannelUpdate);
 
-    if (this.isBroadcast) {
-      this.roomBroadcastChannel = this.client.channels.get(`${this.roomId}:broadcast`);
-      if (!this.enableSync) {
-        this.roomBroadcastChannel.subscribe('update', this.onReceiveBroadcastSync);
-      }
+    this.roomBroadcastChannel = this.client.channels.get(`${this.roomId}:broadcast`);
+    if (!this.enableSync) {
+      this.roomBroadcastChannel.subscribe('update', this.onReceiveBroadcastSync);
     }
 
     // join main room channel
@@ -528,9 +526,22 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         participants[member.clientId] = { ...member };
       });
       this.participants = participants;
+      this.checkBroadcast();
       this.participantsObserver.publish(this.participants);
     });
   };
+
+  /**
+   * @function checkBroadcast
+   * @description check if have any audience in participant list
+   * and change the isBroadcast parameter based on it
+   * @returns {void}
+   */
+  private checkBroadcast() {
+    this.isBroadcast = Object.values(this.participants).some(
+      (participant) => participant.data.type === ParticipantType.AUDIENCE,
+    );
+  }
 
   /**
    * @function updateHostInfo
