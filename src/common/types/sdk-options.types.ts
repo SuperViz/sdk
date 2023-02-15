@@ -18,6 +18,8 @@ export interface SuperVizSdkOptions {
   enableGoTo?: boolean;
   enableGather?: boolean;
   defaultToolbar?: boolean;
+  isMouseEnabled?: boolean;
+  isLaserEnabled?: boolean;
 
   language?: string;
   locales?: Locale[];
