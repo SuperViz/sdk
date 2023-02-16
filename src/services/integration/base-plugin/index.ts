@@ -8,8 +8,8 @@ export class BasePluginManager implements DefaultPluginManager {
   private _isAvatarsEnabled: boolean;
   private _isMouseEnabled: boolean;
   private _isLaserEnabled: boolean;
-  private _isNameEnabled: boolean;
-  private _renderLocalAvatar: boolean;
+  private readonly _isNameEnabled: boolean;
+  private readonly _renderLocalAvatar: boolean;
 
   public plugin: Plugin;
   private _localParticipant: ParticipantTo3D;
@@ -159,7 +159,7 @@ export class BasePluginManager implements DefaultPluginManager {
 
   /**
    * @function createMouse
-   * @description create an mouse for the participant in 3D space;
+   * @description create a mouse for the participant in 3D space;
    * @param {ParticipantOn3D} participant
    * @returns {void}
    */
@@ -191,7 +191,7 @@ export class BasePluginManager implements DefaultPluginManager {
 
   /**
    * @function createLaser
-   * @description create an laser for the participant in 3D space;
+   * @description create a laser for the participant in 3D space;
    * @param {ParticipantOn3D} participant
    * @returns {void}
    */

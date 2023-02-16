@@ -152,10 +152,16 @@ export default class VideoConfereceManager {
     }
 
     // @TODO: create option to destroy all these listens.
-    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, this.onParticipantAmountUpdate);
+    this.messageBridge.listen(
+      MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE,
+      this.onParticipantAmountUpdate,
+    );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
-    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, this.onParticipantListUpdate);
+    this.messageBridge.listen(
+      MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
+      this.onParticipantListUpdate,
+    );
     this.messageBridge.listen(MeetingEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
@@ -168,7 +174,10 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.onFollowParticipantDidChange);
+    this.messageBridge.listen(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.onFollowParticipantDidChange,
+    );
     this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onParticipantAvatarChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.onGoToDidChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
@@ -433,7 +442,7 @@ export default class VideoConfereceManager {
    * @param {string} participantId
    * @returns {void}
    */
-  private onGoToDidChange = (participantId: string): void => {
+  public onGoToDidChange = (participantId: string): void => {
     this.goToParticipantObserver.publish(participantId);
   };
 

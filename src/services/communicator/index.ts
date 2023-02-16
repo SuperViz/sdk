@@ -214,7 +214,7 @@ class Communicator {
   };
 
   /**
-   * @funciton toggleChat
+   * @function toggleChat
    * @returns {void}
    */
   public toggleChat(): void {
@@ -222,7 +222,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleMeetingSetup
+   * @function toggleMeetingSetup
    * @returns {void}
    */
   public toggleMeetingSetup(): void {
@@ -230,7 +230,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleCam
+   * @function toggleCam
    * @returns {void}
    */
   public toggleCam(): void {
@@ -238,7 +238,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleMicrophone
+   * @function toggleMicrophone
    * @returns {void}
    */
   public toggleMicrophone(): void {
@@ -246,7 +246,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleScreenShare
+   * @function toggleScreenShare
    * @returns {void}
    */
   public toggleScreenShare(): void {
@@ -254,11 +254,38 @@ class Communicator {
   }
 
   /**
-   * @funciton hangUp
+   * @function hangUp
    * @returns {void}
    */
   public hangUp(): void {
     this.videoManager.hangUp();
+  }
+
+  /**
+   * @function follow
+   * @param participantId: string
+   * @returns {void}
+   */
+  public follow(participantId: string): void {
+    this.videoManager.followParticipantDidChange(participantId);
+    this.realtime.setFollowParticipant(participantId);
+  }
+
+  /**
+   * @function gather
+   * @returns {void}
+   */
+  public gather(): void {
+    this.realtime.setGather(true);
+  }
+
+  /**
+   * @function goTo
+   * @param participantId: string
+   * @returns {void}
+   */
+  public goTo(participantId: string): void {
+    this.integrationManager.goToParticipant(participantId);
   }
 
   private startVideo = (options: VideoManagerOptions): void => {
@@ -541,6 +568,9 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
+    follow: (participantId) => communicator.follow(participantId),
+    gather: () => communicator.gather(),
+    goTo: (participantId) => communicator.goTo(participantId),
 
     toggleMeetingSetup: () => communicator.toggleMeetingSetup(),
     toggleMicrophone: () => communicator.toggleMicrophone(),
