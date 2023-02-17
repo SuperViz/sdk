@@ -343,14 +343,17 @@ class Communicator {
 
   private onFollowParticipantDidChange = (participantId: string | null): void => {
     this.realtime.setFollowParticipant(participantId);
+    this.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   private onGoToParticipantDidChange = (participantId: string): void => {
     this.integrationManager.goToParticipant(participantId);
+    this.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, participantId);
   };
 
   private onGatherDidChange = (): void => {
     this.realtime.setGather(true);
+    this.publish(RealtimeEvent.REALTIME_GATHER, null);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {
