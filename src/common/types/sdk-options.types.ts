@@ -3,8 +3,15 @@ import type { Locale, Offset } from '../../services/video-conference-manager/typ
 import type { Participant, Group, Avatar } from './participant.types';
 
 export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
+
+export enum EnvironmentTypes {
+  DEV = 'dev',
+  PROD = 'prod',
+}
+
 export interface SuperVizSdkOptions {
   debug?: boolean;
+  environment?: EnvironmentTypes
   roomId: string;
   participant: Participant;
   group: Group;
