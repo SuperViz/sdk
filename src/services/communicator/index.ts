@@ -42,6 +42,8 @@ class Communicator {
   private isBroadcast: boolean = false;
 
   constructor({
+    conferenceLayerUrl,
+    apiUrl,
     apiKey,
     debug = false,
     language,
@@ -65,7 +67,7 @@ class Communicator {
     this.group = group;
     this.participant = participant;
 
-    this.realtime = new AblyRealtimeService(ablyKey);
+    this.realtime = new AblyRealtimeService(apiUrl, ablyKey);
     this.browserService = new BrowserService();
 
     const canUseCams = !camsOff;
@@ -96,6 +98,7 @@ class Communicator {
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
 
     this.startVideo({
+      conferenceLayerUrl,
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
@@ -343,14 +346,17 @@ class Communicator {
 
   private onFollowParticipantDidChange = (participantId: string | null): void => {
     this.realtime.setFollowParticipant(participantId);
+    this.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   private onGoToParticipantDidChange = (participantId: string): void => {
     this.integrationManager.goToParticipant(participantId);
+    this.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, participantId);
   };
 
   private onGatherDidChange = (): void => {
     this.realtime.setGather(true);
+    this.publish(RealtimeEvent.REALTIME_GATHER, null);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {

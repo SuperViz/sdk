@@ -5,6 +5,8 @@ import { AvatarConfig } from '../integration/participants/types';
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
   ablyKey: string;
+  conferenceLayerUrl: string;
+  apiUrl: string;
 }
 
 export interface PluginOptions extends DefaultPluginOptions {

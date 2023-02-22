@@ -5,7 +5,6 @@ import { RealtimeEvent } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
-import ApiService from '../../api';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
 
@@ -46,16 +45,18 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private shouldKickParticipantsOnHostLeave: boolean;
   private ablyKey: string;
   private apiKey: string;
+  private apiUrl: string;
   private left: boolean = false;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private roomChannelState: Ably.Types.ChannelStateChange;
   private connectionState: Ably.Types.ConnectionStateChange;
 
-  constructor(ablyKey: string) {
+  constructor(apiUrl: string, ablyKey: string) {
     super();
 
     this.ablyKey = ablyKey;
+    this.apiUrl = apiUrl;
 
     // bind ably callbacks
     this.onAblyPresenceEnter = this.onAblyPresenceEnter.bind(this);
@@ -133,7 +134,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     ably.auth.requestToken(
       tokenParams,
       {
-        authUrl: `${ApiService.baseUrl}/realtime/auth`,
+        authUrl: `${this.apiUrl}/realtime/auth`,
         key: this.ablyKey,
         authParams: {
           domain: origin,

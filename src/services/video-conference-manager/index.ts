@@ -56,6 +56,7 @@ export default class VideoConfereceManager {
 
   constructor(options: VideoManagerOptions) {
     const {
+      conferenceLayerUrl,
       apiKey,
       debug,
       language,
@@ -111,7 +112,7 @@ export default class VideoConfereceManager {
     this.bricklayer = new FrameBricklayer();
     this.bricklayer.build(
       wrapper.id,
-      process.env.SDK_VIDEO_CONFERENCE_LAYER_URL,
+      conferenceLayerUrl,
       FRAME_ID,
       frameOptions,
       {

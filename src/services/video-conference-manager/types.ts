@@ -1,8 +1,9 @@
-import { FramePosition } from '../../common/types/sdk-options.types';
 import type { Avatar } from '../../common/types/participant.types';
+import { FramePosition } from '../../common/types/sdk-options.types';
 import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
+  conferenceLayerUrl: string;
   apiKey: string;
   debug: boolean;
   language?: string;
