@@ -25,13 +25,13 @@ jobs:
 #          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
 #          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
 #        run: source ./e2e/build-e2e.sh
-#      - name: Install dependencies
-#        run: yarn install
-#        env:
-#          NPM_CONFIG_USERCONFIG: .npmrc.ci
-#          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-#      - run: git config --global user.name SuperViz
-#      - run: git config --global user.email ci@superviz.com
+      - name: Install dependencies
+        run: yarn install
+        env:
+          NPM_CONFIG_USERCONFIG: .npmrc.ci
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: git config --global user.name SuperViz
+      - run: git config --global user.email ci@superviz.com
 #      - run: yarn build
 #        env:
 #          NPM_CONFIG_USERCONFIG: .npmrc.ci
