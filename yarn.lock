@@ -6323,6 +6323,11 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
+semantic-release-version-file@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/semantic-release-version-file/-/semantic-release-version-file-1.0.1.tgz#29eae7a36315d77bd5859a0342757abd69a9279d"
+  integrity sha512-Dlx/PQqp5guJhuBWtJRa4lzYa1oDjEzp2IXCQ26Jd41ZCBXIghXanBbTmxR58HlbbEY+H/EgMfn0ZiRISZ2+BQ==
+
 semantic-release@19.0.5:
   version "19.0.5"
   resolved "https://registry.npmjs.org/semantic-release/-/semantic-release-19.0.5.tgz"
