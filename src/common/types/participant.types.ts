@@ -10,6 +10,7 @@ export interface Participant {
   type?: ParticipantType
   color?: string;
   avatar?: Avatar;
+  isHost?: boolean;
 }
 
 export interface Group {
