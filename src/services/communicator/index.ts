@@ -197,7 +197,7 @@ class Communicator {
     this.unloadPlugin();
   }
 
-  public setSyncProperty = <T>(name: string, property: T): void => {
+  public setSyncProperty = <T>(name: string, property?: T): void => {
     this.realtime.setSyncProperty(name, property);
   };
 
@@ -346,17 +346,17 @@ class Communicator {
 
   private onFollowParticipantDidChange = (participantId: string | null): void => {
     this.realtime.setFollowParticipant(participantId);
-    this.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
+    this.setSyncProperty(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   private onGoToParticipantDidChange = (participantId: string): void => {
-    this.integrationManager.goToParticipant(participantId);
+    this.integrationManager?.goToParticipant(participantId);
     this.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, participantId);
   };
 
   private onGatherDidChange = (): void => {
     this.realtime.setGather(true);
-    this.publish(RealtimeEvent.REALTIME_GATHER, null);
+    this.setSyncProperty(RealtimeEvent.REALTIME_GATHER);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {
