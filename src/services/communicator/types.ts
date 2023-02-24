@@ -5,6 +5,8 @@ import { AvatarConfig } from '../integration/participants/types';
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
   ablyKey: string;
+  conferenceLayerUrl: string;
+  apiUrl: string;
 }
 
 export interface PluginOptions extends DefaultPluginOptions {
@@ -16,6 +18,9 @@ export type SuperVizSdk = {
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
+  follow: (participantId: string) => void;
+  gather: () => void;
+  goTo: (participantId: string) => void;
 
   toggleMeetingSetup: () => void;
   toggleMicrophone: () => void;

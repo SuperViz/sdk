@@ -42,6 +42,8 @@ class Communicator {
   private isBroadcast: boolean = false;
 
   constructor({
+    conferenceLayerUrl,
+    apiUrl,
     apiKey,
     debug = false,
     language,
@@ -65,7 +67,7 @@ class Communicator {
     this.group = group;
     this.participant = participant;
 
-    this.realtime = new AblyRealtimeService(ablyKey);
+    this.realtime = new AblyRealtimeService(apiUrl, ablyKey);
     this.browserService = new BrowserService();
 
     const canUseCams = !camsOff;
@@ -96,6 +98,7 @@ class Communicator {
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
 
     this.startVideo({
+      conferenceLayerUrl,
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
@@ -194,7 +197,7 @@ class Communicator {
     this.unloadPlugin();
   }
 
-  public setSyncProperty = <T>(name: string, property: T): void => {
+  public setSyncProperty = <T>(name: string, property?: T): void => {
     this.realtime.setSyncProperty(name, property);
   };
 
@@ -214,7 +217,7 @@ class Communicator {
   };
 
   /**
-   * @funciton toggleChat
+   * @function toggleChat
    * @returns {void}
    */
   public toggleChat(): void {
@@ -222,7 +225,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleMeetingSetup
+   * @function toggleMeetingSetup
    * @returns {void}
    */
   public toggleMeetingSetup(): void {
@@ -230,7 +233,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleCam
+   * @function toggleCam
    * @returns {void}
    */
   public toggleCam(): void {
@@ -238,7 +241,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleMicrophone
+   * @function toggleMicrophone
    * @returns {void}
    */
   public toggleMicrophone(): void {
@@ -246,7 +249,7 @@ class Communicator {
   }
 
   /**
-   * @funciton toggleScreenShare
+   * @function toggleScreenShare
    * @returns {void}
    */
   public toggleScreenShare(): void {
@@ -254,11 +257,38 @@ class Communicator {
   }
 
   /**
-   * @funciton hangUp
+   * @function hangUp
    * @returns {void}
    */
   public hangUp(): void {
     this.videoManager.hangUp();
+  }
+
+  /**
+   * @function follow
+   * @param participantId: string
+   * @returns {void}
+   */
+  public follow(participantId: string): void {
+    this.videoManager.followParticipantDidChange(participantId);
+    this.realtime.setFollowParticipant(participantId);
+  }
+
+  /**
+   * @function gather
+   * @returns {void}
+   */
+  public gather(): void {
+    this.realtime.setGather(true);
+  }
+
+  /**
+   * @function goTo
+   * @param participantId: string
+   * @returns {void}
+   */
+  public goTo(participantId: string): void {
+    this.integrationManager.goToParticipant(participantId);
   }
 
   private startVideo = (options: VideoManagerOptions): void => {
@@ -311,19 +341,25 @@ class Communicator {
   };
 
   private onHostDidChange = (hostId: string): void => {
+    const participant = this.participantList.find((participant) => participant.id === hostId);
+
     this.realtime.setHost(hostId);
+    this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, participant);
   };
 
   private onFollowParticipantDidChange = (participantId: string | null): void => {
     this.realtime.setFollowParticipant(participantId);
+    this.setSyncProperty(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   private onGoToParticipantDidChange = (participantId: string): void => {
-    this.integrationManager.goToParticipant(participantId);
+    this.integrationManager?.goToParticipant(participantId);
+    this.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, participantId);
   };
 
   private onGatherDidChange = (): void => {
     this.realtime.setGather(true);
+    this.setSyncProperty(RealtimeEvent.REALTIME_GATHER);
   };
 
   private onFrameStateDidChange = (state: VideoFrameState): void => {
@@ -351,15 +387,16 @@ class Communicator {
       this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, this.participant);
       this.hasJoined = true;
     }
-    const participantListForVideoFrame = Object.values(participants)
-      .map((participant: AblyParticipant) => {
+    const participantListForVideoFrame = Object.values(participants).map(
+      (participant: AblyParticipant) => {
         return {
           timestamp: participant.timestamp,
           connectionId: participant.connectionId,
           participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
         };
-      });
+      },
+    );
 
     // update participant list
     this.participantList = this.updateParticipantListFromParticipants(participants);
@@ -517,10 +554,9 @@ class Communicator {
       disableMouse: this.integrationManager?.disableMouse,
       enableLaser: this.integrationManager?.enableLaser,
       disableLaser: this.integrationManager?.disableLaser,
-      getParticipantsOn3D: () => (this.integrationManager?.participants
-        ? this.integrationManager.participants
-        : []
-      ),
+      getParticipantsOn3D: () => {
+        return this.integrationManager?.participants ? this.integrationManager.participants : [];
+      },
       getAvatars: () => this.integrationManager?.getAvatars,
     };
   }
@@ -541,6 +577,9 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     subscribe: (propertyName, listener) => communicator.subscribe(propertyName, listener),
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
+    follow: (participantId) => communicator.follow(participantId),
+    gather: () => communicator.gather(),
+    goTo: (participantId) => communicator.goTo(participantId),
 
     toggleMeetingSetup: () => communicator.toggleMeetingSetup(),
     toggleMicrophone: () => communicator.toggleMicrophone(),

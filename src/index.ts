@@ -17,6 +17,7 @@ import Communicator from './services/communicator';
 import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
+import RemoteConfigService from './services/remote-config-service';
 import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => {
@@ -40,20 +41,27 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
     logger.enable('@superviz/*');
   }
 
-  const isValid = await AuthService(apiKey);
+  const { apiUrl, conferenceLayerUrl } =
+    await RemoteConfigService.getRemoteConfig(options.environment);
+
+  const isValid = await AuthService(apiUrl, apiKey);
 
   if (!isValid) {
     throw new Error('Failed to validate API key');
   }
 
-  const environment = await ApiService.fetchConfig(apiKey);
+  const environment = await ApiService.fetchConfig(apiUrl, apiKey);
 
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
   const { ablyKey } = environment;
-  return Communicator(Object.assign({}, options, { apiKey, ablyKey }));
+  return Communicator(Object.assign(
+    {},
+    options,
+    { apiKey, ablyKey, conferenceLayerUrl, apiUrl },
+  ));
 };
 
 if (window) {

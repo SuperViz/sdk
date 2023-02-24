@@ -1,3 +1,4 @@
+import doRequest from './doRequest';
 import logger from './logger';
 
-export { logger };
+export { logger, doRequest };
