@@ -341,7 +341,10 @@ class Communicator {
   };
 
   private onHostDidChange = (hostId: string): void => {
+    const participant = this.participantList.find((participant) => participant.id === hostId);
+
     this.realtime.setHost(hostId);
+    this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, participant);
   };
 
   private onFollowParticipantDidChange = (participantId: string | null): void => {
@@ -384,15 +387,16 @@ class Communicator {
       this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, this.participant);
       this.hasJoined = true;
     }
-    const participantListForVideoFrame = Object.values(participants)
-      .map((participant: AblyParticipant) => {
+    const participantListForVideoFrame = Object.values(participants).map(
+      (participant: AblyParticipant) => {
         return {
           timestamp: participant.timestamp,
           connectionId: participant.connectionId,
           participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
         };
-      });
+      },
+    );
 
     // update participant list
     this.participantList = this.updateParticipantListFromParticipants(participants);
@@ -550,10 +554,9 @@ class Communicator {
       disableMouse: this.integrationManager?.disableMouse,
       enableLaser: this.integrationManager?.enableLaser,
       disableLaser: this.integrationManager?.disableLaser,
-      getParticipantsOn3D: () => (this.integrationManager?.participants
-        ? this.integrationManager.participants
-        : []
-      ),
+      getParticipantsOn3D: () => {
+        return this.integrationManager?.participants ? this.integrationManager.participants : [];
+      },
       getAvatars: () => this.integrationManager?.getAvatars,
     };
   }
