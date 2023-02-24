@@ -4,6 +4,7 @@
     "@semantic-release/commit-analyzer",
     "semantic-release-version-file",
     "@semantic-release/release-notes-generator",
+    "@semantic-release/github",
     "@semantic-release/npm"
   ]
 }
