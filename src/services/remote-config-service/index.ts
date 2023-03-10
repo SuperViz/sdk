@@ -9,6 +9,10 @@ export default class RemoteConfigService {
   static async getRemoteConfig(
     environment: EnvironmentTypes = EnvironmentTypes.PROD,
   ): Promise<any> {
+    if (environment === EnvironmentTypes.LOCAL) {
+      const { remoteConfig } = await import('../../../.remote-config');
+      return remoteConfig;
+    }
     const remoteConfigParams: RemoteConfigParams = {
       version,
       environment,
