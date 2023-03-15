@@ -10,6 +10,7 @@ import {
   RealtimeEvent,
   Dimensions,
   MeetingControlsEvent,
+  FrameEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
@@ -114,7 +115,7 @@ export default class VideoConfereceManager {
       wrapper.id,
       conferenceLayerUrl,
       FRAME_ID,
-      frameOptions,
+      {},
       {
         allow: 'camera *;microphone *; display-capture *;',
       },
@@ -163,7 +164,7 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
       this.onParticipantListUpdate,
     );
-    this.messageBridge.listen(MeetingEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
+    this.messageBridge.listen(FrameEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
@@ -174,7 +175,7 @@ export default class VideoConfereceManager {
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
-    this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
+    this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       this.onFollowParticipantDidChange,
@@ -311,7 +312,7 @@ export default class VideoConfereceManager {
     height = height - offsetBottom - offsetTop;
     width = width - offsetLeft - offsetRight;
 
-    this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
+    this.messageBridge.publish(FrameEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
 
   /**
@@ -328,7 +329,7 @@ export default class VideoConfereceManager {
       throw new Error('The default language is not available in the language listing.');
     }
 
-    this.messageBridge.publish(MeetingEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
+    this.messageBridge.publish(FrameEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
   };
 
   /**
@@ -337,7 +338,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private updateMeetingAvatars = (): void => {
-    this.messageBridge.publish(MeetingEvent.MEETING_AVATAR_LIST_UPDATE, this.meetingAvatars);
+    this.messageBridge.publish(FrameEvent.FRAME_AVATAR_LIST_UPDATE, this.meetingAvatars);
   };
 
   /**
