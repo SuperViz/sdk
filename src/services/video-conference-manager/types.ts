@@ -42,9 +42,7 @@ export interface FrameLocale {
 
 export interface Locale {
   language: string;
-  messages: {
-    [key: string]: string;
-  };
+  messages: Record<string, string>;
 }
 
 export enum VideoFrameState {
