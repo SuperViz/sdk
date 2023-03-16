@@ -8,6 +8,7 @@ export interface VideoManagerOptions {
   debug: boolean;
   language?: string;
   roomId: string;
+  canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
