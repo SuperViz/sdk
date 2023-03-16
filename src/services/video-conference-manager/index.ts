@@ -62,6 +62,7 @@ export default class VideoConfereceManager {
       language,
       roomId,
       canUseCams,
+      canUseChat,
       canUseScreenshare,
       canUseDefaultAvatars,
       canUseFollow,
@@ -94,6 +95,7 @@ export default class VideoConfereceManager {
       canUseFollow,
       canUseGoTo,
       canUseCams,
+      canUseChat,
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
@@ -101,7 +103,6 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       roomId,
     };
-
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
 
@@ -110,15 +111,9 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
-    this.bricklayer.build(
-      wrapper.id,
-      conferenceLayerUrl,
-      FRAME_ID,
-      frameOptions,
-      {
-        allow: 'camera *;microphone *; display-capture *;',
-      },
-    );
+    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, frameOptions, {
+      allow: 'camera *;microphone *; display-capture *;',
+    });
 
     this.setFrameOffset(offset);
     this.setFrameStyle(position);
