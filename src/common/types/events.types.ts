@@ -22,6 +22,7 @@ export enum MeetingEvent {
 }
 
 export enum FrameEvent {
+  FRAME_CONFIG = 'frame.config',
   FRAME_LOAD = 'frame.load',
   FRAME_SIZE_UPDATE = 'frame.size-update',
   FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',

@@ -17,7 +17,14 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import { VideoFrameState, VideoManagerOptions, FrameSize, Offset, FrameLocale } from './types';
+import {
+  VideoFrameState,
+  VideoManagerOptions,
+  FrameSize,
+  Offset,
+  FrameLocale,
+  FrameConfig,
+} from './types';
 
 const FRAME_ID = 'sv-video-frame';
 const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
@@ -31,6 +38,8 @@ export default class VideoConfereceManager {
   private frameLocale: FrameLocale;
 
   private meetingAvatars: Avatar[];
+
+  private readonly frameConfig: FrameConfig;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -90,7 +99,7 @@ export default class VideoConfereceManager {
         ? 'vertical'
         : 'horizontal';
 
-    const frameOptions = {
+    this.frameConfig = {
       apiKey,
       debug,
       canUseFollow,
@@ -103,7 +112,13 @@ export default class VideoConfereceManager {
       camerasOrientation,
       canUseDefaultToolbar,
       roomId,
+      devices: {
+        audioInput: true,
+        audioOutput: true,
+        videoInput: true,
+      },
     };
+
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
 
@@ -112,8 +127,7 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
-
-    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, frameOptions, {
+    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, undefined, {
       allow: 'camera *;microphone *; display-capture *;',
     });
 
@@ -137,6 +151,8 @@ export default class VideoConfereceManager {
       logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
+
+    this.updateFrameConfig();
 
     if (this.browserService.isMobileDevice) {
       const noSleep = new NoSleep();
@@ -326,6 +342,15 @@ export default class VideoConfereceManager {
     }
 
     this.messageBridge.publish(FrameEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
+  };
+
+  /**
+   * @function updateFrameConfig
+   * @description update frame configs
+   * @returns {void}
+   */
+  private updateFrameConfig = (): void => {
+    this.messageBridge.publish(FrameEvent.FRAME_CONFIG, this.frameConfig);
   };
 
   /**
