@@ -85,6 +85,7 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       locales,
       avatars,
+      devices,
     } = options;
 
     this.browserService = browserService;
@@ -115,9 +116,9 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       roomId,
       devices: {
-        audioInput: true,
-        audioOutput: true,
-        videoInput: true,
+        audioInput: devices?.audioInput ?? true,
+        audioOutput: devices?.audioOutput ?? true,
+        videoInput: devices?.videoInput ?? true,
       },
     };
 

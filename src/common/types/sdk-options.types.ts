@@ -17,13 +17,10 @@ export interface SuperVizSdkOptions {
   participant: Participant;
   group: Group;
   shouldKickParticipantsOnHostLeave?: boolean;
-
   camsOff?: boolean;
   screenshareOff?: boolean;
   chatOff?: boolean;
-
   defaultAvatars?: boolean;
-
   offset: Offset;
   enableFollow?: boolean;
   enableGoTo?: boolean;
@@ -31,9 +28,14 @@ export interface SuperVizSdkOptions {
   defaultToolbar?: boolean;
   isMouseEnabled?: boolean;
   isLaserEnabled?: boolean;
-
+  devices: DevicesOptions;
   language?: string;
   locales?: Locale[];
-
   avatars?: Avatar[];
+}
+
+export interface DevicesOptions {
+  audioInput: boolean;
+  audioOutput: boolean;
+  videoInput: boolean;
 }
