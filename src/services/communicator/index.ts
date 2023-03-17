@@ -110,6 +110,7 @@ class Communicator {
       canUseGoTo,
       canUseGather,
       canUseDefaultToolbar,
+      ablyKey,
       apiKey,
       debug,
       language,
