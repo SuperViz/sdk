@@ -17,6 +17,11 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  devices: {
+    audioInput: boolean;
+    audioOutput: boolean;
+    videoInput: boolean;
+  };
   position: FramePosition;
   browserService: BrowserService;
   offset?: Offset;

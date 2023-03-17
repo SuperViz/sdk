@@ -64,6 +64,7 @@ class Communicator {
     defaultToolbar,
     locales,
     avatars,
+    devices,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -110,6 +111,7 @@ class Communicator {
       canUseGoTo,
       canUseGather,
       canUseDefaultToolbar,
+      devices,
       ablyKey,
       apiKey,
       debug,
