@@ -12,13 +12,16 @@ export enum EnvironmentTypes {
 
 export interface SuperVizSdkOptions {
   debug?: boolean;
-  environment?: EnvironmentTypes
+  environment?: EnvironmentTypes;
   roomId: string;
   participant: Participant;
   group: Group;
   shouldKickParticipantsOnHostLeave?: boolean;
+
   camsOff?: boolean;
   screenshareOff?: boolean;
+  chatOff?: boolean;
+
   defaultAvatars?: boolean;
 
   offset: Offset;

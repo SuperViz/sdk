@@ -8,6 +8,7 @@ export interface VideoManagerOptions {
   debug: boolean;
   language?: string;
   roomId: string;
+  canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
@@ -37,6 +38,28 @@ export interface Offset {
 export interface FrameLocale {
   language?: string;
   locales: Locale[];
+}
+
+export interface FrameConfig {
+  apiKey: string;
+  roomId: string;
+  debug: boolean;
+  canUseChat: boolean;
+  canUseCams: boolean;
+  canUseScreenshare: boolean;
+  canUseDefaultAvatars: boolean;
+  canUseFollow: boolean;
+  canUseGoTo: boolean;
+  canUseGather: boolean;
+  canUseDefaultToolbar: boolean;
+  camerasOrientation: string;
+  devices: DevicesConfig;
+}
+
+export interface DevicesConfig {
+  audioInput: boolean;
+  audioOutput: boolean;
+  videoInput: boolean;
 }
 
 export interface Locale {

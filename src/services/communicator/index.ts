@@ -55,6 +55,7 @@ class Communicator {
     shouldKickParticipantsOnHostLeave,
     camsOff,
     screenshareOff,
+    chatOff,
     defaultAvatars,
     offset,
     enableFollow,
@@ -73,6 +74,7 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
+    const canUseChat = !chatOff;
     const canUseDefaultAvatars = !!defaultAvatars && !participant?.avatar?.model;
     const canUseDefaultToolbar = defaultToolbar ?? true;
 
@@ -100,6 +102,7 @@ class Communicator {
 
     this.startVideo({
       conferenceLayerUrl,
+      canUseChat,
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
