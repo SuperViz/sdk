@@ -67,6 +67,7 @@ export default class VideoConfereceManager {
   constructor(options: VideoManagerOptions) {
     const {
       conferenceLayerUrl,
+      ablyKey,
       apiKey,
       debug,
       language,
@@ -101,6 +102,7 @@ export default class VideoConfereceManager {
 
     this.frameConfig = {
       apiKey,
+      ablyKey,
       debug,
       canUseFollow,
       canUseGoTo,
