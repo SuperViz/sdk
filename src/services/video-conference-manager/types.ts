@@ -4,6 +4,7 @@ import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
   conferenceLayerUrl: string;
+  ablyKey: string;
   apiKey: string;
   debug: boolean;
   language?: string;
@@ -42,6 +43,7 @@ export interface FrameLocale {
 
 export interface FrameConfig {
   apiKey: string;
+  ablyKey: string;
   roomId: string;
   debug: boolean;
   canUseChat: boolean;
