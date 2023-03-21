@@ -7,7 +7,7 @@ import {
   MeetingControlsEvent,
 } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
-import { SuperVizSdkOptions } from './common/types/sdk-options.types';
+import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
@@ -41,8 +41,9 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
     logger.enable('@superviz/*');
   }
 
-  const { apiUrl, conferenceLayerUrl } =
-    await RemoteConfigService.getRemoteConfig(options.environment);
+  const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
+    options.environment,
+  );
 
   const isValid = await AuthService(apiUrl, apiKey);
 
@@ -57,11 +58,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   }
 
   const { ablyKey } = environment;
-  return Communicator(Object.assign(
-    {},
-    options,
-    { apiKey, ablyKey, conferenceLayerUrl, apiUrl },
-  ));
+  return Communicator(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
 };
 
 if (window) {
@@ -99,4 +96,5 @@ export {
   BrowserStats,
   Avatar,
   MeetingControlsEvent,
+  DevicesOptions,
 };
