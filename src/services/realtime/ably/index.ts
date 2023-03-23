@@ -967,7 +967,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const messageString = JSON.stringify(msg);
     const size = new TextEncoder().encode(messageString).length;
     if (size > MESSAGE_SIZE_LIMIT) {
-      console.error('Message to long, the message limit size is 2kb.');
+      console.error('Message too long, the message limit size is 2kb.');
       return true;
     }
     return false;
