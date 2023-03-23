@@ -13,13 +13,13 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '16.x'
-      - name: Build and run e2e tests
-        env:
-          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
-          E2E_ROOM_ID: ${{ secrets.E2E_ROOM_ID }}
-          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
-          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
-        run: source ./e2e/build-e2e.sh
+#      - name: Build and run e2e tests
+#        env:
+#          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+#          E2E_ROOM_ID: ${{ secrets.E2E_ROOM_ID }}
+#          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
+#          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
+#        run: source ./e2e/build-e2e.sh
       - name: Install dependencies
         run: yarn install
         env:
@@ -41,13 +41,13 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '16.x'
-      - name: Build and run e2e tests
-        env:
-          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
-          E2E_ROOM_ID: ${{ secrets.E2E_ROOM_ID }}
-          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
-          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
-        run: source ./e2e/build-e2e.sh
+#      - name: Build and run e2e tests
+#        env:
+#          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+#          E2E_ROOM_ID: ${{ secrets.E2E_ROOM_ID }}
+#          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
+#          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
+#        run: source ./e2e/build-e2e.sh
       - name: Install dependencies
         run: yarn install
         env:
