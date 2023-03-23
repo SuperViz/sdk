@@ -4,6 +4,7 @@ import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
   conferenceLayerUrl: string;
+  ablyKey: string;
   apiKey: string;
   debug: boolean;
   language?: string;
@@ -16,6 +17,11 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  devices: {
+    audioInput: boolean;
+    audioOutput: boolean;
+    videoInput: boolean;
+  };
   position: FramePosition;
   browserService: BrowserService;
   offset?: Offset;
@@ -40,11 +46,32 @@ export interface FrameLocale {
   locales: Locale[];
 }
 
+export interface FrameConfig {
+  apiKey: string;
+  ablyKey: string;
+  roomId: string;
+  debug: boolean;
+  canUseChat: boolean;
+  canUseCams: boolean;
+  canUseScreenshare: boolean;
+  canUseDefaultAvatars: boolean;
+  canUseFollow: boolean;
+  canUseGoTo: boolean;
+  canUseGather: boolean;
+  canUseDefaultToolbar: boolean;
+  camerasOrientation: string;
+  devices: DevicesConfig;
+}
+
+export interface DevicesConfig {
+  audioInput: boolean;
+  audioOutput: boolean;
+  videoInput: boolean;
+}
+
 export interface Locale {
   language: string;
-  messages: {
-    [key: string]: string;
-  };
+  messages: Record<string, string>;
 }
 
 export enum VideoFrameState {

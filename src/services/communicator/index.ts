@@ -4,6 +4,7 @@ import isEqual from 'lodash.isequal';
 import {
   DeviceEvent,
   Dimensions,
+  FrameEvent,
   MeetingConnectionStatus,
   MeetingEvent,
   MeetingState,
@@ -63,6 +64,7 @@ class Communicator {
     defaultToolbar,
     locales,
     avatars,
+    devices,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -109,6 +111,8 @@ class Communicator {
       canUseGoTo,
       canUseGather,
       canUseDefaultToolbar,
+      devices,
+      ablyKey,
       apiKey,
       debug,
       language,
@@ -372,7 +376,7 @@ class Communicator {
   };
 
   private onFrameSizeDidChange = (dimensions: Dimensions): void => {
-    this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
+    this.publish(FrameEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
   private onRoomInfoUpdated = (room: AblyRealtimeData) => {
