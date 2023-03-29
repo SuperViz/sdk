@@ -37,15 +37,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   private isReconnecting: boolean = false;
   private isJoinedRoom: boolean = false;
-  private currentReconnecAttempt: number = 0;
+  private currentReconnectAttempt: number = 0;
   private localRoomProperties?: AblyRealtimeData = null;
   private enableSync: boolean = true;
-  private isSyncFreezed: boolean = false;
+  private isSyncFrozen: boolean = false;
   private roomId: string;
   private shouldKickParticipantsOnHostLeave: boolean;
-  private ablyKey: string;
+  private readonly ablyKey: string;
   private apiKey: string;
-  private apiUrl: string;
+  private readonly apiUrl: string;
   private left: boolean = false;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
@@ -240,7 +240,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty = throttle((name: string, property: unknown): void => {
-    if (this.isMessageTooBig(property) || this.isSyncFreezed) return;
+    if (this.isMessageTooBig(property) || this.isSyncFrozen) return;
     this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
       if (!error) return;
 
@@ -291,13 +291,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function freezeSync
-   * @param {boolean} isFreezed
+   * @param {boolean} isFrozen
    * @returns {void}
    */
-  public freezeSync = (isFreezed: boolean): void => {
-    this.isSyncFreezed = isFreezed;
+  public freezeSync = (isFrozen: boolean): void => {
+    this.isSyncFrozen = isFrozen;
 
-    if (isFreezed) {
+    if (isFrozen) {
       this.roomChannel.detach();
       this.roomSyncChannel.detach();
       this.roomBroadcastChannel?.detach();
@@ -440,7 +440,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.isMessageTooBig(newProperties) ||
       this.left ||
       !this.enableSync ||
-      this.isSyncFreezed
+      this.isSyncFrozen
     ) {
       return;
     }
@@ -467,7 +467,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private updateRoomProperties = async (properties: AblyRealtimeData): Promise<void> => {
-    if (this.isMessageTooBig(properties) || this.isSyncFreezed || this.left) return;
+    if (this.isMessageTooBig(properties) || this.isSyncFrozen || this.left) return;
 
     const newProperties = {
       ...this.localRoomProperties,
@@ -534,7 +534,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function checkBroadcast
-   * @description check if have any audience in participant list
+   * @description check if it has any audience in participant list
    * and change the isBroadcast parameter based on it
    * @returns {void}
    */
@@ -578,7 +578,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       newMasterParticipantParticipantId: this.hostParticipantId,
     });
 
-    logger.log('RELTIME', `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`);
+    logger.log('REALTIME', `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`);
   };
 
   /**
@@ -612,7 +612,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private forceReconnect(): void {
     logger.log(
       'REALTIME',
-      `RECONNECT: Starting force realtime reconnect | Current attempt: ${this.currentReconnecAttempt}`,
+      `RECONNECT: Starting force realtime reconnect | Current attempt: ${this.currentReconnectAttempt}`,
     );
 
     if (!this.roomId) {
@@ -620,7 +620,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
-      logger.log('REALTIME', 'Rejoining room since client aready connected to ably servers.');
+      logger.log('REALTIME', 'Rejoining room since client already connected to ably servers.');
       this.join(this.myParticipant.data);
       return;
     }
@@ -707,11 +707,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         return;
       }
 
-      const nextHostCandidateParticipantid = hostCandidates[0];
+      const nextHostCandidateParticipantId = hostCandidates[0];
 
-      // if i find that I am the next host candidate, I set it to everyone
-      if (nextHostCandidateParticipantid === this.localParticipantId) {
-        this.setHost(nextHostCandidateParticipantid);
+      // if I find that I am the next host candidate, I set it to everyone
+      if (nextHostCandidateParticipantId === this.localParticipantId) {
+        this.setHost(nextHostCandidateParticipantId);
       }
     });
   }, 1000);
@@ -804,7 +804,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       ['closed', 'closing'].includes(connectionCurrentState) ||
       ['detaching', 'detached'].includes(roomChannelCurrentState);
 
-    const avaliableStates = {
+    const availableStates = {
       [RealtimeStateTypes.DISCONNECTED]: isDisconnected,
       [RealtimeStateTypes.INITIALIZING]: isInitializing,
       [RealtimeStateTypes.READY_TO_JOIN]: !roomChannelCurrentState && isConnectedToAblyService,
@@ -817,11 +817,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         connectionCurrentState === 'suspended' || roomChannelCurrentState === 'suspended',
     };
 
-    const currentState = Object.entries(avaliableStates).find(([key, value]) => value && key)[0];
+    const currentState = Object.entries(availableStates).find(([key, value]) => value && key)[0];
     const newState = Number(currentState);
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
-      this.currentReconnecAttempt = 0;
+      this.currentReconnectAttempt = 0;
     }
 
     if (isConnectedToAblyService && this.isReconnecting) {
@@ -834,10 +834,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (this.connectionState?.retryIn) {
-      this.currentReconnecAttempt++;
+      this.currentReconnectAttempt++;
       this.isReconnecting = true;
       this.publishStateUpdate(RealtimeStateTypes.RETRYING);
-      this.reconnectObserver.publish(this.currentReconnecAttempt);
+      this.reconnectObserver.publish(this.currentReconnectAttempt);
     }
 
     this.publishStateUpdate(newState);
@@ -895,6 +895,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.publishStateUpdate(RealtimeStateTypes.CONNECTED);
 
+    this.participantJoinedObserver.publish(myPresence);
+
     logger.log('REALTIME', 'Joined realtime room');
   }
 
@@ -904,8 +906,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param presence
    */
   private onParticipantJoin = async (presence: Ably.Types.PresenceMessage): Promise<void> => {
-    this.participantJoinedObserver.publish(presence);
     await this.updateParticipants();
+    this.participantJoinedObserver.publish(presence);
     this.updateMyProperties({}); // send a sync
   };
 
@@ -960,7 +962,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function isMessageTooBig
-   * @description calculates the size of a sync message and checks if its bigger than limit
+   * @description calculates the size of a sync message and checks if it's bigger than limit
    * @returns {boolean}
    */
   private isMessageTooBig = (msg: Object | string) => {
