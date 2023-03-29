@@ -157,7 +157,6 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE,
       this.onParticipantAmountUpdate,
     );
-    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(
       MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
@@ -348,16 +347,6 @@ export default class VideoConfereceManager {
    */
   private onParticipantAmountUpdate = (participants: Array<Participant>): void => {
     this.participantAmountUpdateObserver.publish(participants);
-  };
-
-  /**
-   * @function onParticipantJoined
-   * @param {Participant} participant
-   * @description callback that is triggered whenever a participant enters the meeting room
-   * @returns {void}
-   */
-  private onParticipantJoined = (participant: Participant): void => {
-    this.participantJoinedObserver.publish(participant);
   };
 
   /**
