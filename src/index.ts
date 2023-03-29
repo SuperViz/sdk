@@ -18,7 +18,6 @@ import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import RemoteConfigService from './services/remote-config-service';
-import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => {
   if (!group || !group.name || !group.id) {
@@ -65,7 +64,6 @@ if (window) {
   window.SuperVizSdk = {
     init,
     MeetingEvent,
-    FrameSize,
     DeviceEvent,
     RealtimeEvent,
     MeetingState,
@@ -78,7 +76,6 @@ export default { init };
 export {
   MeetingEvent,
   RealtimeEvent,
-  FrameSize,
   SuperVizSdkOptions,
   DeviceEvent,
   SuperVizSdk,

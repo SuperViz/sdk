@@ -17,17 +17,9 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import {
-  VideoFrameState,
-  VideoManagerOptions,
-  FrameSize,
-  Offset,
-  FrameLocale,
-  FrameConfig,
-} from './types';
+import { VideoFrameState, VideoManagerOptions, Offset, FrameLocale, FrameConfig } from './types';
 
 const FRAME_ID = 'sv-video-frame';
-const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
 
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
@@ -179,7 +171,6 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
       this.onParticipantListUpdate,
     );
-    this.messageBridge.listen(FrameEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
@@ -291,22 +282,6 @@ export default class VideoConfereceManager {
     frame.style.height = frameHeight;
 
     this.frameSizeObserver.publish({ width: frameWidth, height: frameHeight });
-  };
-
-  /**
-   * @function updateFrameSize
-   * @param {FrameSize} size
-   * @returns {void}
-   */
-  private updateFrameSize = (size: FrameSize): void => {
-    const frame = document.getElementById(FRAME_ID);
-    const isExpanded = frame.classList.contains(FRAME_EXPANSIVE_CLASS);
-
-    if (size === FrameSize.LARGE && isExpanded) return;
-
-    if (size === FrameSize.SMALL && !isExpanded) return;
-
-    frame.classList.toggle(FRAME_EXPANSIVE_CLASS);
   };
 
   /**

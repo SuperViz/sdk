@@ -29,16 +29,6 @@ const styles = `
     bottom: var(--superviz-offset-bottom);
     width: 100%;
   }
-
-  #sv-video-wrapper iframe.sv-video-frame--expansive-mode {
-    bottom: var(--superviz-offset-bottom); 
-    right: var(--superviz-offset-right);
-    width: 100%;
-  }
-
-  #sv-video-wrapper iframe.sv-video-frame--settings-view {
-    width: 370px;
-  }
 `;
 
 export default styles;
