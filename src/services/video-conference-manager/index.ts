@@ -263,20 +263,16 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
-    const SET_UPDATE_WIDTH = width !== null;
-    const FULL_WIDTH = width === 0;
-    const SET_UPDATE_HEIGHT = !!height;
-    const FULL_HEIGHT = height === 0 || height > window.innerHeight;
-    const FULL_PERCENT = '100%';
+    let frameWidth: string = `${width}px`;
+    let frameHeight: string = `${height}px`;
 
-    let frameWidth: string;
-    let frameHeight: string;
+    if (width >= window.innerWidth) {
+      frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
+    }
 
-    if (SET_UPDATE_WIDTH) frameWidth = `${width}px`;
-    if (FULL_WIDTH) frameWidth = `calc(${FULL_PERCENT} - ${offsetRight}px - ${offsetLeft}px)`;
-
-    if (SET_UPDATE_HEIGHT) frameHeight = `${height}px`;
-    if (FULL_HEIGHT) frameHeight = `calc(${FULL_PERCENT} - ${offsetTop}px - ${offsetBottom}px)`;
+    if (height >= window.innerHeight) {
+      frameHeight = `calc(100% - ${offsetTop}px - ${offsetBottom}px)`;
+    }
 
     frame.style.width = frameWidth;
     frame.style.height = frameHeight;
@@ -290,17 +286,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onWindowResize = (): void => {
-    const {
-      bottom: offsetBottom,
-      left: offsetLeft,
-      right: offsetRight,
-      top: offsetTop,
-    } = this.frameOffset;
-
-    let { innerHeight: height, innerWidth: width } = window;
-
-    height = height - offsetBottom - offsetTop;
-    width = width - offsetLeft - offsetRight;
+    const { innerHeight: height, innerWidth: width } = window;
 
     this.messageBridge.publish(FrameEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
