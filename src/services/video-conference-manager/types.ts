@@ -79,8 +79,3 @@ export enum VideoFrameState {
   INITIALIZING,
   INITIALIZED,
 }
-
-export enum FrameSize {
-  SMALL = 'SMALL',
-  LARGE = 'LARGE',
-}

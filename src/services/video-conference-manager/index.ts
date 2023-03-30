@@ -17,17 +17,9 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import {
-  VideoFrameState,
-  VideoManagerOptions,
-  FrameSize,
-  Offset,
-  FrameLocale,
-  FrameConfig,
-} from './types';
+import { VideoFrameState, VideoManagerOptions, Offset, FrameLocale, FrameConfig } from './types';
 
 const FRAME_ID = 'sv-video-frame';
-const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
 
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
@@ -179,7 +171,6 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
       this.onParticipantListUpdate,
     );
-    this.messageBridge.listen(FrameEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
@@ -272,20 +263,16 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
-    const SET_UPDATE_WIDTH = width !== null;
-    const FULL_WIDTH = width === 0;
-    const SET_UPDATE_HEIGHT = !!height;
-    const FULL_HEIGHT = height === 0 || height > window.innerHeight;
-    const FULL_PERCENT = '100%';
+    let frameWidth: string = `${width}px`;
+    let frameHeight: string = `${height}px`;
 
-    let frameWidth: string;
-    let frameHeight: string;
+    if (width >= window.innerWidth) {
+      frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
+    }
 
-    if (SET_UPDATE_WIDTH) frameWidth = `${width}px`;
-    if (FULL_WIDTH) frameWidth = `calc(${FULL_PERCENT} - ${offsetRight}px - ${offsetLeft}px)`;
-
-    if (SET_UPDATE_HEIGHT) frameHeight = `${height}px`;
-    if (FULL_HEIGHT) frameHeight = `calc(${FULL_PERCENT} - ${offsetTop}px - ${offsetBottom}px)`;
+    if (height >= window.innerHeight) {
+      frameHeight = `calc(100% - ${offsetTop}px - ${offsetBottom}px)`;
+    }
 
     frame.style.width = frameWidth;
     frame.style.height = frameHeight;
@@ -294,38 +281,12 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function updateFrameSize
-   * @param {FrameSize} size
-   * @returns {void}
-   */
-  private updateFrameSize = (size: FrameSize): void => {
-    const frame = document.getElementById(FRAME_ID);
-    const isExpanded = frame.classList.contains(FRAME_EXPANSIVE_CLASS);
-
-    if (size === FrameSize.LARGE && isExpanded) return;
-
-    if (size === FrameSize.SMALL && !isExpanded) return;
-
-    frame.classList.toggle(FRAME_EXPANSIVE_CLASS);
-  };
-
-  /**
    * @function onWindowResize
    * @description update window-host size to iframe
    * @returns {void}
    */
   private onWindowResize = (): void => {
-    const {
-      bottom: offsetBottom,
-      left: offsetLeft,
-      right: offsetRight,
-      top: offsetTop,
-    } = this.frameOffset;
-
-    let { innerHeight: height, innerWidth: width } = window;
-
-    height = height - offsetBottom - offsetTop;
-    width = width - offsetLeft - offsetRight;
+    const { innerHeight: height, innerWidth: width } = window;
 
     this.messageBridge.publish(FrameEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
