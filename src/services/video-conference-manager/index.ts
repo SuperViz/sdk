@@ -61,6 +61,7 @@ export default class VideoConfereceManager {
       conferenceLayerUrl,
       ablyKey,
       apiKey,
+      apiUrl,
       debug,
       language,
       roomId,
@@ -95,6 +96,7 @@ export default class VideoConfereceManager {
 
     this.frameConfig = {
       apiKey,
+      apiUrl,
       ablyKey,
       debug,
       canUseFollow,
