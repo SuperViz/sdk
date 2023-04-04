@@ -6,6 +6,7 @@ export interface VideoManagerOptions {
   conferenceLayerUrl: string;
   ablyKey: string;
   apiKey: string;
+  apiUrl: string;
   debug: boolean;
   language?: string;
   roomId: string;
@@ -48,6 +49,7 @@ export interface FrameLocale {
 
 export interface FrameConfig {
   apiKey: string;
+  apiUrl: string;
   ablyKey: string;
   roomId: string;
   debug: boolean;

@@ -114,6 +114,7 @@ class Communicator {
       devices,
       ablyKey,
       apiKey,
+      apiUrl,
       debug,
       language,
       roomId,
