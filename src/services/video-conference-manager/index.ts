@@ -137,6 +137,7 @@ export default class VideoConfereceManager {
     };
     this.meetingAvatars = avatars;
     window.addEventListener('resize', this.onWindowResize);
+    window.addEventListener('orientationchange', this.onWindowResize);
   }
 
   /**
