@@ -402,6 +402,7 @@ class Communicator {
           connectionId: participant.connectionId,
           participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
+          name: participant.data.name,
         };
       },
     );
