@@ -145,7 +145,7 @@ class Communicator {
     });
   }
 
-  private get isIntegrationManagerInitializated(): boolean {
+  private get isIntegrationManagerInitialized(): boolean {
     return !!this.integrationManager;
   }
 
@@ -277,7 +277,7 @@ class Communicator {
    * @param participantId: string
    * @returns {void}
    */
-  public follow(participantId: string): void {
+  public follow(participantId?: string): void {
     this.videoManager.followParticipantDidChange(participantId);
     this.realtime.setFollowParticipant(participantId);
   }
@@ -355,7 +355,7 @@ class Communicator {
     this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, participant);
   };
 
-  private onFollowParticipantDidChange = (participantId: string | null): void => {
+  private onFollowParticipantDidChange = (participantId?: string): void => {
     this.realtime.setFollowParticipant(participantId);
     this.setSyncProperty(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
@@ -517,7 +517,7 @@ class Communicator {
   };
 
   public loadPlugin(plugin: Plugin, pluginOptions: PluginOptions): PluginMethods {
-    if (this.isIntegrationManagerInitializated) {
+    if (this.isIntegrationManagerInitialized) {
       throw new Error('the 3D plugin has already been started');
     }
 

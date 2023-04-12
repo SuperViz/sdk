@@ -18,7 +18,7 @@ export type SuperVizSdk = {
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
-  follow: (participantId: string) => void;
+  follow: (participantId?: string) => void;
   gather: () => void;
   goTo: (participantId: string) => void;
 
