@@ -150,8 +150,6 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
-    this.updateFrameConfig();
-
     if (this.browserService.isMobileDevice) {
       const noSleep = new NoSleep();
 
@@ -309,15 +307,6 @@ export default class VideoConfereceManager {
     }
 
     this.messageBridge.publish(FrameEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
-  };
-
-  /**
-   * @function updateFrameConfig
-   * @description update frame configs
-   * @returns {void}
-   */
-  private updateFrameConfig = (): void => {
-    this.messageBridge.publish(FrameEvent.FRAME_CONFIG, this.frameConfig);
   };
 
   /**
@@ -540,7 +529,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   public start(options: StartMeetingOptions): void {
-    this.messageBridge.publish(MeetingEvent.MEETING_START, options);
+    this.messageBridge.publish(MeetingEvent.MEETING_START, {
+      ...options,
+      config: this.frameConfig,
+    });
   }
 
   /**
