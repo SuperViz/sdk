@@ -13,7 +13,7 @@ export interface AblyParticipant extends Ably.Types.PresenceMessage {}
 export interface AblyRealtimeData {
   hostClientId?: string;
   isGridModeEnable?: boolean;
-  followParticipantId?: string | null;
+  followParticipantId?: string;
   gather?: boolean;
 }
 

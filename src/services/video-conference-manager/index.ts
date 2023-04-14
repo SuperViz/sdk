@@ -412,7 +412,7 @@ export default class VideoConfereceManager {
    * @param {string} participantId
    * @returns {void}
    */
-  private onFollowParticipantDidChange = (participantId: string): void => {
+  private onFollowParticipantDidChange = (participantId?: string): void => {
     this.followParticipantObserver.publish(participantId);
   };
 
@@ -516,10 +516,10 @@ export default class VideoConfereceManager {
 
   /**
    * @function followParticipantDidChange
-   * @param {string | null} participantId
+   * @param {string} participantId
    * @returns {void}
    */
-  public followParticipantDidChange = (participantId: string | null): void => {
+  public followParticipantDidChange = (participantId?: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 

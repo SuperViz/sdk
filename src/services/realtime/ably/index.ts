@@ -250,11 +250,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function setFollowParticipant
-   * @param {string | null} participantId
+   * @param {string} participantId
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setFollowParticipant(participantId: string | null): void {
+  public setFollowParticipant(participantId?: string): void {
     this.updateRoomProperties({
       followParticipantId: participantId,
     });
@@ -414,16 +414,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {AblyRealtimeData} data
    * @returns {void}
    */
-  private updateLocalRoomState = (data: AblyRealtimeData): void => {
+  private updateLocalRoomState = async (data: AblyRealtimeData): Promise<void> => {
     this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
     this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
 
-    if (data.hostClientId) {
-      this.updateHostInfo(data.hostClientId);
-    } else {
+    if (!data.hostClientId) {
       this.hostPassingHandle();
+    } else if (data?.hostClientId !== this.hostParticipantId) {
+      this.updateHostInfo(data.hostClientId);
     }
+
     this.updateParticipants();
   };
 
@@ -578,7 +579,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       newMasterParticipantParticipantId: this.hostParticipantId,
     });
 
-    logger.log('RELTIME', `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`);
+    logger.log('REALTIME', `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`);
   };
 
   /**
@@ -620,7 +621,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
-      logger.log('REALTIME', 'Rejoining room since client aready connected to ably servers.');
+      logger.log('REALTIME', 'Rejoining room since client already connected to ably servers.');
       this.join(this.myParticipant.data);
       return;
     }
@@ -920,6 +921,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     const hostLeft = presence.data.participantId === this.hostParticipantId;
+    const followedLeft =
+        presence.data.participantId === this.localRoomProperties.followParticipantId;
+
+    if (followedLeft) {
+      this.setFollowParticipant();
+    }
 
     this.participantLeaveObserver.publish(presence);
 
