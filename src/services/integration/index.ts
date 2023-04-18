@@ -9,7 +9,7 @@ import { DefaultIntegrationManager, DefaultIntegrationManagerOptions } from './t
 
 export class IntegrationManager extends BasePluginManager implements DefaultIntegrationManager {
   private IntegrationParticipantsService: IntegrationParticipantsManager;
-  private followParticipantId = null;
+  private followParticipantId = undefined;
 
   constructor({
     isAvatarsEnabled,
@@ -201,7 +201,7 @@ export class IntegrationManager extends BasePluginManager implements DefaultInte
    * @param {} Participant
    * @returns {void}
    */
-  private onParticipantLeave = (Participant): void => {
+  private onParticipantLeave = (Participant: AblyParticipant): void => {
     if (!this.participants?.length) return;
 
     const participant =

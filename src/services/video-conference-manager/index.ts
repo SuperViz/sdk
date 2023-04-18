@@ -10,16 +10,16 @@ import {
   RealtimeEvent,
   Dimensions,
   MeetingControlsEvent,
+  FrameEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import { VideoFrameState, VideoManagerOptions, FrameSize, Offset, FrameLocale } from './types';
+import { VideoFrameState, VideoManagerOptions, Offset, FrameLocale, FrameConfig } from './types';
 
 const FRAME_ID = 'sv-video-frame';
-const FRAME_EXPANSIVE_CLASS = 'sv-video-frame--expansive-mode';
 
 export default class VideoConfereceManager {
   private messageBridge: MessageBridge;
@@ -30,6 +30,8 @@ export default class VideoConfereceManager {
   private frameLocale: FrameLocale;
 
   private meetingAvatars: Avatar[];
+
+  private readonly frameConfig: FrameConfig;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -57,11 +59,14 @@ export default class VideoConfereceManager {
   constructor(options: VideoManagerOptions) {
     const {
       conferenceLayerUrl,
+      ablyKey,
       apiKey,
+      apiUrl,
       debug,
       language,
       roomId,
       canUseCams,
+      canUseChat,
       canUseScreenshare,
       canUseDefaultAvatars,
       canUseFollow,
@@ -73,6 +78,7 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       locales,
       avatars,
+      devices,
     } = options;
 
     this.browserService = browserService;
@@ -88,18 +94,26 @@ export default class VideoConfereceManager {
         ? 'vertical'
         : 'horizontal';
 
-    const frameOptions = {
+    this.frameConfig = {
       apiKey,
+      apiUrl,
+      ablyKey,
       debug,
       canUseFollow,
       canUseGoTo,
       canUseCams,
+      canUseChat,
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
       camerasOrientation,
       canUseDefaultToolbar,
       roomId,
+      devices: {
+        audioInput: devices?.audioInput ?? true,
+        audioOutput: devices?.audioOutput ?? true,
+        videoInput: devices?.videoInput ?? true,
+      },
     };
 
     wrapper.classList.add('sv_video_wrapper');
@@ -110,15 +124,9 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
-    this.bricklayer.build(
-      wrapper.id,
-      conferenceLayerUrl,
-      FRAME_ID,
-      frameOptions,
-      {
-        allow: 'camera *;microphone *; display-capture *;',
-      },
-    );
+    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, undefined, {
+      allow: 'camera *;microphone *; display-capture *;',
+    });
 
     this.setFrameOffset(offset);
     this.setFrameStyle(position);
@@ -129,6 +137,7 @@ export default class VideoConfereceManager {
     };
     this.meetingAvatars = avatars;
     window.addEventListener('resize', this.onWindowResize);
+    window.addEventListener('orientationchange', this.onWindowResize);
   }
 
   /**
@@ -162,7 +171,6 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
       this.onParticipantListUpdate,
     );
-    this.messageBridge.listen(MeetingEvent.FRAME_SIZE_UPDATE, this.updateFrameSize);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
@@ -173,7 +181,7 @@ export default class VideoConfereceManager {
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
-    this.messageBridge.listen(MeetingEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
+    this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       this.onFollowParticipantDidChange,
@@ -255,20 +263,16 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
-    const SET_UPDATE_WIDTH = width !== null;
-    const FULL_WIDTH = width === 0;
-    const SET_UPDATE_HEIGHT = !!height;
-    const FULL_HEIGHT = height === 0 || height > window.innerHeight;
-    const FULL_PERCENT = '100%';
+    let frameWidth: string = `${width}px`;
+    let frameHeight: string = `${height}px`;
 
-    let frameWidth: string;
-    let frameHeight: string;
+    if (width >= window.innerWidth) {
+      frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
+    }
 
-    if (SET_UPDATE_WIDTH) frameWidth = `${width}px`;
-    if (FULL_WIDTH) frameWidth = `calc(${FULL_PERCENT} - ${offsetRight}px - ${offsetLeft}px)`;
-
-    if (SET_UPDATE_HEIGHT) frameHeight = `${height}px`;
-    if (FULL_HEIGHT) frameHeight = `calc(${FULL_PERCENT} - ${offsetTop}px - ${offsetBottom}px)`;
+    if (height >= window.innerHeight) {
+      frameHeight = `calc(100% - ${offsetTop}px - ${offsetBottom}px)`;
+    }
 
     frame.style.width = frameWidth;
     frame.style.height = frameHeight;
@@ -277,40 +281,14 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function updateFrameSize
-   * @param {FrameSize} size
-   * @returns {void}
-   */
-  private updateFrameSize = (size: FrameSize): void => {
-    const frame = document.getElementById(FRAME_ID);
-    const isExpanded = frame.classList.contains(FRAME_EXPANSIVE_CLASS);
-
-    if (size === FrameSize.LARGE && isExpanded) return;
-
-    if (size === FrameSize.SMALL && !isExpanded) return;
-
-    frame.classList.toggle(FRAME_EXPANSIVE_CLASS);
-  };
-
-  /**
    * @function onWindowResize
    * @description update window-host size to iframe
    * @returns {void}
    */
   private onWindowResize = (): void => {
-    const {
-      bottom: offsetBottom,
-      left: offsetLeft,
-      right: offsetRight,
-      top: offsetTop,
-    } = this.frameOffset;
+    const { innerHeight: height, innerWidth: width } = window;
 
-    let { innerHeight: height, innerWidth: width } = window;
-
-    height = height - offsetBottom - offsetTop;
-    width = width - offsetLeft - offsetRight;
-
-    this.messageBridge.publish(MeetingEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
+    this.messageBridge.publish(FrameEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
 
   /**
@@ -327,7 +305,7 @@ export default class VideoConfereceManager {
       throw new Error('The default language is not available in the language listing.');
     }
 
-    this.messageBridge.publish(MeetingEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
+    this.messageBridge.publish(FrameEvent.FRAME_LOCALE_UPDATE, this.frameLocale);
   };
 
   /**
@@ -336,7 +314,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private updateMeetingAvatars = (): void => {
-    this.messageBridge.publish(MeetingEvent.MEETING_AVATAR_LIST_UPDATE, this.meetingAvatars);
+    this.messageBridge.publish(FrameEvent.FRAME_AVATAR_LIST_UPDATE, this.meetingAvatars);
   };
 
   /**
@@ -423,7 +401,7 @@ export default class VideoConfereceManager {
    * @param {string} participantId
    * @returns {void}
    */
-  private onFollowParticipantDidChange = (participantId: string): void => {
+  private onFollowParticipantDidChange = (participantId?: string): void => {
     this.followParticipantObserver.publish(participantId);
   };
 
@@ -527,10 +505,10 @@ export default class VideoConfereceManager {
 
   /**
    * @function followParticipantDidChange
-   * @param {string | null} participantId
+   * @param {string} participantId
    * @returns {void}
    */
-  public followParticipantDidChange = (participantId: string | null): void => {
+  public followParticipantDidChange = (participantId?: string): void => {
     this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
@@ -540,7 +518,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   public start(options: StartMeetingOptions): void {
-    this.messageBridge.publish(MeetingEvent.MEETING_START, options);
+    this.messageBridge.publish(MeetingEvent.MEETING_START, {
+      ...options,
+      config: this.frameConfig,
+    });
   }
 
   /**

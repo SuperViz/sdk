@@ -5,21 +5,22 @@ import type { Participant, Group, Avatar } from './participant.types';
 export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 
 export enum EnvironmentTypes {
+  LOCAL = 'local',
   DEV = 'dev',
   PROD = 'prod',
 }
 
 export interface SuperVizSdkOptions {
   debug?: boolean;
-  environment?: EnvironmentTypes
+  environment?: EnvironmentTypes;
   roomId: string;
   participant: Participant;
   group: Group;
   shouldKickParticipantsOnHostLeave?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;
+  chatOff?: boolean;
   defaultAvatars?: boolean;
-
   offset: Offset;
   enableFollow?: boolean;
   enableGoTo?: boolean;
@@ -27,9 +28,14 @@ export interface SuperVizSdkOptions {
   defaultToolbar?: boolean;
   isMouseEnabled?: boolean;
   isLaserEnabled?: boolean;
-
+  devices: DevicesOptions;
   language?: string;
   locales?: Locale[];
-
   avatars?: Avatar[];
+}
+
+export interface DevicesOptions {
+  audioInput: boolean;
+  audioOutput: boolean;
+  videoInput: boolean;
 }

@@ -250,11 +250,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function setFollowParticipant
-   * @param {string | null} participantId
+   * @param {string} participantId
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setFollowParticipant(participantId: string | null): void {
+  public setFollowParticipant(participantId?: string): void {
     this.updateRoomProperties({
       followParticipantId: participantId,
     });
@@ -414,16 +414,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {AblyRealtimeData} data
    * @returns {void}
    */
-  private updateLocalRoomState = (data: AblyRealtimeData): void => {
+  private updateLocalRoomState = async (data: AblyRealtimeData): Promise<void> => {
     this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
     this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
 
-    if (data.hostClientId) {
-      this.updateHostInfo(data.hostClientId);
-    } else {
+    if (!data.hostClientId) {
       this.hostPassingHandle();
+    } else if (data?.hostClientId !== this.hostParticipantId) {
+      this.updateHostInfo(data.hostClientId);
     }
+
     this.updateParticipants();
   };
 
@@ -922,6 +923,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     const hostLeft = presence.data.participantId === this.hostParticipantId;
+    const followedLeft =
+        presence.data.participantId === this.localRoomProperties.followParticipantId;
+
+    if (followedLeft) {
+      this.setFollowParticipant();
+    }
 
     this.participantLeaveObserver.publish(presence);
 
@@ -969,7 +976,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const messageString = JSON.stringify(msg);
     const size = new TextEncoder().encode(messageString).length;
     if (size > MESSAGE_SIZE_LIMIT) {
-      console.error('Message to long, the message limit size is 2kb.');
+      console.error('Message too long, the message limit size is 2kb.');
       return true;
     }
     return false;

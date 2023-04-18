@@ -4,6 +4,7 @@ import isEqual from 'lodash.isequal';
 import {
   DeviceEvent,
   Dimensions,
+  FrameEvent,
   MeetingConnectionStatus,
   MeetingEvent,
   MeetingState,
@@ -54,6 +55,7 @@ class Communicator {
     shouldKickParticipantsOnHostLeave,
     camsOff,
     screenshareOff,
+    chatOff,
     defaultAvatars,
     offset,
     enableFollow,
@@ -62,6 +64,7 @@ class Communicator {
     defaultToolbar,
     locales,
     avatars,
+    devices,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -72,6 +75,7 @@ class Communicator {
 
     const canUseCams = !camsOff;
     const canUseScreenshare = !screenshareOff;
+    const canUseChat = !chatOff;
     const canUseDefaultAvatars = !!defaultAvatars && !participant?.avatar?.model;
     const canUseDefaultToolbar = defaultToolbar ?? true;
 
@@ -99,6 +103,7 @@ class Communicator {
 
     this.startVideo({
       conferenceLayerUrl,
+      canUseChat,
       canUseCams,
       canUseScreenshare,
       canUseDefaultAvatars,
@@ -106,7 +111,10 @@ class Communicator {
       canUseGoTo,
       canUseGather,
       canUseDefaultToolbar,
+      devices,
+      ablyKey,
       apiKey,
+      apiUrl,
       debug,
       language,
       roomId,
@@ -139,7 +147,7 @@ class Communicator {
     });
   }
 
-  private get isIntegrationManagerInitializated(): boolean {
+  private get isIntegrationManagerInitialized(): boolean {
     return !!this.integrationManager;
   }
 
@@ -272,7 +280,7 @@ class Communicator {
    * @param participantId: string
    * @returns {void}
    */
-  public follow(participantId: string): void {
+  public follow(participantId?: string): void {
     this.videoManager.followParticipantDidChange(participantId);
     this.realtime.setFollowParticipant(participantId);
   }
@@ -349,7 +357,7 @@ class Communicator {
     this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, participant);
   };
 
-  private onFollowParticipantDidChange = (participantId: string | null): void => {
+  private onFollowParticipantDidChange = (participantId?: string): void => {
     this.realtime.setFollowParticipant(participantId);
     this.setSyncProperty(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
@@ -371,7 +379,7 @@ class Communicator {
   };
 
   private onFrameSizeDidChange = (dimensions: Dimensions): void => {
-    this.publish(MeetingEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
+    this.publish(FrameEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
   };
 
   private onRoomInfoUpdated = (room: AblyRealtimeData) => {
@@ -395,6 +403,7 @@ class Communicator {
           connectionId: participant.connectionId,
           participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
+          name: participant.data.name,
         };
       },
     );
@@ -521,7 +530,7 @@ class Communicator {
   };
 
   public loadPlugin(plugin: Plugin, pluginOptions: PluginOptions): PluginMethods {
-    if (this.isIntegrationManagerInitializated) {
+    if (this.isIntegrationManagerInitialized) {
       throw new Error('the 3D plugin has already been started');
     }
 

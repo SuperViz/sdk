@@ -7,7 +7,7 @@ import {
   MeetingControlsEvent,
 } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
-import { SuperVizSdkOptions } from './common/types/sdk-options.types';
+import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
@@ -18,7 +18,6 @@ import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import RemoteConfigService from './services/remote-config-service';
-import { FrameSize } from './services/video-conference-manager/types';
 
 const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => {
   if (!group || !group.name || !group.id) {
@@ -41,8 +40,9 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
     logger.enable('@superviz/*');
   }
 
-  const { apiUrl, conferenceLayerUrl } =
-    await RemoteConfigService.getRemoteConfig(options.environment);
+  const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
+    options.environment,
+  );
 
   const isValid = await AuthService(apiUrl, apiKey);
 
@@ -57,18 +57,13 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   }
 
   const { ablyKey } = environment;
-  return Communicator(Object.assign(
-    {},
-    options,
-    { apiKey, ablyKey, conferenceLayerUrl, apiUrl },
-  ));
+  return Communicator(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
 };
 
 if (window) {
   window.SuperVizSdk = {
     init,
     MeetingEvent,
-    FrameSize,
     DeviceEvent,
     RealtimeEvent,
     MeetingState,
@@ -81,7 +76,6 @@ export default { init };
 export {
   MeetingEvent,
   RealtimeEvent,
-  FrameSize,
   SuperVizSdkOptions,
   DeviceEvent,
   SuperVizSdk,
@@ -99,4 +93,5 @@ export {
   BrowserStats,
   Avatar,
   MeetingControlsEvent,
+  DevicesOptions,
 };

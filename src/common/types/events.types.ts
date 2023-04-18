@@ -1,9 +1,4 @@
 export enum MeetingEvent {
-  FRAME_LOAD = 'frame.load',
-  FRAME_SIZE_UPDATE = 'frame.size-update',
-  FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',
-  FRAME_PARENT_SIZE_UPDATE = 'frame.parante-window-size-update',
-  FRAME_LOCALE_UPDATE = 'frame.locales-update',
   MEETING_START = 'meeting.start',
   MEETING_LEAVE = 'meeting.leave',
   MEETING_PARTICIPANT_AMOUNT_UPDATE = 'meeting.amount-of-participants-update',
@@ -19,12 +14,20 @@ export enum MeetingEvent {
   MEETING_KICK_PARTICIPANTS = 'meeting.kick-all-participants',
   MEETING_STATE_UPDATE = 'meeting.state-update',
   MEETING_CONNECTION_STATUS_CHANGE = 'meeting.connection-status-change',
-  MEETING_AVATAR_LIST_UPDATE = 'meeting.avatar-list-update',
   MY_PARTICIPANT_UPDATED = 'my-participant.update',
   MY_PARTICIPANT_LEFT = 'my-participant.left',
   MY_PARTICIPANT_JOINED = 'my-participant.joined',
   HEARTBEAT = 'heartbeat',
   DESTROY = 'destroy',
+}
+
+export enum FrameEvent {
+  FRAME_LOAD = 'frame.load',
+  FRAME_SIZE_UPDATE = 'frame.size-update',
+  FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',
+  FRAME_PARENT_SIZE_UPDATE = 'frame.parent-window-size-update',
+  FRAME_LOCALE_UPDATE = 'frame.locales-update',
+  FRAME_AVATAR_LIST_UPDATE = 'frame.avatar-list-update',
 }
 
 export enum MeetingControlsEvent {

@@ -20,13 +20,15 @@ The SuperViz SDK enables you to implement SuperViz-supported meetings inside you
 `@superviz/sdk` is a package that abstracts all operations and management of meeting spaces from SuperViz, including audio, video, screen sharing and virtual 3D spaces.
 
 ## Getting started
+
 To check out the guide, visit [https://docs.superviz.com](https://docs.superviz.com)
 
-
 ## Issues
+
 To report a new bug or request a new feature, you can file an issue with the correct template. [Issue reporting](https://github.com/superviz/sdk/issues)
 
 ## E2E Tests
+
 Our E2E tests are using [Playwright Framework](https://playwright.dev/), to run, first, install their dependencies and browsers
 
 ```bash
@@ -53,6 +55,7 @@ yarn test:e2e:generate
 ```
 
 To run tests in headless mode, execute the command
+
 ```bash
 yarn test:e2e
 ```
@@ -71,11 +74,13 @@ yarn test:e2e:all
 ```
 
 You can run tests with headed mode with the command
+
 ```bash
 yarn test:e2e:headed
 ```
 
 You can run tests with debug mode with the command
+
 ```bash
 yarn test:e2e:debug
 ```
@@ -84,6 +89,23 @@ You can build and run E2E tests on container with command
 
 ```bash
 source ./e2e/build-e2e.sh
+```
+
+## To run locally
+
+Add file .remote-config.js with the following content:
+
+```javascript
+export const remoteConfig = {
+  apiUrl: 'https://api.example.com',
+  conferenceLayerUrl: 'https://conference-url.example.com',
+};
+```
+
+And add into inicialization of SDK
+
+```javascript
+environment: 'local';
 ```
 
 Superviz SDK is [BSD 2 licensed](LICENSE).
