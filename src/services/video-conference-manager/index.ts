@@ -17,7 +17,14 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
-import { VideoFrameState, VideoManagerOptions, Offset, FrameLocale, FrameConfig } from './types';
+import {
+  VideoFrameState,
+  VideoManagerOptions,
+  Offset,
+  FrameLocale,
+  FrameConfig,
+  ColorsVariables,
+} from './types';
 
 const FRAME_ID = 'sv-video-frame';
 
@@ -32,6 +39,7 @@ export default class VideoConfereceManager {
   private meetingAvatars: Avatar[];
 
   private readonly frameConfig: FrameConfig;
+  private readonly customColors: ColorsVariables;
 
   public readonly frameStateObserver = new ObserverHelper({ logger });
   public readonly frameSizeObserver = new ObserverHelper({ logger });
@@ -79,6 +87,7 @@ export default class VideoConfereceManager {
       locales,
       avatars,
       devices,
+      customColors,
     } = options;
 
     this.browserService = browserService;
@@ -115,6 +124,8 @@ export default class VideoConfereceManager {
         videoInput: devices?.videoInput ?? true,
       },
     };
+
+    this.customColors = customColors;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
@@ -196,6 +207,8 @@ export default class VideoConfereceManager {
     this.updateMeetingAvatars();
 
     this.onWindowResize();
+
+    this.setCustomColors();
   };
 
   /**
@@ -217,6 +230,12 @@ export default class VideoConfereceManager {
     });
 
     this.frameOffset = offset as Offset;
+  };
+
+  private setCustomColors = (): void => {
+    if (!this.customColors) return;
+
+    this.messageBridge.publish(FrameEvent.FRAME_COLOR_LIST_UPDATE, this.customColors);
   };
 
   /**
