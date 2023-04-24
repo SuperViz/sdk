@@ -1,4 +1,8 @@
-import type { Locale, Offset } from '../../services/video-conference-manager/types';
+import type {
+  ColorsVariables,
+  Locale,
+  Offset,
+} from '../../services/video-conference-manager/types';
 
 import type { Participant, Group, Avatar } from './participant.types';
 
@@ -32,6 +36,7 @@ export interface SuperVizSdkOptions {
   language?: string;
   locales?: Locale[];
   avatars?: Avatar[];
+  customColors: ColorsVariables;
 }
 
 export interface DevicesOptions {

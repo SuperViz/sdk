@@ -18,8 +18,19 @@ import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import RemoteConfigService from './services/remote-config-service';
+import { ColorsVariables, ColorsVariablesNames } from './services/video-conference-manager/types';
 
-const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => {
+/**
+ * @function validateOptions
+ * @description Validate the options passed to the SDK
+ * @param param {SuperVizSdkOptions}
+ * @returns {void}
+ */
+const validateOptions = ({ group, participant, roomId, customColors }: SuperVizSdkOptions) => {
+  if (customColors) {
+    validadeColorsVariablesNames(customColors);
+  }
+
   if (!group || !group.name || !group.id) {
     throw new Error('group fields is required');
   }
@@ -33,6 +44,34 @@ const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions) => 
   }
 };
 
+/**
+ * @function validadeColorsVariablesNames
+ * @description Validate if the custom colors variables names are valid
+ * @param colors {ColorsVariables}
+ */
+const validadeColorsVariablesNames = (colors: ColorsVariables) => {
+  Object.entries(colors).forEach(([key, value]) => {
+    if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
+      throw new Error(
+        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
+      );
+    }
+
+    if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
+      throw new Error(
+        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
+      );
+    }
+  });
+};
+
+/**
+ * @function init
+ * @description Initialize the SDK
+ * @param apiKey - API key
+ * @param options - SDK options
+ * @returns {SuperVizSdk}
+ */
 const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   validateOptions(options);
 
