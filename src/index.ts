@@ -50,10 +50,16 @@ const validateOptions = ({ group, participant, roomId, customColors }: SuperVizS
  * @param colors {ColorsVariables}
  */
 const validadeColorsVariablesNames = (colors: ColorsVariables) => {
-  Object.keys(colors).forEach((color) => {
-    if (!Object.values(ColorsVariablesNames).includes(color as ColorsVariablesNames)) {
+  Object.entries(colors).forEach(([key, value]) => {
+    if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
       throw new Error(
-        `Color ${color} is not a valid color variable name. Please check the documentation for more information.`,
+        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
+      );
+    }
+
+    if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
+      throw new Error(
+        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
       );
     }
   });
