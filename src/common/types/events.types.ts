@@ -28,6 +28,7 @@ export enum FrameEvent {
   FRAME_PARENT_SIZE_UPDATE = 'frame.parent-window-size-update',
   FRAME_LOCALE_UPDATE = 'frame.locales-update',
   FRAME_AVATAR_LIST_UPDATE = 'frame.avatar-list-update',
+  FRAME_COLOR_LIST_UPDATE = 'frame.color-list-update',
 }
 
 export enum MeetingControlsEvent {
