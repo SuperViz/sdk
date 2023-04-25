@@ -38,9 +38,6 @@ export class BasePluginManager implements DefaultPluginManager {
 
     this.plugin.init(
       {
-        setSyncProperty: <T>(name: string, property: T) => {
-          RealtimeService.setSyncProperty(name, property);
-        },
         subscribeToParticipantUpdate: (id: string, callback: Function) => {
           RealtimeService.subscribeToParticipantUpdate(id, callback);
         },
