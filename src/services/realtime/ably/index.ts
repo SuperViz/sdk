@@ -15,6 +15,7 @@ import {
   AblyRealtimeData,
   AblyTokenCallBack,
   ParticipantDataInput,
+  RealtimeMessage,
 } from './types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
@@ -32,8 +33,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private isBroadcast: boolean = false;
 
   private roomChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private roomSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private roomBroadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
+
+  private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
+  private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
 
   private isReconnecting: boolean = false;
   private isJoinedRoom: boolean = false;
@@ -161,8 +165,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.updateMyProperties(joinProperties);
 
     // join custom sync channel
-    this.roomSyncChannel = this.client.channels.get(`${this.roomId}:sync`);
-    this.roomSyncChannel.subscribe(this.onAblySyncChannelUpdate);
+    this.clientSyncChannel = this.client.channels.get(`${this.roomId}:client-sync`);
+    this.clientSyncChannel.subscribe(this.onAblySyncChannelUpdate);
 
     this.roomBroadcastChannel = this.client.channels.get(`${this.roomId}:broadcast`);
     if (!this.enableSync) {
@@ -200,7 +204,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.hostParticipantId = null;
     this.myParticipant = null;
     this.roomChannel = null;
-    this.roomSyncChannel = null;
+    this.clientSyncChannel = null;
     this.client = null;
     this.left = true;
   }
@@ -239,14 +243,28 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setSyncProperty = throttle((name: string, property: unknown): void => {
-    if (this.isMessageTooBig(property) || this.isSyncFreezed) return;
-    this.roomSyncChannel.publish(name, property, (error: Ably.Types.ErrorInfo) => {
-      if (!error) return;
+  public setSyncProperty<T>(name: string, property: T): void {
+    const createEvent = (name: string, data: T): RealtimeMessage => {
+      return {
+        name,
+        data,
+        participantId: this.myParticipant.data.participantId,
+        timestamp: Date.now(),
+      };
+    };
 
-      logger.log(`publish failed with error ${error}`);
-    });
-  }, SYNC_PROPERTY_INTERVAL);
+    if (!this.clientSyncPropertiesQueue[name]) {
+      this.clientSyncPropertiesQueue[name] = [];
+    }
+
+    this.clientSyncPropertiesQueue[name].push(createEvent(name, property));
+
+    if (!this.clientSyncPropertiesTimeOut) {
+      this.clientSyncPropertiesTimeOut = setTimeout(() => {
+        this.publishSyncProperties();
+      }, 1000);
+    }
+  }
 
   /**
    * @function setFollowParticipant
@@ -299,10 +317,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     if (isFreezed) {
       this.roomChannel.detach();
-      this.roomSyncChannel.detach();
+      this.clientSyncChannel.detach();
       this.roomBroadcastChannel?.detach();
       this.roomChannel.unsubscribe();
-      this.roomSyncChannel.unsubscribe();
+      this.clientSyncChannel.unsubscribe();
       this.roomBroadcastChannel?.unsubscribe();
       return;
     }
@@ -317,6 +335,37 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public setParticipantData = (data: ParticipantDataInput): void => {
     this.myParticipant.data = Object.assign({}, this.myParticipant.data, data);
+  };
+
+  /**
+   * @function publishSyncProperties
+   * @description publish client sync props
+   * @returns {void}
+   */
+  private publishSyncProperties = (): void => {
+    if (this.state !== RealtimeStateTypes.CONNECTED || this.clientSyncPropertiesQueue.length) {
+      return;
+    }
+
+    Object.keys(this.clientSyncPropertiesQueue).forEach((name) => {
+      const eventQueue = this.clientSyncPropertiesQueue[name];
+      if (!eventQueue.length) return;
+
+      this.clientSyncChannel.publish(name, eventQueue, (error: Ably.Types.ErrorInfo) => {
+        if (!error) {
+          this.clientSyncPropertiesQueue[name] = [];
+
+          logger.log('events published', name, eventQueue);
+          return;
+        }
+
+        logger.log(`publish failed with error ${error}`);
+      });
+    });
+
+    this.clientSyncPropertiesQueue = {};
+    clearTimeout(this.clientSyncPropertiesTimeOut);
+    this.clientSyncPropertiesTimeOut = null;
   };
 
   /**
@@ -579,7 +628,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       newMasterParticipantParticipantId: this.hostParticipantId,
     });
 
-    logger.log('REALTIME', `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`);
+    logger.log(
+      'REALTIME',
+      `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`,
+    );
   };
 
   /**
@@ -922,7 +974,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     const hostLeft = presence.data.participantId === this.hostParticipantId;
     const followedLeft =
-        presence.data.participantId === this.localRoomProperties.followParticipantId;
+      presence.data.participantId === this.localRoomProperties.followParticipantId;
 
     if (followedLeft) {
       this.setFollowParticipant();
