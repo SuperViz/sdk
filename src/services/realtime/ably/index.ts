@@ -260,7 +260,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     // if the property is too big, don't add to the queue
     if (this.isMessageTooBig(createEvent(name, property))) {
       logger.log('REALTIME', 'Message too big, not sending');
-      this.throw('Message too long, the message limit size is 6kb.');
+      this.throw('Message too long, the message limit size is 60k.');
     }
 
     // if the queue is too big, publish before add more events
@@ -1042,7 +1042,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const size = new TextEncoder().encode(messageString).length;
 
     if (size > MESSAGE_SIZE_LIMIT) {
-      logger.log('Message too long, the message limit size is 6kb.');
+      logger.log('Message too long, the message limit size is 60k.');
       return true;
     }
     return false;
