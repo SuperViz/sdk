@@ -25,3 +25,10 @@ export type AblyTokenCallBack = (
 export interface ParticipantDataInput {
   [key: string]: string | number | Array<unknown> | Object;
 }
+
+export type RealtimeMessage = {
+  name: string;
+  participantId: string;
+  data: unknown;
+  timestamp: number;
+};
