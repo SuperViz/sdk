@@ -1,4 +1,4 @@
-import Ably from 'ably';
+import Ably, { Realtime } from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
@@ -19,7 +19,7 @@ import {
 } from './types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
-const MESSAGE_SIZE_LIMIT = 2000;
+const MESSAGE_SIZE_LIMIT = 60000;
 const SYNC_PROPERTY_INTERVAL = 1000;
 
 let KICK_PARTICIPANTS_TIMEOUT = null;
@@ -38,6 +38,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
   private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
+  private clientSyncPropertiesCheckIfIsBigInterval: ReturnType<typeof setInterval> = null;
 
   private isReconnecting: boolean = false;
   private isJoinedRoom: boolean = false;
@@ -243,7 +244,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public setSyncProperty<T>(name: string, property: T): void {
+  public async setSyncProperty<T>(name: string, property: T): Promise<void> {
+    const queue = this.clientSyncPropertiesQueue[name] ?? [];
+
+    // clousure to create the event
     const createEvent = (name: string, data: T): RealtimeMessage => {
       return {
         name,
@@ -252,6 +256,20 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         timestamp: Date.now(),
       };
     };
+
+    // if the property is too big, don't add to the queue
+    if (this.isMessageTooBig(createEvent(name, property))) {
+      logger.log('REALTIME', 'Message too big, not sending');
+      this.throw('Message too long, the message limit size is 6kb.');
+    }
+
+    // if the queue is too big, publish before add more events
+    if (this.isMessageTooBig(queue)) {
+      logger.log('REALTIME', 'Message queue too big, publishing');
+      this.publishSyncProperties();
+    }
+
+    logger.log('adding to queue', name, property);
 
     if (!this.clientSyncPropertiesQueue[name]) {
       this.clientSyncPropertiesQueue[name] = [];
@@ -342,28 +360,25 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description publish client sync props
    * @returns {void}
    */
-  private publishSyncProperties = (): void => {
-    if (this.state !== RealtimeStateTypes.CONNECTED || this.clientSyncPropertiesQueue.length) {
-      return;
-    }
+  private publishSyncProperties = async (): Promise<void> => {
+    if (this.state !== RealtimeStateTypes.CONNECTED) return;
 
     Object.keys(this.clientSyncPropertiesQueue).forEach((name) => {
       const eventQueue = this.clientSyncPropertiesQueue[name];
+      this.clientSyncPropertiesQueue[name] = [];
+
       if (!eventQueue.length) return;
 
       this.clientSyncChannel.publish(name, eventQueue, (error: Ably.Types.ErrorInfo) => {
-        if (!error) {
-          this.clientSyncPropertiesQueue[name] = [];
-
-          logger.log('events published', name, eventQueue);
+        if (error) {
+          logger.log(`publish failed with error ${error}`);
           return;
         }
 
-        logger.log(`publish failed with error ${error}`);
+        logger.log('events published', name, eventQueue);
       });
     });
 
-    this.clientSyncPropertiesQueue = {};
     clearTimeout(this.clientSyncPropertiesTimeOut);
     this.clientSyncPropertiesTimeOut = null;
   };
@@ -435,7 +450,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.Message} message
    * @returns {void}
    */
-  onReceiveBroadcastSync(message: Ably.Types.Message): void {
+  private onReceiveBroadcastSync(message: Ably.Types.Message): void {
     const participants = message.data;
     participants.forEach((member) => {
       const participantId = member.clientId;
@@ -1025,8 +1040,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private isMessageTooBig = (msg: Object | string) => {
     const messageString = JSON.stringify(msg);
     const size = new TextEncoder().encode(messageString).length;
+
     if (size > MESSAGE_SIZE_LIMIT) {
-      console.error('Message too long, the message limit size is 2kb.');
+      logger.log('Message too long, the message limit size is 6kb.');
       return true;
     }
     return false;
