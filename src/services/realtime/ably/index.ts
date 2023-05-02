@@ -359,7 +359,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description publish client sync props
    * @returns {void}
    */
-  private publishClientSyncProperties = async (): Promise<void> => {
+  private publishClientSyncProperties = (): void => {
     if (this.state !== RealtimeStateTypes.CONNECTED) return;
 
     Object.keys(this.clientSyncPropertiesQueue).forEach((name) => {
