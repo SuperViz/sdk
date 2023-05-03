@@ -17,6 +17,7 @@ import Communicator from './services/communicator';
 import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
+import { RealtimeMessage } from './services/realtime/ably/types';
 import RemoteConfigService from './services/remote-config-service';
 import { ColorsVariables, ColorsVariablesNames } from './services/video-conference-manager/types';
 
@@ -133,4 +134,5 @@ export {
   Avatar,
   MeetingControlsEvent,
   DevicesOptions,
+  RealtimeMessage,
 };

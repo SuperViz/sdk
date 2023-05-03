@@ -32,7 +32,6 @@ export interface PluginMethods {
 }
 
 export type Plugin = {
-  setSyncProperty: <T>(name: string, property: T) => void;
   createMouse: (participant: ParticipantOn3D) => void;
   destroyMouse: (participant: ParticipantOn3D) => void;
   createLaser: (participant: ParticipantOn3D) => void;
@@ -57,7 +56,6 @@ export interface RealtimePluginMethods {
   subscribeToParticipantUpdate: (id: string, callback: Function) => void;
   unsubscribeToParticipantUpdate: (id: string, callback: Function) => void;
   updateMyProperties: <T>(properties: T) => void;
-  setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: (callback: Function) => void;
   unsubscribe: (callback: Function) => void;
   getParticipantSlot: (participantId: string) => number;
