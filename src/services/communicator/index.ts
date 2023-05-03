@@ -130,6 +130,8 @@ class Communicator {
     // Realtime observers
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
     this.realtime.participantsObserver.subscribe(this.onParticipantsDidChange);
+    this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
+    this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeft);
     this.realtime.masterParticipantObserver.subscribe(this.onMasterParticipantDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
@@ -181,8 +183,7 @@ class Communicator {
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
     this.videoManager.participantAmountUpdateObserver.unsubscribe(this.onParticipantAmountUpdate);
     this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
-    this.videoManager.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
-    this.videoManager.participantLeftObserver.unsubscribe(this.onParticipantLeft);
+    this.videoManager.participantLeftObserver.unsubscribe(this.onMyParticipantLeft);
     this.videoManager.participantAvatarObserver.unsubscribe(this.onParticipantAvatarUpdate);
 
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
@@ -196,6 +197,8 @@ class Communicator {
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.unsubscribe(this.onKickAllParticipantsDidChange);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
+    this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
+    this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeft);
 
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
@@ -318,8 +321,7 @@ class Communicator {
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
     this.videoManager.participantAmountUpdateObserver.subscribe(this.onParticipantAmountUpdate);
     this.videoManager.participantListObserver.subscribe(this.onParticipantListUpdate);
-    this.videoManager.participantJoinedObserver.subscribe(this.onParticipantJoined);
-    this.videoManager.participantLeftObserver.subscribe(this.onParticipantLeft);
+    this.videoManager.participantLeftObserver.subscribe(this.onMyParticipantLeft);
     this.videoManager.participantAvatarObserver.subscribe(this.onParticipantAvatarUpdate);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.subscribe(
@@ -394,7 +396,6 @@ class Communicator {
 
   private onParticipantsDidChange = (participants) => {
     if (participants[this.participant.id] && !this.hasJoined) {
-      this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, this.participant);
       this.hasJoined = true;
     }
     const participantListForVideoFrame = Object.values(participants).map(
@@ -457,17 +458,29 @@ class Communicator {
     this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, count);
   };
 
-  private onParticipantJoined = (participant: Participant): void => {
+  private onParticipantJoined = (ablyParticipant: AblyParticipant): void => {
     this.checkBroadcastMode();
+    const participant = this.participantList.find(
+      (participantItem) => participantItem.id === ablyParticipant.data.id,
+    );
+
+    if (!participant) return;
+
+    if (participant.id === this.participant.id) {
+      this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
+    }
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
   };
 
-  private onParticipantLeft = (participant: Participant): void => {
-    if (participant.id === this.participant.id) {
-      this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, participant);
-    }
-
+  private onParticipantLeft = (ablyParticipant: AblyParticipant): void => {
+    const participant = this.participantList.find(
+      (participantItem) => participantItem.id === ablyParticipant.data.id,
+    );
     this.publish(MeetingEvent.MEETING_PARTICIPANT_LEFT, participant);
+  };
+
+  private onMyParticipantLeft = (participant: Participant): void => {
+    this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, participant);
     this.destroy();
   };
 
