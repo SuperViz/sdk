@@ -13,6 +13,7 @@ const styles = `
     margin: 0; 
     padding: 0; 
     overflow: hidden;
+    z-index: 5;
   }
 
   #sv-video-wrapper iframe.sv-video-frame--right { 
