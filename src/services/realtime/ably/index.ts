@@ -20,6 +20,7 @@ import {
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 60000;
+const CLIENT_MESSAGE_SIZE_LIMIT = 10000;
 const SYNC_PROPERTY_INTERVAL = 1000;
 
 let KICK_PARTICIPANTS_TIMEOUT = null;
@@ -257,9 +258,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     // if the property is too big, don't add to the queue
-    if (this.isMessageTooBig(createEvent(name, property))) {
+    if (this.isClientMessageTooBig(createEvent(name, property))) {
       logger.log('REALTIME', 'Message too big, not sending');
-      this.throw('Message too long, the message limit size is 60k.');
+      this.throw('Message too long, the message limit size is 10kb.');
     }
 
     // if the queue is too big, publish before add more events
@@ -1041,9 +1042,21 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const size = new TextEncoder().encode(messageString).length;
 
     if (size > MESSAGE_SIZE_LIMIT) {
-      logger.log('Message too long, the message limit size is 60k.');
+      logger.log('Message too long, the message limit size is 60kb.');
       return true;
     }
+    return false;
+  };
+
+  private isClientMessageTooBig = (message: unknown) => {
+    const messageString = JSON.stringify(message);
+    const size = new TextEncoder().encode(messageString).length;
+
+    if (size > CLIENT_MESSAGE_SIZE_LIMIT) {
+      logger.log('Message too long, the message limit size is 10kb.');
+      return true;
+    }
+
     return false;
   };
 }
