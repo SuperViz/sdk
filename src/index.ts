@@ -19,7 +19,11 @@ import { PluginMethods, Plugin } from './services/integration/base-plugin/types'
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import { RealtimeMessage } from './services/realtime/ably/types';
 import RemoteConfigService from './services/remote-config-service';
-import { ColorsVariables, ColorsVariablesNames } from './services/video-conference-manager/types';
+import {
+  ColorsVariables,
+  ColorsVariablesNames,
+  WaterMark,
+} from './services/video-conference-manager/types';
 
 /**
  * @function validateOptions
@@ -91,13 +95,16 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   }
 
   const environment = await ApiService.fetchConfig(apiUrl, apiKey);
+  const waterMark: WaterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
 
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
   const { ablyKey } = environment;
-  return Communicator(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
+  return Communicator(
+    Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl, waterMark }),
+  );
 };
 
 if (window) {

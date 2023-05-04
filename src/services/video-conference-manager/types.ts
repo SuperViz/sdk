@@ -29,6 +29,7 @@ export interface VideoManagerOptions {
   locales?: Locale[];
   avatars?: Avatar[];
   customColors?: ColorsVariables;
+  waterMark: WaterMark;
 }
 
 export interface WindowSize {
@@ -64,6 +65,7 @@ export interface FrameConfig {
   canUseDefaultToolbar: boolean;
   camerasOrientation: string;
   devices: DevicesConfig;
+  waterMark: WaterMark;
 }
 
 export enum ColorsVariablesNames {
@@ -115,6 +117,12 @@ export interface DevicesConfig {
 export interface Locale {
   language: string;
   messages: Record<string, string>;
+}
+
+export enum WaterMark {
+  ALL = 'all',
+  CAMERA = 'camera',
+  POWERED_BY = 'powered-by',
 }
 
 export enum VideoFrameState {

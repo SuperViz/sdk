@@ -1,12 +1,14 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Plugin, PluginMethods, DefaultPluginOptions } from '../integration/base-plugin/types';
 import { AvatarConfig } from '../integration/participants/types';
+import { WaterMark } from '../video-conference-manager/types';
 
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
   ablyKey: string;
   conferenceLayerUrl: string;
   apiUrl: string;
+  waterMark: WaterMark;
 }
 
 export interface PluginOptions extends DefaultPluginOptions {
