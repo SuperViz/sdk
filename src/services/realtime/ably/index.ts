@@ -320,7 +320,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       if (exists) {
         return this.participants[participantId]?.data?.slotIndex;
       }
-      return 16; // GRAY COLOR
     }
     return 16; // GRAY COLOR
   }
