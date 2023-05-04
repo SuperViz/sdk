@@ -366,7 +366,7 @@ class Communicator {
 
   private onGoToParticipantDidChange = (participantId: string): void => {
     this.integrationManager?.goToParticipant(participantId);
-    this.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, participantId);
+    this.setSyncProperty(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, participantId);
   };
 
   private onGatherDidChange = (): void => {
