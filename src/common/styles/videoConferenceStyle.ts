@@ -28,6 +28,7 @@ const styles = `
 
   #sv-video-wrapper iframe.sv-video-frame--bottom { 
     bottom: var(--superviz-offset-bottom);
+    right: var(--superviz-offset-right);
     width: 100%;
   }
 `;

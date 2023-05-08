@@ -18,6 +18,7 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  camerasOrientation: 'horizontal' | 'vertical';
   devices: {
     audioInput: boolean;
     audioOutput: boolean;
@@ -62,7 +63,7 @@ export interface FrameConfig {
   canUseGoTo: boolean;
   canUseGather: boolean;
   canUseDefaultToolbar: boolean;
-  camerasOrientation: string;
+  camerasOrientation: 'horizontal' | 'vertical';
   devices: DevicesConfig;
 }
 

@@ -80,7 +80,6 @@ export default class VideoConfereceManager {
       canUseFollow,
       canUseGoTo,
       canUseGather,
-      position,
       browserService,
       offset,
       canUseDefaultToolbar,
@@ -90,18 +89,20 @@ export default class VideoConfereceManager {
       customColors,
     } = options;
 
+    let { position, camerasOrientation } = options;
+
+    if (browserService.isMobileDevice) {
+      position = 'bottom';
+      camerasOrientation = 'horizontal';
+    }
+
+    if (camerasOrientation === 'horizontal') {
+      position = 'bottom';
+    }
+
     this.browserService = browserService;
 
     const wrapper = document.createElement('div');
-
-    /**
-     * @TODO - add full horizontal view support on desktop, currently only works on mobile.
-     * request: https://github.com/SuperViz/sdk/issues/33
-     */
-    const camerasOrientation =
-      ['right', 'left'].includes(position) && !this.browserService.isMobileDevice
-        ? 'vertical'
-        : 'horizontal';
 
     this.frameConfig = {
       apiKey,
@@ -115,7 +116,7 @@ export default class VideoConfereceManager {
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
-      camerasOrientation,
+      camerasOrientation: camerasOrientation ?? 'vertical',
       canUseDefaultToolbar,
       roomId,
       devices: {
