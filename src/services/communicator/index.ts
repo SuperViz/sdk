@@ -66,6 +66,7 @@ class Communicator {
     avatars,
     devices,
     customColors,
+    camerasOrientation,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -125,6 +126,7 @@ class Communicator {
       locales: locales ?? [],
       avatars: avatars ?? [],
       customColors,
+      camerasOrientation,
     });
 
     // Realtime observers
