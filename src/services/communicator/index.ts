@@ -99,7 +99,7 @@ class Communicator {
     const framePosition = 'right';
 
     this.connectionService = new ConnectionService();
-    this.connectionService.addListerners();
+    this.connectionService.addListeners();
 
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);

@@ -16,11 +16,11 @@ export class ConnectionService implements DefaultConnectionService {
   }
 
   /**
-   * @function addListerners
+   * @function addListeners
    * @description add browser listeners to connection status
    * @returns {void}
    */
-  public addListerners(): void {
+  public addListeners(): void {
     window.addEventListener('online', this.onUpdateBrowserOnlineStatus);
     window.addEventListener('offline', this.onUpdateBrowserOnlineStatus);
   }
