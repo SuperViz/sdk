@@ -67,6 +67,7 @@ class Communicator {
     devices,
     customColors,
     waterMark,
+    camerasOrientation,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -127,6 +128,7 @@ class Communicator {
       avatars: avatars ?? [],
       customColors,
       waterMark,
+      camerasOrientation,
     });
 
     // Realtime observers
