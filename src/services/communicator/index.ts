@@ -66,6 +66,7 @@ class Communicator {
     avatars,
     devices,
     customColors,
+    waterMark,
     camerasOrientation,
   }: CommunicatorOptions) {
     this.roomId = roomId;
@@ -126,6 +127,7 @@ class Communicator {
       locales: locales ?? [],
       avatars: avatars ?? [],
       customColors,
+      waterMark,
       camerasOrientation,
     });
 

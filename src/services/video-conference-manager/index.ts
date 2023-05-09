@@ -24,6 +24,7 @@ import {
   FrameLocale,
   FrameConfig,
   ColorsVariables,
+  WaterMark,
 } from './types';
 
 const FRAME_ID = 'sv-video-frame';
@@ -87,6 +88,7 @@ export default class VideoConfereceManager {
       avatars,
       devices,
       customColors,
+      waterMark,
     } = options;
 
     let { position, camerasOrientation } = options;
@@ -124,6 +126,7 @@ export default class VideoConfereceManager {
         audioOutput: devices?.audioOutput ?? true,
         videoInput: devices?.videoInput ?? true,
       },
+      waterMark,
     };
 
     this.customColors = customColors;
@@ -283,8 +286,13 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
+    const hasWaterMark: boolean =
+      [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark) &&
+      !this.browserService.isMobileDevice;
+    const waterMarkHeight: number = hasWaterMark ? 40 : 0;
+
     let frameWidth: string = `${width}px`;
-    let frameHeight: string = `${height}px`;
+    let frameHeight: string = `${height + waterMarkHeight}px`;
 
     if (width >= window.innerWidth) {
       frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
@@ -381,7 +389,7 @@ export default class VideoConfereceManager {
    * @function updateFrameState
    * @description updates frame state
    * @param {VideoFrameState} state
-   * @retruns {void}
+   * @returns {void}
    */
   private updateFrameState(state: VideoFrameState): void {
     if (state !== this.frameState) {
@@ -572,7 +580,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleChat
+   * @function toggleChat
    * @returns {void}
    */
   public toggleChat(): void {
@@ -580,7 +588,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleMeetingSetup
+   * @function toggleMeetingSetup
    * @returns {void}
    */
   public toggleMeetingSetup(): void {
@@ -588,7 +596,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleMicrophone
+   * @function toggleMicrophone
    * @returns {void}
    */
   public toggleMicrophone(): void {
@@ -596,7 +604,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleScreenShare
+   * @function toggleScreenShare
    * @returns {void}
    */
   public toggleScreenShare(): void {
@@ -604,7 +612,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton hangUp
+   * @function hangUp
    * @returns {void}
    */
   public hangUp(): void {
@@ -612,7 +620,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleCam
+   * @function toggleCam
    * @returns {void}
    */
   public toggleCam(): void {
