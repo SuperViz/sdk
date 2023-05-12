@@ -165,11 +165,7 @@ export class BasePluginManager implements DefaultPluginManager {
       return;
     }
     const isOwnAvatar = participant.id === this._localParticipant.id;
-    if (
-      (isOwnAvatar && !this._renderLocalAvatar) ||
-      !this._isAvatarsEnabled ||
-      !this._isMouseEnabled
-    ) {
+    if ((isOwnAvatar && !this._renderLocalAvatar) || !this._isMouseEnabled) {
       return;
     }
     this.destroyMouse(participant);
