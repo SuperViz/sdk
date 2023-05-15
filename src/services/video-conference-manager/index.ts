@@ -89,6 +89,7 @@ export default class VideoConfereceManager {
       devices,
       customColors,
       waterMark,
+      skipMeetingSettings,
     } = options;
 
     let { position, camerasOrientation } = options;
@@ -127,6 +128,7 @@ export default class VideoConfereceManager {
         videoInput: devices?.videoInput ?? true,
       },
       waterMark,
+      skipMeetingSettings,
     };
 
     this.customColors = customColors;

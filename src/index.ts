@@ -28,10 +28,16 @@ import {
 /**
  * @function validateOptions
  * @description Validate the options passed to the SDK
- * @param param {SuperVizSdkOptions}
+ * @param {SuperVizSdkOptions} param
  * @returns {void}
  */
-const validateOptions = ({ group, participant, roomId, customColors }: SuperVizSdkOptions) => {
+const validateOptions = ({
+  group,
+  participant,
+  roomId,
+  customColors,
+  skipMeetingSettings,
+}: SuperVizSdkOptions): void => {
   if (customColors) {
     validadeColorsVariablesNames(customColors);
   }
@@ -46,6 +52,10 @@ const validateOptions = ({ group, participant, roomId, customColors }: SuperVizS
 
   if (!roomId) {
     throw new Error('room id is required');
+  }
+
+  if (skipMeetingSettings && !participant.name) {
+    throw new Error('When skipMeetingSettings is true, participant name is required');
   }
 };
 
@@ -77,7 +87,7 @@ const validadeColorsVariablesNames = (colors: ColorsVariables) => {
  * @param options - SDK options
  * @returns {SuperVizSdk}
  */
-const init = async (apiKey: string, options: SuperVizSdkOptions) => {
+const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
   validateOptions(options);
 
   if (options.debug) {

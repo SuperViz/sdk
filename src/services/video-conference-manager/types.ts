@@ -24,6 +24,7 @@ export interface VideoManagerOptions {
     audioOutput: boolean;
     videoInput: boolean;
   };
+  skipMeetingSettings: boolean;
   position: FramePosition;
   browserService: BrowserService;
   offset?: Offset;
@@ -67,6 +68,7 @@ export interface FrameConfig {
   camerasOrientation: 'horizontal' | 'vertical';
   devices: DevicesConfig;
   waterMark: WaterMark;
+  skipMeetingSettings: boolean;
 }
 
 export enum ColorsVariablesNames {
