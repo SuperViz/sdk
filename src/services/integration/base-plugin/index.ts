@@ -38,6 +38,24 @@ export class BasePluginManager implements DefaultPluginManager {
 
     this.plugin.init(
       {
+        subscribeToParticipantJoinedObserver: (callback) => {
+          RealtimeService.participantJoinedObserver.subscribe(callback);
+        },
+        unsubscribeToParticipantJoinedObserver: (callback) => {
+          RealtimeService.participantJoinedObserver.unsubscribe(callback);
+        },
+        subscribeToParticipantLeaveObserver: (callback) => {
+          RealtimeService.participantLeaveObserver.subscribe(callback);
+        },
+        unsubscribeToParticipantLeaveObserver: (callback) => {
+          RealtimeService.participantLeaveObserver.unsubscribe(callback);
+        },
+        subscribeToParticipantsObserver: (callback) => {
+          RealtimeService.participantsObserver.subscribe(callback);
+        },
+        unsubscribeToParticipantsObserver: (callback) => {
+          RealtimeService.participantsObserver.unsubscribe(callback);
+        },
         subscribeToParticipantUpdate: (id: string, callback: Function) => {
           RealtimeService.subscribeToParticipantUpdate(id, callback);
         },
