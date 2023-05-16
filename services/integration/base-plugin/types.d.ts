@@ -1,4 +1,5 @@
 import { AblyRealtimeService } from '../../realtime';
+import { AblyParticipant } from '../../realtime/ably/types';
 import { ParticipantOn3D, ParticipantTo3D } from '../participants/types';
 export interface DefaultPluginManager {
     isAvatarsEnabled: boolean;
@@ -46,6 +47,12 @@ export declare type Plugin = {
     getAvatars: () => {};
 };
 export interface RealtimePluginMethods {
+    subscribeToParticipantsObserver: (callback: (participants: AblyParticipant[]) => void) => void;
+    unsubscribeToParticipantsObserver: (callback: (participants: AblyParticipant[]) => void) => void;
+    subscribeToParticipantJoinedObserver: (callback: (participant: AblyParticipant) => void) => void;
+    unsubscribeToParticipantJoinedObserver: (callback: (participant: AblyParticipant) => void) => void;
+    subscribeToParticipantLeaveObserver: (callback: (participant: AblyParticipant) => void) => void;
+    unsubscribeToParticipantLeaveObserver: (callback: (participant: AblyParticipant) => void) => void;
     subscribeToParticipantUpdate: (id: string, callback: Function) => void;
     unsubscribeToParticipantUpdate: (id: string, callback: Function) => void;
     updateMyProperties: <T>(properties: T) => void;
