@@ -86,12 +86,12 @@ export default class VideoConfereceManager {
       canUseDefaultToolbar,
       locales,
       avatars,
-      devices,
       customColors,
       waterMark,
+      disableCameraOverlay,
     } = options;
 
-    let { position, camerasOrientation } = options;
+    let { position, camerasOrientation, skipMeetingSettings, devices } = options;
 
     if (browserService.isMobileDevice) {
       position = 'bottom';
@@ -100,6 +100,15 @@ export default class VideoConfereceManager {
 
     if (camerasOrientation === 'horizontal') {
       position = 'bottom';
+    }
+
+    if (disableCameraOverlay) {
+      skipMeetingSettings = true;
+      devices = {
+        audioInput: false,
+        audioOutput: false,
+        videoInput: false,
+      };
     }
 
     this.browserService = browserService;
@@ -127,6 +136,8 @@ export default class VideoConfereceManager {
         videoInput: devices?.videoInput ?? true,
       },
       waterMark,
+      skipMeetingSettings,
+      disableCameraOverlay,
     };
 
     this.customColors = customColors;
@@ -262,6 +273,10 @@ export default class VideoConfereceManager {
     `;
 
     document.head.appendChild(style);
+
+    if (this.frameConfig.disableCameraOverlay) {
+      this.bricklayer.element.classList.add('sv-video-frame--no-overlay');
+    }
 
     if (this.browserService.isMobileDevice) {
       this.bricklayer.element.classList.add('sv-video-frame--bottom');
