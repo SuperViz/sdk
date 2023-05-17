@@ -39,6 +39,7 @@ export interface SuperVizSdkOptions {
   avatars?: Avatar[];
   customColors?: ColorsVariables;
   skipMeetingSettings?: boolean;
+  disableCameraOverlay?: boolean;
 }
 
 export interface DevicesOptions {

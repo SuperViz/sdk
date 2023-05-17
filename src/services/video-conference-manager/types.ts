@@ -25,6 +25,7 @@ export interface VideoManagerOptions {
     videoInput: boolean;
   };
   skipMeetingSettings: boolean;
+  disableCameraOverlay: boolean;
   position: FramePosition;
   browserService: BrowserService;
   offset?: Offset;
@@ -69,6 +70,7 @@ export interface FrameConfig {
   devices: DevicesConfig;
   waterMark: WaterMark;
   skipMeetingSettings: boolean;
+  disableCameraOverlay: boolean;
 }
 
 export enum ColorsVariablesNames {

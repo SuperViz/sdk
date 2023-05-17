@@ -69,6 +69,7 @@ class Communicator {
     waterMark,
     camerasOrientation,
     skipMeetingSettings = false,
+    disableCameraOverlay = false,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -131,6 +132,7 @@ class Communicator {
       waterMark,
       camerasOrientation,
       skipMeetingSettings,
+      disableCameraOverlay,
     });
 
     // Realtime observers
