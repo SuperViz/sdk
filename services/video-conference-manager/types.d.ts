@@ -23,6 +23,8 @@ export interface VideoManagerOptions {
         audioOutput: boolean;
         videoInput: boolean;
     };
+    skipMeetingSettings: boolean;
+    disableCameraOverlay: boolean;
     position: FramePosition;
     browserService: BrowserService;
     offset?: Offset;
@@ -62,6 +64,8 @@ export interface FrameConfig {
     camerasOrientation: 'horizontal' | 'vertical';
     devices: DevicesConfig;
     waterMark: WaterMark;
+    skipMeetingSettings: boolean;
+    disableCameraOverlay: boolean;
 }
 export declare enum ColorsVariablesNames {
     svPrimary = "sv-primary",

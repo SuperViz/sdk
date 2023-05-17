@@ -25,11 +25,13 @@ export interface SuperVizSdkOptions {
     defaultToolbar?: boolean;
     isMouseEnabled?: boolean;
     isLaserEnabled?: boolean;
-    devices: DevicesOptions;
+    devices?: DevicesOptions;
     language?: string;
     locales?: Locale[];
     avatars?: Avatar[];
-    customColors: ColorsVariables;
+    customColors?: ColorsVariables;
+    skipMeetingSettings?: boolean;
+    disableCameraOverlay?: boolean;
 }
 export interface DevicesOptions {
     audioInput: boolean;
