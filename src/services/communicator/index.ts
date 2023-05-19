@@ -17,7 +17,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Plugin, PluginMethods } from '../integration/base-plugin/types';
 import { AblyRealtimeService } from '../realtime';
-import { AblyRealtimeData, AblyParticipant, ClientRealtimeData } from '../realtime/ably/types';
+import { AblyRealtimeData, AblyParticipant, RealtimeMessage } from '../realtime/ably/types';
 import { ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
@@ -297,10 +297,13 @@ class Communicator {
 
   /**
    * @function realtimeClientData
-   * @returns {void}
+   * @description get realtime client data history
+   * @returns {RealtimeMessage | Record<string, RealtimeMessage>}
    */
-  public realtimeClientData(): Promise<ClientRealtimeData> {
-    return this.realtime.realtimeClientData();
+  public realtimeClientData(
+    eventName?: string,
+  ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
+    return this.realtime.realtimeClientData(eventName);
   }
 
   /**
@@ -618,7 +621,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
     follow: (participantId) => communicator.follow(participantId),
-    realtimeClientData: () => communicator.realtimeClientData(),
+    realtimeClientData: (eventName?: string) => communicator.realtimeClientData(eventName),
     gather: () => communicator.gather(),
     goTo: (participantId) => communicator.goTo(participantId),
 

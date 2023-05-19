@@ -17,13 +17,6 @@ export interface AblyRealtimeData {
   gather?: boolean;
 }
 
-export type ClientRealtimeData = {
-  lastMessage: RealtimeMessage[];
-  hostParticipantId: string | null;
-  followParticipantId: string | null;
-  isGridModeEnable: boolean;
-};
-
 export type AblyTokenCallBack = (
   error: Ably.Types.ErrorInfo | string,
   tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string,
