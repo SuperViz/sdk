@@ -22,7 +22,7 @@ export type SuperVizSdk = {
   unsubscribe: (propertyName: string) => void;
   destroy: () => void;
   follow: (participantId?: string) => void;
-  realtimeClientData: (
+  fetchSyncProperty: (
     eventName?: string,
   ) => Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
   gather: () => void;

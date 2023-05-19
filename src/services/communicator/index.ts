@@ -296,14 +296,14 @@ class Communicator {
   }
 
   /**
-   * @function realtimeClientData
+   * @function fetchSyncClientProperty
    * @description get realtime client data history
    * @returns {RealtimeMessage | Record<string, RealtimeMessage>}
    */
-  public realtimeClientData(
+  public fetchSyncClientProperty(
     eventName?: string,
   ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
-    return this.realtime.realtimeClientData(eventName);
+    return this.realtime.fetchSyncClientProperty(eventName);
   }
 
   /**
@@ -621,7 +621,9 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
     follow: (participantId) => communicator.follow(participantId),
-    realtimeClientData: (eventName?: string) => communicator.realtimeClientData(eventName),
+    fetchSyncProperty: (
+      eventName?: string,
+    ) => communicator.fetchSyncClientProperty(eventName),
     gather: () => communicator.gather(),
     goTo: (participantId) => communicator.goTo(participantId),
 

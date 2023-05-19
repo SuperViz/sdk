@@ -763,12 +763,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function realtimeClientData
+   * @function fetchSyncClientProperty
    * @description
    * @param {string} eventName - name event to be fetched
    * @returns {ClientRealtimeData}
    */
-  public async realtimeClientData(
+  public async fetchSyncClientProperty(
     eventName?: string,
   ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
     try {
