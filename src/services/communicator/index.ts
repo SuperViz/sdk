@@ -17,7 +17,7 @@ import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Plugin, PluginMethods } from '../integration/base-plugin/types';
 import { AblyRealtimeService } from '../realtime';
-import { AblyRealtimeData, AblyParticipant } from '../realtime/ably/types';
+import { AblyRealtimeData, AblyParticipant, ClientRealtimeData } from '../realtime/ably/types';
 import { ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
@@ -293,6 +293,14 @@ class Communicator {
   public follow(participantId?: string): void {
     this.videoManager.followParticipantDidChange(participantId);
     this.realtime.setFollowParticipant(participantId);
+  }
+
+  /**
+   * @function realtimeClientData
+   * @returns {void}
+   */
+  public realtimeClientData(): Promise<ClientRealtimeData> {
+    return this.realtime.realtimeClientData();
   }
 
   /**
@@ -610,6 +618,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
     follow: (participantId) => communicator.follow(participantId),
+    realtimeClientData: () => communicator.realtimeClientData(),
     gather: () => communicator.gather(),
     goTo: (participantId) => communicator.goTo(participantId),
 

@@ -14,6 +14,7 @@ import {
   AblyRealtime,
   AblyRealtimeData,
   AblyTokenCallBack,
+  ClientRealtimeData,
   ParticipantDataInput,
   RealtimeMessage,
 } from './types';
@@ -37,6 +38,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
 
+  private clientRoomState: Record<string, RealtimeMessage> = {};
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
   private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
 
@@ -743,6 +745,37 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
       });
     });
+  }
+
+  /**
+   * @function realtimeClientData
+   * @returns {ClientRealtimeData}
+   */
+  public async realtimeClientData(): Promise<ClientRealtimeData> {
+    try {
+      const clienthistory: RealtimeMessage[] = await new Promise((resolve, reject) => {
+        this.clientSyncChannel.history((error, resultPage) => {
+          if (error) reject(error);
+
+          const lastMessage = resultPage.items[0]?.data;
+          if (lastMessage) {
+            resolve(lastMessage);
+          } else {
+            resolve(null);
+          }
+        });
+      });
+
+      const supervizHistory = await this.fetchRoomProperties();
+      return {
+        lastMessage: clienthistory,
+        hostParticipantId: supervizHistory?.hostClientId ?? null,
+        followParticipantId: supervizHistory?.followParticipantId ?? null,
+        isGridModeEnable: supervizHistory?.isGridModeEnable ?? false,
+      };
+    } catch (error) {
+      logger.log('Error in fetch client realtime data', error.message);
+    }
   }
 
   /**
