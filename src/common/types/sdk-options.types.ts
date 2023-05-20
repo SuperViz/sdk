@@ -25,7 +25,7 @@ export interface SuperVizSdkOptions {
   screenshareOff?: boolean;
   chatOff?: boolean;
   defaultAvatars?: boolean;
-  offset: Offset;
+  offset?: Offset;
   camerasOrientation?: 'horizontal' | 'vertical';
   enableFollow?: boolean;
   enableGoTo?: boolean;
