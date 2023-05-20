@@ -16,5 +16,5 @@ module.exports = {
       lines: 100,
     },
   },
-  testPathIgnorePatterns: ['/node_modules/'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/coverage/', '/e2e/'],
 };
