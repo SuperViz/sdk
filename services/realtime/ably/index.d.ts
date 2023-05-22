@@ -2,7 +2,7 @@
 import Ably from 'ably';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
-import { AblyParticipant, AblyParticipants, AblyRealtime, AblyRealtimeData, ParticipantDataInput } from './types';
+import { AblyParticipant, AblyParticipants, AblyRealtime, AblyRealtimeData, ParticipantDataInput, RealtimeMessage } from './types';
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
     private client;
     private participants;
@@ -12,7 +12,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private isBroadcast;
     private supervizChannel;
     private clientSyncChannel;
+    private clientRoomStateChannel;
     private broadcastChannel;
+    private clientRoomState;
     private clientSyncPropertiesQueue;
     private clientSyncPropertiesTimeOut;
     private isReconnecting;
@@ -34,6 +36,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     get roomProperties(): AblyRealtimeData;
     get getMyParticipant(): AblyParticipant;
     get hostClientId(): string;
+    get isLocalParticipantHost(): boolean;
     get getParticipants(): AblyParticipants;
     get participant(): unknown;
     start({ initialParticipantData, roomId, apiKey, shouldKickParticipantsOnHostLeave, isBroadcast, }: StartRealtimeType): void;
@@ -141,12 +144,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     private onAblyPresenceLeave;
     /**
-     * @function onAblySyncChannelUpdate
+     * @function onClientSyncChannelUpdate
      * @description callback that receives the update event from ably's channel
      * @param {Ably.Types.Message} message
      * @returns {void}
      */
-    private onAblySyncChannelUpdate;
+    private onClientSyncChannelUpdate;
+    private saveClientRoomState;
     /**
      * @function onReceiveBroadcastSync
      * @description receive the info of all participants from the host
@@ -246,6 +250,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {AblyRealtimeData | null}
      */
     private fetchRoomProperties;
+    /**
+     * @function fetchSyncClientProperty
+     * @description
+     * @param {string} eventName - name event to be fetched
+     * @returns {ClientRealtimeData}
+     */
+    fetchSyncClientProperty(eventName?: string): Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
     /**
      * @function hostPassingHandle
      * @description

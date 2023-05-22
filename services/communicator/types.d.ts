@@ -1,6 +1,7 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Plugin, PluginMethods, DefaultPluginOptions } from '../integration/base-plugin/types';
 import { AvatarConfig } from '../integration/participants/types';
+import { RealtimeMessage } from '../realtime/ably/types';
 import { WaterMark } from '../video-conference-manager/types';
 export interface CommunicatorOptions extends SuperVizSdkOptions {
     apiKey: string;
@@ -18,6 +19,7 @@ export declare type SuperVizSdk = {
     unsubscribe: (propertyName: string) => void;
     destroy: () => void;
     follow: (participantId?: string) => void;
+    fetchSyncProperty: (eventName?: string) => Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
     gather: () => void;
     goTo: (participantId: string) => void;
     toggleMeetingSetup: () => void;
