@@ -35,8 +35,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
 
+  private clientRoomState: Record<string, RealtimeMessage> = {};
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
   private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
 
@@ -68,7 +70,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.onAblyPresenceUpdate = this.onAblyPresenceUpdate.bind(this);
     this.onAblyPresenceLeave = this.onAblyPresenceLeave.bind(this);
     this.onAblyRoomUpdate = this.onAblyRoomUpdate.bind(this);
-    this.onAblySyncChannelUpdate = this.onAblySyncChannelUpdate.bind(this);
+    this.onClientSyncChannelUpdate = this.onClientSyncChannelUpdate.bind(this);
     this.onAblyChannelStateChange = this.onAblyChannelStateChange.bind(this);
     this.onAblyConnectionStateChange = this.onAblyConnectionStateChange.bind(this);
     this.onReceiveBroadcastSync = this.onReceiveBroadcastSync.bind(this);
@@ -86,6 +88,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   public get hostClientId() {
     return this.roomProperties?.hostClientId;
+  }
+
+  public get isLocalParticipantHost(): boolean {
+    return this.hostClientId === this.localParticipantId;
   }
 
   public get getParticipants(): AblyParticipants {
@@ -167,7 +173,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     // join custom sync channel
     this.clientSyncChannel = this.client.channels.get(`${this.roomId}:client-sync`);
-    this.clientSyncChannel.subscribe(this.onAblySyncChannelUpdate);
+    this.clientSyncChannel.subscribe(this.onClientSyncChannelUpdate);
+
+    this.clientRoomStateChannel = this.client.channels.get(`${this.roomId}:client-state`);
 
     this.broadcastChannel = this.client.channels.get(`${this.roomId}:broadcast`);
     if (!this.enableSync) {
@@ -430,18 +438,27 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function onAblySyncChannelUpdate
+   * @function onClientSyncChannelUpdate
    * @description callback that receives the update event from ably's channel
    * @param {Ably.Types.Message} message
    * @returns {void}
    */
-  private onAblySyncChannelUpdate(message: Ably.Types.Message): void {
+  private onClientSyncChannelUpdate(message: Ably.Types.Message): void {
     const { name, data } = message;
     const property = {};
 
     property[name] = data;
     this.syncPropertiesObserver.publish(property);
+
+    if (this.isLocalParticipantHost) this.saveClientRoomState(name, data);
   }
+
+  private saveClientRoomState = (name: string, data: RealtimeMessage[]): void => {
+    this.clientRoomState[name] = data[data.length - 1];
+    this.clientRoomStateChannel.publish('update', this.clientRoomState);
+
+    logger.log('REALTIME', 'setting new room state backup');
+  };
 
   /**
    * @function onReceiveBroadcastSync
@@ -743,6 +760,45 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
       });
     });
+  }
+
+  /**
+   * @function fetchSyncClientProperty
+   * @description
+   * @param {string} eventName - name event to be fetched
+   * @returns {ClientRealtimeData}
+   */
+  public async fetchSyncClientProperty(
+    eventName?: string,
+  ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
+    try {
+      const clienthistory: Record<string, RealtimeMessage> = await new Promise(
+        (resolve, reject) => {
+          this.clientRoomStateChannel.history((error, resultPage) => {
+            if (error) reject(error);
+
+            const lastMessage = resultPage.items[0]?.data;
+            if (lastMessage) {
+              resolve(lastMessage);
+            } else {
+              resolve(null);
+            }
+          });
+        },
+      );
+
+      if (eventName && !clienthistory[eventName]) {
+        throw new Error(`Event ${eventName} not found in the history`);
+      }
+
+      if (eventName) {
+        return clienthistory[eventName];
+      }
+
+      return clienthistory;
+    } catch (error) {
+      logger.log('REALTIME', 'Error in fetch client realtime data', error.message);
+    }
   }
 
   /**

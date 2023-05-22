@@ -19,15 +19,25 @@ import { PluginMethods, Plugin } from './services/integration/base-plugin/types'
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import { RealtimeMessage } from './services/realtime/ably/types';
 import RemoteConfigService from './services/remote-config-service';
-import { ColorsVariables, ColorsVariablesNames } from './services/video-conference-manager/types';
+import {
+  ColorsVariables,
+  ColorsVariablesNames,
+  WaterMark,
+} from './services/video-conference-manager/types';
 
 /**
  * @function validateOptions
  * @description Validate the options passed to the SDK
- * @param param {SuperVizSdkOptions}
+ * @param {SuperVizSdkOptions} param
  * @returns {void}
  */
-const validateOptions = ({ group, participant, roomId, customColors }: SuperVizSdkOptions) => {
+const validateOptions = ({
+  group,
+  participant,
+  roomId,
+  customColors,
+  skipMeetingSettings,
+}: SuperVizSdkOptions): void => {
   if (customColors) {
     validadeColorsVariablesNames(customColors);
   }
@@ -42,6 +52,10 @@ const validateOptions = ({ group, participant, roomId, customColors }: SuperVizS
 
   if (!roomId) {
     throw new Error('room id is required');
+  }
+
+  if (skipMeetingSettings && !participant.name) {
+    throw new Error('When skipMeetingSettings is true, participant name is required');
   }
 };
 
@@ -73,7 +87,7 @@ const validadeColorsVariablesNames = (colors: ColorsVariables) => {
  * @param options - SDK options
  * @returns {SuperVizSdk}
  */
-const init = async (apiKey: string, options: SuperVizSdkOptions) => {
+const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
   validateOptions(options);
 
   if (options.debug) {
@@ -91,13 +105,16 @@ const init = async (apiKey: string, options: SuperVizSdkOptions) => {
   }
 
   const environment = await ApiService.fetchConfig(apiUrl, apiKey);
+  const waterMark: WaterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
 
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
   const { ablyKey } = environment;
-  return Communicator(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
+  return Communicator(
+    Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl, waterMark }),
+  );
 };
 
 if (window) {

@@ -38,6 +38,24 @@ export class BasePluginManager implements DefaultPluginManager {
 
     this.plugin.init(
       {
+        subscribeToParticipantJoinedObserver: (callback) => {
+          RealtimeService.participantJoinedObserver.subscribe(callback);
+        },
+        unsubscribeToParticipantJoinedObserver: (callback) => {
+          RealtimeService.participantJoinedObserver.unsubscribe(callback);
+        },
+        subscribeToParticipantLeaveObserver: (callback) => {
+          RealtimeService.participantLeaveObserver.subscribe(callback);
+        },
+        unsubscribeToParticipantLeaveObserver: (callback) => {
+          RealtimeService.participantLeaveObserver.unsubscribe(callback);
+        },
+        subscribeToParticipantsObserver: (callback) => {
+          RealtimeService.participantsObserver.subscribe(callback);
+        },
+        unsubscribeToParticipantsObserver: (callback) => {
+          RealtimeService.participantsObserver.unsubscribe(callback);
+        },
         subscribeToParticipantUpdate: (id: string, callback: Function) => {
           RealtimeService.subscribeToParticipantUpdate(id, callback);
         },
@@ -165,11 +183,7 @@ export class BasePluginManager implements DefaultPluginManager {
       return;
     }
     const isOwnAvatar = participant.id === this._localParticipant.id;
-    if (
-      (isOwnAvatar && !this._renderLocalAvatar) ||
-      !this._isAvatarsEnabled ||
-      !this._isMouseEnabled
-    ) {
+    if ((isOwnAvatar && !this._renderLocalAvatar) || !this._isMouseEnabled) {
       return;
     }
     this.destroyMouse(participant);

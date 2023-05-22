@@ -16,4 +16,11 @@ export default class ApiService {
     const url: string = this.createUrl(baseUrl, path);
     return doRequest(url, 'POST', { apiKey });
   }
+
+  static async fetchWaterMark(baseUrl: string, apiKey: string) {
+    const path = '/user/watermark';
+    const url = this.createUrl(baseUrl, path);
+    const { message } = await doRequest(url, 'POST', { apiKey });
+    return message;
+  }
 }

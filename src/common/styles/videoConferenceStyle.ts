@@ -28,7 +28,12 @@ const styles = `
 
   #sv-video-wrapper iframe.sv-video-frame--bottom { 
     bottom: var(--superviz-offset-bottom);
+    right: var(--superviz-offset-right);
     width: 100%;
+  }
+
+  #sv-video-wrapper iframe.sv-video-frame--no-overlay { 
+    display: none;
   }
 `;
 

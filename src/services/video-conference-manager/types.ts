@@ -18,17 +18,21 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  camerasOrientation: 'horizontal' | 'vertical';
   devices: {
     audioInput: boolean;
     audioOutput: boolean;
     videoInput: boolean;
   };
+  skipMeetingSettings: boolean;
+  disableCameraOverlay: boolean;
   position: FramePosition;
   browserService: BrowserService;
   offset?: Offset;
   locales?: Locale[];
   avatars?: Avatar[];
   customColors?: ColorsVariables;
+  waterMark: WaterMark;
 }
 
 export interface WindowSize {
@@ -62,8 +66,11 @@ export interface FrameConfig {
   canUseGoTo: boolean;
   canUseGather: boolean;
   canUseDefaultToolbar: boolean;
-  camerasOrientation: string;
+  camerasOrientation: 'horizontal' | 'vertical';
   devices: DevicesConfig;
+  waterMark: WaterMark;
+  skipMeetingSettings: boolean;
+  disableCameraOverlay: boolean;
 }
 
 export enum ColorsVariablesNames {
@@ -115,6 +122,12 @@ export interface DevicesConfig {
 export interface Locale {
   language: string;
   messages: Record<string, string>;
+}
+
+export enum WaterMark {
+  ALL = 'all',
+  CAMERA = 'camera',
+  POWERED_BY = 'powered-by',
 }
 
 export enum VideoFrameState {

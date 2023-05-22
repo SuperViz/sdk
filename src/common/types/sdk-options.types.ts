@@ -26,17 +26,20 @@ export interface SuperVizSdkOptions {
   chatOff?: boolean;
   defaultAvatars?: boolean;
   offset: Offset;
+  camerasOrientation?: 'horizontal' | 'vertical';
   enableFollow?: boolean;
   enableGoTo?: boolean;
   enableGather?: boolean;
   defaultToolbar?: boolean;
   isMouseEnabled?: boolean;
   isLaserEnabled?: boolean;
-  devices: DevicesOptions;
+  devices?: DevicesOptions;
   language?: string;
   locales?: Locale[];
   avatars?: Avatar[];
-  customColors: ColorsVariables;
+  customColors?: ColorsVariables;
+  skipMeetingSettings?: boolean;
+  disableCameraOverlay?: boolean;
 }
 
 export interface DevicesOptions {

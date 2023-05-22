@@ -24,6 +24,7 @@ import {
   FrameLocale,
   FrameConfig,
   ColorsVariables,
+  WaterMark,
 } from './types';
 
 const FRAME_ID = 'sv-video-frame';
@@ -80,28 +81,39 @@ export default class VideoConfereceManager {
       canUseFollow,
       canUseGoTo,
       canUseGather,
-      position,
       browserService,
       offset,
       canUseDefaultToolbar,
       locales,
       avatars,
-      devices,
       customColors,
+      waterMark,
+      disableCameraOverlay,
     } = options;
+
+    let { position, camerasOrientation, skipMeetingSettings, devices } = options;
+
+    if (browserService.isMobileDevice) {
+      position = 'bottom';
+      camerasOrientation = 'horizontal';
+    }
+
+    if (camerasOrientation === 'horizontal') {
+      position = 'bottom';
+    }
+
+    if (disableCameraOverlay) {
+      skipMeetingSettings = true;
+      devices = {
+        audioInput: false,
+        audioOutput: false,
+        videoInput: false,
+      };
+    }
 
     this.browserService = browserService;
 
     const wrapper = document.createElement('div');
-
-    /**
-     * @TODO - add full horizontal view support on desktop, currently only works on mobile.
-     * request: https://github.com/SuperViz/sdk/issues/33
-     */
-    const camerasOrientation =
-      ['right', 'left'].includes(position) && !this.browserService.isMobileDevice
-        ? 'vertical'
-        : 'horizontal';
 
     this.frameConfig = {
       apiKey,
@@ -115,7 +127,7 @@ export default class VideoConfereceManager {
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
-      camerasOrientation,
+      camerasOrientation: camerasOrientation ?? 'vertical',
       canUseDefaultToolbar,
       roomId,
       devices: {
@@ -123,6 +135,9 @@ export default class VideoConfereceManager {
         audioOutput: devices?.audioOutput ?? true,
         videoInput: devices?.videoInput ?? true,
       },
+      waterMark,
+      skipMeetingSettings,
+      disableCameraOverlay,
     };
 
     this.customColors = customColors;
@@ -259,6 +274,10 @@ export default class VideoConfereceManager {
 
     document.head.appendChild(style);
 
+    if (this.frameConfig.disableCameraOverlay) {
+      this.bricklayer.element.classList.add('sv-video-frame--no-overlay');
+    }
+
     if (this.browserService.isMobileDevice) {
       this.bricklayer.element.classList.add('sv-video-frame--bottom');
       return;
@@ -282,8 +301,13 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
+    const hasWaterMark: boolean =
+      [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark) &&
+      !this.browserService.isMobileDevice;
+    const waterMarkHeight: number = hasWaterMark ? 40 : 0;
+
     let frameWidth: string = `${width}px`;
-    let frameHeight: string = `${height}px`;
+    let frameHeight: string = `${height + waterMarkHeight}px`;
 
     if (width >= window.innerWidth) {
       frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
@@ -380,7 +404,7 @@ export default class VideoConfereceManager {
    * @function updateFrameState
    * @description updates frame state
    * @param {VideoFrameState} state
-   * @retruns {void}
+   * @returns {void}
    */
   private updateFrameState(state: VideoFrameState): void {
     if (state !== this.frameState) {
@@ -571,7 +595,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleChat
+   * @function toggleChat
    * @returns {void}
    */
   public toggleChat(): void {
@@ -579,7 +603,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleMeetingSetup
+   * @function toggleMeetingSetup
    * @returns {void}
    */
   public toggleMeetingSetup(): void {
@@ -587,7 +611,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleMicrophone
+   * @function toggleMicrophone
    * @returns {void}
    */
   public toggleMicrophone(): void {
@@ -595,7 +619,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleScreenShare
+   * @function toggleScreenShare
    * @returns {void}
    */
   public toggleScreenShare(): void {
@@ -603,7 +627,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton hangUp
+   * @function hangUp
    * @returns {void}
    */
   public hangUp(): void {
@@ -611,7 +635,7 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @funciton toggleCam
+   * @function toggleCam
    * @returns {void}
    */
   public toggleCam(): void {
