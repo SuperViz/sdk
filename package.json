@@ -4,7 +4,10 @@
   "description": "SuperViz SDK",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["src", "dist"],
+  "files": [
+    "src",
+    "dist"
+  ],
   "scripts": {
     "prepare": "husky install",
     "build": "node ./.esbuild/build.js",
@@ -54,6 +57,7 @@
     "husky": "^8.0.3",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
+    "jest-fetch-mock": "^3.0.3",
     "semantic-release": "19.0.5",
     "ts-jest": "^28.0.5",
     "tsc": "^2.0.4",
