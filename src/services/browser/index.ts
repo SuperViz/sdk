@@ -49,7 +49,7 @@ export class BrowserService {
   }
 
   public get isIpad(): boolean {
-    return this.isMobileDevice && !!navigator.userAgent.match(/iPad/i);
+    return !!navigator.userAgent.match(/iPad/i);
   }
 
   public get isIphone(): boolean {
