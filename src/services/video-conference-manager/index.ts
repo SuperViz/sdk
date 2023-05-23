@@ -11,6 +11,7 @@ import {
   Dimensions,
   MeetingControlsEvent,
   FrameEvent,
+  TranscriptionEvent,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
@@ -640,5 +641,21 @@ export default class VideoConfereceManager {
    */
   public toggleCam(): void {
     this.messageBridge.publish(MeetingControlsEvent.TOGGLE_CAM);
+  }
+
+  /**
+   * @function startTranscription
+   * @returns {void}
+   */
+  public startTranscription(language): void {
+    this.messageBridge.publish(TranscriptionEvent.TRANSCRIPTION_START, language);
+  }
+
+  /**
+   * @function stopTranscription
+   * @returns {void}
+   */
+  public stopTranscription(): void {
+    this.messageBridge.publish(TranscriptionEvent.TRANSCRIPTION_STOP);
   }
 }
