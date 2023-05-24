@@ -348,6 +348,14 @@ class Communicator {
     );
   };
 
+  public startTranscription = (language): void => {
+    this.videoManager.startTranscription(language);
+  };
+
+  public stopTranscription = (): void => {
+    this.videoManager.stopTranscription();
+  };
+
   private publish = (type: string, data: any): void => {
     const hasListenerRegistered = type in this.observerHelpers;
 
@@ -633,6 +641,9 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     toggleScreenShare: () => communicator.toggleScreenShare(),
     hangUp: () => communicator.hangUp(),
     toggleChat: () => communicator.toggleChat(),
+
+    startTranscription: (language) => communicator.startTranscription(language),
+    stopTranscription: () => communicator.stopTranscription(),
 
     loadPlugin: (plugin, props) => communicator.loadPlugin(plugin, props),
     unloadPlugin: () => communicator.unloadPlugin(),
