@@ -1,14 +1,17 @@
-import { version } from '../../../.version';
 import { RemoteConfigParams } from '../../common/types/remote-config.types';
 import { EnvironmentTypes } from '../../common/types/sdk-options.types';
 import { doRequest } from '../../common/utils';
+
+import { RemoteConfig } from './types';
 
 export default class RemoteConfigService {
   static REMOTE_CONFIG_BASE_URL: string = 'https://remote-config.superviz.com/sdk';
 
   static async getRemoteConfig(
     environment: EnvironmentTypes = EnvironmentTypes.PROD,
-  ): Promise<any> {
+  ): Promise<RemoteConfig> {
+    const { version } = await import('../../../.version');
+
     if (environment === EnvironmentTypes.LOCAL) {
       const { remoteConfig } = await import('../../../.remote-config');
       return remoteConfig;
@@ -18,7 +21,7 @@ export default class RemoteConfigService {
       environment,
     };
     const url = this.createUrl(remoteConfigParams);
-    return doRequest(url, 'GET', null);
+    return doRequest(url, 'GET', null) as Promise<RemoteConfig>;
   }
 
   static createUrl({ version, environment }: RemoteConfigParams) {
