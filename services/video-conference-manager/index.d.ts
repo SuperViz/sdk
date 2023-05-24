@@ -244,4 +244,14 @@ export default class VideoConfereceManager {
      * @returns {void}
      */
     toggleCam(): void;
+    /**
+     * @function startTranscription
+     * @returns {void}
+     */
+    startTranscription(language: any): void;
+    /**
+     * @function stopTranscription
+     * @returns {void}
+     */
+    stopTranscription(): void;
 }

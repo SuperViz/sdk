@@ -49,6 +49,10 @@ export declare enum RealtimeEvent {
     REALTIME_FOLLOW_PARTICIPANT = "realtime.follow-participant",
     REALTIME_SET_AVATAR = "realtime.set-avatar"
 }
+export declare enum TranscriptionEvent {
+    TRANSCRIPTION_START = "transcription.start",
+    TRANSCRIPTION_STOP = "transcription.stop"
+}
 export declare enum MeetingState {
     MEETING_FAILED = -1,
     MEETING_DISCONNECTED = 0,
