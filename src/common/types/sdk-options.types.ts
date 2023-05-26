@@ -40,6 +40,7 @@ export interface SuperVizSdkOptions {
   customColors?: ColorsVariables;
   skipMeetingSettings?: boolean;
   disableCameraOverlay?: boolean;
+  centralizeMeetingModals?: boolean;
 }
 
 export interface DevicesOptions {

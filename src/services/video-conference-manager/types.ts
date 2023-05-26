@@ -33,6 +33,7 @@ export interface VideoManagerOptions {
   avatars?: Avatar[];
   customColors?: ColorsVariables;
   waterMark: WaterMark;
+  centralizeMeetingModals: boolean;
 }
 
 export interface WindowSize {
@@ -71,6 +72,7 @@ export interface FrameConfig {
   waterMark: WaterMark;
   skipMeetingSettings: boolean;
   disableCameraOverlay: boolean;
+  centralizeMeetingModals: boolean;
 }
 
 export enum ColorsVariablesNames {

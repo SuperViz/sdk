@@ -70,6 +70,7 @@ class Communicator {
     camerasOrientation,
     skipMeetingSettings = false,
     disableCameraOverlay = false,
+    centralizeMeetingModals = false,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -133,6 +134,7 @@ class Communicator {
       camerasOrientation,
       skipMeetingSettings,
       disableCameraOverlay,
+      centralizeMeetingModals,
     });
 
     // Realtime observers
