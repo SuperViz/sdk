@@ -6,8 +6,10 @@ import {
   ParticipantOn3D,
   ParticipantTo3D,
 } from '../src/services/integration/participants/types';
+import { DefaultIntegrationManagerOptions } from '../src/services/integration/types';
 
 import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from './participants.mock';
+import { MOCK_REALTIME_SERVICE } from './realtime.mock';
 
 export const MOCK_AVATAR_CONFIG: AvatarConfig = {
   height: 1.8,
@@ -62,4 +64,17 @@ export const MOCK_PLUGIN: Plugin = {
   init: jest.fn(),
   destroy: jest.fn(),
   getAvatars: jest.fn(() => MOCK_PARTICIPANT_ON_3D_LIST),
+};
+
+export const MOCK_INTEGRATION_MANAGER_OPTIONS: DefaultIntegrationManagerOptions = {
+  isAvatarsEnabled: true,
+  isNameEnabled: true,
+  isLaserEnabled: true,
+  isMouseEnabled: true,
+  renderLocalAvatar: true, // only for three.js plugin
+  localParticipant: MOCK_PARTICIPANT_TO_3D,
+  avatarConfig: MOCK_AVATAR_CONFIG,
+  participantList: MOCK_PARTICIPANT_TO_3D_LIST,
+  plugin: MOCK_PLUGIN,
+  RealtimeService: MOCK_REALTIME_SERVICE,
 };
