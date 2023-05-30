@@ -312,10 +312,6 @@ export default class VideoConfereceManager {
     let frameWidth: string = `${width}px`;
     let frameHeight: string = `${height + waterMarkHeight}px`;
 
-    if (this.frameConfig.centralizeMeetingModals) {
-      frameWidth = '100%';
-    }
-
     if (width >= window.innerWidth) {
       frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
     }
