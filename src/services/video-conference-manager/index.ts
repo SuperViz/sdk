@@ -26,6 +26,7 @@ import {
   FrameConfig,
   ColorsVariables,
   WaterMark,
+  LayoutPosition,
 } from './types';
 
 const FRAME_ID = 'sv-video-frame';
@@ -90,18 +91,20 @@ export default class VideoConfereceManager {
       customColors,
       waterMark,
       disableCameraOverlay,
-      centralizeMeetingModals,
+      layoutPosition,
     } = options;
 
-    let { position, camerasOrientation, skipMeetingSettings, devices } = options;
-
+    let { camerasPosition, skipMeetingSettings, devices } = options;
+    let position: string = '';
     if (browserService.isMobileDevice) {
       position = 'bottom';
-      camerasOrientation = 'horizontal';
+      camerasPosition = 'horizontal';
     }
 
-    if (camerasOrientation === 'horizontal') {
+    if (camerasPosition === 'horizontal') {
       position = 'bottom';
+    } else if (!browserService.isMobileDevice) {
+      position = options.layoutPosition === LayoutPosition.CENTER ? 'right' : options.layoutPosition;
     }
 
     if (disableCameraOverlay) {
@@ -129,7 +132,7 @@ export default class VideoConfereceManager {
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
-      camerasOrientation: camerasOrientation ?? 'vertical',
+      camerasPosition: camerasPosition ?? 'vertical',
       canUseDefaultToolbar,
       roomId,
       devices: {
@@ -140,7 +143,7 @@ export default class VideoConfereceManager {
       waterMark,
       skipMeetingSettings,
       disableCameraOverlay,
-      centralizeMeetingModals,
+      layoutPosition,
     };
 
     this.customColors = customColors;
