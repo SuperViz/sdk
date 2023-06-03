@@ -3,6 +3,7 @@ import type {
   Locale,
   Offset,
   LayoutPosition,
+  CamerasPosition,
 } from '../../services/video-conference-manager/types';
 
 import type { Participant, Group, Avatar } from './participant.types';
@@ -27,7 +28,7 @@ export interface SuperVizSdkOptions {
   chatOff?: boolean;
   defaultAvatars?: boolean;
   offset: Offset;
-  camerasPosition?: 'horizontal' | 'vertical';
+  camerasPosition?: CamerasPosition;
   enableFollow?: boolean;
   enableGoTo?: boolean;
   enableGather?: boolean;

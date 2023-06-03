@@ -18,7 +18,7 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
-  camerasPosition: 'horizontal' | 'vertical';
+  camerasPosition: CamerasPosition;
   devices: {
     audioInput: boolean;
     audioOutput: boolean;
@@ -67,7 +67,7 @@ export interface FrameConfig {
   canUseGoTo: boolean;
   canUseGather: boolean;
   canUseDefaultToolbar: boolean;
-  camerasPosition: 'horizontal' | 'vertical';
+  camerasPosition: CamerasPosition;
   devices: DevicesConfig;
   waterMark: WaterMark;
   skipMeetingSettings: boolean;
@@ -136,6 +136,13 @@ export enum LayoutPosition {
   RIGHT = 'right',
   CENTER = 'center',
   LEFT = 'left',
+}
+
+export enum CamerasPosition {
+  RIGHT = 'right',
+  LEFT = 'left',
+  TOP = 'top',
+  BOTTOM = 'bottom',
 }
 
 export enum VideoFrameState {

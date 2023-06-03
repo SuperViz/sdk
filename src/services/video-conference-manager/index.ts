@@ -27,6 +27,7 @@ import {
   ColorsVariables,
   WaterMark,
   LayoutPosition,
+  CamerasPosition,
 } from './types';
 
 const FRAME_ID = 'sv-video-frame';
@@ -91,20 +92,25 @@ export default class VideoConfereceManager {
       customColors,
       waterMark,
       disableCameraOverlay,
-      layoutPosition,
     } = options;
 
-    let { camerasPosition, skipMeetingSettings, devices } = options;
-    let position: string = '';
+    let { layoutPosition, position, camerasPosition, skipMeetingSettings, devices } = options;
+
     if (browserService.isMobileDevice) {
-      position = 'bottom';
-      camerasPosition = 'horizontal';
+      position = CamerasPosition.BOTTOM;
+      camerasPosition = CamerasPosition.BOTTOM;
     }
 
-    if (camerasPosition === 'horizontal') {
-      position = 'bottom';
+    if (camerasPosition === CamerasPosition.TOP || camerasPosition === CamerasPosition.BOTTOM) {
+      position = camerasPosition;
     } else if (!browserService.isMobileDevice) {
-      position = options.layoutPosition === LayoutPosition.CENTER ? 'right' : options.layoutPosition;
+      position = camerasPosition;
+      if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
+        layoutPosition = LayoutPosition.RIGHT;
+      }
+      if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
+        layoutPosition = LayoutPosition.LEFT;
+      }
     }
 
     if (disableCameraOverlay) {
@@ -132,7 +138,7 @@ export default class VideoConfereceManager {
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
-      camerasPosition: camerasPosition ?? 'vertical',
+      camerasPosition: camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
       roomId,
       devices: {
@@ -312,10 +318,13 @@ export default class VideoConfereceManager {
       !this.browserService.isMobileDevice;
     const waterMarkHeight: number = hasWaterMark ? 40 : 0;
 
+    const hasHorizontalCameras =
+    [CamerasPosition.TOP, CamerasPosition.BOTTOM].includes(this.frameConfig.camerasPosition)
+    && !this.browserService.isMobileDevice;
     let frameWidth: string = `${width}px`;
     let frameHeight: string = `${height + waterMarkHeight}px`;
 
-    if (width >= window.innerWidth) {
+    if (width >= window.innerWidth || hasHorizontalCameras) {
       frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
     }
 
