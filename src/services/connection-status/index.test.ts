@@ -2,8 +2,6 @@ import { MeetingConnectionStatus } from '../../common/types/events.types';
 
 import { ConnectionService } from './index';
 
-jest.mock('@superviz/immersive-core');
-
 describe('ConnectionService', () => {
   let connectionService: ConnectionService;
 
