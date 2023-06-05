@@ -1,4 +1,4 @@
-import doRequest from './doRequest';
+import doRequest from './do-request';
 
 describe('doRequest', () => {
   const mockFetch = jest.fn();
