@@ -1,4 +1,4 @@
-import { FrameBricklayer, Logger, MessageBridge } from '@superviz/immersive-core';
+import { Logger, MessageBridge } from '@superviz/immersive-core';
 import NoSleep from 'nosleep.js';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
@@ -17,6 +17,7 @@ import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
 import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
+import { FrameBricklayer } from '../frame-brick-layer';
 
 import {
   VideoFrameState,
