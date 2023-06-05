@@ -1,4 +1,3 @@
-import { Logger, MessageBridge } from '@superviz/immersive-core';
 import NoSleep from 'nosleep.js';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
@@ -18,6 +17,7 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { FrameBricklayer } from '../frame-brick-layer';
+import { MessageBridge } from '../message-bridge';
 
 import {
   VideoFrameState,
@@ -174,7 +174,7 @@ export default class VideoConfereceManager {
    */
   private onFrameLoad = (): void => {
     this.messageBridge = new MessageBridge({
-      logger: logger as unknown as Logger,
+      logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
