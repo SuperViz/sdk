@@ -1,4 +1,3 @@
-import { ObserverHelper } from '@superviz/immersive-core';
 import isEqual from 'lodash.isequal';
 
 import {
@@ -11,7 +10,7 @@ import {
   RealtimeEvent,
 } from '../../common/types/events.types';
 import { Participant, Group } from '../../common/types/participant.types';
-import { logger } from '../../common/utils';
+import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
@@ -36,7 +35,7 @@ class Communicator {
   private readonly roomId: string;
   private readonly group: Group;
 
-  private observerHelpers: { string?: ObserverHelper } = {};
+  private observers: Record<string, Observer> = {};
   private participant: Participant;
   private hasJoined: Boolean = false;
   private participantList: Participant[] = [];
@@ -210,7 +209,7 @@ class Communicator {
 
     this.connectionService.connectionStatusObserver.unsubscribe(this.onConnectionStatusChange);
 
-    Object.keys(this.observerHelpers).forEach((type) => this.unsubscribe(type));
+    Object.keys(this.observers).forEach((type) => this.unsubscribe(type));
     this.videoManager.leave();
     this.realtime.leave();
     this.connectionService.removeListeners();
@@ -223,17 +222,17 @@ class Communicator {
   };
 
   public subscribe = (type: string, listener: Function) => {
-    if (!this.observerHelpers[type]) {
-      this.observerHelpers[type] = new ObserverHelper();
+    if (!this.observers[type]) {
+      this.observers[type] = new Observer({ logger });
     }
 
-    this.observerHelpers[type].subscribe(listener);
+    this.observers[type].subscribe(listener);
   };
 
   public unsubscribe = (type: string) => {
-    if (this.observerHelpers[type]) {
-      this.observerHelpers[type].reset();
-      delete this.observerHelpers[type];
+    if (this.observers[type]) {
+      this.observers[type].reset();
+      delete this.observers[type];
     }
   };
 
@@ -357,10 +356,10 @@ class Communicator {
   };
 
   private publish = (type: string, data: any): void => {
-    const hasListenerRegistered = type in this.observerHelpers;
+    const hasListenerRegistered = type in this.observers;
 
     if (hasListenerRegistered) {
-      this.observerHelpers[type].publish(data);
+      this.observers[type].publish(data);
     }
   };
 
@@ -629,9 +628,7 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     unsubscribe: (propertyName) => communicator.unsubscribe(propertyName),
     destroy: () => communicator.destroy(),
     follow: (participantId) => communicator.follow(participantId),
-    fetchSyncProperty: (
-      eventName?: string,
-    ) => communicator.fetchSyncClientProperty(eventName),
+    fetchSyncProperty: (eventName?: string) => communicator.fetchSyncClientProperty(eventName),
     gather: () => communicator.gather(),
     goTo: (participantId) => communicator.goTo(participantId),
 

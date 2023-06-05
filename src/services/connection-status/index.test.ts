@@ -1,5 +1,3 @@
-import { ObserverHelper } from '@superviz/immersive-core';
-
 import { MeetingConnectionStatus } from '../../common/types/events.types';
 
 import { ConnectionService } from './index';

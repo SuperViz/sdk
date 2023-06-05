@@ -1,42 +1,40 @@
-import { ObserverHelper } from '@superviz/immersive-core';
-
 import { MeetingColors, MeetingColorsHex } from '../../../common/types/meeting-colors.types';
-import { logger } from '../../../common/utils';
+import { Observer, logger } from '../../../common/utils';
 
 import { DefaultRealtimeService, SlotColor } from './types';
 
 export class RealtimeService implements DefaultRealtimeService {
-  public participantObservers: ObserverHelper[];
-  public participantsObserver: ObserverHelper;
-  public participantJoinedObserver: ObserverHelper;
-  public participantLeaveObserver: ObserverHelper;
-  public joinRoomObserver: ObserverHelper;
-  public reconnectObserver: ObserverHelper;
-  public roomInfoUpdatedObserver: ObserverHelper;
-  public roomListUpdatedObserver: ObserverHelper;
-  public masterParticipantObserver: ObserverHelper;
-  public realtimeStateObserver: ObserverHelper;
-  public syncPropertiesObserver: ObserverHelper;
-  public kickAllParticipantsObserver: ObserverHelper;
-  public authenticationObserver: ObserverHelper;
+  public participantObservers: Observer[];
+  public participantsObserver: Observer;
+  public participantJoinedObserver: Observer;
+  public participantLeaveObserver: Observer;
+  public joinRoomObserver: Observer;
+  public reconnectObserver: Observer;
+  public roomInfoUpdatedObserver: Observer;
+  public roomListUpdatedObserver: Observer;
+  public masterParticipantObserver: Observer;
+  public realtimeStateObserver: Observer;
+  public syncPropertiesObserver: Observer;
+  public kickAllParticipantsObserver: Observer;
+  public authenticationObserver: Observer;
 
   constructor() {
     this.participantObservers = [];
 
-    this.participantsObserver = new ObserverHelper({ logger });
-    this.participantJoinedObserver = new ObserverHelper({ logger });
-    this.participantLeaveObserver = new ObserverHelper({ logger });
-    this.joinRoomObserver = new ObserverHelper({ logger });
-    this.syncPropertiesObserver = new ObserverHelper({ logger });
-    this.reconnectObserver = new ObserverHelper({ logger });
+    this.participantsObserver = new Observer({ logger });
+    this.participantJoinedObserver = new Observer({ logger });
+    this.participantLeaveObserver = new Observer({ logger });
+    this.joinRoomObserver = new Observer({ logger });
+    this.syncPropertiesObserver = new Observer({ logger });
+    this.reconnectObserver = new Observer({ logger });
 
     // Room info obervers helpers
-    this.roomInfoUpdatedObserver = new ObserverHelper({ logger });
-    this.roomListUpdatedObserver = new ObserverHelper({ logger });
-    this.masterParticipantObserver = new ObserverHelper({ logger });
-    this.realtimeStateObserver = new ObserverHelper({ logger });
-    this.kickAllParticipantsObserver = new ObserverHelper({ logger });
-    this.authenticationObserver = new ObserverHelper({ logger });
+    this.roomInfoUpdatedObserver = new Observer({ logger });
+    this.roomListUpdatedObserver = new Observer({ logger });
+    this.masterParticipantObserver = new Observer({ logger });
+    this.realtimeStateObserver = new Observer({ logger });
+    this.kickAllParticipantsObserver = new Observer({ logger });
+    this.authenticationObserver = new Observer({ logger });
   }
 
   /**
@@ -48,7 +46,7 @@ export class RealtimeService implements DefaultRealtimeService {
    */
   public subscribeToParticipantUpdate(participantId: string, callback: Function): void {
     if (!this.participantObservers[participantId]) {
-      this.participantObservers[participantId] = new ObserverHelper({ logger });
+      this.participantObservers[participantId] = new Observer({ logger });
     }
 
     this.participantObservers[participantId].subscribe(callback);

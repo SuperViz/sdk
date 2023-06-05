@@ -1,4 +1,4 @@
-import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
+import { FrameBricklayer, Logger, MessageBridge } from '@superviz/immersive-core';
 import NoSleep from 'nosleep.js';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
@@ -15,7 +15,7 @@ import {
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
-import { logger } from '../../common/utils';
+import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 
 import {
@@ -43,26 +43,26 @@ export default class VideoConfereceManager {
   private readonly frameConfig: FrameConfig;
   private readonly customColors: ColorsVariables;
 
-  public readonly frameStateObserver = new ObserverHelper({ logger });
-  public readonly frameSizeObserver = new ObserverHelper({ logger });
+  public readonly frameStateObserver = new Observer({ logger });
+  public readonly frameSizeObserver = new Observer({ logger });
 
-  public readonly realtimeObserver = new ObserverHelper({ logger });
-  public readonly hostChangeObserver = new ObserverHelper({ logger });
-  public readonly gridModeChangeObserver = new ObserverHelper({ logger });
-  public readonly followParticipantObserver = new ObserverHelper({ logger });
-  public readonly goToParticipantObserver = new ObserverHelper({ logger });
-  public readonly gatherParticipantsObserver = new ObserverHelper({ logger });
+  public readonly realtimeObserver = new Observer({ logger });
+  public readonly hostChangeObserver = new Observer({ logger });
+  public readonly gridModeChangeObserver = new Observer({ logger });
+  public readonly followParticipantObserver = new Observer({ logger });
+  public readonly goToParticipantObserver = new Observer({ logger });
+  public readonly gatherParticipantsObserver = new Observer({ logger });
 
-  public readonly sameAccountErrorObserver = new ObserverHelper({ logger });
-  public readonly devicesObserver = new ObserverHelper({ logger });
-  public readonly meetingStateObserver = new ObserverHelper({ logger });
-  public readonly meetingConnectionObserver = new ObserverHelper({ logger });
+  public readonly sameAccountErrorObserver = new Observer({ logger });
+  public readonly devicesObserver = new Observer({ logger });
+  public readonly meetingStateObserver = new Observer({ logger });
+  public readonly meetingConnectionObserver = new Observer({ logger });
 
-  public readonly participantAmountUpdateObserver = new ObserverHelper({ logger });
-  public readonly participantJoinedObserver = new ObserverHelper({ logger });
-  public readonly participantAvatarObserver = new ObserverHelper({ logger });
-  public readonly participantLeftObserver = new ObserverHelper({ logger });
-  public readonly participantListObserver = new ObserverHelper({ logger });
+  public readonly participantAmountUpdateObserver = new Observer({ logger });
+  public readonly participantJoinedObserver = new Observer({ logger });
+  public readonly participantAvatarObserver = new Observer({ logger });
+  public readonly participantLeftObserver = new Observer({ logger });
+  public readonly participantListObserver = new Observer({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -173,7 +173,7 @@ export default class VideoConfereceManager {
    */
   private onFrameLoad = (): void => {
     this.messageBridge = new MessageBridge({
-      logger,
+      logger: logger as unknown as Logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
@@ -454,7 +454,7 @@ export default class VideoConfereceManager {
    * @param {string} participantId
    * @returns {void}
    */
-  public onGoToDidChange = (participantId: string): void => {
+  private onGoToDidChange = (participantId: string): void => {
     this.goToParticipantObserver.publish(participantId);
   };
 
