@@ -94,24 +94,12 @@ export default class VideoConfereceManager {
       disableCameraOverlay,
     } = options;
 
-    let { layoutPosition, position, camerasPosition, skipMeetingSettings, devices } = options;
+    let { skipMeetingSettings, devices } = options;
+    const { layoutPosition, camerasPosition } = options;
 
-    if (browserService.isMobileDevice) {
-      position = CamerasPosition.BOTTOM;
-      camerasPosition = CamerasPosition.BOTTOM;
-    }
+    this.browserService = browserService;
 
-    if (camerasPosition === CamerasPosition.TOP || camerasPosition === CamerasPosition.BOTTOM) {
-      position = camerasPosition;
-    } else if (!browserService.isMobileDevice) {
-      position = camerasPosition;
-      if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
-        layoutPosition = LayoutPosition.RIGHT;
-      }
-      if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
-        layoutPosition = LayoutPosition.LEFT;
-      }
-    }
+    const positions = this.layoutModalsAndCamerasConfig(layoutPosition, camerasPosition);
 
     if (disableCameraOverlay) {
       skipMeetingSettings = true;
@@ -121,8 +109,6 @@ export default class VideoConfereceManager {
         videoInput: false,
       };
     }
-
-    this.browserService = browserService;
 
     const wrapper = document.createElement('div');
 
@@ -138,7 +124,7 @@ export default class VideoConfereceManager {
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
-      camerasPosition: camerasPosition ?? CamerasPosition.RIGHT,
+      camerasPosition: positions.camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
       roomId,
       devices: {
@@ -149,7 +135,7 @@ export default class VideoConfereceManager {
       waterMark,
       skipMeetingSettings,
       disableCameraOverlay,
-      layoutPosition,
+      layoutPosition: positions.layoutPosition,
     };
 
     this.customColors = customColors;
@@ -167,7 +153,7 @@ export default class VideoConfereceManager {
     });
 
     this.setFrameOffset(offset);
-    this.setFrameStyle(position);
+    this.setFrameStyle(positions.camerasPosition);
     this.bricklayer.element.addEventListener('load', this.onFrameLoad);
     this.frameLocale = {
       language,
@@ -177,6 +163,38 @@ export default class VideoConfereceManager {
     window.addEventListener('resize', this.onWindowResize);
     window.addEventListener('orientationchange', this.onWindowResize);
   }
+
+  /**
+   * @function layoutModalsAndCamerasConfig
+   * @returns {any}
+   */
+  private layoutModalsAndCamerasConfig = (layout, cameras): any => {
+    let layoutPosition = layout;
+    let camerasPosition = cameras;
+    const hasValidCamerasPositionValue = [CamerasPosition.LEFT, CamerasPosition.RIGHT,
+      CamerasPosition.BOTTOM,
+      CamerasPosition.TOP].includes(camerasPosition);
+    const hasValidLAyoutPositionValue = [LayoutPosition.LEFT, LayoutPosition.RIGHT,
+      LayoutPosition.CENTER].includes(layoutPosition);
+
+    if (!hasValidCamerasPositionValue) {
+      camerasPosition = CamerasPosition.RIGHT;
+    }
+    if (!hasValidLAyoutPositionValue) {
+      layoutPosition = LayoutPosition.RIGHT;
+    }
+    if (this.browserService.isMobileDevice) {
+      camerasPosition = CamerasPosition.BOTTOM;
+    } else {
+      if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
+        layoutPosition = LayoutPosition.RIGHT;
+      }
+      if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
+        layoutPosition = LayoutPosition.LEFT;
+      }
+    }
+    return { layoutPosition, camerasPosition };
+  };
 
   /**
    * @function onFrameLoad

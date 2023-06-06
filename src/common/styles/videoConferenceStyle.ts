@@ -33,7 +33,7 @@ const styles = `
   }
 
   #sv-video-wrapper iframe.sv-video-frame--top { 
-    top: var(--superviz-offset-bottom);
+    top: var(--superviz-offset-top);
     right: var(--superviz-offset-right);
     width: 100%;
   }
