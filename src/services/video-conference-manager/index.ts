@@ -28,6 +28,7 @@ import {
   WaterMark,
   LayoutPosition,
   CamerasPosition,
+  LayoutModalsAndCameras,
 } from './types';
 
 const FRAME_ID = 'sv-video-frame';
@@ -168,7 +169,7 @@ export default class VideoConfereceManager {
    * @function layoutModalsAndCamerasConfig
    * @returns {any}
    */
-  private layoutModalsAndCamerasConfig = (layout, cameras): any => {
+  private layoutModalsAndCamerasConfig = (layout, cameras): LayoutModalsAndCameras => {
     let layoutPosition = layout;
     let camerasPosition = cameras;
     const hasValidCamerasPositionValue = [CamerasPosition.LEFT, CamerasPosition.RIGHT,
@@ -185,14 +186,16 @@ export default class VideoConfereceManager {
     }
     if (this.browserService.isMobileDevice) {
       camerasPosition = CamerasPosition.BOTTOM;
-    } else {
-      if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
-        layoutPosition = LayoutPosition.RIGHT;
-      }
-      if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
-        layoutPosition = LayoutPosition.LEFT;
-      }
+      return { layoutPosition, camerasPosition };
     }
+
+    if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
+      layoutPosition = LayoutPosition.RIGHT;
+    }
+    if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
+      layoutPosition = LayoutPosition.LEFT;
+    }
+
     return { layoutPosition, camerasPosition };
   };
 

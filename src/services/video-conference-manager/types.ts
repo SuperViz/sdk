@@ -126,6 +126,11 @@ export interface Locale {
   messages: Record<string, string>;
 }
 
+export interface LayoutModalsAndCameras {
+  layoutPosition: LayoutPosition;
+  camerasPosition: CamerasPosition;
+}
+
 export enum WaterMark {
   ALL = 'all',
   CAMERA = 'camera',

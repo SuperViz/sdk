@@ -22,6 +22,7 @@ import RemoteConfigService from './services/remote-config-service';
 import {
   ColorsVariables,
   ColorsVariablesNames,
+  LayoutPosition,
   WaterMark,
 } from './services/video-conference-manager/types';
 
@@ -106,14 +107,19 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
 
   const environment = await ApiService.fetchConfig(apiUrl, apiKey);
   const waterMark: WaterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
-
+  const { layoutPosition } = options;
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
   const { ablyKey } = environment;
   return Communicator(
-    Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl, waterMark }),
+    Object.assign({}, options, { apiKey,
+      ablyKey,
+      conferenceLayerUrl,
+      apiUrl,
+      waterMark,
+      layoutPosition }),
   );
 };
 
