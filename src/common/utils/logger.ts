@@ -1,13 +1,11 @@
-import { Logger } from '@superviz/immersive-core';
-import debug, { Debugger } from 'debug';
+import debug from 'debug';
 
 export type Message = string | Error | number | Object;
 
-export class Debug extends Logger {
-  private debug: Debugger;
+export class Debug {
+  private debug: debug.Debugger;
 
   constructor(scope: string) {
-    super(scope);
     this.disable();
     this.debug = debug(scope);
   }
