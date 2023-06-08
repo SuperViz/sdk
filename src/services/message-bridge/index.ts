@@ -34,9 +34,7 @@ export class MessageBridge {
     }
 
     this.contentWindow = contentWindow;
-    window.addEventListener('message', (event) => {
-      console.error('message received', event);
-    });
+    window.addEventListener('message', this.onReceiveMessage);
   }
 
   publish = (type: Message, message: Object = {}) => {
