@@ -26,11 +26,7 @@ export class MessageBridge {
     this.sourceBlockList.push(...sourceBlockList);
 
     if (typeof window === 'undefined') {
-      return;
-    }
-
-    if (this.contentWindow) {
-      throw new Error('Tried to init PostMessageBridge more than one time');
+      throw new Error('MessageBridge: window is undefined');
     }
 
     this.contentWindow = contentWindow;

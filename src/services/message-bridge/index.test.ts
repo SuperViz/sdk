@@ -16,6 +16,7 @@ describe('MessageBridge', () => {
     MessageBridgeInstance = new MessageBridge({
       contentWindow: window,
       logger: new Debug('@superviz/message-bridge'),
+      sourceBlockList: ['https://google.com'],
     });
   });
 
@@ -40,6 +41,32 @@ describe('MessageBridge', () => {
       const spy = jest.spyOn(window, 'postMessage');
       MessageBridgeInstance.publish('test', { foo: 'bar' });
       expect(spy).toHaveBeenCalled();
+    });
+
+    test('should call postMessage with the correct arguments', () => {
+      const spy = jest.spyOn(window, 'postMessage');
+      MessageBridgeInstance.publish('test', { foo: 'bar' });
+      expect(spy).toHaveBeenCalledWith(
+        {
+          data: {
+            foo: 'bar',
+          },
+          type: 'test',
+        },
+        '*',
+      );
+    });
+
+    test('if message is not defined, should call postMessage with an empty object', () => {
+      const spy = jest.spyOn(window, 'postMessage');
+      MessageBridgeInstance.publish('test');
+      expect(spy).toHaveBeenCalledWith(
+        {
+          data: {},
+          type: 'test',
+        },
+        '*',
+      );
     });
   });
 
@@ -77,5 +104,67 @@ describe('MessageBridge', () => {
       MessageBridgeInstance.destroy();
       expect(spy).toHaveBeenCalled();
     });
+  });
+
+  describe('onReceiveMessage', () => {
+    test('should call the observer', () => {
+      const spy = jest.spyOn(MOCK_OBSERVER_HELPER, 'publish');
+
+      const event = new MessageEvent('message', {
+        data: {
+          type: 'test',
+          data: {
+            foo: 'bar',
+          },
+        },
+      });
+
+      window.dispatchEvent(event);
+      expect(spy).toHaveBeenCalled();
+    });
+
+    test('should not call the observer if the type is not defined', () => {
+      const spy = jest.spyOn(MOCK_OBSERVER_HELPER, 'publish');
+
+      const event = new MessageEvent('message', {
+        data: {
+          type: 'foo',
+          data: {
+            foo: 'bar',
+          },
+        },
+      });
+
+      window.dispatchEvent(event);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    test('should not call the observer if the source is blocked', () => {
+      const spy = jest.spyOn(MOCK_OBSERVER_HELPER, 'publish');
+
+      const event = new MessageEvent('message', {
+        data: {
+          type: 'test',
+          data: {
+            foo: 'bar',
+          },
+          source: 'https://google.com',
+        },
+      });
+
+      window.dispatchEvent(event);
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  test('should throw an error if window is undefined', () => {
+    jest.spyOn(global, 'window', 'get').mockImplementation(() => undefined as any);
+
+    expect(() => {
+      const instance = new MessageBridge({
+        contentWindow: window,
+        logger: new Debug('@superviz/message-bridge'),
+      });
+    }).toThrowError();
   });
 });
