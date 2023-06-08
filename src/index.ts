@@ -88,6 +88,10 @@ const validadeColorsVariablesNames = (colors: ColorsVariables) => {
  * @returns {SuperVizSdk}
  */
 const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
+  const validApiKey = apiKey && apiKey.trim();
+
+  if (!validApiKey) throw new Error('API key is required');
+
   if (!options) throw new Error('Options is required');
 
   validateOptions(options);
