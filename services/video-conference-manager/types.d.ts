@@ -17,7 +17,7 @@ export interface VideoManagerOptions {
     canUseFollow: boolean;
     canUseGoTo: boolean;
     canUseDefaultToolbar: boolean;
-    camerasOrientation: 'horizontal' | 'vertical';
+    camerasPosition: CamerasPosition;
     devices: {
         audioInput: boolean;
         audioOutput: boolean;
@@ -32,6 +32,7 @@ export interface VideoManagerOptions {
     avatars?: Avatar[];
     customColors?: ColorsVariables;
     waterMark: WaterMark;
+    layoutPosition?: LayoutPosition;
 }
 export interface WindowSize {
     height: number;
@@ -61,11 +62,12 @@ export interface FrameConfig {
     canUseGoTo: boolean;
     canUseGather: boolean;
     canUseDefaultToolbar: boolean;
-    camerasOrientation: 'horizontal' | 'vertical';
+    camerasPosition: CamerasPosition;
     devices: DevicesConfig;
     waterMark: WaterMark;
     skipMeetingSettings: boolean;
     disableCameraOverlay: boolean;
+    layoutPosition: LayoutPosition;
 }
 export declare enum ColorsVariablesNames {
     svPrimary = "sv-primary",
@@ -114,10 +116,25 @@ export interface Locale {
     language: string;
     messages: Record<string, string>;
 }
+export interface LayoutModalsAndCameras {
+    layoutPosition: LayoutPosition;
+    camerasPosition: CamerasPosition;
+}
 export declare enum WaterMark {
     ALL = "all",
     CAMERA = "camera",
     POWERED_BY = "powered-by"
+}
+export declare enum LayoutPosition {
+    RIGHT = "right",
+    CENTER = "center",
+    LEFT = "left"
+}
+export declare enum CamerasPosition {
+    RIGHT = "right",
+    LEFT = "left",
+    TOP = "top",
+    BOTTOM = "bottom"
 }
 export declare enum VideoFrameState {
     UNINITIALIZED = 0,

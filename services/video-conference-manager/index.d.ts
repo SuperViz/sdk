@@ -30,6 +30,11 @@ export default class VideoConfereceManager {
     frameState: VideoFrameState;
     constructor(options: VideoManagerOptions);
     /**
+     * @function layoutModalsAndCamerasConfig
+     * @returns {any}
+     */
+    private layoutModalsAndCamerasConfig;
+    /**
      * @function onFrameLoad
      * @returns {void}
      */
