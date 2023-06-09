@@ -123,7 +123,7 @@ export interface DevicesConfig {
 
 export interface Locale {
   language: string;
-  messages: Record<string, string>;
+  messages: Record<string, string | Record<string, string>>;
 }
 
 export interface LayoutModalsAndCameras {

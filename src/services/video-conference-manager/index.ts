@@ -166,6 +166,18 @@ export default class VideoConfereceManager {
     window.addEventListener('orientationchange', this.onWindowResize);
   }
 
+  get isWaterMarkEnabled(): boolean {
+    if (this.browserService.isMobileDevice) return false;
+
+    return [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark);
+  }
+
+  get isHorizontalCameraEnabled(): boolean {
+    if (this.browserService.isMobileDevice) return false;
+
+    return [CamerasPosition.TOP, CamerasPosition.BOTTOM].includes(this.frameConfig.camerasPosition);
+  }
+
   /**
    * @function layoutModalsAndCamerasConfig
    * @returns {any}
@@ -173,11 +185,19 @@ export default class VideoConfereceManager {
   private layoutModalsAndCamerasConfig = (layout, cameras): LayoutModalsAndCameras => {
     let layoutPosition = layout;
     let camerasPosition = cameras;
-    const hasValidCamerasPositionValue = [CamerasPosition.LEFT, CamerasPosition.RIGHT,
+
+    const hasValidCamerasPositionValue = [
+      CamerasPosition.LEFT,
+      CamerasPosition.RIGHT,
       CamerasPosition.BOTTOM,
-      CamerasPosition.TOP].includes(camerasPosition);
-    const hasValidLAyoutPositionValue = [LayoutPosition.LEFT, LayoutPosition.RIGHT,
-      LayoutPosition.CENTER].includes(layoutPosition);
+      CamerasPosition.TOP,
+    ].includes(camerasPosition);
+
+    const hasValidLAyoutPositionValue = [
+      LayoutPosition.LEFT,
+      LayoutPosition.RIGHT,
+      LayoutPosition.CENTER,
+    ].includes(layoutPosition);
 
     if (!hasValidCamerasPositionValue) {
       camerasPosition = CamerasPosition.RIGHT;
@@ -190,10 +210,10 @@ export default class VideoConfereceManager {
       return { layoutPosition, camerasPosition };
     }
 
-    if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
+    if (layoutPosition === LayoutPosition.LEFT && camerasPosition === CamerasPosition.RIGHT) {
       layoutPosition = LayoutPosition.RIGHT;
     }
-    if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
+    if (layoutPosition === LayoutPosition.RIGHT && camerasPosition === CamerasPosition.LEFT) {
       layoutPosition = LayoutPosition.LEFT;
     }
 
@@ -209,17 +229,6 @@ export default class VideoConfereceManager {
       logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
-
-    if (this.browserService.isMobileDevice) {
-      const noSleep = new NoSleep();
-
-      const enableNoSleep = () => {
-        noSleep.enable();
-        this.bricklayer.element.removeEventListener('click', enableNoSleep, false);
-      };
-
-      this.bricklayer.element.addEventListener('click', enableNoSleep, false);
-    }
 
     // @TODO: create option to destroy all these listens.
     this.messageBridge.listen(
@@ -310,6 +319,7 @@ export default class VideoConfereceManager {
 
     if (this.frameConfig.disableCameraOverlay) {
       this.bricklayer.element.classList.add('sv-video-frame--no-overlay');
+      return;
     }
 
     if (this.browserService.isMobileDevice) {
@@ -335,18 +345,12 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
-    const hasWaterMark: boolean =
-      [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark) &&
-      !this.browserService.isMobileDevice;
-    const waterMarkHeight: number = hasWaterMark ? 40 : 0;
+    const waterMarkHeight: number = this.isWaterMarkEnabled ? 40 : 0;
 
-    const hasHorizontalCameras =
-    [CamerasPosition.TOP, CamerasPosition.BOTTOM].includes(this.frameConfig.camerasPosition)
-    && !this.browserService.isMobileDevice;
     let frameWidth: string = `${width}px`;
     let frameHeight: string = `${height + waterMarkHeight}px`;
 
-    if (width >= window.innerWidth || hasHorizontalCameras) {
+    if (width >= window.innerWidth || this.isHorizontalCameraEnabled) {
       frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
     }
 
@@ -377,6 +381,8 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private updateFrameLocale = (): void => {
+    if (!this.frameLocale || (!this.frameLocale?.language && this.frameLocale?.locales)) return;
+
     const { language, locales } = this.frameLocale;
     const languages = locales.map((locale) => locale?.language);
     const availableLanguages = ['en', ...languages];
@@ -548,51 +554,6 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function waitForHostDidChange
-   * @param {boolean} isWating
-   * @returns {void}
-   */
-  public waitForHostDidChange = (isWating: boolean): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_WAIT_FOR_HOST, isWating);
-  };
-
-  /**
-   * @function gridModeDidChange
-   * @param {boolean} isGridModeEnable
-   * @returns {void}
-   */
-  public gridModeDidChange = (isGridModeEnable: boolean): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
-  };
-
-  /**
-   * @function participantsListDidChange
-   * @param {} participantsList
-   * @returns {void}
-   */
-  public participantsListDidChange = (participantsList): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE, participantsList);
-  };
-
-  /**
-   * @function onMasterParticipantDidChange
-   * @param {string} hostId
-   * @returns {void}
-   */
-  public onMasterParticipantDidChange = (hostId: string): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
-  };
-
-  /**
-   * @function followParticipantDidChange
-   * @param {string} participantId
-   * @returns {void}
-   */
-  public followParticipantDidChange = (participantId?: string): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
-  };
-
-  /**
    * @function start
    * @param {StartMeetingOptions} options
    * @returns {void}
@@ -609,7 +570,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   public leave(): void {
-    this.messageBridge.publish(MeetingEvent.MEETING_LEAVE, {});
+    this.messageBridge.publish(MeetingEvent.MEETING_LEAVE);
 
     this.destroy();
   }
@@ -620,7 +581,7 @@ export default class VideoConfereceManager {
    */
   public destroy(): void {
     this.messageBridge?.destroy();
-    this.bricklayer.destroy();
+    this.bricklayer?.destroy();
 
     this.frameSizeObserver.destroy();
     this.realtimeObserver.destroy();
@@ -644,66 +605,15 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @function toggleChat
-   * @returns {void}
+   * @function publishMessageToFrame
+   * @description Publishes a message to the frame
+   * @param message - The event to publish
+   * @param payload  - The payload to publish
    */
-  public toggleChat(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
-  }
-
-  /**
-   * @function toggleMeetingSetup
-   * @returns {void}
-   */
-  public toggleMeetingSetup(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MEETING_SETUP);
-  }
-
-  /**
-   * @function toggleMicrophone
-   * @returns {void}
-   */
-  public toggleMicrophone(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MICROPHONE);
-  }
-
-  /**
-   * @function toggleScreenShare
-   * @returns {void}
-   */
-  public toggleScreenShare(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_SCREENSHARE);
-  }
-
-  /**
-   * @function hangUp
-   * @returns {void}
-   */
-  public hangUp(): void {
-    this.messageBridge.publish(MeetingControlsEvent.HANG_UP);
-  }
-
-  /**
-   * @function toggleCam
-   * @returns {void}
-   */
-  public toggleCam(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_CAM);
-  }
-
-  /**
-   * @function startTranscription
-   * @returns {void}
-   */
-  public startTranscription(language): void {
-    this.messageBridge.publish(TranscriptionEvent.TRANSCRIPTION_START, language);
-  }
-
-  /**
-   * @function stopTranscription
-   * @returns {void}
-   */
-  public stopTranscription(): void {
-    this.messageBridge.publish(TranscriptionEvent.TRANSCRIPTION_STOP);
+  public publishMessageToFrame(
+    event: MeetingControlsEvent | MeetingEvent | RealtimeEvent | TranscriptionEvent,
+    payload?: unknown,
+  ): void {
+    this.messageBridge.publish(event, payload);
   }
 }
