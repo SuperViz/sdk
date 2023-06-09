@@ -1,4 +1,4 @@
-import Ably, { Realtime } from 'ably';
+import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
@@ -649,7 +649,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const oldMasterParticipantParticipantId = this.hostParticipantId;
     this.hostParticipantId = newHostId;
 
-    this.masterParticipantObserver.publish({
+    this.hostObserver.publish({
       oldMasterParticipantParticipantId,
       newMasterParticipantParticipantId: this.hostParticipantId,
     });
