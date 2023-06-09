@@ -19,7 +19,7 @@ import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyParticipant, RealtimeMessage } from '../realtime/ably/types';
 import { ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import { LayoutPosition, VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, PluginOptions } from './types';
 
@@ -66,9 +66,10 @@ class Communicator {
     devices,
     customColors,
     waterMark,
-    camerasOrientation,
+    camerasPosition,
     skipMeetingSettings = false,
     disableCameraOverlay = false,
+    layoutPosition,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -129,9 +130,10 @@ class Communicator {
       avatars: avatars ?? [],
       customColors,
       waterMark,
-      camerasOrientation,
+      camerasPosition,
       skipMeetingSettings,
       disableCameraOverlay,
+      layoutPosition,
     });
 
     // Realtime observers
