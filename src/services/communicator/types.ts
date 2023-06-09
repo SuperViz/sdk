@@ -9,8 +9,7 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
   ablyKey: string;
   conferenceLayerUrl: string;
   apiUrl: string;
-  waterMark: WaterMark;
-  layoutPosition: LayoutPosition;
+  waterMark?: WaterMark;
 }
 
 export interface PluginOptions extends DefaultPluginOptions {
