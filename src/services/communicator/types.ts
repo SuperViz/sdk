@@ -2,7 +2,7 @@ import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Plugin, PluginMethods, DefaultPluginOptions } from '../integration/base-plugin/types';
 import { AvatarConfig } from '../integration/participants/types';
 import { RealtimeMessage } from '../realtime/ably/types';
-import { WaterMark } from '../video-conference-manager/types';
+import { LayoutPosition, WaterMark } from '../video-conference-manager/types';
 
 export interface CommunicatorOptions extends SuperVizSdkOptions {
   apiKey: string;
@@ -10,6 +10,7 @@ export interface CommunicatorOptions extends SuperVizSdkOptions {
   conferenceLayerUrl: string;
   apiUrl: string;
   waterMark: WaterMark;
+  layoutPosition: LayoutPosition;
 }
 
 export interface PluginOptions extends DefaultPluginOptions {
