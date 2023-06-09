@@ -584,13 +584,25 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   public destroy(): void {
-    this.messageBridge.destroy();
+    this.messageBridge?.destroy();
     this.bricklayer.destroy();
-    this.frameStateObserver.destroy();
+
+    this.frameSizeObserver.destroy();
     this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
     this.gridModeChangeObserver.destroy();
     this.followParticipantObserver.destroy();
+    this.goToParticipantObserver.destroy();
+    this.gatherParticipantsObserver.destroy();
+    this.sameAccountErrorObserver.destroy();
+    this.devicesObserver.destroy();
+    this.meetingStateObserver.destroy();
+    this.meetingConnectionObserver.destroy();
+    this.participantAmountUpdateObserver.destroy();
+    this.participantJoinedObserver.destroy();
+    this.participantAvatarObserver.destroy();
+    this.participantLeftObserver.destroy();
+    this.participantListObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;

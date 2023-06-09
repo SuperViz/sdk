@@ -32,7 +32,7 @@ export interface VideoManagerOptions {
   locales?: Locale[];
   avatars?: Avatar[];
   customColors?: ColorsVariables;
-  waterMark: WaterMark;
+  waterMark?: WaterMark;
 }
 
 export interface WindowSize {
