@@ -16,6 +16,14 @@ export interface PluginOptions extends DefaultPluginOptions {
   avatarConfig: AvatarConfig;
 }
 
+export type ParticipandToFrame = {
+  timestamp: number;
+  connectionId: string;
+  participantId: string;
+  color: string;
+  name: string;
+};
+
 export type SuperVizSdk = {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;

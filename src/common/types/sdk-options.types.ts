@@ -8,8 +8,6 @@ import type {
 
 import type { Participant, Group, Avatar } from './participant.types';
 
-export type FramePosition = 'right' | 'left' | 'bottom' | 'top';
-
 export enum EnvironmentTypes {
   LOCAL = 'local',
   DEV = 'dev',
