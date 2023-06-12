@@ -646,12 +646,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
     }
 
-    const oldMasterParticipantParticipantId = this.hostParticipantId;
+    const oldHostParticipantId = this.hostParticipantId;
     this.hostParticipantId = newHostId;
 
     this.hostObserver.publish({
-      oldMasterParticipantParticipantId,
-      newMasterParticipantParticipantId: this.hostParticipantId,
+      oldHostParticipantId,
+      newHostParticipantId: this.hostParticipantId,
     });
 
     logger.log(
