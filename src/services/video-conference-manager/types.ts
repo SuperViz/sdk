@@ -1,5 +1,4 @@
 import type { Avatar } from '../../common/types/participant.types';
-import { FramePosition } from '../../common/types/sdk-options.types';
 import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
@@ -26,7 +25,6 @@ export interface VideoManagerOptions {
   };
   skipMeetingSettings: boolean;
   disableCameraOverlay: boolean;
-  position: FramePosition;
   browserService: BrowserService;
   offset?: Offset;
   locales?: Locale[];

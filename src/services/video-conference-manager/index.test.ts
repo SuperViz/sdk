@@ -42,7 +42,6 @@ const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
     skipMeetingSettings: false,
     locales: [],
     avatars: [],
-    position: 'right',
   };
 
   const videoConferenceManager = new VideoConferenceManager(options ?? defaultOptions);

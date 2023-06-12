@@ -94,10 +94,11 @@ export default class VideoConfereceManager {
       customColors,
       waterMark,
       disableCameraOverlay,
+      layoutPosition,
+      camerasPosition,
     } = options;
 
     let { skipMeetingSettings, devices } = options;
-    const { layoutPosition, camerasPosition } = options;
 
     this.browserService = browserService;
 
