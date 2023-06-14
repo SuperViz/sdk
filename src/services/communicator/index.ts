@@ -20,7 +20,7 @@ import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyParticipant, RealtimeMessage } from '../realtime/ably/types';
 import { ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import { LayoutPosition, VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, PluginOptions } from './types';
 
@@ -67,9 +67,10 @@ class Communicator {
     devices,
     customColors,
     waterMark,
-    camerasOrientation,
+    camerasPosition,
     skipMeetingSettings = false,
     disableCameraOverlay = false,
+    layoutPosition,
   }: CommunicatorOptions) {
     this.roomId = roomId;
     this.group = group;
@@ -130,9 +131,10 @@ class Communicator {
       avatars: avatars ?? [],
       customColors,
       waterMark,
-      camerasOrientation,
+      camerasPosition,
       skipMeetingSettings,
       disableCameraOverlay,
+      layoutPosition,
     });
 
     // Realtime observers
@@ -346,6 +348,14 @@ class Communicator {
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
+  };
+
+  public startTranscription = (language): void => {
+    this.videoManager.startTranscription(language);
+  };
+
+  public stopTranscription = (): void => {
+    this.videoManager.stopTranscription();
   };
 
   private publish = (type: string, data: any): void => {
@@ -633,6 +643,9 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     toggleScreenShare: () => communicator.toggleScreenShare(),
     hangUp: () => communicator.hangUp(),
     toggleChat: () => communicator.toggleChat(),
+
+    startTranscription: (language) => communicator.startTranscription(language),
+    stopTranscription: () => communicator.stopTranscription(),
 
     loadPlugin: (plugin, props) => communicator.loadPlugin(plugin, props),
     unloadPlugin: () => communicator.unloadPlugin(),
