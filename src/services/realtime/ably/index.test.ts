@@ -187,6 +187,33 @@ describe('AblyRealtimeService', () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
+  describe('setFollowParticipant', () => {
+    test('should update the room properties with the given participantId', () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+      const participantId = '123';
+
+      AblyRealtimeServiceInstance.setFollowParticipant(participantId);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        followParticipantId: participantId,
+      });
+    });
+  });
+
+  describe('setGather', () => {
+    test('should update the room properties with the given active value', () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+
+      const active = true;
+
+      AblyRealtimeServiceInstance.setGather(active);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        gather: active,
+      });
+    });
+  });
+
   describe('handle on join room event', () => {
     beforeEach(() => {
       const participant: ParticipantInfo = {
