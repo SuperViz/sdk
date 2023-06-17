@@ -524,6 +524,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (properties.avatar === undefined) {
       delete properties.avatar;
     }
+
     this.myParticipant.data = {
       ...this.myParticipant.data,
       ...newProperties,
@@ -880,7 +881,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} participant
    * @returns {void}
    */
-  confirmSlot = throttle(async (myPresenceParam: Ably.Types.PresenceMessage) => {
+  private confirmSlot = throttle(async (myPresenceParam: Ably.Types.PresenceMessage) => {
     const usedSlots: Ably.Types.PresenceMessage[] = [];
     let myPresence = myPresenceParam;
     await this.supervizChannel.presence.get((err, members) => {
@@ -956,6 +957,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.isReconnecting = true;
       this.publishStateUpdate(RealtimeStateTypes.RETRYING);
       this.reconnectObserver.publish(this.currentReconnectAttempt);
+      return;
     }
 
     this.publishStateUpdate(newState);
