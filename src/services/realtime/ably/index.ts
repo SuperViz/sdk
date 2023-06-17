@@ -991,30 +991,24 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private async onJoinRoom(myPresence: Ably.Types.PresenceMessage): Promise<void> {
     this.isJoinedRoom = true;
     this.localRoomProperties = await this.fetchRoomProperties();
-    if (this.enableSync) {
-      await this.findSlotIndex(myPresence);
-    }
-    const isNewRoom = !this.localRoomProperties;
-    if (isNewRoom) {
+
+    if (this.enableSync) await this.findSlotIndex(myPresence);
+
+    if (!this.localRoomProperties) {
       await this.initializeRoomProperties(myPresence);
     } else {
-      await this.updateParticipants();
-      if (this.localRoomProperties?.hostClientId) {
-        await this.updateHostInfo(this.localRoomProperties?.hostClientId);
-      } else if (this.myParticipant.data.type === ParticipantType.HOST) {
-        await this.setHost(this.myParticipant.data.participantId);
-      }
+      await Promise.all([
+        this.updateParticipants(),
+        this.localRoomProperties?.hostClientId &&
+          this.updateHostInfo(this.localRoomProperties.hostClientId),
+      ]);
       this.localRoomProperties = await this.fetchRoomProperties();
       this.updateLocalRoomState(this.localRoomProperties);
     }
 
     this.isReconnecting = false;
-    this.joinRoomObserver.publish(this.supervizChannel);
-
     this.publishStateUpdate(RealtimeStateTypes.CONNECTED);
-
     this.participantJoinedObserver.publish(myPresence);
-
     logger.log('REALTIME', 'Joined realtime room');
   }
 
