@@ -252,7 +252,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description add/change and sync a property in the room
    * @returns {void}
    */
-  public async setSyncProperty<T>(name: string, property: T): Promise<void> {
+  public setSyncProperty<T>(name: string, property: T): void {
     const queue = this.clientSyncPropertiesQueue[name] ?? [];
 
     // clousure to create the event
@@ -266,7 +266,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     // if the property is too big, don't add to the queue
-    if (this.isClientMessageTooBig(createEvent(name, property))) {
+    if (this.isMessageTooBig(createEvent(name, property), CLIENT_MESSAGE_SIZE_LIMIT)) {
       logger.log('REALTIME', 'Message too big, not sending');
       this.throw('Message too long, the message limit size is 10kb.');
     }
@@ -453,6 +453,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (this.isLocalParticipantHost) this.saveClientRoomState(name, data);
   }
 
+  /**
+   * @function saveClientRoomState
+   * @description
+      Saves the latest state of the room for the client
+      and publishes it to the client room state channel.
+   * @param {string} name - The name of the room state to save.
+   * @param {RealtimeMessage[]} data - The data to save as the latest state of the room.
+   * @returns {void}
+   */
   private saveClientRoomState = (name: string, data: RealtimeMessage[]): void => {
     this.clientRoomState[name] = data[data.length - 1];
     this.clientRoomStateChannel.publish('update', this.clientRoomState);
@@ -914,7 +923,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description Translates connection state and channel state into realtime state
    * @returns {void}
    */
-  onStateChange(): void {
+  private onStateChange(): void {
     const roomChannelCurrentState = this.supervizChannelState?.current;
     const connectionCurrentState = this.connectionState?.current;
     const isConnectedToAblyService = connectionCurrentState === 'connected';
@@ -1083,28 +1092,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   /**
    * @function isMessageTooBig
    * @description calculates the size of a sync message and checks if it's bigger than limit
+   * @param {unknown} msg
    * @returns {boolean}
    */
-  private isMessageTooBig = (msg: Object | string) => {
+  private isMessageTooBig = (msg: unknown, limit: number = MESSAGE_SIZE_LIMIT): boolean => {
     const messageString = JSON.stringify(msg);
     const size = new TextEncoder().encode(messageString).length;
 
-    if (size > MESSAGE_SIZE_LIMIT) {
+    if (size > limit) {
       logger.log('Message too long, the message limit size is 60kb.');
       return true;
     }
-    return false;
-  };
-
-  private isClientMessageTooBig = (message: unknown) => {
-    const messageString = JSON.stringify(message);
-    const size = new TextEncoder().encode(messageString).length;
-
-    if (size > CLIENT_MESSAGE_SIZE_LIMIT) {
-      logger.log('Message too long, the message limit size is 10kb.');
-      return true;
-    }
-
     return false;
   };
 }
