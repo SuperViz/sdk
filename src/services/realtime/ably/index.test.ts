@@ -9,6 +9,8 @@ import { ParticipantInfo } from '../base/types';
 
 import AblyRealtimeService from '.';
 
+jest.useFakeTimers();
+
 const AblyRealtimeMock = {
   channels: {
     get: jest.fn().mockImplementation(() => {
@@ -629,6 +631,164 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['state']).toBe(RealtimeStateTypes.RETRYING);
       expect(AblyRealtimeServiceInstance['currentReconnectAttempt']).toBe(1);
       expect(AblyRealtimeServiceInstance.reconnectObserver.publish).toBeCalled();
+    });
+  });
+
+  describe('client message handlers', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+
+      AblyRealtimeServiceInstance.join(participant);
+
+      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.CONNECTED;
+    });
+
+    /**
+     * IsMessageTooBig
+     */
+
+    test('should return true if message size is bigger than 60kb', () => {
+      const message = {
+        data: 'a'.repeat(60000),
+      };
+
+      expect(AblyRealtimeServiceInstance['isMessageTooBig'](message)).toBeTruthy();
+    });
+
+    test('should return false if message size is smaller than 60kb', () => {
+      const message = {
+        data: 'a'.repeat(60000 - 11),
+      };
+
+      expect(AblyRealtimeServiceInstance['isMessageTooBig'](message)).toBeFalsy();
+    });
+
+    /**
+     * setSyncProperty
+     */
+
+    test('should add the event to the queue', () => {
+      const publishClientSyncPropertiesSpy = jest.spyOn(
+        AblyRealtimeServiceInstance as any,
+        'publishClientSyncProperties',
+      );
+      const name = 'test';
+      const property = { test: true };
+
+      AblyRealtimeServiceInstance.setSyncProperty(name, property);
+
+      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
+    });
+
+    test('should publish the queue if it is too big', () => {
+      const publishClientSyncPropertiesSpy = jest.spyOn(
+        AblyRealtimeServiceInstance as any,
+        'publishClientSyncProperties',
+      );
+
+      const name = 'test';
+      const property = { test: true };
+      const queue = new Array(60000).fill({ name, data: property });
+
+      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name] = queue;
+
+      AblyRealtimeServiceInstance.setSyncProperty(name, property);
+      jest.runAllTimers();
+
+      expect(publishClientSyncPropertiesSpy).toHaveBeenCalledTimes(2);
+      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(0);
+    });
+
+    test('should throw an error if the message is too big', () => {
+      const publishClientSyncPropertiesSpy = jest.spyOn(
+        AblyRealtimeServiceInstance as any,
+        'publishClientSyncProperties',
+      );
+      const throwSpy = jest.spyOn(AblyRealtimeServiceInstance as any, 'throw');
+      const name = 'test';
+      const property = { test: true, tooBig: new Array(10000).fill('a').join('') };
+
+      expect(() => AblyRealtimeServiceInstance.setSyncProperty(name, property)).toThrowError(
+        'Message too long, the message limit size is 10kb.',
+      );
+      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
+      expect(throwSpy).toHaveBeenCalledWith('Message too long, the message limit size is 10kb.');
+    });
+
+    test('should add the event to the queue and publish it after 1 second', async () => {
+      const publishClientSyncPropertiesSpy = jest.spyOn(
+        AblyRealtimeServiceInstance as any,
+        'publishClientSyncProperties',
+      );
+      const name = 'test';
+      const property = { test: true };
+
+      AblyRealtimeServiceInstance.setSyncProperty(name, property);
+
+      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
+
+      jest.advanceTimersByTime(1000);
+
+      expect(publishClientSyncPropertiesSpy).toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(0);
+    });
+
+    /**
+     * publishClientSyncProperties
+     * */
+
+    test('should not publish if the queue is empty', () => {
+      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'] = {
+        test: [],
+      };
+
+      AblyRealtimeServiceInstance['publishClientSyncProperties']();
+
+      expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).not.toHaveBeenCalled();
+    });
+
+    test('should not publish if the state is different than connected', () => {
+      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'] = {
+        test: [],
+      };
+
+      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.DISCONNECTED;
+
+      AblyRealtimeServiceInstance['publishClientSyncProperties']();
+
+      expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).not.toHaveBeenCalled();
+    });
+
+    test('should publish the queue', () => {
+      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'] = {
+        test: [
+          {
+            data: { test: true },
+            name: 'test',
+            participantId: 'unit-test-participant-id',
+            timestamp: new Date().getTime(),
+          },
+        ],
+      };
+
+      AblyRealtimeServiceInstance['publishClientSyncProperties']();
+
+      expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).toHaveBeenCalled();
     });
   });
 });
