@@ -6,7 +6,6 @@ export interface DefaultRealtimeService {
   participantsObserver: Observer;
   participantJoinedObserver: Observer;
   participantLeaveObserver: Observer;
-  joinRoomObserver: Observer;
   reconnectObserver: Observer;
   roomInfoUpdatedObserver: Observer;
   roomListUpdatedObserver: Observer;
