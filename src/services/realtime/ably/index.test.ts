@@ -7,6 +7,8 @@ import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { ParticipantInfo } from '../base/types';
 
+import { AblyParticipant } from './types';
+
 import AblyRealtimeService from '.';
 
 jest.useFakeTimers();
@@ -275,7 +277,7 @@ describe('AblyRealtimeService', () => {
     });
   });
 
-  describe('setFollowParticipant', () => {
+  describe('room properties sync handlers', () => {
     test('should update the room properties with the given participantId', () => {
       AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
       const participantId = '123';
@@ -286,18 +288,29 @@ describe('AblyRealtimeService', () => {
         followParticipantId: participantId,
       });
     });
-  });
 
-  describe('setGather', () => {
     test('should update the room properties with the given active value', () => {
       AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
-
       const active = true;
 
       AblyRealtimeServiceInstance.setGather(active);
 
       expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
         gather: active,
+      });
+    });
+
+    test('should update the room properties with the new grid mode', () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+
+      const initialRoomProperties = AblyRealtimeServiceInstance['roomProperties'];
+
+      const isGridModeEnable = !initialRoomProperties?.isGridModeEnable;
+
+      AblyRealtimeServiceInstance.setGridMode(isGridModeEnable);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        isGridModeEnable,
       });
     });
   });
@@ -929,6 +942,38 @@ describe('AblyRealtimeService', () => {
       });
 
       await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).rejects.toThrow();
+    });
+  });
+
+  describe('host events handlers', () => {
+    test('should update the hostClientId in the room properties', async () => {
+      const participantId = 'participant1';
+      const participant: AblyParticipant = {
+        clientId: 'client1',
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId,
+        },
+      };
+      AblyRealtimeServiceInstance['participants'][participantId] = participant;
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+      await AblyRealtimeServiceInstance.setHost(participantId);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        hostClientId: participant.clientId,
+      });
+    });
+
+    test('should not update the hostClientId if participantId is falsy', async () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+
+      await AblyRealtimeServiceInstance.setHost('');
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).not.toHaveBeenCalled();
     });
   });
 
