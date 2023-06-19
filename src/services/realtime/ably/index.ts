@@ -1057,7 +1057,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.participantLeaveObserver.publish(presence);
 
     if (hostLeft) {
-      this.onHostLeft(presence);
+      this.onHostLeft();
     }
 
     this.updateParticipants();
@@ -1065,10 +1065,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function onHostLeft
-   * @param {Ably.Types.PresenceMessage} participant
+   * @description Updates the room properties when the host leaves the room
    * @returns {void}
    */
-  private onHostLeft(participant: Ably.Types.PresenceMessage): void {
+  private onHostLeft(): void {
     this.updateRoomProperties({ hostClientId: null });
   }
 

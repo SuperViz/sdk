@@ -975,6 +975,32 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['updateRoomProperties']).not.toHaveBeenCalled();
     });
+
+    test('when the host leaves the room, should set the hostClientId to null', async () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+      AblyRealtimeServiceInstance['localRoomProperties'] = {
+        hostClientId: 'client1',
+      };
+      AblyRealtimeServiceInstance['participants'] = {
+        participant1: {
+          clientId: 'client1',
+          action: 'present',
+          connectionId: 'connection1',
+          encoding: 'h264',
+          id: 'unit-test-participant-ably-id',
+          timestamp: new Date().getTime(),
+          data: {
+            participantId: 'participant1',
+          },
+        },
+      };
+
+      AblyRealtimeServiceInstance['onHostLeft']();
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        hostClientId: null,
+      });
+    });
   });
 
   describe('leave', () => {
