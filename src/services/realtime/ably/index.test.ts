@@ -11,6 +11,14 @@ import AblyRealtimeService from '.';
 
 jest.useFakeTimers();
 
+const mockTokenRequest: Ably.Types.TokenRequest = {
+  capability: 'unit-test-capability',
+  keyName: 'unit-test-key-name',
+  mac: 'unit-test-mac',
+  nonce: 'unit-test-nonce',
+  timestamp: new Date().getTime(),
+};
+
 const AblyClientRoomStateHistoryMock = {
   items: [
     {
@@ -62,7 +70,14 @@ const AblyRealtimeMock = {
 
 const AblyRestMock = {
   auth: {
-    requestToken: jest.fn(),
+    requestToken: jest
+      .fn()
+      .mockImplementationOnce((params, options, callback) => {
+        callback(null, mockTokenRequest);
+      })
+      .mockImplementation((params, options, callback) => {
+        callback('unit-test-error', null);
+      }),
   },
 };
 
@@ -208,6 +223,56 @@ describe('AblyRealtimeService', () => {
     );
 
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  describe('auth', () => {
+    test('should request token and call callback with token request', () => {
+      const mockTokenParams: Ably.Types.TokenParams = {
+        clientId: 'unit-test-client-id',
+      };
+
+      AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
+        expect(error).toBeNull();
+        expect(tokenRequest).toBe(mockTokenRequest);
+      });
+
+      expect(AblyRestMock.auth.requestToken).toHaveBeenCalledWith(
+        mockTokenParams,
+        {
+          authUrl: `${AblyRealtimeServiceInstance['apiUrl']}/realtime/auth`,
+          key: AblyRealtimeServiceInstance['ablyKey'],
+          authParams: {
+            domain: window.location.origin,
+            apiKey: AblyRealtimeServiceInstance['apiKey'],
+          },
+        },
+        expect.any(Function),
+      );
+    });
+
+    test('should call callback with error if token request fails', () => {
+      const mockTokenParams: Ably.Types.TokenParams = {
+        clientId: 'unit-test-client-id',
+      };
+
+      AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
+        expect(error).toBe('unit-test-error');
+        expect(tokenRequest).toBeNull();
+      });
+
+      expect(AblyRestMock.auth.requestToken).toHaveBeenCalledWith(
+        mockTokenParams,
+        {
+          authUrl: `${AblyRealtimeServiceInstance['apiUrl']}/realtime/auth`,
+          key: AblyRealtimeServiceInstance['ablyKey'],
+          authParams: {
+            domain: window.location.origin,
+            apiKey: AblyRealtimeServiceInstance['apiKey'],
+          },
+        },
+        expect.any(Function),
+      );
+    });
   });
 
   describe('setFollowParticipant', () => {
