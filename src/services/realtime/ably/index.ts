@@ -220,14 +220,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function setHost
-   * @param {string} participantParticipantId
+   * @param {string} participantId
    * @description set a new host to the room
    * @returns {void}
    */
-  public setHost = async (participantParticipantId: string): Promise<void> => {
-    if (!participantParticipantId) return;
+  public setHost = async (participantId: string): Promise<void> => {
+    if (!participantId) return;
 
-    const participant = this.participants[participantParticipantId];
+    const participant = this.participants[participantId];
     await this.updateRoomProperties({
       hostClientId: participant.clientId,
     });
