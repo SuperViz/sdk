@@ -787,7 +787,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
           this.clientRoomStateChannel.history((error, resultPage) => {
             if (error) reject(error);
 
-            const lastMessage = resultPage.items[0]?.data;
+            const lastMessage = resultPage?.items[0]?.data;
+
             if (lastMessage) {
               resolve(lastMessage);
             } else {
@@ -808,6 +809,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return clienthistory;
     } catch (error) {
       logger.log('REALTIME', 'Error in fetch client realtime data', error.message);
+      this.throw(error.message);
     }
   }
 
