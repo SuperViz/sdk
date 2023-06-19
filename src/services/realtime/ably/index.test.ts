@@ -931,4 +931,43 @@ describe('AblyRealtimeService', () => {
       await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).rejects.toThrow();
     });
   });
+
+  describe('leave', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+
+      AblyRealtimeServiceInstance.join(participant);
+    });
+
+    test('should unsubscribe from presence channel and call callback with no error', async () => {
+      const spy = jest.spyOn(AblyRealtimeServiceInstance['client'], 'close');
+
+      AblyRealtimeServiceInstance.leave();
+
+      expect(spy).toBeCalled();
+      expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(false);
+      expect(AblyRealtimeServiceInstance['isReconnecting']).toBe(false);
+      expect(AblyRealtimeServiceInstance['roomId']).toBe(null);
+      expect(AblyRealtimeServiceInstance['participants']).toEqual({});
+      expect(AblyRealtimeServiceInstance['hostParticipantId']).toBe(null);
+      expect(AblyRealtimeServiceInstance['myParticipant']).toBe(null);
+      expect(AblyRealtimeServiceInstance['supervizChannel']).toBe(null);
+      expect(AblyRealtimeServiceInstance['clientSyncChannel']).toBe(null);
+      expect(AblyRealtimeServiceInstance['client']).toBe(null);
+      expect(AblyRealtimeServiceInstance['left']).toBe(true);
+    });
+  });
 });
