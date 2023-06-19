@@ -11,6 +11,27 @@ import AblyRealtimeService from '.';
 
 jest.useFakeTimers();
 
+const AblyClientRoomStateHistoryMock = {
+  items: [
+    {
+      data: {
+        fizz: {
+          name: 'fizz',
+          data: "999  is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+          participantId: '123',
+          timestamp: new Date().getTime(),
+        },
+        buzz: {
+          name: 'buzz',
+          data: "999 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+          participantId: '123',
+          timestamp: new Date().getTime(),
+        },
+      },
+    },
+  ],
+};
+
 const AblyRealtimeMock = {
   channels: {
     get: jest.fn().mockImplementation(() => {
@@ -789,6 +810,60 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['publishClientSyncProperties']();
 
       expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).toHaveBeenCalled();
+    });
+
+    /**
+     * fetchClientSyncProperties
+     */
+
+    test('should return the client sync properties history', async () => {
+      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
+        (callback as any)(null, AblyClientRoomStateHistoryMock);
+      });
+
+      const expected = AblyClientRoomStateHistoryMock.items[0].data;
+
+      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).resolves.toEqual(
+        expected,
+      );
+    });
+
+    test('should return the client sync properties history for a specific key', async () => {
+      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
+        (callback as any)(null, AblyClientRoomStateHistoryMock);
+      });
+
+      const expected = AblyClientRoomStateHistoryMock.items[0].data.buzz;
+
+      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty('buzz')).resolves.toEqual(
+        expected,
+      );
+    });
+
+    test('should return null if the history is empty', async () => {
+      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
+        (callback as any)(null, null);
+      });
+
+      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).resolves.toEqual(null);
+    });
+
+    test('should return throw an error if a event is not found', async () => {
+      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
+        (callback as any)(null, AblyClientRoomStateHistoryMock);
+      });
+
+      await expect(
+        AblyRealtimeServiceInstance.fetchSyncClientProperty('not-found'),
+      ).rejects.toThrow('Event not-found not found in the history');
+    });
+
+    test('should throw an error if ably dont responds', async () => {
+      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
+        (callback as any)('error', null);
+      });
+
+      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).rejects.toThrow();
     });
   });
 });
