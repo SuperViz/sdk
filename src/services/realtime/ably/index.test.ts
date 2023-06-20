@@ -47,6 +47,7 @@ const AblyRealtimeMock = {
     get: jest.fn().mockImplementation(() => {
       return {
         attach: jest.fn(),
+        detach: jest.fn(),
         on: jest.fn(),
         publish: jest.fn(),
         subscribe: jest.fn(),
@@ -1327,6 +1328,8 @@ describe('AblyRealtimeService', () => {
     });
   });
 
+  describe('room state handlers', () => {});
+
   describe('syncBroadcast', () => {
     beforeEach(() => {
       const participant: ParticipantInfo = {
@@ -1362,6 +1365,50 @@ describe('AblyRealtimeService', () => {
           headers: { Authorization: `Basic ${ABLY_KEY_64}` },
         },
       );
+    });
+  });
+
+  describe('freeze sync', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+
+      AblyRealtimeServiceInstance.join(participant);
+    });
+
+    test('should freeze sync', async () => {
+      AblyRealtimeServiceInstance.freezeSync(true);
+
+      expect(AblyRealtimeServiceInstance['supervizChannel'].detach).toBeCalled();
+      expect(AblyRealtimeServiceInstance['clientSyncChannel'].detach).toBeCalled();
+      expect(AblyRealtimeServiceInstance['broadcastChannel'].detach).toBeCalled();
+      expect(AblyRealtimeServiceInstance['supervizChannel'].unsubscribe).toBeCalled();
+      expect(AblyRealtimeServiceInstance['clientSyncChannel'].unsubscribe).toBeCalled();
+      expect(AblyRealtimeServiceInstance['broadcastChannel'].unsubscribe).toBeCalled();
+
+      expect(AblyRealtimeServiceInstance['isSyncFrozen']).toBe(true);
+    });
+
+    test('should unfreeze sync', async () => {
+      AblyRealtimeServiceInstance.freezeSync(true);
+      AblyRealtimeServiceInstance.freezeSync(false);
+
+      expect(AblyRealtimeServiceInstance['supervizChannel'].subscribe).toBeCalled();
+      expect(AblyRealtimeServiceInstance['clientSyncChannel'].subscribe).toBeCalled();
+
+      expect(AblyRealtimeServiceInstance['isSyncFrozen']).toBe(false);
     });
   });
 

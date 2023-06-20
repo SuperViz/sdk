@@ -335,6 +335,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   /**
    * @function freezeSync
    * @param {boolean} isFrozen
+   * @description Detaches and unsubscribes from channels to freeze synchronization with the room.
    * @returns {void}
    */
   public freezeSync = (isFrozen: boolean): void => {
