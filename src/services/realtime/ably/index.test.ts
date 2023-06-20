@@ -1003,6 +1003,330 @@ describe('AblyRealtimeService', () => {
     });
   });
 
+  describe('presence events handlers', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+
+      AblyRealtimeServiceInstance.join(participant);
+    });
+
+    /**
+     * presence enter
+     */
+
+    test('should call onParticipantJoin when other participant joins the room', async () => {
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'enter',
+        clientId: 'participant1',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'participant1',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['onParticipantJoin'] = jest.fn();
+
+      AblyRealtimeServiceInstance['onAblyPresenceEnter'](presenceData);
+
+      expect(AblyRealtimeServiceInstance['onParticipantJoin']).toHaveBeenCalledWith(presenceData);
+    });
+
+    test('should call onJoinRoom when my participant joins the room', async () => {
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'enter',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['onJoinRoom'] = jest.fn();
+
+      AblyRealtimeServiceInstance['onAblyPresenceEnter'](presenceData);
+
+      expect(AblyRealtimeServiceInstance['onJoinRoom']).toHaveBeenCalledWith(presenceData);
+    });
+
+    test('should add the participant to the participants list', async () => {
+      const participantToBeAdded: AblyParticipant = {
+        clientId: 'participant1',
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: 'participant1',
+        },
+      };
+
+      AblyRealtimeServiceInstance.participantJoinedObserver.publish = jest.fn();
+
+      AblyRealtimeServiceInstance['supervizChannel'].presence.get = jest
+        .fn()
+        .mockImplementation((callback) => {
+          callback(null, [participantToBeAdded]);
+        });
+
+      await AblyRealtimeServiceInstance['onParticipantJoin'](participantToBeAdded);
+
+      expect(AblyRealtimeServiceInstance['participants']).toEqual({
+        participant1: participantToBeAdded,
+      });
+
+      expect(AblyRealtimeServiceInstance.participantJoinedObserver.publish).toHaveBeenCalled();
+    });
+
+    /**
+     * presence update
+     */
+
+    test('should skip the update if my participant not joined room', () => {
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'update',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['publishParticipantUpdate'] = jest.fn();
+
+      AblyRealtimeServiceInstance['onAblyPresenceUpdate'](presenceData);
+
+      expect(AblyRealtimeServiceInstance['publishParticipantUpdate']).not.toHaveBeenCalled();
+    });
+
+    test('should publish participant update', () => {
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'update',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      const presenceDataUpdated = {
+        ...presenceData,
+        data: {
+          ...presenceData.data,
+          color: 'yellow',
+        },
+      };
+
+      AblyRealtimeServiceInstance['onAblyPresenceEnter'](presenceData);
+      AblyRealtimeServiceInstance['onAblyPresenceUpdate'](presenceDataUpdated);
+
+      expect(AblyRealtimeServiceInstance['participants']['unit-test-participant-id']).toEqual(
+        Object.assign({}, presenceDataUpdated, { participantId: 'unit-test-participant-id' }),
+      );
+    });
+
+    test('if my participant is host and is broadcast mode, should call syncBroadcast', () => {
+      AblyRealtimeServiceInstance['isBroadcast'] = true;
+      AblyRealtimeServiceInstance['hostParticipantId'] = 'unit-test-participant-id';
+      AblyRealtimeServiceInstance['localParticipantId'] = 'unit-test-participant-id';
+      // @ts-ignore
+      AblyRealtimeServiceInstance['syncBroadcast'] = jest.fn();
+
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'update',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      const presenceDataUpdated = {
+        ...presenceData,
+        data: {
+          ...presenceData.data,
+          color: 'yellow',
+        },
+      };
+
+      AblyRealtimeServiceInstance['onAblyPresenceEnter'](presenceData);
+      AblyRealtimeServiceInstance['onAblyPresenceUpdate'](presenceDataUpdated);
+
+      expect(AblyRealtimeServiceInstance['participants']['unit-test-participant-id']).toEqual(
+        Object.assign({}, presenceDataUpdated, { participantId: 'unit-test-participant-id' }),
+      );
+
+      expect(AblyRealtimeServiceInstance['syncBroadcast']).toHaveBeenCalled();
+    });
+
+    /**
+     * presence leave
+     */
+
+    test('should call onParticipantLeave when other participant leaves the room', async () => {
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'leave',
+        clientId: 'participant1',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'participant1',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['onParticipantLeave'] = jest.fn();
+
+      AblyRealtimeServiceInstance['onAblyPresenceLeave'](presenceData);
+
+      expect(AblyRealtimeServiceInstance['onParticipantLeave']).toHaveBeenCalledWith(presenceData);
+    });
+
+    test('should skip participant update if the state is READY_TO_JOIN', () => {
+      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.READY_TO_JOIN;
+
+      const presenceData: Ably.Types.PresenceMessage = {
+        action: 'leave',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['updateParticipants'] = jest.fn();
+      AblyRealtimeServiceInstance['onAblyPresenceLeave'](presenceData);
+
+      expect(AblyRealtimeServiceInstance['updateParticipants']).not.toHaveBeenCalled();
+    });
+
+    test('should remove the participant from the participants list', async () => {
+      AblyRealtimeServiceInstance['supervizChannel'].presence.get = jest
+        .fn()
+        .mockImplementation((callback) => {
+          callback(null, [myParticipant]);
+        });
+
+      const myParticipant: Ably.Types.PresenceMessage = {
+        action: 'enter',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      const participantToBeRemoved: Ably.Types.PresenceMessage = {
+        action: 'leave',
+        clientId: 'participant1',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'participant1',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['participants'] = {
+        participant1: participantToBeRemoved,
+        'unit-test-participant-id': myParticipant,
+      };
+
+      AblyRealtimeServiceInstance['localRoomProperties'] = {
+        hostClientId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance['onAblyPresenceLeave'](participantToBeRemoved);
+
+      expect(AblyRealtimeServiceInstance['participants']).toEqual({
+        'unit-test-participant-id': myParticipant,
+      });
+    });
+
+    test('should clear the followId if the participant followed leaves the room', async () => {
+      AblyRealtimeServiceInstance['localRoomProperties'] = {
+        hostClientId: 'unit-test-participant-id',
+        followParticipantId: 'participant1',
+      };
+
+      const spy = jest.spyOn(AblyRealtimeServiceInstance, 'setFollowParticipant');
+
+      const participantToBeRemoved: Ably.Types.PresenceMessage = {
+        action: 'leave',
+        clientId: 'participant1',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'participant1',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['onAblyPresenceLeave'](participantToBeRemoved);
+
+      expect(spy).toHaveBeenCalled();
+    });
+
+    test('should call the onHostLeft method if the host leaves the room', async () => {
+      AblyRealtimeServiceInstance['localRoomProperties'] = {};
+      AblyRealtimeServiceInstance['hostParticipantId'] = 'unit-test-participant-id';
+
+      AblyRealtimeServiceInstance['onHostLeft'] = jest.fn();
+      const participantToBeRemoved: Ably.Types.PresenceMessage = {
+        action: 'leave',
+        clientId: 'unit-test-participant-id',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        data: {
+          participantId: 'unit-test-participant-id',
+        },
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['onAblyPresenceLeave'](participantToBeRemoved);
+
+      expect(AblyRealtimeServiceInstance['onHostLeft']).toHaveBeenCalled();
+    });
+  });
+
   describe('syncBroadcast', () => {
     beforeEach(() => {
       const participant: ParticipantInfo = {

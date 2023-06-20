@@ -1042,9 +1042,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param presence
    */
   private onParticipantLeave(presence: Ably.Types.PresenceMessage): void {
-    if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
-      return;
-    }
+    if (this.state === RealtimeStateTypes.READY_TO_JOIN) return;
 
     const hostLeft = presence.data.participantId === this.hostParticipantId;
     const followedLeft =
