@@ -1003,6 +1003,44 @@ describe('AblyRealtimeService', () => {
     });
   });
 
+  describe('syncBroadcast', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+
+      AblyRealtimeServiceInstance.join(participant);
+    });
+
+    test('should call fetch with correct url and headers', async () => {
+      const ABLY_KEY_64 = Buffer.from('unit-test-ably-key').toString('base64');
+
+      global.fetch = jest.fn().mockResolvedValue({
+        json: () => Promise.resolve([]),
+      });
+
+      AblyRealtimeServiceInstance['syncBroadcast']();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://rest.ably.io/channels/superviz:unit-test-room-id-unit-test-api-key/presence',
+        {
+          headers: { Authorization: `Basic ${ABLY_KEY_64}` },
+        },
+      );
+    });
+  });
+
   describe('leave', () => {
     beforeEach(() => {
       const participant: ParticipantInfo = {
