@@ -224,11 +224,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description set a new host to the room
    * @returns {void}
    */
-  public setHost = async (participantId: string): Promise<void> => {
+  public setHost = (participantId: string): Promise<void> => {
     if (!participantId) return;
 
     const participant = this.participants[participantId];
-    await this.updateRoomProperties({
+    this.updateRoomProperties({
       hostClientId: participant.clientId,
     });
   };
@@ -377,14 +377,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
       if (!eventQueue.length) return;
 
-      this.clientSyncChannel.publish(name, eventQueue, (error: Ably.Types.ErrorInfo) => {
-        if (error) {
-          logger.log(`publish failed with error ${error}`);
-          return;
-        }
-
-        logger.log('events published', name, eventQueue);
-      });
+      this.clientSyncChannel.publish(name, eventQueue);
     });
 
     clearTimeout(this.clientSyncPropertiesTimeOut);
@@ -637,9 +630,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description update host info
    * @returns {void}
    */
-  private updateHostInfo = async (newHostId: string): Promise<void> => {
+  private updateHostInfo = (newHostId: string): Promise<void> => {
     const currentConnectedClients: string[] = [];
-    await this.supervizChannel.presence.get((err, members) => {
+    this.supervizChannel.presence.get((err, members) => {
       members.forEach((member) => {
         if (err) {
           return;
@@ -852,15 +845,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function findSlotIndex
-   * @description finds an available slot
-   * @param {Ably.Types.PresenceMessage} myPresenceParam
+   * @description Finds an available slot index for the participant and confirms it.
+   * @param {Ably.Types.PresenceMessage} myPresenceParam - The presence message of the participant.
    * @returns {void}
    */
-  findSlotIndex = async (myPresenceParam: Ably.Types.PresenceMessage) => {
+  findSlotIndex = (myPresenceParam: Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
-    const availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
-    await this.supervizChannel.presence.get((error, members) => {
+    let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
+
+    this.supervizChannel.presence.get((error, members) => {
       if (error) {
+        availableSlots = [];
         return;
       }
 
@@ -876,15 +871,19 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
       });
     });
+
     if (availableSlots.length === 0) {
       console.error('no slots available!');
       return;
     }
-    const slotChosen = availableSlots[0];
-    this.myParticipant.data.slotIndex = slotChosen;
 
-    await this.updateMyProperties({ slotIndex: availableSlots[0] });
+    const slotChosen = availableSlots[0];
+
+    this.myParticipant.data.slotIndex = slotChosen;
+    this.updateMyProperties({ slotIndex: slotChosen });
+
     const timeToWait = Math.floor(Math.random() * 500);
+
     setTimeout(() => {
       this.confirmSlot(myPresence);
     }, timeToWait);
@@ -899,7 +898,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private confirmSlot = throttle(async (myPresenceParam: Ably.Types.PresenceMessage) => {
     const usedSlots: Ably.Types.PresenceMessage[] = [];
     let myPresence = myPresenceParam;
-    await this.supervizChannel.presence.get((err, members) => {
+    this.supervizChannel.presence.get((err, members) => {
       members.forEach((member) => {
         if (member.connectionId === myPresence.connectionId) {
           myPresence = member;
@@ -1009,7 +1008,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.isJoinedRoom = true;
     this.localRoomProperties = await this.fetchRoomProperties();
 
-    if (this.enableSync) await this.findSlotIndex(myPresence);
+    if (this.enableSync) this.findSlotIndex(myPresence);
 
     if (!this.localRoomProperties) {
       this.initializeRoomProperties();
@@ -1034,8 +1033,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    * @param presence
    */
-  private onParticipantJoin = async (presence: Ably.Types.PresenceMessage): Promise<void> => {
-    await this.updateParticipants();
+  private onParticipantJoin = (presence: Ably.Types.PresenceMessage): void => {
+    this.updateParticipants();
     this.participantJoinedObserver.publish(presence);
     this.updateMyProperties({}); // send a sync
   };

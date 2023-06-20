@@ -1393,6 +1393,187 @@ describe('AblyRealtimeService', () => {
     });
   });
 
+  describe('participant slot hadlers', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+
+      AblyRealtimeServiceInstance.join(participant);
+    });
+
+    /**
+     * getParticipantSlot
+     */
+
+    test('should return the participant slot', () => {
+      const mockPresence: Ably.Types.PresenceMessage = {
+        clientId: 'unit-test-participant-id',
+        connectionId: 'unit-test-connection-id',
+        data: {
+          participantId: 'unit-test-client-id',
+          slotIndex: 0,
+        },
+        encoding: 'json',
+        id: 'unit-test-id',
+        timestamp: 1234567890,
+        action: 'enter',
+      };
+
+      AblyRealtimeServiceInstance['participants']['unit-test-participant-id'] = mockPresence;
+
+      expect(AblyRealtimeServiceInstance['getParticipantSlot'](mockPresence.clientId)).toEqual(0);
+    });
+
+    test('should return 16 if the participant dont exists', () => {
+      expect(AblyRealtimeServiceInstance['getParticipantSlot']('unit-test-participant-id')).toEqual(
+        16,
+      );
+    });
+
+    /**
+     * findSlotIndex
+     */
+
+    test('should return the first empty slot', async () => {
+      // @ts-ignore
+      AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
+
+      const mockPresence: Ably.Types.PresenceMessage = {
+        clientId: 'unit-test-participant-id',
+        connectionId: 'unit-test-connection-id',
+        data: {
+          participantId: 'unit-test-client-id',
+          slotIndex: 0,
+        },
+        encoding: 'json',
+        id: 'unit-test-id',
+        timestamp: 1234567890,
+        action: 'enter',
+      };
+
+      AblyRealtimeServiceInstance['supervizChannel'].presence.get = jest
+        .fn()
+        .mockImplementation((callback) => {
+          callback(null, [
+            {
+              clientId: 'unit-test-participant-id-1',
+              connectionId: 'unit-test-connection-id-2',
+              data: {
+                participantId: 'unit-test-client-id',
+                slotIndex: 0,
+              },
+              encoding: 'json',
+              id: 'unit-test-id',
+              timestamp: 1234567890,
+              action: 'enter',
+            },
+            {
+              clientId: 'unit-test-participant-id-2',
+              connectionId: 'unit-test-connection-id-2',
+              data: {
+                participantId: 'unit-test-client-id',
+                slotIndex: 1,
+              },
+              encoding: 'json',
+              id: 'unit-test-id',
+              timestamp: 1234567890,
+              action: 'enter',
+            },
+          ]);
+        });
+
+      AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
+
+      expect(AblyRealtimeServiceInstance['updateMyProperties']).toBeCalledWith({ slotIndex: 2 });
+    });
+
+    test('should return the first empty slot', async () => {
+      global.window.console.error = jest.fn();
+
+      const mockPresence: Ably.Types.PresenceMessage = {
+        clientId: 'unit-test-participant-id',
+        connectionId: 'unit-test-connection-id',
+        data: {
+          participantId: 'unit-test-client-id',
+          slotIndex: 0,
+        },
+        encoding: 'json',
+        id: 'unit-test-id',
+        timestamp: 1234567890,
+        action: 'enter',
+      };
+
+      const mockPresenceList = Array.from({ length: 16 }, (v, i) => i).map((presence, index) => {
+        return {
+          clientId: `unit-test-participant-id-${index}`,
+          connectionId: `unit-test-connection-id-${index}`,
+          data: {
+            participantId: `unit-test-client-id-${index}`,
+            slotIndex: index,
+          },
+          encoding: 'json',
+          id: `unit-test-id-${index}`,
+          timestamp: 1234567890,
+          action: 'enter',
+        };
+      });
+
+      // @ts-ignore
+      AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
+
+      AblyRealtimeServiceInstance['supervizChannel'].presence.get = jest
+        .fn()
+        .mockImplementation((callback) => {
+          callback(null, mockPresenceList);
+        });
+
+      AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
+
+      expect(AblyRealtimeServiceInstance['updateMyProperties']).not.toBeCalled();
+      expect(window.console.error).toBeCalledWith('no slots available!');
+    });
+
+    test('should skip if the callback returns an error', async () => {
+      // @ts-ignore
+      AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
+
+      const mockPresence: Ably.Types.PresenceMessage = {
+        clientId: 'unit-test-participant-id',
+        connectionId: 'unit-test-connection-id',
+        data: {
+          participantId: 'unit-test-client-id',
+          slotIndex: 0,
+        },
+        encoding: 'json',
+        id: 'unit-test-id',
+        timestamp: 1234567890,
+        action: 'enter',
+      };
+
+      AblyRealtimeServiceInstance['supervizChannel'].presence.get = jest
+        .fn()
+        .mockImplementation((callback) => {
+          callback('unit-test-error', []);
+        });
+
+      AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
+
+      expect(AblyRealtimeServiceInstance['updateMyProperties']).not.toBeCalled();
+    });
+  });
+
   describe('syncBroadcast', () => {
     beforeEach(() => {
       const participant: ParticipantInfo = {
