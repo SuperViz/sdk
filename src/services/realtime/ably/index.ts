@@ -553,7 +553,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates room properties
    * @returns {void}
    */
-  private updateRoomProperties = async (properties: AblyRealtimeData): Promise<void> => {
+  private updateRoomProperties = (properties: AblyRealtimeData): void => {
     if (this.isMessageTooBig(properties) || this.isSyncFrozen || this.left) return;
 
     const newProperties = {
@@ -561,7 +561,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       ...properties,
     };
 
-    await this.supervizChannel.publish('update', newProperties);
+    this.supervizChannel.publish('update', newProperties);
   };
 
   /**
@@ -606,10 +606,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description update participant list
    * @returns {void}
    */
-  private updateParticipants = async (): Promise<void> => {
+  private updateParticipants = (): void => {
     const participants = {};
 
-    await this.supervizChannel.presence.get((_, members) => {
+    this.supervizChannel.presence.get((_, members) => {
       members.forEach((member) => {
         participants[member.clientId] = { ...member };
       });
@@ -673,30 +673,33 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function initializeRoomProperties
-   * @param {Ably.Types.PresenceMessage} participant
-   * @param {AblyRealtimeData} additionalProperties
-   * @description initializes room properties
-   * @returns {void}
+   * @description
+        Initializes the room properties,
+        including setting the host client ID and updating the participant list.
+   * @returns {Promise<void>}
    */
-  private initializeRoomProperties = async (
-    participant: Ably.Types.PresenceMessage,
-    additionalProperties: AblyRealtimeData = {},
-  ): Promise<void> => {
-    const roomProperties = {
+  private initializeRoomProperties = (): void => {
+    const roomProperties: AblyRealtimeData = {
       isGridModeEnable: false,
-      ...additionalProperties,
+      hostClientId: null,
+      followParticipantId: null,
+      gather: false,
     };
 
     // set host to me if im candidate
-    if (this.myParticipant?.data.type) {
+    if (this.myParticipant?.data.type === ParticipantType.HOST) {
       roomProperties.hostClientId = this.myParticipant.data.participantId;
     }
-    await this.updateParticipants();
-    await this.updateRoomProperties(roomProperties);
+
+    this.updateParticipants();
+    this.updateRoomProperties(roomProperties);
   };
 
   /**
    * @function forceReconnect
+   * @description Forces a reconnection to the Ably server if the participant loses connection.
+   * If the client is already connected to the Ably server, it rejoins the room.
+   * @throws {Error} if roomId is not set
    * @returns {void}
    */
   private forceReconnect(): void {
@@ -1009,7 +1012,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (this.enableSync) await this.findSlotIndex(myPresence);
 
     if (!this.localRoomProperties) {
-      await this.initializeRoomProperties(myPresence);
+      this.initializeRoomProperties();
     } else {
       await Promise.all([
         this.updateParticipants(),

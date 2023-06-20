@@ -7,7 +7,7 @@ import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { ParticipantInfo } from '../base/types';
 
-import { AblyParticipant } from './types';
+import { AblyParticipant, AblyRealtimeData } from './types';
 
 import AblyRealtimeService from '.';
 
@@ -313,6 +313,71 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
         isGridModeEnable,
       });
+    });
+
+    /**
+     * initializeRoomProperties
+     */
+
+    test('should initialize room properties with default values', async () => {
+      AblyRealtimeServiceInstance['updateParticipants'] = jest.fn();
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+      AblyRealtimeServiceInstance['initializeRoomProperties']();
+
+      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalled();
+
+      /**
+       * Mocking the local room properties because
+       * it is updated with the `onAblyRoomUpdate` callback
+       */
+      AblyRealtimeServiceInstance['localRoomProperties'] = {
+        isGridModeEnable: false,
+        hostClientId: null,
+        followParticipantId: null,
+        gather: false,
+      } as unknown as AblyRealtimeData;
+
+      expect(AblyRealtimeServiceInstance['localRoomProperties']?.isGridModeEnable).toBe(false);
+      expect(AblyRealtimeServiceInstance['localRoomProperties']?.hostClientId).toBeNull();
+      expect(AblyRealtimeServiceInstance['localRoomProperties']?.followParticipantId).toBeNull();
+      expect(AblyRealtimeServiceInstance['localRoomProperties']?.gather).toBe(false);
+    });
+
+    test('should set hostClientId to myParticipant data participantId if myParticipant data type is defined', async () => {
+      const participantId = '123';
+
+      AblyRealtimeServiceInstance['myParticipant'] = {
+        action: 'enter',
+        clientId: participantId,
+        data: {
+          participantId,
+          slotIndex: 0,
+          type: ParticipantType.HOST,
+        },
+        id: 'unit-test-id',
+        connectionId: 'unit-test-connection-id',
+        encoding: '',
+        timestamp: new Date().getTime(),
+      };
+
+      AblyRealtimeServiceInstance['updateParticipants'] = jest.fn();
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+
+      AblyRealtimeServiceInstance['initializeRoomProperties']();
+
+      /**
+       * Mocking the local room properties because
+       * it is updated with the `onAblyRoomUpdate` callback
+       */
+      AblyRealtimeServiceInstance['localRoomProperties'] = {
+        isGridModeEnable: false,
+        hostClientId: participantId,
+        followParticipantId: null,
+        gather: false,
+      } as unknown as AblyRealtimeData;
+
+      expect(AblyRealtimeServiceInstance.hostClientId).toBe(participantId);
     });
   });
 
@@ -1328,8 +1393,6 @@ describe('AblyRealtimeService', () => {
     });
   });
 
-  describe('room state handlers', () => {});
-
   describe('syncBroadcast', () => {
     beforeEach(() => {
       const participant: ParticipantInfo = {
@@ -1409,6 +1472,55 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['clientSyncChannel'].subscribe).toBeCalled();
 
       expect(AblyRealtimeServiceInstance['isSyncFrozen']).toBe(false);
+    });
+  });
+
+  describe('forceReconnect', () => {
+    beforeEach(() => {
+      const participant: ParticipantInfo = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        ...MOCK_AVATAR,
+        slotIndex: 0,
+        participantId: 'unit-test-participant-id',
+      };
+
+      AblyRealtimeServiceInstance.start({
+        apiKey: 'unit-test-api-key',
+        initialParticipantData: participant,
+        isBroadcast: false,
+        roomId: 'unit-test-room-id',
+        shouldKickParticipantsOnHostLeave: true,
+      });
+    });
+
+    test('should throw an error if roomId is not set', () => {
+      // @ts-ignore
+      AblyRealtimeServiceInstance['roomId'] = null;
+
+      expect(() => AblyRealtimeServiceInstance['forceReconnect']()).toThrow(
+        'Tried to reconnect without roomId set',
+      );
+    });
+
+    it('should rejoin the room if client is already connected to ably servers', () => {
+      AblyRealtimeServiceInstance.join = jest.fn();
+      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.READY_TO_JOIN;
+      AblyRealtimeServiceInstance['forceReconnect']();
+      expect(AblyRealtimeServiceInstance.join).toHaveBeenCalledWith(
+        AblyRealtimeServiceInstance['myParticipant'].data,
+      );
+    });
+
+    test('should rebuild the client and update participant properties if client lost connection', () => {
+      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.CONNECTED;
+      AblyRealtimeServiceInstance['buildClient'] = jest.fn();
+      // @ts-ignore
+      AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
+      AblyRealtimeServiceInstance['forceReconnect']();
+      expect(AblyRealtimeServiceInstance['buildClient']).toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['updateMyProperties']).toHaveBeenCalledWith(
+        AblyRealtimeServiceInstance['myParticipant'].data,
+      );
     });
   });
 
