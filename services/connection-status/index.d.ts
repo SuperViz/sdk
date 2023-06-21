@@ -1,10 +1,10 @@
-import { ObserverHelper } from '@superviz/immersive-core';
 import { MeetingConnectionStatus } from '../../common/types/events.types';
+import { Observer } from '../../common/utils';
 import { DefaultConnectionService } from './types';
 export declare class ConnectionService implements DefaultConnectionService {
     connectionStatus: MeetingConnectionStatus;
     oldConnectionStatus: MeetingConnectionStatus;
-    connectionStatusObserver: ObserverHelper;
+    connectionStatusObserver: Observer;
     constructor();
     /**
      * @function addListeners

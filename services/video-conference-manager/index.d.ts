@@ -1,5 +1,6 @@
-import { ObserverHelper } from '@superviz/immersive-core';
+import { MeetingEvent, RealtimeEvent, MeetingControlsEvent, TranscriptionEvent } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
+import { Observer } from '../../common/utils';
 import { VideoFrameState, VideoManagerOptions } from './types';
 export default class VideoConfereceManager {
     private messageBridge;
@@ -10,25 +11,27 @@ export default class VideoConfereceManager {
     private meetingAvatars;
     private readonly frameConfig;
     private readonly customColors;
-    readonly frameStateObserver: ObserverHelper;
-    readonly frameSizeObserver: ObserverHelper;
-    readonly realtimeObserver: ObserverHelper;
-    readonly hostChangeObserver: ObserverHelper;
-    readonly gridModeChangeObserver: ObserverHelper;
-    readonly followParticipantObserver: ObserverHelper;
-    readonly goToParticipantObserver: ObserverHelper;
-    readonly gatherParticipantsObserver: ObserverHelper;
-    readonly sameAccountErrorObserver: ObserverHelper;
-    readonly devicesObserver: ObserverHelper;
-    readonly meetingStateObserver: ObserverHelper;
-    readonly meetingConnectionObserver: ObserverHelper;
-    readonly participantAmountUpdateObserver: ObserverHelper;
-    readonly participantJoinedObserver: ObserverHelper;
-    readonly participantAvatarObserver: ObserverHelper;
-    readonly participantLeftObserver: ObserverHelper;
-    readonly participantListObserver: ObserverHelper;
+    readonly frameStateObserver: Observer;
+    readonly frameSizeObserver: Observer;
+    readonly realtimeObserver: Observer;
+    readonly hostChangeObserver: Observer;
+    readonly gridModeChangeObserver: Observer;
+    readonly followParticipantObserver: Observer;
+    readonly goToParticipantObserver: Observer;
+    readonly gatherParticipantsObserver: Observer;
+    readonly sameAccountErrorObserver: Observer;
+    readonly devicesObserver: Observer;
+    readonly meetingStateObserver: Observer;
+    readonly meetingConnectionObserver: Observer;
+    readonly participantAmountUpdateObserver: Observer;
+    readonly participantJoinedObserver: Observer;
+    readonly participantAvatarObserver: Observer;
+    readonly participantLeftObserver: Observer;
+    readonly participantListObserver: Observer;
     frameState: VideoFrameState;
     constructor(options: VideoManagerOptions);
+    get isWaterMarkEnabled(): boolean;
+    get isHorizontalCameraEnabled(): boolean;
     /**
      * @function layoutModalsAndCamerasConfig
      * @returns {any}
@@ -137,7 +140,7 @@ export default class VideoConfereceManager {
      * @param {string} participantId
      * @returns {void}
      */
-    onGoToDidChange: (participantId: string) => void;
+    private onGoToDidChange;
     /**
      * @function onGather
      * @returns {void}
@@ -174,36 +177,6 @@ export default class VideoConfereceManager {
      */
     private onConnectionStatusChange;
     /**
-     * @function waitForHostDidChange
-     * @param {boolean} isWating
-     * @returns {void}
-     */
-    waitForHostDidChange: (isWating: boolean) => void;
-    /**
-     * @function gridModeDidChange
-     * @param {boolean} isGridModeEnable
-     * @returns {void}
-     */
-    gridModeDidChange: (isGridModeEnable: boolean) => void;
-    /**
-     * @function participantsListDidChange
-     * @param {} participantsList
-     * @returns {void}
-     */
-    participantsListDidChange: (participantsList: any) => void;
-    /**
-     * @function onMasterParticipantDidChange
-     * @param {string} hostId
-     * @returns {void}
-     */
-    onMasterParticipantDidChange: (hostId: string) => void;
-    /**
-     * @function followParticipantDidChange
-     * @param {string} participantId
-     * @returns {void}
-     */
-    followParticipantDidChange: (participantId?: string) => void;
-    /**
      * @function start
      * @param {StartMeetingOptions} options
      * @returns {void}
@@ -220,43 +193,10 @@ export default class VideoConfereceManager {
      */
     destroy(): void;
     /**
-     * @function toggleChat
-     * @returns {void}
+     * @function publishMessageToFrame
+     * @description Publishes a message to the frame
+     * @param message - The event to publish
+     * @param payload  - The payload to publish
      */
-    toggleChat(): void;
-    /**
-     * @function toggleMeetingSetup
-     * @returns {void}
-     */
-    toggleMeetingSetup(): void;
-    /**
-     * @function toggleMicrophone
-     * @returns {void}
-     */
-    toggleMicrophone(): void;
-    /**
-     * @function toggleScreenShare
-     * @returns {void}
-     */
-    toggleScreenShare(): void;
-    /**
-     * @function hangUp
-     * @returns {void}
-     */
-    hangUp(): void;
-    /**
-     * @function toggleCam
-     * @returns {void}
-     */
-    toggleCam(): void;
-    /**
-     * @function startTranscription
-     * @returns {void}
-     */
-    startTranscription(language: any): void;
-    /**
-     * @function stopTranscription
-     * @returns {void}
-     */
-    stopTranscription(): void;
+    publishMessageToFrame(event: MeetingControlsEvent | MeetingEvent | RealtimeEvent | TranscriptionEvent, payload?: unknown): void;
 }

@@ -1,6 +1,5 @@
-import { Logger } from '@superviz/immersive-core';
 export declare type Message = string | Error | number | Object;
-export declare class Debug extends Logger {
+export declare class Debug {
     private debug;
     constructor(scope: string);
     log(formatter: Message, ...args: Array<Message>): void;

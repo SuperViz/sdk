@@ -1,6 +1,5 @@
 import type { ColorsVariables, Locale, Offset, LayoutPosition, CamerasPosition } from '../../services/video-conference-manager/types';
 import type { Participant, Group, Avatar } from './participant.types';
-export declare type FramePosition = 'right' | 'left' | 'bottom' | 'top';
 export declare enum EnvironmentTypes {
     LOCAL = "local",
     DEV = "dev",
@@ -17,7 +16,7 @@ export interface SuperVizSdkOptions {
     screenshareOff?: boolean;
     chatOff?: boolean;
     defaultAvatars?: boolean;
-    offset: Offset;
+    offset?: Offset;
     camerasPosition?: CamerasPosition;
     enableFollow?: boolean;
     enableGoTo?: boolean;

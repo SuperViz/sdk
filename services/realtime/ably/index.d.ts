@@ -63,11 +63,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     leave(): void;
     /**
      * @function setHost
-     * @param {string} participantParticipantId
+     * @param {string} participantId
      * @description set a new host to the room
      * @returns {void}
      */
-    setHost: (participantParticipantId: string) => Promise<void>;
+    setHost: (participantId: string) => Promise<void>;
     /**
      * @function setGridMode
      * @param {boolean} isGridModeEnable
@@ -82,7 +82,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @description add/change and sync a property in the room
      * @returns {void}
      */
-    setSyncProperty<T>(name: string, property: T): Promise<void>;
+    setSyncProperty<T>(name: string, property: T): void;
     /**
      * @function setFollowParticipant
      * @param {string} participantId
@@ -106,6 +106,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     /**
      * @function freezeSync
      * @param {boolean} isFrozen
+     * @description Detaches and unsubscribes from channels to freeze synchronization with the room.
      * @returns {void}
      */
     freezeSync: (isFrozen: boolean) => void;
@@ -150,6 +151,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     private onClientSyncChannelUpdate;
+    /**
+     * @function saveClientRoomState
+     * @description
+        Saves the latest state of the room for the client
+        and publishes it to the client room state channel.
+     * @param {string} name - The name of the room state to save.
+     * @param {RealtimeMessage[]} data - The data to save as the latest state of the room.
+     * @returns {void}
+     */
     private saveClientRoomState;
     /**
      * @function onReceiveBroadcastSync
@@ -221,14 +231,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private updateHostInfo;
     /**
      * @function initializeRoomProperties
-     * @param {Ably.Types.PresenceMessage} participant
-     * @param {AblyRealtimeData} additionalProperties
-     * @description initializes room properties
-     * @returns {void}
+     * @description
+          Initializes the room properties,
+          including setting the host client ID and updating the participant list.
+     * @returns {Promise<void>}
      */
     private initializeRoomProperties;
     /**
      * @function forceReconnect
+     * @description Forces a reconnection to the Ably server if the participant loses connection.
+     * If the client is already connected to the Ably server, it rejoins the room.
+     * @throws {Error} if roomId is not set
      * @returns {void}
      */
     private forceReconnect;
@@ -266,24 +279,24 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private hostPassingHandle;
     /**
      * @function findSlotIndex
-     * @description finds an available slot
-     * @param {Ably.Types.PresenceMessage} myPresenceParam
+     * @description Finds an available slot index for the participant and confirms it.
+     * @param {Ably.Types.PresenceMessage} myPresenceParam - The presence message of the participant.
      * @returns {void}
      */
-    findSlotIndex: (myPresenceParam: Ably.Types.PresenceMessage) => Promise<void>;
+    findSlotIndex: (myPresenceParam: Ably.Types.PresenceMessage) => void;
     /**
      * @function confirmSlot
      * @description confirms that my slot is valid
      * @param {Ably.Types.PresenceMessage} participant
      * @returns {void}
      */
-    confirmSlot: import("lodash").DebouncedFunc<(myPresenceParam: Ably.Types.PresenceMessage) => Promise<void>>;
+    private confirmSlot;
     /**
      * @function onStateChange
      * @description Translates connection state and channel state into realtime state
      * @returns {void}
      */
-    onStateChange(): void;
+    private onStateChange;
     /**
      * @function onAblyConnectionStateChange
      * @param {Ably.Types.ConnectionStateChange} state
@@ -318,7 +331,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private onParticipantLeave;
     /**
      * @function onHostLeft
-     * @param {Ably.Types.PresenceMessage} participant
+     * @description Updates the room properties when the host leaves the room
      * @returns {void}
      */
     private onHostLeft;
@@ -331,8 +344,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     /**
      * @function isMessageTooBig
      * @description calculates the size of a sync message and checks if it's bigger than limit
+     * @param {unknown} msg
      * @returns {boolean}
      */
     private isMessageTooBig;
-    private isClientMessageTooBig;
 }

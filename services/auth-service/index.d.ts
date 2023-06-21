@@ -1,2 +1,2 @@
-declare const _default: (baseUrl: string, key: string) => Promise<boolean>;
-export default _default;
+declare function auth(baseUrl: string, key: string): Promise<boolean>;
+export default auth;
