@@ -1,4 +1,3 @@
-import { FrameBricklayer, MessageBridge, ObserverHelper } from '@superviz/immersive-core';
 import NoSleep from 'nosleep.js';
 
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
@@ -15,8 +14,10 @@ import {
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
-import { logger } from '../../common/utils';
+import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
+import { FrameBricklayer } from '../frame-brick-layer';
+import { MessageBridge } from '../message-bridge';
 
 import {
   VideoFrameState,
@@ -46,26 +47,26 @@ export default class VideoConfereceManager {
   private readonly frameConfig: FrameConfig;
   private readonly customColors: ColorsVariables;
 
-  public readonly frameStateObserver = new ObserverHelper({ logger });
-  public readonly frameSizeObserver = new ObserverHelper({ logger });
+  public readonly frameStateObserver = new Observer({ logger });
+  public readonly frameSizeObserver = new Observer({ logger });
 
-  public readonly realtimeObserver = new ObserverHelper({ logger });
-  public readonly hostChangeObserver = new ObserverHelper({ logger });
-  public readonly gridModeChangeObserver = new ObserverHelper({ logger });
-  public readonly followParticipantObserver = new ObserverHelper({ logger });
-  public readonly goToParticipantObserver = new ObserverHelper({ logger });
-  public readonly gatherParticipantsObserver = new ObserverHelper({ logger });
+  public readonly realtimeObserver = new Observer({ logger });
+  public readonly hostChangeObserver = new Observer({ logger });
+  public readonly gridModeChangeObserver = new Observer({ logger });
+  public readonly followParticipantObserver = new Observer({ logger });
+  public readonly goToParticipantObserver = new Observer({ logger });
+  public readonly gatherParticipantsObserver = new Observer({ logger });
 
-  public readonly sameAccountErrorObserver = new ObserverHelper({ logger });
-  public readonly devicesObserver = new ObserverHelper({ logger });
-  public readonly meetingStateObserver = new ObserverHelper({ logger });
-  public readonly meetingConnectionObserver = new ObserverHelper({ logger });
+  public readonly sameAccountErrorObserver = new Observer({ logger });
+  public readonly devicesObserver = new Observer({ logger });
+  public readonly meetingStateObserver = new Observer({ logger });
+  public readonly meetingConnectionObserver = new Observer({ logger });
 
-  public readonly participantAmountUpdateObserver = new ObserverHelper({ logger });
-  public readonly participantJoinedObserver = new ObserverHelper({ logger });
-  public readonly participantAvatarObserver = new ObserverHelper({ logger });
-  public readonly participantLeftObserver = new ObserverHelper({ logger });
-  public readonly participantListObserver = new ObserverHelper({ logger });
+  public readonly participantAmountUpdateObserver = new Observer({ logger });
+  public readonly participantJoinedObserver = new Observer({ logger });
+  public readonly participantAvatarObserver = new Observer({ logger });
+  public readonly participantLeftObserver = new Observer({ logger });
+  public readonly participantListObserver = new Observer({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -93,10 +94,11 @@ export default class VideoConfereceManager {
       customColors,
       waterMark,
       disableCameraOverlay,
+      layoutPosition,
+      camerasPosition,
     } = options;
 
     let { skipMeetingSettings, devices } = options;
-    const { layoutPosition, camerasPosition } = options;
 
     this.browserService = browserService;
 
@@ -165,6 +167,18 @@ export default class VideoConfereceManager {
     window.addEventListener('orientationchange', this.onWindowResize);
   }
 
+  get isWaterMarkEnabled(): boolean {
+    if (this.browserService.isMobileDevice) return false;
+
+    return [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark);
+  }
+
+  get isHorizontalCameraEnabled(): boolean {
+    if (this.browserService.isMobileDevice) return false;
+
+    return [CamerasPosition.TOP, CamerasPosition.BOTTOM].includes(this.frameConfig.camerasPosition);
+  }
+
   /**
    * @function layoutModalsAndCamerasConfig
    * @returns {any}
@@ -172,11 +186,19 @@ export default class VideoConfereceManager {
   private layoutModalsAndCamerasConfig = (layout, cameras): LayoutModalsAndCameras => {
     let layoutPosition = layout;
     let camerasPosition = cameras;
-    const hasValidCamerasPositionValue = [CamerasPosition.LEFT, CamerasPosition.RIGHT,
+
+    const hasValidCamerasPositionValue = [
+      CamerasPosition.LEFT,
+      CamerasPosition.RIGHT,
       CamerasPosition.BOTTOM,
-      CamerasPosition.TOP].includes(camerasPosition);
-    const hasValidLAyoutPositionValue = [LayoutPosition.LEFT, LayoutPosition.RIGHT,
-      LayoutPosition.CENTER].includes(layoutPosition);
+      CamerasPosition.TOP,
+    ].includes(camerasPosition);
+
+    const hasValidLAyoutPositionValue = [
+      LayoutPosition.LEFT,
+      LayoutPosition.RIGHT,
+      LayoutPosition.CENTER,
+    ].includes(layoutPosition);
 
     if (!hasValidCamerasPositionValue) {
       camerasPosition = CamerasPosition.RIGHT;
@@ -189,10 +211,10 @@ export default class VideoConfereceManager {
       return { layoutPosition, camerasPosition };
     }
 
-    if ((layoutPosition === LayoutPosition.LEFT) && (camerasPosition === CamerasPosition.RIGHT)) {
+    if (layoutPosition === LayoutPosition.LEFT && camerasPosition === CamerasPosition.RIGHT) {
       layoutPosition = LayoutPosition.RIGHT;
     }
-    if ((layoutPosition === LayoutPosition.RIGHT) && (camerasPosition === CamerasPosition.LEFT)) {
+    if (layoutPosition === LayoutPosition.RIGHT && camerasPosition === CamerasPosition.LEFT) {
       layoutPosition = LayoutPosition.LEFT;
     }
 
@@ -208,17 +230,6 @@ export default class VideoConfereceManager {
       logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
-
-    if (this.browserService.isMobileDevice) {
-      const noSleep = new NoSleep();
-
-      const enableNoSleep = () => {
-        noSleep.enable();
-        this.bricklayer.element.removeEventListener('click', enableNoSleep, false);
-      };
-
-      this.bricklayer.element.addEventListener('click', enableNoSleep, false);
-    }
 
     // @TODO: create option to destroy all these listens.
     this.messageBridge.listen(
@@ -309,6 +320,7 @@ export default class VideoConfereceManager {
 
     if (this.frameConfig.disableCameraOverlay) {
       this.bricklayer.element.classList.add('sv-video-frame--no-overlay');
+      return;
     }
 
     if (this.browserService.isMobileDevice) {
@@ -334,18 +346,12 @@ export default class VideoConfereceManager {
       top: offsetTop,
     } = this.frameOffset;
 
-    const hasWaterMark: boolean =
-      [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark) &&
-      !this.browserService.isMobileDevice;
-    const waterMarkHeight: number = hasWaterMark ? 40 : 0;
+    const waterMarkHeight: number = this.isWaterMarkEnabled ? 40 : 0;
 
-    const hasHorizontalCameras =
-    [CamerasPosition.TOP, CamerasPosition.BOTTOM].includes(this.frameConfig.camerasPosition)
-    && !this.browserService.isMobileDevice;
     let frameWidth: string = `${width}px`;
     let frameHeight: string = `${height + waterMarkHeight}px`;
 
-    if (width >= window.innerWidth || hasHorizontalCameras) {
+    if (width >= window.innerWidth || this.isHorizontalCameraEnabled) {
       frameWidth = `calc(100% - ${offsetRight}px - ${offsetLeft}px)`;
     }
 
@@ -376,6 +382,8 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private updateFrameLocale = (): void => {
+    if (!this.frameLocale || (!this.frameLocale?.language && this.frameLocale?.locales)) return;
+
     const { language, locales } = this.frameLocale;
     const languages = locales.map((locale) => locale?.language);
     const availableLanguages = ['en', ...languages];
@@ -489,7 +497,7 @@ export default class VideoConfereceManager {
    * @param {string} participantId
    * @returns {void}
    */
-  public onGoToDidChange = (participantId: string): void => {
+  private onGoToDidChange = (participantId: string): void => {
     this.goToParticipantObserver.publish(participantId);
   };
 
@@ -547,51 +555,6 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function waitForHostDidChange
-   * @param {boolean} isWating
-   * @returns {void}
-   */
-  public waitForHostDidChange = (isWating: boolean): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_WAIT_FOR_HOST, isWating);
-  };
-
-  /**
-   * @function gridModeDidChange
-   * @param {boolean} isGridModeEnable
-   * @returns {void}
-   */
-  public gridModeDidChange = (isGridModeEnable: boolean): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, isGridModeEnable);
-  };
-
-  /**
-   * @function participantsListDidChange
-   * @param {} participantsList
-   * @returns {void}
-   */
-  public participantsListDidChange = (participantsList): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE, participantsList);
-  };
-
-  /**
-   * @function onMasterParticipantDidChange
-   * @param {string} hostId
-   * @returns {void}
-   */
-  public onMasterParticipantDidChange = (hostId: string): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
-  };
-
-  /**
-   * @function followParticipantDidChange
-   * @param {string} participantId
-   * @returns {void}
-   */
-  public followParticipantDidChange = (participantId?: string): void => {
-    this.messageBridge.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
-  };
-
-  /**
    * @function start
    * @param {StartMeetingOptions} options
    * @returns {void}
@@ -608,7 +571,7 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   public leave(): void {
-    this.messageBridge.publish(MeetingEvent.MEETING_LEAVE, {});
+    this.messageBridge.publish(MeetingEvent.MEETING_LEAVE);
 
     this.destroy();
   }
@@ -618,79 +581,40 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   public destroy(): void {
-    this.messageBridge.destroy();
-    this.bricklayer.destroy();
-    this.frameStateObserver.destroy();
+    this.messageBridge?.destroy();
+    this.bricklayer?.destroy();
+
+    this.frameSizeObserver.destroy();
     this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
     this.gridModeChangeObserver.destroy();
     this.followParticipantObserver.destroy();
+    this.goToParticipantObserver.destroy();
+    this.gatherParticipantsObserver.destroy();
+    this.sameAccountErrorObserver.destroy();
+    this.devicesObserver.destroy();
+    this.meetingStateObserver.destroy();
+    this.meetingConnectionObserver.destroy();
+    this.participantAmountUpdateObserver.destroy();
+    this.participantJoinedObserver.destroy();
+    this.participantAvatarObserver.destroy();
+    this.participantLeftObserver.destroy();
+    this.participantListObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;
   }
 
   /**
-   * @function toggleChat
-   * @returns {void}
+   * @function publishMessageToFrame
+   * @description Publishes a message to the frame
+   * @param message - The event to publish
+   * @param payload  - The payload to publish
    */
-  public toggleChat(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
-  }
-
-  /**
-   * @function toggleMeetingSetup
-   * @returns {void}
-   */
-  public toggleMeetingSetup(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MEETING_SETUP);
-  }
-
-  /**
-   * @function toggleMicrophone
-   * @returns {void}
-   */
-  public toggleMicrophone(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_MICROPHONE);
-  }
-
-  /**
-   * @function toggleScreenShare
-   * @returns {void}
-   */
-  public toggleScreenShare(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_SCREENSHARE);
-  }
-
-  /**
-   * @function hangUp
-   * @returns {void}
-   */
-  public hangUp(): void {
-    this.messageBridge.publish(MeetingControlsEvent.HANG_UP);
-  }
-
-  /**
-   * @function toggleCam
-   * @returns {void}
-   */
-  public toggleCam(): void {
-    this.messageBridge.publish(MeetingControlsEvent.TOGGLE_CAM);
-  }
-
-  /**
-   * @function startTranscription
-   * @returns {void}
-   */
-  public startTranscription(language): void {
-    this.messageBridge.publish(TranscriptionEvent.TRANSCRIPTION_START, language);
-  }
-
-  /**
-   * @function stopTranscription
-   * @returns {void}
-   */
-  public stopTranscription(): void {
-    this.messageBridge.publish(TranscriptionEvent.TRANSCRIPTION_STOP);
+  public publishMessageToFrame(
+    event: MeetingControlsEvent | MeetingEvent | RealtimeEvent | TranscriptionEvent,
+    payload?: unknown,
+  ): void {
+    this.messageBridge.publish(event, payload);
   }
 }

@@ -1,7 +1,5 @@
-import { ObserverHelper } from '@superviz/immersive-core';
-
 import { MeetingConnectionStatus } from '../../common/types/events.types';
-import { logger } from '../../common/utils';
+import { Observer, logger } from '../../common/utils';
 
 import { DefaultConnectionService, WindowConnectionStatus } from './types';
 
@@ -9,7 +7,7 @@ export class ConnectionService implements DefaultConnectionService {
   connectionStatus: MeetingConnectionStatus;
   oldConnectionStatus: MeetingConnectionStatus;
 
-  connectionStatusObserver = new ObserverHelper({ logger });
+  connectionStatusObserver = new Observer({ logger });
 
   constructor() {
     this.connectionStatus = MeetingConnectionStatus.NOT_AVAILABLE;

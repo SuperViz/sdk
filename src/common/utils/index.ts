@@ -1,4 +1,5 @@
-import doRequest from './doRequest';
+import doRequest from './do-request';
 import logger from './logger';
+import { Observer } from './observer';
 
-export { logger, doRequest };
+export { logger, doRequest, Observer };
