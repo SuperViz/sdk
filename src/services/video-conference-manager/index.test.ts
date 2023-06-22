@@ -150,10 +150,6 @@ describe('VideoConferenceManager', () => {
         VideoConferenceManagerInstance.meetingConnectionObserver,
         'destroy',
       );
-      const participantAmountUpdateObserverSpy = jest.spyOn(
-        VideoConferenceManagerInstance.participantAmountUpdateObserver,
-        'destroy',
-      );
       const participantJoinedSpy = jest.spyOn(
         VideoConferenceManagerInstance.participantJoinedObserver,
         'destroy',
@@ -184,7 +180,6 @@ describe('VideoConferenceManager', () => {
       expect(devicesObserverSpy).toBeCalled();
       expect(meetingStateObserverSpy).toBeCalled();
       expect(meetingConnectionObserverSpy).toBeCalled();
-      expect(participantAmountUpdateObserverSpy).toBeCalled();
       expect(participantJoinedSpy).toBeCalled();
       expect(participantAvatarSpy).toBeCalled();
       expect(participantLeftSpy).toBeCalled();
@@ -483,23 +478,6 @@ describe('VideoConferenceManager', () => {
           config: VideoConferenceManagerInstance['frameConfig'],
         },
       );
-    });
-  });
-
-  describe('onParticipantAmountUpdate', () => {
-    test('should publish the updated participant list', () => {
-      const participants: Array<Participant> = [
-        { id: '1', name: 'Alice' },
-        { id: '2', name: 'Bob' },
-      ];
-      const spy = jest.spyOn(
-        VideoConferenceManagerInstance.participantAmountUpdateObserver,
-        'publish',
-      );
-
-      VideoConferenceManagerInstance['onParticipantAmountUpdate'](participants);
-
-      expect(spy).toHaveBeenCalledWith(participants);
     });
   });
 

@@ -62,7 +62,6 @@ export default class VideoConfereceManager {
   public readonly meetingStateObserver = new Observer({ logger });
   public readonly meetingConnectionObserver = new Observer({ logger });
 
-  public readonly participantAmountUpdateObserver = new Observer({ logger });
   public readonly participantJoinedObserver = new Observer({ logger });
   public readonly participantAvatarObserver = new Observer({ logger });
   public readonly participantLeftObserver = new Observer({ logger });
@@ -231,11 +230,22 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
+    this.addMessagesListeners();
+    this.updateFrameState(VideoFrameState.INITIALIZED);
+    this.updateFrameLocale();
+    this.updateMeetingAvatars();
+    this.onWindowResize();
+    this.setCustomColors();
+  };
+
+  /**
+   * @function addMessagesListeners
+   * @description Adds listeners for various meeting and realtime events using the message bridge.
+   * @returns {void}
+   */
+  private addMessagesListeners(): void {
     // @TODO: create option to destroy all these listens.
-    this.messageBridge.listen(
-      MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE,
-      this.onParticipantAmountUpdate,
-    );
+
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(
       MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
@@ -259,15 +269,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onParticipantAvatarChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.onGoToDidChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
-
-    this.updateFrameState(VideoFrameState.INITIALIZED);
-    this.updateFrameLocale();
-    this.updateMeetingAvatars();
-
-    this.onWindowResize();
-
-    this.setCustomColors();
-  };
+  }
 
   /**
    * @function setFrameOffset
@@ -402,16 +404,6 @@ export default class VideoConfereceManager {
    */
   private updateMeetingAvatars = (): void => {
     this.messageBridge.publish(FrameEvent.FRAME_AVATAR_LIST_UPDATE, this.meetingAvatars);
-  };
-
-  /**
-   * @function onParticipantAmountUpdate
-   * @param {Array<Participant>} participants
-   * @description updates the number of participants within the meeting
-   * @returns {void}
-   */
-  private onParticipantAmountUpdate = (participants: Array<Participant>): void => {
-    this.participantAmountUpdateObserver.publish(participants);
   };
 
   /**
@@ -595,7 +587,6 @@ export default class VideoConfereceManager {
     this.devicesObserver.destroy();
     this.meetingStateObserver.destroy();
     this.meetingConnectionObserver.destroy();
-    this.participantAmountUpdateObserver.destroy();
     this.participantJoinedObserver.destroy();
     this.participantAvatarObserver.destroy();
     this.participantLeftObserver.destroy();

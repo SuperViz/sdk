@@ -191,7 +191,6 @@ class Communicator {
     this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
-    this.videoManager.participantAmountUpdateObserver.unsubscribe(this.onParticipantAmountUpdate);
     this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
     this.videoManager.participantLeftObserver.unsubscribe(this.onMyParticipantLeft);
     this.videoManager.participantAvatarObserver.unsubscribe(this.onParticipantAvatarUpdate);
@@ -343,7 +342,6 @@ class Communicator {
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
-    this.videoManager.participantAmountUpdateObserver.subscribe(this.onParticipantAmountUpdate);
     this.videoManager.participantListObserver.subscribe(this.onParticipantListUpdate);
     this.videoManager.participantLeftObserver.subscribe(this.onMyParticipantLeft);
     this.videoManager.participantAvatarObserver.subscribe(this.onParticipantAvatarUpdate);
@@ -488,7 +486,7 @@ class Communicator {
   };
 
   /**
-   * @function onParticipantListUpdate
+   * @function onParticipantsDidChange
    * @description handler for participant list update event
    * @param {AblyParticipant[]} participants - participants
    * @returns {void}
@@ -508,6 +506,10 @@ class Communicator {
 
     // update participant list
     const participantList = this.updateParticipantListFromAblyList(participants);
+
+    if (this.participantList.length !== participantList.length) {
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participantList.length);
+    }
 
     if (!isEqual(this.participantList, participantList)) {
       this.participantList = participantList;
@@ -590,16 +592,6 @@ class Communicator {
    * */
   private onDevicesChange = (state: DeviceEvent): void => {
     this.publish(MeetingEvent.MEETING_DEVICES_CHANGE, state);
-  };
-
-  /**
-   * @function onParticipantAmountUpdate
-   * @description handler for participant amount update event
-   * @param {number} count - participant count
-   * @returns {void}
-   * */
-  private onParticipantAmountUpdate = (count: number): void => {
-    this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, count);
   };
 
   /**
@@ -690,7 +682,7 @@ class Communicator {
    * @param {MeetingState} newState - new meeting state
    * @returns {void}
    */
-  private onMeetingStateUpdate = (newState: MeetingState) => {
+  private onMeetingStateUpdate = (newState: MeetingState): void => {
     logger.log('MEETING STATE', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
