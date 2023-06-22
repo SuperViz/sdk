@@ -408,10 +408,7 @@ class Communicator {
    * @returns {void}
    */
   private onHostDidChange = (hostId: string): void => {
-    const participant = this.participantList.find((participant) => participant.id === hostId);
-
     this.realtime.setHost(hostId);
-    this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, participant);
   };
 
   /**
@@ -530,10 +527,18 @@ class Communicator {
    * @returns {void}
    * */
   private onHostParticipantDidChange = (data: HostObserverCallbackResponse): void => {
+    const newHost = this.participantList.find((participant: Participant) => {
+      return participant.id === data?.newHostParticipantId;
+    });
+
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_HOST_CHANGE,
       data?.newHostParticipantId,
     );
+
+    if (this.realtime.isLocalParticipantHost) {
+      this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, newHost);
+    }
   };
 
   /**
