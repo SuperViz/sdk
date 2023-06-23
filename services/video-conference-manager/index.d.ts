@@ -19,15 +19,13 @@ export default class VideoConfereceManager {
     readonly followParticipantObserver: Observer;
     readonly goToParticipantObserver: Observer;
     readonly gatherParticipantsObserver: Observer;
+    readonly waitingForHostObserver: Observer;
     readonly sameAccountErrorObserver: Observer;
     readonly devicesObserver: Observer;
     readonly meetingStateObserver: Observer;
     readonly meetingConnectionObserver: Observer;
-    readonly participantAmountUpdateObserver: Observer;
     readonly participantJoinedObserver: Observer;
-    readonly participantAvatarObserver: Observer;
     readonly participantLeftObserver: Observer;
-    readonly participantListObserver: Observer;
     frameState: VideoFrameState;
     constructor(options: VideoManagerOptions);
     get isWaterMarkEnabled(): boolean;
@@ -42,6 +40,12 @@ export default class VideoConfereceManager {
      * @returns {void}
      */
     private onFrameLoad;
+    /**
+     * @function addMessagesListeners
+     * @description Adds listeners for various meeting and realtime events using the message bridge.
+     * @returns {void}
+     */
+    private addMessagesListeners;
     /**
      * @function setFrameOffset
      * @description adds the offset to aid frame positioning.
@@ -83,33 +87,12 @@ export default class VideoConfereceManager {
      */
     private updateMeetingAvatars;
     /**
-     * @function onParticipantAmountUpdate
-     * @param {Array<Participant>} participants
-     * @description updates the number of participants within the meeting
-     * @returns {void}
-     */
-    private onParticipantAmountUpdate;
-    /**
      * @function onParticipantLeft
      * @param {Participant} participant
      * @description callback that is triggered whenever a participant left the meeting room
      * @returns {void}
      */
     private onParticipantLeft;
-    /**
-     * @function onParticipantListUpdate
-     * @param {Array<Participant>} participants
-     * @description callback that is called whenever the list of participants is updated
-     * @returns {void}
-     */
-    private onParticipantListUpdate;
-    /**
-     * @function onParticipantAvatarChange
-     * @description update participant avatar
-     * @returns {void}
-     * @param avatarLink
-     */
-    private onParticipantAvatarChange;
     /**
      * @function updateFrameState
      * @description updates frame state
@@ -176,6 +159,7 @@ export default class VideoConfereceManager {
      * @returns {void}
      */
     private onConnectionStatusChange;
+    private onWaitingForHostDidChange;
     /**
      * @function start
      * @param {StartMeetingOptions} options
