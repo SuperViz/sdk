@@ -341,6 +341,7 @@ class Communicator {
     this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
+    this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
     this.videoManager.participantLeftObserver.subscribe(this.onMyParticipantLeft);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
@@ -458,6 +459,16 @@ class Communicator {
    * */
   private onFrameSizeDidChange = (dimensions: Dimensions): void => {
     this.publish(FrameEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
+  };
+
+  /**
+   * @function onWaitingForHost
+   * @description handler for waiting for host event
+   * @param {boolean} waiting - whether or not waiting for host
+   * @returns {void}
+   */
+  private onWaitingForHost = (waiting: boolean): void => {
+    this.publish(MeetingEvent.MEETING_WAITING_FOR_HOST, waiting);
   };
 
   /**

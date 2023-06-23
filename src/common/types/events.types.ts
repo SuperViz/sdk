@@ -13,6 +13,7 @@ export enum MeetingEvent {
   MEETING_KICK_PARTICIPANTS = 'meeting.kick-all-participants',
   MEETING_STATE_UPDATE = 'meeting.state-update',
   MEETING_CONNECTION_STATUS_CHANGE = 'meeting.connection-status-change',
+  MEETING_WAITING_FOR_HOST = 'meeting.waiting-for-host',
   MY_PARTICIPANT_UPDATED = 'my-participant.update',
   MY_PARTICIPANT_LEFT = 'my-participant.left',
   MY_PARTICIPANT_JOINED = 'my-participant.joined',

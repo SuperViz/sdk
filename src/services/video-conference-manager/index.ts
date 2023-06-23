@@ -54,6 +54,7 @@ export default class VideoConfereceManager {
   public readonly followParticipantObserver = new Observer({ logger });
   public readonly goToParticipantObserver = new Observer({ logger });
   public readonly gatherParticipantsObserver = new Observer({ logger });
+  public readonly waitingForHostObserver = new Observer({ logger });
 
   public readonly sameAccountErrorObserver = new Observer({ logger });
   public readonly devicesObserver = new Observer({ logger });
@@ -242,6 +243,10 @@ export default class VideoConfereceManager {
   private addMessagesListeners(): void {
     // @TODO: create option on MessageBridge to destroy all these listens.
 
+    this.messageBridge.listen(
+      MeetingEvent.MEETING_WAITING_FOR_HOST,
+      this.onWaitingForHostDidChange,
+    );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
@@ -515,6 +520,10 @@ export default class VideoConfereceManager {
    */
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
     this.meetingConnectionObserver.publish(newStatus);
+  };
+
+  private onWaitingForHostDidChange = (isWaitingForHost: boolean): void => {
+    this.waitingForHostObserver.publish(isWaitingForHost);
   };
 
   /**
