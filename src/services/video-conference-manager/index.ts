@@ -1,5 +1,3 @@
-import NoSleep from 'nosleep.js';
-
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
 import {
   DeviceEvent,
@@ -65,7 +63,6 @@ export default class VideoConfereceManager {
   public readonly participantJoinedObserver = new Observer({ logger });
   public readonly participantAvatarObserver = new Observer({ logger });
   public readonly participantLeftObserver = new Observer({ logger });
-  public readonly participantListObserver = new Observer({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -413,16 +410,6 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function onParticipantListUpdate
-   * @param {Array<Participant>} participants
-   * @description callback that is called whenever the list of participants is updated
-   * @returns {void}
-   */
-  private onParticipantListUpdate = (participants: Array<Participant>): void => {
-    this.participantListObserver.publish(participants);
-  };
-
-  /**
    * @function onParticipantAvatarChange
    * @description update participant avatar
    * @returns {void}
@@ -586,7 +573,6 @@ export default class VideoConfereceManager {
     this.participantJoinedObserver.destroy();
     this.participantAvatarObserver.destroy();
     this.participantLeftObserver.destroy();
-    this.participantListObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;

@@ -191,7 +191,6 @@ class Communicator {
     this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
-    this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
     this.videoManager.participantLeftObserver.unsubscribe(this.onMyParticipantLeft);
     this.videoManager.participantAvatarObserver.unsubscribe(this.onParticipantAvatarUpdate);
 
@@ -342,7 +341,6 @@ class Communicator {
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
-    this.videoManager.participantListObserver.subscribe(this.onParticipantListUpdate);
     this.videoManager.participantLeftObserver.subscribe(this.onMyParticipantLeft);
     this.videoManager.participantAvatarObserver.subscribe(this.onParticipantAvatarUpdate);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
@@ -506,20 +504,28 @@ class Communicator {
 
     // update participant list
     const participantList = this.updateParticipantListFromAblyList(participants);
-
-    if (this.participantList.length !== participantList.length) {
-      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participantList.length);
-    }
+    const localParticipant = participantList.find(
+      (participant) => participant.id === this.participant.id,
+    );
 
     if (!isEqual(this.participantList, participantList)) {
-      this.participantList = participantList;
-
       this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, this.participantList);
       this.videoManager.publishMessageToFrame(
         RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE,
         participantListForVideoFrame,
       );
     }
+
+    if (this.participantList.length !== participantList.length) {
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participantList.length);
+    }
+
+    if (!isEqual(this.participant, localParticipant)) {
+      this.participant = localParticipant;
+      this.publish(MeetingEvent.MY_PARTICIPANT_UPDATED, this.participant);
+    }
+
+    this.participantList = participantList;
   };
 
   /**
@@ -646,23 +652,6 @@ class Communicator {
    * */
   private onParticipantAvatarUpdate = (avatarLink: string): void => {
     this.participant.avatar.model = avatarLink;
-  };
-
-  /**
-   * @function onParticipantListUpdate
-   * @description handler for participant list update event
-   * @param {Array<Participant>} participants - participant list
-   * @returns {void}
-   * */
-  private onParticipantListUpdate = (participants: Array<Participant>): void => {
-    const myParticipant = participants.find(
-      (participant) => participant.id === this.participant.id,
-    );
-
-    if (!isEqual(myParticipant, this.participant)) {
-      this.participant = Object.assign({}, this.participant, myParticipant);
-      this.publish(MeetingEvent.MY_PARTICIPANT_UPDATED, this.participant);
-    }
   };
 
   /**
