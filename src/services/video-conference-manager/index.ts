@@ -244,15 +244,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private addMessagesListeners(): void {
-    // @TODO: create option to destroy all these listens.
+    // @TODO: create option on MessageBridge to destroy all these listens.
 
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
-    this.messageBridge.listen(
-      MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
-      this.onParticipantListUpdate,
-    );
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
-    this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(
@@ -261,6 +256,7 @@ export default class VideoConfereceManager {
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,

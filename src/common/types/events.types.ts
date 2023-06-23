@@ -8,7 +8,6 @@ export enum MeetingEvent {
   MEETING_JOIN = 'meeting.join',
   MEETING_PARTICIPANT_PROPERTIES = 'meeting.participant-properties',
   MEETING_HOST_CHANGE = 'meeting.host-change',
-  MEETING_GRID_MODE_CHANGE = 'meeting.grid-mode-change',
   MEETING_SAME_PARTICIPANT_ERROR = 'meeting.same-participant-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_PARTICIPANTS = 'meeting.kick-all-participants',
@@ -17,7 +16,6 @@ export enum MeetingEvent {
   MY_PARTICIPANT_UPDATED = 'my-participant.update',
   MY_PARTICIPANT_LEFT = 'my-participant.left',
   MY_PARTICIPANT_JOINED = 'my-participant.joined',
-  HEARTBEAT = 'heartbeat',
   DESTROY = 'destroy',
 }
 
