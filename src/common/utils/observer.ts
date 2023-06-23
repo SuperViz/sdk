@@ -61,6 +61,7 @@ export class Observer {
             Failed to execute callback on publish value.
             Callback: ${callback}
             Event: ${JSON.stringify(event)}
+            Error: ${error}
           `,
         );
       });

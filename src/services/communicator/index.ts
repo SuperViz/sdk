@@ -170,6 +170,8 @@ class Communicator {
       participant: this.participant,
       group: this.group,
     });
+
+    this.publish(MeetingEvent.MEETING_START);
   }
 
   /**
@@ -191,10 +193,7 @@ class Communicator {
     this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
     this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
-    this.videoManager.participantAmountUpdateObserver.unsubscribe(this.onParticipantAmountUpdate);
-    this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
     this.videoManager.participantLeftObserver.unsubscribe(this.onMyParticipantLeft);
-    this.videoManager.participantAvatarObserver.unsubscribe(this.onParticipantAvatarUpdate);
 
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.unsubscribe(
@@ -342,11 +341,9 @@ class Communicator {
     this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
+    this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
-    this.videoManager.participantAmountUpdateObserver.subscribe(this.onParticipantAmountUpdate);
-    this.videoManager.participantListObserver.subscribe(this.onParticipantListUpdate);
     this.videoManager.participantLeftObserver.subscribe(this.onMyParticipantLeft);
-    this.videoManager.participantAvatarObserver.subscribe(this.onParticipantAvatarUpdate);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateUpdate);
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -360,7 +357,7 @@ class Communicator {
    * @param data - event data
    * @returns {void}
    */
-  private publish = (type: string, data: unknown): void => {
+  private publish = (type: string, data?: unknown): void => {
     const hasListenerRegistered = type in this.observers;
 
     if (hasListenerRegistered) {
@@ -408,10 +405,7 @@ class Communicator {
    * @returns {void}
    */
   private onHostDidChange = (hostId: string): void => {
-    const participant = this.participantList.find((participant) => participant.id === hostId);
-
     this.realtime.setHost(hostId);
-    this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, participant);
   };
 
   /**
@@ -468,6 +462,16 @@ class Communicator {
   };
 
   /**
+   * @function onWaitingForHost
+   * @description handler for waiting for host event
+   * @param {boolean} waiting - whether or not waiting for host
+   * @returns {void}
+   */
+  private onWaitingForHost = (waiting: boolean): void => {
+    this.publish(MeetingEvent.MEETING_WAITING_FOR_HOST, waiting);
+  };
+
+  /**
    * @function onRoomInfoUpdated
    * @description handler for room info update event
    * @param {AblyRealtimeData} room - room info
@@ -491,12 +495,12 @@ class Communicator {
   };
 
   /**
-   * @function onParticipantListUpdate
+   * @function onParticipantsDidChange
    * @description handler for participant list update event
-   * @param {AblyParticipant[]} participants - participants
+   * @param {Record<string, AblyParticipant>} participants - participants
    * @returns {void}
    */
-  private onParticipantsDidChange = (participants: AblyParticipant[]): void => {
+  private onParticipantsDidChange = (participants: Record<string, AblyParticipant>): void => {
     const participantListForVideoFrame: ParticipandToFrame[] = Object.values(participants).map(
       (participant: AblyParticipant) => {
         return {
@@ -511,16 +515,28 @@ class Communicator {
 
     // update participant list
     const participantList = this.updateParticipantListFromAblyList(participants);
+    const localParticipant = participantList.find((participant) => {
+      return participant?.id === this.participant?.id;
+    });
 
     if (!isEqual(this.participantList, participantList)) {
-      this.participantList = participantList;
-
       this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, this.participantList);
       this.videoManager.publishMessageToFrame(
         RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE,
         participantListForVideoFrame,
       );
     }
+
+    if (this.participantList.length !== participantList.length) {
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participantList.length);
+    }
+
+    if (localParticipant && !isEqual(this.participant, localParticipant)) {
+      this.participant = localParticipant;
+      this.publish(MeetingEvent.MY_PARTICIPANT_UPDATED, this.participant);
+    }
+
+    this.participantList = participantList;
   };
 
   /**
@@ -530,10 +546,18 @@ class Communicator {
    * @returns {void}
    * */
   private onHostParticipantDidChange = (data: HostObserverCallbackResponse): void => {
+    const newHost = this.participantList.find((participant: Participant) => {
+      return participant.id === data?.newHostParticipantId;
+    });
+
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_HOST_CHANGE,
       data?.newHostParticipantId,
     );
+
+    if (this.realtime.isLocalParticipantHost) {
+      this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, newHost);
+    }
   };
 
   /**
@@ -549,10 +573,12 @@ class Communicator {
   /**
    * @function updateParticipantListFromAblyList
    * @description update participant list from ably participant list
-   * @param {AblyParticipant[]} participants - ably participant list
+   * @param {Record<string, AblyParticipant>} participants - ably participant list
    * @returns {Participant[]} participant list
    * */
-  private updateParticipantListFromAblyList = (participants: AblyParticipant[]): Participant[] => {
+  private updateParticipantListFromAblyList = (
+    participants: Record<string, AblyParticipant>,
+  ): Participant[] => {
     const participantList = Object.values(participants).map((participant: AblyParticipant) => ({
       id: participant.clientId,
       color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
@@ -585,16 +611,6 @@ class Communicator {
    * */
   private onDevicesChange = (state: DeviceEvent): void => {
     this.publish(MeetingEvent.MEETING_DEVICES_CHANGE, state);
-  };
-
-  /**
-   * @function onParticipantAmountUpdate
-   * @description handler for participant amount update event
-   * @param {number} count - participant count
-   * @returns {void}
-   * */
-  private onParticipantAmountUpdate = (count: number): void => {
-    this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, count);
   };
 
   /**
@@ -633,39 +649,11 @@ class Communicator {
   /**
    * @function onMyParticipantLeft
    * @description handler for my participant left event
-   * @param {Participant} participant - ably participant
    * @returns {void}
    * */
-  private onMyParticipantLeft = (participant: Participant): void => {
-    this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, participant);
+  private onMyParticipantLeft = (): void => {
+    this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.participant);
     this.destroy();
-  };
-
-  /**
-   * @function onParticipantAvatarUpdate
-   * @description handler for participant avatar update event
-   * @param {string} avatarLink - avatar link
-   * @returns {void}
-   * */
-  private onParticipantAvatarUpdate = (avatarLink: string): void => {
-    this.participant.avatar.model = avatarLink;
-  };
-
-  /**
-   * @function onParticipantListUpdate
-   * @description handler for participant list update event
-   * @param {Array<Participant>} participants - participant list
-   * @returns {void}
-   * */
-  private onParticipantListUpdate = (participants: Array<Participant>): void => {
-    const myParticipant = participants.find(
-      (participant) => participant.id === this.participant.id,
-    );
-
-    if (!isEqual(myParticipant, this.participant)) {
-      this.participant = Object.assign({}, this.participant, myParticipant);
-      this.publish(MeetingEvent.MY_PARTICIPANT_UPDATED, this.participant);
-    }
   };
 
   /**
@@ -685,7 +673,7 @@ class Communicator {
    * @param {MeetingState} newState - new meeting state
    * @returns {void}
    */
-  private onMeetingStateUpdate = (newState: MeetingState) => {
+  private onMeetingStateUpdate = (newState: MeetingState): void => {
     logger.log('MEETING STATE', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
@@ -735,7 +723,7 @@ class Communicator {
     }
 
     if (this.participant.avatar && this.participant.avatar.model) {
-      this.realtime.setParticipantData({ avatar: { model: this.participant.avatar.model } });
+      this.realtime.setParticipantData({ avatar: this.participant.avatar });
     }
 
     let participants = [];

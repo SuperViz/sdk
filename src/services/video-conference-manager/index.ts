@@ -1,5 +1,3 @@
-import NoSleep from 'nosleep.js';
-
 import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
 import {
   DeviceEvent,
@@ -56,17 +54,15 @@ export default class VideoConfereceManager {
   public readonly followParticipantObserver = new Observer({ logger });
   public readonly goToParticipantObserver = new Observer({ logger });
   public readonly gatherParticipantsObserver = new Observer({ logger });
+  public readonly waitingForHostObserver = new Observer({ logger });
 
   public readonly sameAccountErrorObserver = new Observer({ logger });
   public readonly devicesObserver = new Observer({ logger });
   public readonly meetingStateObserver = new Observer({ logger });
   public readonly meetingConnectionObserver = new Observer({ logger });
 
-  public readonly participantAmountUpdateObserver = new Observer({ logger });
   public readonly participantJoinedObserver = new Observer({ logger });
-  public readonly participantAvatarObserver = new Observer({ logger });
   public readonly participantLeftObserver = new Observer({ logger });
-  public readonly participantListObserver = new Observer({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -231,18 +227,28 @@ export default class VideoConfereceManager {
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
-    // @TODO: create option to destroy all these listens.
+    this.addMessagesListeners();
+    this.updateFrameState(VideoFrameState.INITIALIZED);
+    this.updateFrameLocale();
+    this.updateMeetingAvatars();
+    this.onWindowResize();
+    this.setCustomColors();
+  };
+
+  /**
+   * @function addMessagesListeners
+   * @description Adds listeners for various meeting and realtime events using the message bridge.
+   * @returns {void}
+   */
+  private addMessagesListeners(): void {
+    // @TODO: create option on MessageBridge to destroy all these listens.
+
     this.messageBridge.listen(
-      MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE,
-      this.onParticipantAmountUpdate,
+      MeetingEvent.MEETING_WAITING_FOR_HOST,
+      this.onWaitingForHostDidChange,
     );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
-    this.messageBridge.listen(
-      MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
-      this.onParticipantListUpdate,
-    );
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
-    this.messageBridge.listen(MeetingEvent.MEETING_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(
@@ -251,23 +257,15 @@ export default class VideoConfereceManager {
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       this.onFollowParticipantDidChange,
     );
-    this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onParticipantAvatarChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.onGoToDidChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
-
-    this.updateFrameState(VideoFrameState.INITIALIZED);
-    this.updateFrameLocale();
-    this.updateMeetingAvatars();
-
-    this.onWindowResize();
-
-    this.setCustomColors();
-  };
+  }
 
   /**
    * @function setFrameOffset
@@ -405,16 +403,6 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function onParticipantAmountUpdate
-   * @param {Array<Participant>} participants
-   * @description updates the number of participants within the meeting
-   * @returns {void}
-   */
-  private onParticipantAmountUpdate = (participants: Array<Participant>): void => {
-    this.participantAmountUpdateObserver.publish(participants);
-  };
-
-  /**
    * @function onParticipantLeft
    * @param {Participant} participant
    * @description callback that is triggered whenever a participant left the meeting room
@@ -422,26 +410,6 @@ export default class VideoConfereceManager {
    */
   private onParticipantLeft = (participant: Participant): void => {
     this.participantLeftObserver.publish(participant);
-  };
-
-  /**
-   * @function onParticipantListUpdate
-   * @param {Array<Participant>} participants
-   * @description callback that is called whenever the list of participants is updated
-   * @returns {void}
-   */
-  private onParticipantListUpdate = (participants: Array<Participant>): void => {
-    this.participantListObserver.publish(participants);
-  };
-
-  /**
-   * @function onParticipantAvatarChange
-   * @description update participant avatar
-   * @returns {void}
-   * @param avatarLink
-   */
-  private onParticipantAvatarChange = (avatarLink: string): void => {
-    this.participantAvatarObserver.publish(avatarLink);
   };
 
   /**
@@ -554,6 +522,10 @@ export default class VideoConfereceManager {
     this.meetingConnectionObserver.publish(newStatus);
   };
 
+  private onWaitingForHostDidChange = (isWaitingForHost: boolean): void => {
+    this.waitingForHostObserver.publish(isWaitingForHost);
+  };
+
   /**
    * @function start
    * @param {StartMeetingOptions} options
@@ -595,11 +567,8 @@ export default class VideoConfereceManager {
     this.devicesObserver.destroy();
     this.meetingStateObserver.destroy();
     this.meetingConnectionObserver.destroy();
-    this.participantAmountUpdateObserver.destroy();
     this.participantJoinedObserver.destroy();
-    this.participantAvatarObserver.destroy();
     this.participantLeftObserver.destroy();
-    this.participantListObserver.destroy();
 
     this.bricklayer = null;
     this.frameState = null;
