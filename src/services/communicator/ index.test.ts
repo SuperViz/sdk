@@ -78,18 +78,17 @@ const VideoManagerMock = {
   frameSizeObserver: MOCK_OBSERVER_HELPER,
   realtimeObserver: MOCK_OBSERVER_HELPER,
   hostChangeObserver: MOCK_OBSERVER_HELPER,
+  gridModeChangeObserver: MOCK_OBSERVER_HELPER,
   followParticipantObserver: MOCK_OBSERVER_HELPER,
   goToParticipantObserver: MOCK_OBSERVER_HELPER,
   gatherParticipantsObserver: MOCK_OBSERVER_HELPER,
-  gridModeChangeObserver: MOCK_OBSERVER_HELPER,
+  waitingForHostObserver: MOCK_OBSERVER_HELPER,
   sameAccountErrorObserver: MOCK_OBSERVER_HELPER,
   devicesObserver: MOCK_OBSERVER_HELPER,
-  participantAmountUpdateObserver: MOCK_OBSERVER_HELPER,
-  participantListObserver: MOCK_OBSERVER_HELPER,
-  participantLeftObserver: MOCK_OBSERVER_HELPER,
-  participantAvatarObserver: MOCK_OBSERVER_HELPER,
   meetingStateObserver: MOCK_OBSERVER_HELPER,
   meetingConnectionObserver: MOCK_OBSERVER_HELPER,
+  participantJoinedObserver: MOCK_OBSERVER_HELPER,
+  participantLeftObserver: MOCK_OBSERVER_HELPER,
 };
 
 jest.mock('../realtime', () => ({
@@ -230,10 +229,7 @@ describe('Communicator', () => {
       expect(VideoManagerMock.gridModeChangeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.sameAccountErrorObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.devicesObserver.unsubscribe).toBeCalled();
-      expect(VideoManagerMock.participantAmountUpdateObserver.unsubscribe).toBeCalled();
-      expect(VideoManagerMock.participantListObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.participantLeftObserver.unsubscribe).toBeCalled();
-      expect(VideoManagerMock.participantAvatarObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.meetingStateObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.meetingConnectionObserver.unsubscribe).toBeCalled();
     });
