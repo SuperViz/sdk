@@ -61,7 +61,6 @@ export default class VideoConfereceManager {
   public readonly meetingConnectionObserver = new Observer({ logger });
 
   public readonly participantJoinedObserver = new Observer({ logger });
-  public readonly participantAvatarObserver = new Observer({ logger });
   public readonly participantLeftObserver = new Observer({ logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
@@ -259,7 +258,6 @@ export default class VideoConfereceManager {
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       this.onFollowParticipantDidChange,
     );
-    this.messageBridge.listen(RealtimeEvent.REALTIME_SET_AVATAR, this.onParticipantAvatarChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.onGoToDidChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GATHER, this.onGather);
   }
@@ -407,16 +405,6 @@ export default class VideoConfereceManager {
    */
   private onParticipantLeft = (participant: Participant): void => {
     this.participantLeftObserver.publish(participant);
-  };
-
-  /**
-   * @function onParticipantAvatarChange
-   * @description update participant avatar
-   * @returns {void}
-   * @param avatarLink
-   */
-  private onParticipantAvatarChange = (avatarLink: string): void => {
-    this.participantAvatarObserver.publish(avatarLink);
   };
 
   /**
@@ -571,7 +559,6 @@ export default class VideoConfereceManager {
     this.meetingStateObserver.destroy();
     this.meetingConnectionObserver.destroy();
     this.participantJoinedObserver.destroy();
-    this.participantAvatarObserver.destroy();
     this.participantLeftObserver.destroy();
 
     this.bricklayer = null;

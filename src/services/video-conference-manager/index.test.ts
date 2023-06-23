@@ -154,10 +154,6 @@ describe('VideoConferenceManager', () => {
         VideoConferenceManagerInstance.participantJoinedObserver,
         'destroy',
       );
-      const participantAvatarSpy = jest.spyOn(
-        VideoConferenceManagerInstance.participantAvatarObserver,
-        'destroy',
-      );
       const participantLeftSpy = jest.spyOn(
         VideoConferenceManagerInstance.participantLeftObserver,
         'destroy',
@@ -177,7 +173,6 @@ describe('VideoConferenceManager', () => {
       expect(meetingStateObserverSpy).toBeCalled();
       expect(meetingConnectionObserverSpy).toBeCalled();
       expect(participantJoinedSpy).toBeCalled();
-      expect(participantAvatarSpy).toBeCalled();
       expect(participantLeftSpy).toBeCalled();
     });
   });
