@@ -369,7 +369,14 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onWindowResize = (): void => {
-    const { innerHeight: height, innerWidth: width } = window;
+    const { top, bottom, right, left } = this.frameOffset;
+    const { innerHeight, innerWidth } = window;
+
+    const height = innerHeight - top - bottom;
+    const width = innerWidth - right - left;
+
+    // when the frame is not mounted, the message bridge is not available
+    if (!this.messageBridge) return;
 
     this.messageBridge.publish(FrameEvent.FRAME_PARENT_SIZE_UPDATE, { height, width });
   };
