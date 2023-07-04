@@ -96,9 +96,11 @@ source ./e2e/build-e2e.sh
 Add file .remote-config.js with the following content:
 
 ```javascript
-export const remoteConfig = {
-  apiUrl: 'https://api.example.com',
-  conferenceLayerUrl: 'https://conference-url.example.com',
+module.exports = {
+  remoteConfig: {
+    apiUrl: 'https://api.example.com',
+    conferenceLayerUrl: 'https://conference-url.example.com',
+  },
 };
 ```
 

@@ -44,15 +44,15 @@ const validateOptions = ({
   }
 
   if (!group || !group.name || !group.id) {
-    throw new Error('group fields is required');
+    throw new Error('Group fields is required');
   }
 
   if (!participant || !participant.id) {
-    throw new Error('participant fields is required');
+    throw new Error('Participants fields is required');
   }
 
   if (!roomId) {
-    throw new Error('room id is required');
+    throw new Error('Room id is required');
   }
 
   if (skipMeetingSettings && !participant.name) {
@@ -89,6 +89,12 @@ const validadeColorsVariablesNames = (colors: ColorsVariables) => {
  * @returns {SuperVizSdk}
  */
 const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
+  const validApiKey = apiKey && apiKey.trim();
+
+  if (!validApiKey) throw new Error('API key is required');
+
+  if (!options) throw new Error('Options is required');
+
   validateOptions(options);
 
   if (options.debug) {

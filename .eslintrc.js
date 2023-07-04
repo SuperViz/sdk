@@ -68,5 +68,6 @@ module.exports = {
     'arrow-body-style': 'off',
     'no-plusplus': 'off',
     'consistent-return': 'off',
+    'dot-notation': 'off',
   },
 };

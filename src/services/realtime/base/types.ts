@@ -1,21 +1,19 @@
-import { ObserverHelper } from '@superviz/immersive-core';
-
 import { Participant } from '../../../common/types/participant.types';
+import { Observer } from '../../../common/utils';
 
 export interface DefaultRealtimeService {
-  participantObservers: ObserverHelper[];
-  participantsObserver: ObserverHelper;
-  participantJoinedObserver: ObserverHelper;
-  participantLeaveObserver: ObserverHelper;
-  joinRoomObserver: ObserverHelper;
-  reconnectObserver: ObserverHelper;
-  roomInfoUpdatedObserver: ObserverHelper;
-  roomListUpdatedObserver: ObserverHelper;
-  masterParticipantObserver: ObserverHelper;
-  realtimeStateObserver: ObserverHelper;
-  syncPropertiesObserver: ObserverHelper;
-  kickAllParticipantsObserver: ObserverHelper;
-  authenticationObserver: ObserverHelper;
+  participantObservers: Observer[];
+  participantsObserver: Observer;
+  participantJoinedObserver: Observer;
+  participantLeaveObserver: Observer;
+  reconnectObserver: Observer;
+  roomInfoUpdatedObserver: Observer;
+  roomListUpdatedObserver: Observer;
+  hostObserver: Observer;
+  realtimeStateObserver: Observer;
+  syncPropertiesObserver: Observer;
+  kickAllParticipantsObserver: Observer;
+  authenticationObserver: Observer;
 }
 
 export interface DefaultRealtimeMethods {
@@ -53,3 +51,8 @@ export interface SlotColor {
   color: string;
   name: string;
 }
+
+export type HostObserverCallbackResponse = {
+  oldHostParticipantId: string;
+  newHostParticipantId: string;
+};
