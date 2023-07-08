@@ -17,12 +17,12 @@ import Communicator from './services/communicator';
 import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
+import pluginManager from './services/plugin-manager';
 import { RealtimeMessage } from './services/realtime/ably/types';
 import RemoteConfigService from './services/remote-config-service';
 import {
   ColorsVariables,
   ColorsVariablesNames,
-  LayoutPosition,
   WaterMark,
 } from './services/video-conference-manager/types';
 
@@ -120,12 +120,14 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
 
   const { ablyKey } = environment;
   return Communicator(
-    Object.assign({}, options, { apiKey,
+    Object.assign({}, options, {
+      apiKey,
       ablyKey,
       conferenceLayerUrl,
       apiUrl,
       waterMark,
-      layoutPosition }),
+      layoutPosition,
+    }),
   );
 };
 
@@ -164,4 +166,5 @@ export {
   MeetingControlsEvent,
   DevicesOptions,
   RealtimeMessage,
+  pluginManager,
 };
