@@ -3,12 +3,12 @@ export interface DrawingData {
   lineColor?: string;
   textColor: string;
   pencil?: string;
-  clickX?: string;
-  clickY?: string;
-  clickDrag?: string;
+  clickX?: number[];
+  clickY?: number[];
+  clickDrag?: boolean[];
   drawingWidth?: string;
   drawingHeight?: string;
-  externalClickX?: string;
-  externalClickY?: string;
-  fadeOut?: string;
+  externalClickX?: number;
+  externalClickY?: number;
+  fadeOut?: boolean;
 }
