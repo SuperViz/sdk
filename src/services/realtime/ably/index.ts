@@ -588,7 +588,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   private publishParticipantUpdate(participant: AblyParticipant): void {
     this.participants[participant.clientId] = participant;
-    this.participantsObserver.publish(this.participants);
+
     if (this.participantObservers[participant.clientId]) {
       this.participantObservers[participant.clientId].publish(participant);
     }
