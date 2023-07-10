@@ -15,6 +15,7 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { FrameBricklayer } from '../frame-brick-layer';
+import { DrawingData } from '../meeting/drawing/types';
 import { MessageBridge } from '../message-bridge';
 
 import {
@@ -51,6 +52,8 @@ export default class VideoConfereceManager {
   public readonly realtimeObserver = new Observer({ logger });
   public readonly hostChangeObserver = new Observer({ logger });
   public readonly gridModeChangeObserver = new Observer({ logger });
+  public readonly drawingChangeObserver = new Observer({ logger });
+
   public readonly followParticipantObserver = new Observer({ logger });
   public readonly goToParticipantObserver = new Observer({ logger });
   public readonly gatherParticipantsObserver = new Observer({ logger });
@@ -258,6 +261,8 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_DRAWING_CHANGE, this.onDrawingChange);
+
     this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
@@ -487,6 +492,15 @@ export default class VideoConfereceManager {
   };
 
   /**
+   * @function onDrawingChange
+   * @param drawing
+   * @returns {void}
+   */
+  private onDrawingChange = (drawing: DrawingData): void => {
+    this.drawingChangeObserver.publish(drawing);
+  };
+
+  /**
    * @function onSameAccountError
    * @param {string} error
    * @returns {void}
@@ -560,6 +574,8 @@ export default class VideoConfereceManager {
     this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
     this.gridModeChangeObserver.destroy();
+    this.drawingChangeObserver.destroy();
+
     this.followParticipantObserver.destroy();
     this.goToParticipantObserver.destroy();
     this.gatherParticipantsObserver.destroy();
