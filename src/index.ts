@@ -17,7 +17,7 @@ import Communicator from './services/communicator';
 import { SuperVizSdk, PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
-import pluginManager from './services/plugin-manager';
+import PluginManager from './services/plugin-manager';
 import { RealtimeMessage } from './services/realtime/ably/types';
 import RemoteConfigService from './services/remote-config-service';
 import {
@@ -166,5 +166,5 @@ export {
   MeetingControlsEvent,
   DevicesOptions,
   RealtimeMessage,
-  pluginManager,
+  PluginManager,
 };
