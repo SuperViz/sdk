@@ -15,10 +15,10 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { Observer, logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { FrameBricklayer } from '../frame-brick-layer';
-import { DrawingData } from '../meeting/drawing/types';
 import { MessageBridge } from '../message-bridge';
 
 import {
+  DrawingData,
   VideoFrameState,
   VideoManagerOptions,
   Offset,
@@ -493,7 +493,7 @@ export default class VideoConfereceManager {
 
   /**
    * @function onDrawingChange
-   * @param drawing
+   * @param drawing {DrawingData}
    * @returns {void}
    */
   private onDrawingChange = (drawing: DrawingData): void => {

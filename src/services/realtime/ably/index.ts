@@ -5,7 +5,7 @@ import { RealtimeEvent } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { logger } from '../../../common/utils';
-import { DrawingData } from '../../meeting/drawing/types';
+import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
 
@@ -247,7 +247,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /**
    * @function setDrawing
-   * @param drawing
+   * @param drawing {DrawingData}  -  drawing payload*
    * @description synchronizes the drawing in the room
    * @returns {void}
    */

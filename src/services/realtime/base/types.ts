@@ -1,6 +1,6 @@
 import { Participant } from '../../../common/types/participant.types';
 import { Observer } from '../../../common/utils';
-import { DrawingData } from '../../meeting/drawing/types';
+import { DrawingData } from '../../video-conference-manager/types';
 
 export interface DefaultRealtimeService {
   participantObservers: Observer[];

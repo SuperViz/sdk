@@ -17,12 +17,15 @@ import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
 import { Plugin, PluginMethods } from '../integration/base-plugin/types';
-import { DrawingData } from '../meeting/drawing/types';
 import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyParticipant, RealtimeMessage } from '../realtime/ably/types';
 import { HostObserverCallbackResponse, ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import {
+  DrawingData,
+  VideoFrameState,
+  VideoManagerOptions,
+} from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
 
@@ -579,7 +582,7 @@ class Communicator {
   /**
    * @function onDrawingDidChange
    * @description handler when drawing event
-   * @param drawing - drawing payload
+   * @param drawing {DrawingData}  -  drawing payload
    * @returns {void}
    * */
   private onDrawingDidChange = (drawing: DrawingData): void => {
