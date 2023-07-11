@@ -50,6 +50,7 @@ export enum RealtimeEvent {
   REALTIME_GATHER = 'realtime.gather',
   REALTIME_FOLLOW_PARTICIPANT = 'realtime.follow-participant',
   REALTIME_SET_AVATAR = 'realtime.set-avatar',
+  REALTIME_DRAWING_CHANGE = 'realtime.drawing-change',
 }
 
 export enum TranscriptionEvent {

@@ -79,6 +79,7 @@ const VideoManagerMock = {
   realtimeObserver: MOCK_OBSERVER_HELPER,
   hostChangeObserver: MOCK_OBSERVER_HELPER,
   gridModeChangeObserver: MOCK_OBSERVER_HELPER,
+  drawingChangeObserver: MOCK_OBSERVER_HELPER,
   followParticipantObserver: MOCK_OBSERVER_HELPER,
   goToParticipantObserver: MOCK_OBSERVER_HELPER,
   gatherParticipantsObserver: MOCK_OBSERVER_HELPER,
@@ -227,6 +228,7 @@ describe('Communicator', () => {
       expect(VideoManagerMock.goToParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.gatherParticipantsObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.gridModeChangeObserver.unsubscribe).toBeCalled();
+      expect(VideoManagerMock.drawingChangeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.sameAccountErrorObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.devicesObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.participantLeftObserver.unsubscribe).toBeCalled();

@@ -1,5 +1,6 @@
 import type Ably from 'ably';
 
+import { DrawingData } from '../../video-conference-manager/types';
 import { DefaultRealtimeMethods } from '../base/types';
 
 export interface AblyRealtime extends DefaultRealtimeMethods {}
@@ -15,6 +16,7 @@ export interface AblyRealtimeData {
   isGridModeEnable?: boolean;
   followParticipantId?: string;
   gather?: boolean;
+  drawing?: DrawingData;
 }
 
 export type AblyTokenCallBack = (
