@@ -1,4 +1,4 @@
-import { AvatarConfig } from '../integration/participants/types';
+import { AvatarConfig } from '../../integration/participants/types';
 
 export interface PluginOptions {
   isAvatarsEnabled?: boolean;
