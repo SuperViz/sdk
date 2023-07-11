@@ -1,13 +1,7 @@
-import { Participant, ParticipantType } from '../../common/types/participant.types';
-import { RealtimeStateTypes } from '../../common/types/realtime.types';
-import { EnvironmentTypes } from '../../common/types/sdk-options.types';
-import { logger } from '../../common/utils';
-import ApiService from '../api';
-import { IntegrationManager } from '../integration';
-import { Plugin } from '../integration/base-plugin/types';
-import { AblyRealtimeService } from '../realtime';
-import { ParticipantInfo } from '../realtime/base/types';
-import RemoteConfigService from '../remote-config-service';
+import { IntegrationManager } from '../../integration';
+import { Plugin } from '../../integration/base-plugin/types';
+import { AblyRealtimeService } from '../../realtime';
+import { ParticipantInfo } from '../../realtime/base/types';
 
 import { PluginOptions } from './types';
 
