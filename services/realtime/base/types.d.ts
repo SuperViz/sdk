@@ -1,5 +1,6 @@
 import { Participant } from '../../../common/types/participant.types';
 import { Observer } from '../../../common/utils';
+import { DrawingData } from '../../video-conference-manager/types';
 export interface DefaultRealtimeService {
     participantObservers: Observer[];
     participantsObserver: Observer;
@@ -21,6 +22,7 @@ export interface DefaultRealtimeMethods {
     setSyncProperty: <T>(name: string, property: T) => void;
     setHost: (masterParticipantId: string) => void;
     setGridMode: (value: boolean) => void;
+    setDrawing: (drawing: DrawingData) => void;
 }
 export interface RealtimeJoinOptions {
     isAudience: boolean;

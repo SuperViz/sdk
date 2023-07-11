@@ -16,6 +16,7 @@ export default class VideoConfereceManager {
     readonly realtimeObserver: Observer;
     readonly hostChangeObserver: Observer;
     readonly gridModeChangeObserver: Observer;
+    readonly drawingChangeObserver: Observer;
     readonly followParticipantObserver: Observer;
     readonly goToParticipantObserver: Observer;
     readonly gatherParticipantsObserver: Observer;
@@ -135,6 +136,12 @@ export default class VideoConfereceManager {
      * @returns {void}
      */
     private onGridModeChange;
+    /**
+     * @function onDrawingChange
+     * @param drawing {DrawingData}
+     * @returns {void}
+     */
+    private onDrawingChange;
     /**
      * @function onSameAccountError
      * @param {string} error

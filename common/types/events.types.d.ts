@@ -46,7 +46,8 @@ export declare enum RealtimeEvent {
     REALTIME_GO_TO_PARTICIPANT = "realtime.go-to-participant",
     REALTIME_GATHER = "realtime.gather",
     REALTIME_FOLLOW_PARTICIPANT = "realtime.follow-participant",
-    REALTIME_SET_AVATAR = "realtime.set-avatar"
+    REALTIME_SET_AVATAR = "realtime.set-avatar",
+    REALTIME_DRAWING_CHANGE = "realtime.drawing-change"
 }
 export declare enum TranscriptionEvent {
     TRANSCRIPTION_START = "transcription.start",

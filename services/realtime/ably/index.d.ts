@@ -1,5 +1,6 @@
 /// <reference types="lodash" />
 import Ably from 'ably';
+import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
 import { AblyParticipant, AblyParticipants, AblyRealtime, AblyRealtimeData, ParticipantDataInput, RealtimeMessage } from './types';
@@ -75,6 +76,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     setGridMode(isGridModeEnable: boolean): void;
+    /**
+     * @function setDrawing
+     * @param drawing {DrawingData}  -  drawing payload*
+     * @description synchronizes the drawing in the room
+     * @returns {void}
+     */
+    setDrawing(drawing: DrawingData): void;
     /**
      * @function setSyncProperty
      * @param {string} name
