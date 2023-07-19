@@ -25,8 +25,6 @@ import { VideoFrameState, VideoManagerOptions } from '../video-conference-manage
 
 import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
 
-const PACKAGE_JSON = require('../../../package.json');
-
 class Communicator {
   private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
@@ -163,8 +161,6 @@ class Communicator {
   }
 
   public start() {
-    // log sdk version
-    logger.log('SUPERVIZ SDK VERSION', PACKAGE_JSON.version);
     this.videoManager.start({
       roomId: this.roomId,
       participant: this.participant,
