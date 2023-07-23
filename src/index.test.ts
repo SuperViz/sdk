@@ -1,4 +1,5 @@
-import { logger } from './common/utils';
+import debug from 'debug';
+
 import ApiService from './services/api';
 import RemoteConfigService from './services/remote-config-service';
 import { ColorsVariables } from './services/video-conference-manager/types';
@@ -71,14 +72,6 @@ const COLOR_VARIABLES_MOCK = {
   'sv-gray-200': '57 54 62',
 };
 
-jest.mock('./common/utils', () => ({
-  __esModule: true,
-  logger: {
-    enable: jest.fn(),
-    disable: jest.fn(),
-    log: jest.fn(),
-  },
-}));
 jest.mock('./services/api');
 jest.mock('./services/auth-service', () => ({
   __esModule: true,
@@ -258,12 +251,14 @@ describe('initialization success', () => {
   });
 
   test('should initialize with debug mode', async () => {
+    debug.enable = jest.fn();
+
     const instance = await sdk.init(UNIT_TEST_API_KEY, {
       ...SIMPLE_INITIALIZATION_MOCK,
       debug: true,
     });
 
-    expect(logger.enable).toBeCalled();
+    expect(debug.enable).toBeCalled();
     expect(instance).toBeDefined();
     expect(instance).toBe(COMMUNICATOR_INSTANCE_MOCK);
   });

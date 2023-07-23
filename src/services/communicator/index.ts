@@ -12,7 +12,7 @@ import {
   TranscriptionEvent,
 } from '../../common/types/events.types';
 import { Participant, Group } from '../../common/types/participant.types';
-import { Observer, logger } from '../../common/utils';
+import { Observer, Logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
@@ -26,6 +26,7 @@ import { VideoFrameState, VideoManagerOptions } from '../video-conference-manage
 import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
 
 class Communicator {
+  private readonly logger: Logger;
   private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
   private readonly browserService: BrowserService;
@@ -74,6 +75,7 @@ class Communicator {
     this.group = group;
     this.participant = participant;
 
+    this.logger = new Logger('@superviz/sdk/communicator');
     this.realtime = new AblyRealtimeService(apiUrl, ablyKey);
     this.browserService = new BrowserService();
 
@@ -234,7 +236,7 @@ class Communicator {
    */
   public subscribe = (type: string, listener: Function): void => {
     if (!this.observers[type]) {
-      this.observers[type] = new Observer({ logger });
+      this.observers[type] = new Observer({ logger: this.logger });
     }
 
     this.observers[type].subscribe(listener);
@@ -670,7 +672,7 @@ class Communicator {
    * @returns {void}
    */
   private onMeetingStateUpdate = (newState: MeetingState): void => {
-    logger.log('MEETING STATE', newState);
+    this.logger.log('MEETING STATE', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 
