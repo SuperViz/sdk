@@ -143,10 +143,7 @@ class Communicator {
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
-      initialParticipantData: {
-        participantId: this.participant.id,
-        ...this.participant,
-      },
+      participant: this.participant,
       roomId: this.roomId,
       apiKey,
       shouldKickParticipantsOnHostLeave: shouldKickParticipantsOnHostLeave ?? true,
@@ -392,8 +389,8 @@ class Communicator {
    * @param {ParticipantInfo} participantInfo - participant info
    * @returns {void}
    */
-  private onRealtimeJoin = (participantInfo: ParticipantInfo): void => {
-    this.realtime.join(participantInfo);
+  private onRealtimeJoin = (participant: Participant): void => {
+    this.realtime.join(participant);
   };
 
   /**

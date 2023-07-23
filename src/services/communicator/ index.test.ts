@@ -1,12 +1,14 @@
-import exp from 'constants';
-
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
-import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import {
   MOCK_AVATAR_CONFIG,
   MOCK_PARTICIPANT_TO_3D,
   MOCK_PLUGIN,
 } from '../../../__mocks__/plugins.mock';
+import {
+  ABLY_REALTIME_MOCK,
+  createRealtimeHistory,
+  createRealtimeMessage,
+} from '../../../__mocks__/realtime.mock';
 import {
   MeetingControlsEvent,
   RealtimeEvent,
@@ -17,19 +19,6 @@ import { AblyRealtimeService } from '../realtime';
 import { CommunicatorOptions, SuperVizSdk } from './types';
 
 import Communicator from '.';
-
-const createRealtimeMessage = (messageName: string) => ({
-  name: messageName,
-  participantId: 'unit-test-participant-id',
-  data: 'unit-test-data',
-  timestamp: 1686342771747,
-});
-
-const createRealtimeHistory = () => ({
-  'unit-test-message-1': new Array(10).fill(createRealtimeMessage('unit-test-message-1')),
-  'unit-test-message-2': new Array(10).fill(createRealtimeMessage('unit-test-message-2')),
-  'unit-test-message-3': new Array(10).fill(createRealtimeMessage('unit-test-message-3')),
-});
 
 const COMMUNICATOR_INITIALIZATION_MOCK: CommunicatorOptions = {
   apiKey: 'unit-test-api-key',
@@ -45,30 +34,6 @@ const COMMUNICATOR_INITIALIZATION_MOCK: CommunicatorOptions = {
     name: 'unit-test-group-test-name',
     id: 'unit-test-group-test-id',
   },
-};
-
-const AblyRealtimeMock = {
-  setGather: jest.fn(),
-  setParticipantData: jest.fn(),
-  setSyncProperty: jest.fn(),
-  start: jest.fn(),
-  leave: jest.fn(),
-  setFollowParticipant: jest.fn(),
-  fetchSyncClientProperty: jest.fn((key?: string) => {
-    if (key) {
-      return createRealtimeMessage(key);
-    }
-
-    return createRealtimeHistory();
-  }),
-  roomInfoUpdatedObserver: MOCK_OBSERVER_HELPER,
-  participantsObserver: MOCK_OBSERVER_HELPER,
-  participantJoinedObserver: MOCK_OBSERVER_HELPER,
-  participantLeaveObserver: MOCK_OBSERVER_HELPER,
-  hostObserver: MOCK_OBSERVER_HELPER,
-  syncPropertiesObserver: MOCK_OBSERVER_HELPER,
-  kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
-  authenticationObserver: MOCK_OBSERVER_HELPER,
 };
 
 const VideoManagerMock = {
@@ -92,7 +57,7 @@ const VideoManagerMock = {
 };
 
 jest.mock('../realtime', () => ({
-  AblyRealtimeService: jest.fn().mockImplementation(() => AblyRealtimeMock),
+  AblyRealtimeService: jest.fn().mockImplementation(() => ABLY_REALTIME_MOCK),
 }));
 
 jest.mock('../video-conference-manager', () => {
@@ -145,13 +110,13 @@ describe('Communicator', () => {
     test('should call the setSyncProperty method of the realtime service', () => {
       communicator.setSyncProperty('test', 'test');
 
-      expect(AblyRealtimeMock.setSyncProperty).toHaveBeenCalledTimes(1);
+      expect(ABLY_REALTIME_MOCK.setSyncProperty).toHaveBeenCalledTimes(1);
     });
 
     test('should call the setSyncProperty method of the realtime service with the expected arguments', () => {
       communicator.setSyncProperty('test', 'test');
 
-      expect(AblyRealtimeMock.setSyncProperty).toHaveBeenCalledWith('test', 'test');
+      expect(ABLY_REALTIME_MOCK.setSyncProperty).toHaveBeenCalledWith('test', 'test');
     });
   });
 
@@ -209,16 +174,16 @@ describe('Communicator', () => {
       communicator.destroy();
 
       expect(communicator.destroy).toBeCalledTimes(1);
-      expect(AblyRealtimeMock.leave).toBeCalledTimes(1);
+      expect(ABLY_REALTIME_MOCK.leave).toBeCalledTimes(1);
       expect(VideoManagerMock.leave).toBeCalledTimes(1);
-      expect(AblyRealtimeMock.roomInfoUpdatedObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.participantsObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.participantJoinedObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.participantLeaveObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.hostObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.syncPropertiesObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.kickAllParticipantsObserver.unsubscribe).toBeCalled();
-      expect(AblyRealtimeMock.authenticationObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.syncPropertiesObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.kickAllParticipantsObserver.unsubscribe).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.authenticationObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.frameStateObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.frameSizeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.realtimeObserver.unsubscribe).toBeCalled();
@@ -252,7 +217,7 @@ describe('Communicator', () => {
         RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
         'test',
       );
-      expect(AblyRealtimeMock.setFollowParticipant).toBeCalledWith('test');
+      expect(ABLY_REALTIME_MOCK.setFollowParticipant).toBeCalledWith('test');
     });
   });
 
@@ -269,7 +234,7 @@ describe('Communicator', () => {
       const history = communicator.fetchSyncProperty('test');
 
       expect(communicator.fetchSyncProperty).toBeCalledWith('test');
-      expect(AblyRealtimeMock.fetchSyncClientProperty).toBeCalledWith('test');
+      expect(ABLY_REALTIME_MOCK.fetchSyncClientProperty).toBeCalledWith('test');
       expect(history).toEqual(createRealtimeMessage('test'));
     });
 
@@ -278,7 +243,7 @@ describe('Communicator', () => {
       const history = communicator.fetchSyncProperty();
 
       expect(communicator.fetchSyncProperty).toBeCalled();
-      expect(AblyRealtimeMock.fetchSyncClientProperty).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.fetchSyncClientProperty).toBeCalled();
       expect(history).toEqual(createRealtimeHistory());
     });
   });
@@ -449,7 +414,7 @@ describe('Communicator', () => {
         plugin: MOCK_PLUGIN,
         avatarConfig: MOCK_AVATAR_CONFIG,
         localParticipant: MOCK_PARTICIPANT_TO_3D,
-        RealtimeService: AblyRealtimeMock as unknown as AblyRealtimeService,
+        RealtimeService: ABLY_REALTIME_MOCK as unknown as AblyRealtimeService,
       });
 
       expect(communicator.loadPlugin).toBeCalled();
@@ -462,7 +427,7 @@ describe('Communicator', () => {
         plugin: MOCK_PLUGIN,
         avatarConfig: MOCK_AVATAR_CONFIG,
         localParticipant: MOCK_PARTICIPANT_TO_3D,
-        RealtimeService: AblyRealtimeMock as unknown as AblyRealtimeService,
+        RealtimeService: ABLY_REALTIME_MOCK as unknown as AblyRealtimeService,
       });
 
       expect(communicator.loadPlugin).toBeCalled();
@@ -484,7 +449,7 @@ describe('Communicator', () => {
         plugin: MOCK_PLUGIN,
         avatarConfig: MOCK_AVATAR_CONFIG,
         localParticipant: MOCK_PARTICIPANT_TO_3D,
-        RealtimeService: AblyRealtimeMock as unknown as AblyRealtimeService,
+        RealtimeService: ABLY_REALTIME_MOCK as unknown as AblyRealtimeService,
       });
 
       communicator.unloadPlugin();
@@ -515,7 +480,7 @@ describe('Communicator', () => {
       communicator.gather();
 
       expect(communicator.gather).toBeCalled();
-      expect(AblyRealtimeMock.setGather).toBeCalled();
+      expect(ABLY_REALTIME_MOCK.setGather).toBeCalled();
     });
   });
 
@@ -533,7 +498,7 @@ describe('Communicator', () => {
         plugin: MOCK_PLUGIN,
         avatarConfig: MOCK_AVATAR_CONFIG,
         localParticipant: MOCK_PARTICIPANT_TO_3D,
-        RealtimeService: AblyRealtimeMock as unknown as AblyRealtimeService,
+        RealtimeService: ABLY_REALTIME_MOCK as unknown as AblyRealtimeService,
       });
 
       communicator.goTo('test');
