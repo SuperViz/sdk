@@ -1,9 +1,11 @@
 import { MeetingColors, MeetingColorsHex } from '../../../common/types/meeting-colors.types';
-import { Observer, logger } from '../../../common/utils';
+import { Logger, Observer } from '../../../common/utils';
 
 import { DefaultRealtimeService, SlotColor } from './types';
 
 export class RealtimeService implements DefaultRealtimeService {
+  protected readonly logger: Logger;
+
   public participantObservers: Observer[];
   public participantsObserver: Observer;
   public participantJoinedObserver: Observer;
@@ -20,19 +22,21 @@ export class RealtimeService implements DefaultRealtimeService {
   constructor() {
     this.participantObservers = [];
 
-    this.participantsObserver = new Observer({ logger });
-    this.participantJoinedObserver = new Observer({ logger });
-    this.participantLeaveObserver = new Observer({ logger });
-    this.syncPropertiesObserver = new Observer({ logger });
-    this.reconnectObserver = new Observer({ logger });
+    this.logger = new Logger('@superviz/sdk/realtime-service');
+
+    this.participantsObserver = new Observer({ logger: this.logger });
+    this.participantJoinedObserver = new Observer({ logger: this.logger });
+    this.participantLeaveObserver = new Observer({ logger: this.logger });
+    this.syncPropertiesObserver = new Observer({ logger: this.logger });
+    this.reconnectObserver = new Observer({ logger: this.logger });
 
     // Room info obervers helpers
-    this.roomInfoUpdatedObserver = new Observer({ logger });
-    this.roomListUpdatedObserver = new Observer({ logger });
-    this.hostObserver = new Observer({ logger });
-    this.realtimeStateObserver = new Observer({ logger });
-    this.kickAllParticipantsObserver = new Observer({ logger });
-    this.authenticationObserver = new Observer({ logger });
+    this.roomInfoUpdatedObserver = new Observer({ logger: this.logger });
+    this.roomListUpdatedObserver = new Observer({ logger: this.logger });
+    this.hostObserver = new Observer({ logger: this.logger });
+    this.realtimeStateObserver = new Observer({ logger: this.logger });
+    this.kickAllParticipantsObserver = new Observer({ logger: this.logger });
+    this.authenticationObserver = new Observer({ logger: this.logger });
   }
 
   /**
@@ -44,7 +48,7 @@ export class RealtimeService implements DefaultRealtimeService {
    */
   public subscribeToParticipantUpdate(participantId: string, callback: Function): void {
     if (!this.participantObservers[participantId]) {
-      this.participantObservers[participantId] = new Observer({ logger });
+      this.participantObservers[participantId] = new Observer({ logger: this.logger });
     }
 
     this.participantObservers[participantId].subscribe(callback);

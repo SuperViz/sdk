@@ -1,3 +1,5 @@
+import debug from 'debug';
+
 import {
   MeetingEvent,
   RealtimeEvent,
@@ -8,7 +10,6 @@ import {
 } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
-import { logger } from './common/utils';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import { BrowserService } from './services/browser';
@@ -98,7 +99,9 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
   validateOptions(options);
 
   if (options.debug) {
-    logger.enable('@superviz/*');
+    debug.enable('*');
+  } else {
+    debug.disable();
   }
 
   const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
@@ -120,12 +123,14 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
 
   const { ablyKey } = environment;
   return Communicator(
-    Object.assign({}, options, { apiKey,
+    Object.assign({}, options, {
+      apiKey,
       ablyKey,
       conferenceLayerUrl,
       apiUrl,
       waterMark,
-      layoutPosition }),
+      layoutPosition,
+    }),
   );
 };
 
