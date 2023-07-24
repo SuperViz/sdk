@@ -24,7 +24,7 @@ export type ParticipandToFrame = {
   name: string;
 };
 
-export type SuperVizSdk = {
+export type CommunicatorFacade = {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;

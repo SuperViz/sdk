@@ -23,7 +23,12 @@ import { HostObserverCallbackResponse, ParticipantInfo } from '../realtime/base/
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
+import {
+  CommunicatorFacade,
+  CommunicatorOptions,
+  PluginOptions,
+  ParticipandToFrame,
+} from './types';
 
 class Communicator {
   private readonly logger: Logger;
@@ -778,7 +783,7 @@ class Communicator {
   }
 }
 
-export default (params: CommunicatorOptions): SuperVizSdk => {
+export default (params: CommunicatorOptions): CommunicatorFacade => {
   const communicator = new Communicator(params);
 
   return {

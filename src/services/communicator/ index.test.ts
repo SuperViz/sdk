@@ -16,7 +16,7 @@ import {
 } from '../../common/types/events.types';
 import { AblyRealtimeService } from '../realtime';
 
-import { CommunicatorOptions, SuperVizSdk } from './types';
+import { CommunicatorOptions, CommunicatorFacade } from './types';
 
 import Communicator from '.';
 
@@ -100,7 +100,7 @@ describe('Communicator', () => {
   });
 
   describe('setSyncProperty', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -121,7 +121,7 @@ describe('Communicator', () => {
   });
 
   describe('subscribe', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -138,7 +138,7 @@ describe('Communicator', () => {
   });
 
   describe('unsubscribe', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -162,7 +162,7 @@ describe('Communicator', () => {
   });
 
   describe('destroy', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -201,7 +201,7 @@ describe('Communicator', () => {
   });
 
   describe('follow', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -222,7 +222,7 @@ describe('Communicator', () => {
   });
 
   describe('fetchSyncProperty', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -249,7 +249,7 @@ describe('Communicator', () => {
   });
 
   describe('toggleMeetingSetup', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -268,7 +268,7 @@ describe('Communicator', () => {
   });
 
   describe('toggleMicrophone', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -287,7 +287,7 @@ describe('Communicator', () => {
   });
 
   describe('toggleCam', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -306,7 +306,7 @@ describe('Communicator', () => {
   });
 
   describe('toggleScreenShare', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -325,7 +325,7 @@ describe('Communicator', () => {
   });
 
   describe('hangUp', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -342,7 +342,7 @@ describe('Communicator', () => {
   });
 
   describe('toggleChat', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -361,7 +361,7 @@ describe('Communicator', () => {
   });
 
   describe('startTranscription', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -381,7 +381,7 @@ describe('Communicator', () => {
   });
 
   describe('stopTranscription', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -401,7 +401,7 @@ describe('Communicator', () => {
   });
 
   describe('loadPlugin', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -436,7 +436,7 @@ describe('Communicator', () => {
   });
 
   describe('unloadPlugin', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -468,7 +468,7 @@ describe('Communicator', () => {
   });
 
   describe('gather', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -485,7 +485,7 @@ describe('Communicator', () => {
   });
 
   describe('goTo', () => {
-    let communicator: SuperVizSdk;
+    let communicator: CommunicatorFacade;
 
     beforeEach(() => {
       jest.clearAllMocks();

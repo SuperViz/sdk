@@ -1,4 +1,4 @@
-import debug from 'debug';
+import { debug } from 'debug';
 
 import {
   MeetingEvent,
@@ -10,22 +10,18 @@ import {
 } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
+import { Inicializator } from './core';
+import { InicializatorFacade } from './core/inicializator/types';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import { BrowserService } from './services/browser';
 import { BrowserStats } from './services/browser/types';
-import Communicator from './services/communicator';
-import { SuperVizSdk, PluginOptions } from './services/communicator/types';
+import { PluginOptions } from './services/communicator/types';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import { RealtimeMessage } from './services/realtime/ably/types';
 import RemoteConfigService from './services/remote-config-service';
-import {
-  ColorsVariables,
-  ColorsVariablesNames,
-  LayoutPosition,
-  WaterMark,
-} from './services/video-conference-manager/types';
+import { SuperVizSdk } from './types';
 
 /**
  * @function validateOptions
@@ -33,17 +29,7 @@ import {
  * @param {SuperVizSdkOptions} param
  * @returns {void}
  */
-const validateOptions = ({
-  group,
-  participant,
-  roomId,
-  customColors,
-  skipMeetingSettings,
-}: SuperVizSdkOptions): void => {
-  if (customColors) {
-    validadeColorsVariablesNames(customColors);
-  }
-
+const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions): void => {
   if (!group || !group.name || !group.id) {
     throw new Error('Group fields is required');
   }
@@ -55,31 +41,6 @@ const validateOptions = ({
   if (!roomId) {
     throw new Error('Room id is required');
   }
-
-  if (skipMeetingSettings && !participant.name) {
-    throw new Error('When skipMeetingSettings is true, participant name is required');
-  }
-};
-
-/**
- * @function validadeColorsVariablesNames
- * @description Validate if the custom colors variables names are valid
- * @param colors {ColorsVariables}
- */
-const validadeColorsVariablesNames = (colors: ColorsVariables) => {
-  Object.entries(colors).forEach(([key, value]) => {
-    if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
-      throw new Error(
-        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
-      );
-    }
-
-    if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
-      throw new Error(
-        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
-      );
-    }
-  });
 };
 
 /**
@@ -89,7 +50,7 @@ const validadeColorsVariablesNames = (colors: ColorsVariables) => {
  * @param options - SDK options
  * @returns {SuperVizSdk}
  */
-const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
+const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<InicializatorFacade> => {
   const validApiKey = apiKey && apiKey.trim();
 
   if (!validApiKey) throw new Error('API key is required');
@@ -115,23 +76,14 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
   }
 
   const environment = await ApiService.fetchConfig(apiUrl, apiKey);
-  const waterMark: WaterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
-  const { layoutPosition } = options;
+
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
   const { ablyKey } = environment;
-  return Communicator(
-    Object.assign({}, options, {
-      apiKey,
-      ablyKey,
-      conferenceLayerUrl,
-      apiUrl,
-      waterMark,
-      layoutPosition,
-    }),
-  );
+
+  return Inicializator(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
 };
 
 if (window) {
@@ -146,7 +98,7 @@ if (window) {
   };
 }
 
-export default { init };
+export default init;
 export {
   MeetingEvent,
   RealtimeEvent,
