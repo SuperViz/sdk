@@ -18,6 +18,9 @@ export interface SuperVizSdkOptions {
   roomId: string;
   participant: Participant;
   group: Group;
+  shouldKickParticipantsOnHostLeave?: boolean;
+
+  // internal
   debug?: boolean;
   environment?: EnvironmentTypes;
 }

@@ -11,6 +11,7 @@ export class Laucher implements DefaultLaucher {
   private readonly ablyKey: string;
   private readonly apiUrl: string;
   private readonly conferenceLayerUrl: string;
+  private readonly shouldKickParticipantsOnHostLeave: boolean;
   private readonly logger: Logger;
 
   private participant: Participant;
@@ -28,11 +29,13 @@ export class Laucher implements DefaultLaucher {
     participant,
     group,
     roomId,
+    shouldKickParticipantsOnHostLeave,
   }: LaucherOptions) {
     this.apiUrl = apiUrl;
     this.apiKey = apiKey;
     this.ablyKey = ablyKey;
     this.conferenceLayerUrl = conferenceLayerUrl;
+    this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave ?? true;
     this.participant = participant;
     this.roomId = roomId;
     this.group = group;
@@ -107,7 +110,7 @@ export class Laucher implements DefaultLaucher {
       participant: this.participant,
       isBroadcast: true,
       roomId: this.roomId,
-      shouldKickParticipantsOnHostLeave: true,
+      shouldKickParticipantsOnHostLeave: this.shouldKickParticipantsOnHostLeave,
     });
 
     this.realtime.join();
