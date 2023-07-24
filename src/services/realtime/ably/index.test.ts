@@ -315,6 +315,30 @@ describe('AblyRealtimeService', () => {
       });
     });
 
+    test('should update the room properties with drawing data options', () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+
+      const drawing = {
+        name: 'participant1',
+        lineColor: '255, 239, 51',
+        textColor: '#000000',
+        pencil: 'blob:http://localhost:8080/b3cde217-c2cc-4092-a2e5-cf4c498f744e',
+        clickX: [0, 109],
+        clickY: [0, 109],
+        clickDrag: [],
+        drawingWidth: 300,
+        drawingHeight: 600,
+        externalClickX: 566,
+        externalClickY: 300,
+        fadeOut: false,
+      };
+
+      AblyRealtimeServiceInstance.setDrawing(drawing);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        drawing,
+      });
+    });
     /**
      * initializeRoomProperties
      */
@@ -336,12 +360,14 @@ describe('AblyRealtimeService', () => {
         hostClientId: null,
         followParticipantId: null,
         gather: false,
+        drawing: null,
       } as unknown as AblyRealtimeData;
 
       expect(AblyRealtimeServiceInstance['localRoomProperties']?.isGridModeEnable).toBe(false);
       expect(AblyRealtimeServiceInstance['localRoomProperties']?.hostClientId).toBeNull();
       expect(AblyRealtimeServiceInstance['localRoomProperties']?.followParticipantId).toBeNull();
       expect(AblyRealtimeServiceInstance['localRoomProperties']?.gather).toBe(false);
+      expect(AblyRealtimeServiceInstance['localRoomProperties']?.drawing).toBeNull();
     });
 
     test('should set hostClientId to myParticipant data participantId if myParticipant data type is defined', async () => {
@@ -375,6 +401,7 @@ describe('AblyRealtimeService', () => {
         hostClientId: participantId,
         followParticipantId: null,
         gather: false,
+        drawing: null,
       } as unknown as AblyRealtimeData;
 
       expect(AblyRealtimeServiceInstance.hostClientId).toBe(participantId);

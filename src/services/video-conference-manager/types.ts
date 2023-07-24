@@ -129,6 +129,21 @@ export interface LayoutModalsAndCameras {
   camerasPosition: CamerasPosition;
 }
 
+export interface DrawingData {
+  name: string;
+  lineColor: string;
+  textColor: string;
+  pencil: string;
+  clickX?: number[];
+  clickY?: number[];
+  clickDrag?: boolean[];
+  drawingWidth: number;
+  drawingHeight: number;
+  externalClickX: number;
+  externalClickY: number;
+  fadeOut: boolean;
+}
+
 export enum WaterMark {
   ALL = 'all',
   CAMERA = 'camera',

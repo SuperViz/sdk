@@ -21,7 +21,11 @@ import { AblyRealtimeService } from '../realtime';
 import { AblyRealtimeData, AblyParticipant, RealtimeMessage } from '../realtime/ably/types';
 import { HostObserverCallbackResponse, ParticipantInfo } from '../realtime/base/types';
 import VideoConferencingManager from '../video-conference-manager';
-import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
+import {
+  DrawingData,
+  VideoFrameState,
+  VideoManagerOptions,
+} from '../video-conference-manager/types';
 
 import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
 
@@ -187,6 +191,8 @@ class Communicator {
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
     this.videoManager.followParticipantObserver.unsubscribe(this.onFollowParticipantDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
+    this.videoManager.drawingChangeObserver.unsubscribe(this.onDrawingDidChange);
+
     this.videoManager.goToParticipantObserver.unsubscribe(this.onGoToParticipantDidChange);
     this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
     this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
@@ -338,6 +344,8 @@ class Communicator {
     this.videoManager.goToParticipantObserver.subscribe(this.onGoToParticipantDidChange);
     this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
+    this.videoManager.drawingChangeObserver.subscribe(this.onDrawingDidChange);
+
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
     this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
@@ -476,12 +484,13 @@ class Communicator {
    * @returns {void}
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
-    const { isGridModeEnable, followParticipantId, gather } = room;
+    const { isGridModeEnable, followParticipantId, gather, drawing } = room;
 
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
       isGridModeEnable,
     );
+    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_DRAWING_CHANGE, drawing);
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       followParticipantId,
@@ -566,6 +575,16 @@ class Communicator {
    * */
   private onGridModeDidChange = (isGridModeEnable: boolean): void => {
     this.realtime.setGridMode(isGridModeEnable);
+  };
+
+  /**
+   * @function onDrawingDidChange
+   * @description handler when drawing event
+   * @param drawing {DrawingData}  -  drawing payload
+   * @returns {void}
+   * */
+  private onDrawingDidChange = (drawing: DrawingData): void => {
+    this.realtime.setDrawing(drawing);
   };
 
   /**

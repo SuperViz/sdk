@@ -4,6 +4,7 @@ import throttle from 'lodash/throttle';
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
 
@@ -240,8 +241,18 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public setGridMode(isGridModeEnable: boolean): void {
     const roomProperties = this.localRoomProperties;
-
     this.updateRoomProperties(Object.assign({}, roomProperties, { isGridModeEnable }));
+  }
+
+  /**
+   * @function setDrawing
+   * @param drawing {DrawingData}  -  drawing payload*
+   * @description synchronizes the drawing in the room
+   * @returns {void}
+   */
+  public setDrawing(drawing: DrawingData): void {
+    const roomProperties = this.localRoomProperties;
+    this.updateRoomProperties(Object.assign({}, roomProperties, { drawing }));
   }
 
   /**
@@ -676,6 +687,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       hostClientId: null,
       followParticipantId: null,
       gather: false,
+      drawing: null,
     };
 
     // set host to me if im candidate
