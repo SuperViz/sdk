@@ -1,4 +1,8 @@
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import {
+  ABLY_REALTIME_MOCK,
+  createRealtimeHistory,
+  createRealtimeMessage,
+} from '../../../__mocks__/realtime.mock';
 import { AblyRealtimeService } from '../realtime';
 
 import { PubSub } from '.';
@@ -70,5 +74,23 @@ describe('PubSub', () => {
     PubSubInstance['onSyncPropertiesChange']({ test1: 'test' });
 
     expect(callback).not.toHaveBeenCalled();
+  });
+
+  test('should call the fetchHistory and return the last message of type test', () => {
+    jest.spyOn(PubSubInstance, 'fetchHistory');
+    const history = PubSubInstance.fetchHistory('test');
+
+    expect(PubSubInstance.fetchHistory).toBeCalledWith('test');
+    expect(ABLY_REALTIME_MOCK.fetchSyncClientProperty).toBeCalledWith('test');
+    expect(history).toEqual(createRealtimeMessage('test'));
+  });
+
+  test('should call the fetchHistory and return the realtime history', () => {
+    jest.spyOn(PubSubInstance, 'fetchHistory');
+    const history = PubSubInstance.fetchHistory();
+
+    expect(PubSubInstance.fetchHistory).toBeCalled();
+    expect(ABLY_REALTIME_MOCK.fetchSyncClientProperty).toBeCalled();
+    expect(history).toEqual(createRealtimeHistory());
   });
 });

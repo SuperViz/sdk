@@ -1,5 +1,6 @@
 import { Logger, Observer } from '../../common/utils';
 import { AblyRealtimeService } from '../realtime';
+import { RealtimeMessage } from '../realtime/ably/types';
 
 export class PubSub {
   private readonly realtime: AblyRealtimeService;
@@ -49,11 +50,29 @@ export class PubSub {
     this.observers.delete(event);
   };
 
+  /**
+   * @function publish
+   * @description - publish event to realtime
+   * @param event - event name
+   * @param data - data to publish
+   * @returns {void}
+   */
   public publish = (event: string, data: unknown): void => {
     this.logger.log('pubsub service @ publish', { event, data });
 
     this.realtime.setSyncProperty(event, data);
   };
+
+  /**
+   * @function fetchSyncClientProperty
+   * @description get realtime client data history
+   * @returns {RealtimeMessage | Record<string, RealtimeMessage>}
+   */
+  public fetchHistory(
+    eventName?: string,
+  ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
+    return this.realtime.fetchSyncClientProperty(eventName);
+  }
 
   /**
    * @function publishEventToClient
