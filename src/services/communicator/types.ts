@@ -1,10 +1,10 @@
-import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
+import { OldSuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Plugin, PluginMethods, DefaultPluginOptions } from '../integration/base-plugin/types';
 import { AvatarConfig } from '../integration/participants/types';
 import { RealtimeMessage } from '../realtime/ably/types';
 import { LayoutPosition, WaterMark } from '../video-conference-manager/types';
 
-export interface CommunicatorOptions extends SuperVizSdkOptions {
+export interface CommunicatorOptions extends OldSuperVizSdkOptions {
   apiKey: string;
   ablyKey: string;
   conferenceLayerUrl: string;
@@ -24,7 +24,7 @@ export type ParticipandToFrame = {
   name: string;
 };
 
-export type SuperVizSdk = {
+export type CommunicatorFacade = {
   setSyncProperty: <T>(name: string, property: T) => void;
   subscribe: <T>(propertyName: string, listener: (property?: T) => void) => void;
   unsubscribe: (propertyName: string) => void;
