@@ -118,7 +118,6 @@ describe('AblyRealtimeService', () => {
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
-      isBroadcast: false,
       roomId: 'unit-test-room-id',
       shouldKickParticipantsOnHostLeave: true,
     });
@@ -132,7 +131,6 @@ describe('AblyRealtimeService', () => {
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
-      isBroadcast: false,
       roomId: 'unit-test-room-id',
       shouldKickParticipantsOnHostLeave: true,
     });
@@ -148,7 +146,6 @@ describe('AblyRealtimeService', () => {
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
-      isBroadcast: false,
       roomId: 'unit-test-room-id',
       shouldKickParticipantsOnHostLeave: true,
     });
@@ -177,7 +174,6 @@ describe('AblyRealtimeService', () => {
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
-      isBroadcast: true,
       roomId: 'unit-test-room-id',
       shouldKickParticipantsOnHostLeave: true,
     });
@@ -358,7 +354,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -454,7 +449,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -762,7 +756,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -1025,7 +1018,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -1161,11 +1153,10 @@ describe('AblyRealtimeService', () => {
     });
 
     test('if my participant is host and is broadcast mode, should call syncBroadcast', () => {
-      AblyRealtimeServiceInstance['isBroadcast'] = true;
       AblyRealtimeServiceInstance['hostParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
-      // AblyRealtimeServiceInstance['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
       // @ts-ignore
       AblyRealtimeServiceInstance['syncBroadcast'] = jest.fn();
+      jest.spyOn(AblyRealtimeServiceInstance, 'isBroadcast', 'get').mockReturnValueOnce(true);
 
       const presenceData: Ably.Types.PresenceMessage = {
         action: 'update',
@@ -1342,7 +1333,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -1516,7 +1506,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -1547,7 +1536,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -1584,7 +1572,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });
@@ -1624,7 +1611,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
-        isBroadcast: false,
         roomId: 'unit-test-room-id',
         shouldKickParticipantsOnHostLeave: true,
       });

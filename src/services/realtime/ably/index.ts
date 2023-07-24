@@ -29,8 +29,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
 
-  private isBroadcast: boolean = false;
-
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
@@ -104,12 +102,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.myParticipant.data?.participantId ?? null;
   }
 
+  public get isBroadcast(): boolean {
+    return Object.values(this.participants).some(
+      (participant) => participant.data.type === ParticipantType.AUDIENCE,
+    );
+  }
+
   public start({
     participant,
     roomId,
     apiKey,
     shouldKickParticipantsOnHostLeave,
-    isBroadcast,
   }: StartRealtimeType): void {
     this.myParticipant = {
       data: {
@@ -123,7 +126,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       encoding: null,
       id: null,
     };
-    this.isBroadcast = isBroadcast;
     this.enableSync = participant.type !== ParticipantType.AUDIENCE;
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
 
@@ -615,22 +617,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         participants[member.clientId] = { ...member };
       });
       this.participants = participants;
-      this.checkBroadcast();
       this.participantsObserver.publish(this.participants);
     });
   };
-
-  /**
-   * @function checkBroadcast
-   * @description check if it has any audience in participant list
-   * and change the isBroadcast parameter based on it
-   * @returns {void}
-   */
-  private checkBroadcast() {
-    this.isBroadcast = Object.values(this.participants).some(
-      (participant) => participant.data.type === ParticipantType.AUDIENCE,
-    );
-  }
 
   /**
    * @function updateHostInfo

@@ -108,7 +108,6 @@ export class Laucher implements DefaultLaucher {
     this.realtime.start({
       apiKey: this.apiKey,
       participant: this.participant,
-      isBroadcast: true,
       roomId: this.roomId,
       shouldKickParticipantsOnHostLeave: this.shouldKickParticipantsOnHostLeave,
     });

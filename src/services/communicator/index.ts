@@ -152,7 +152,6 @@ class Communicator {
       roomId: this.roomId,
       apiKey,
       shouldKickParticipantsOnHostLeave: shouldKickParticipantsOnHostLeave ?? true,
-      isBroadcast: this.isBroadcast,
     });
   }
 

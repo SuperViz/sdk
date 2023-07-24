@@ -40,7 +40,6 @@ export interface StartRealtimeType {
   roomId: string;
   apiKey: string;
   shouldKickParticipantsOnHostLeave: boolean;
-  isBroadcast: boolean;
 }
 
 export interface SyncProperty {
