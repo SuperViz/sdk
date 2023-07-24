@@ -1,1 +1,1 @@
-export {};
+export { default as Inicializator } from './inicializator';
