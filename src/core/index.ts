@@ -1,1 +1,1 @@
-export { default as Inicializator } from './inicializator';
+export { default as Laucher } from './laucher';

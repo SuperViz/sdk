@@ -4,9 +4,9 @@ import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { RealtimeMessage } from '../../services/realtime/ably/types';
 
-import { DefaultInicializator, InicializatorFacade, InicializatorOptions } from './types';
+import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
 
-export class Inicializator implements DefaultInicializator {
+export class Laucher implements DefaultLaucher {
   private readonly apiKey: string;
   private readonly ablyKey: string;
   private readonly apiUrl: string;
@@ -28,7 +28,7 @@ export class Inicializator implements DefaultInicializator {
     participant,
     group,
     roomId,
-  }: InicializatorOptions) {
+  }: LaucherOptions) {
     this.apiUrl = apiUrl;
     this.apiKey = apiKey;
     this.ablyKey = ablyKey;
@@ -115,18 +115,18 @@ export class Inicializator implements DefaultInicializator {
 }
 
 /**
- * @function Inicializator
+ * @function Laucher
  * @description create inicializator instance
  * @param options - inicializator options
- * @returns {InicializatorFacade}
+ * @returns {LaucherFacade}
  */
-export default (options: InicializatorOptions): InicializatorFacade => {
-  const inicializator = new Inicializator(options);
+export default (options: LaucherOptions): LaucherFacade => {
+  const laucher = new Laucher(options);
 
   return {
-    subscribe: inicializator.subscribeToPubSubEvent,
-    unsubscribe: inicializator.unsubscribeFromPubSubEvent,
-    publish: inicializator.publishToPubSubEvent,
-    fetchHistory: inicializator.fetchPubSubHistory,
+    subscribe: laucher.subscribeToPubSubEvent,
+    unsubscribe: laucher.unsubscribeFromPubSubEvent,
+    publish: laucher.publishToPubSubEvent,
+    fetchHistory: laucher.fetchPubSubHistory,
   };
 };

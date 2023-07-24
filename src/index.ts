@@ -10,8 +10,7 @@ import {
 } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
-import { Inicializator } from './core';
-import { InicializatorFacade } from './core/inicializator/types';
+import { Laucher } from './core';
 import ApiService from './services/api';
 import AuthService from './services/auth-service';
 import { BrowserService } from './services/browser';
@@ -50,7 +49,7 @@ const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions): vo
  * @param options - SDK options
  * @returns {SuperVizSdk}
  */
-const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<InicializatorFacade> => {
+const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
   const validApiKey = apiKey && apiKey.trim();
 
   if (!validApiKey) throw new Error('API key is required');
@@ -83,7 +82,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Inicia
 
   const { ablyKey } = environment;
 
-  return Inicializator(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
+  return Laucher(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
 };
 
 if (window) {
