@@ -1,9 +1,9 @@
-import type {
+import {
+  CamerasPosition,
   ColorsVariables,
+  LayoutPosition,
   Locale,
   Offset,
-  LayoutPosition,
-  CamerasPosition,
 } from '../../services/video-conference-manager/types';
 
 import type { Participant, Group, Avatar } from './participant.types';
@@ -15,6 +15,17 @@ export enum EnvironmentTypes {
 }
 
 export interface SuperVizSdkOptions {
+  roomId: string;
+  participant: Participant;
+  group: Group;
+  shouldKickParticipantsOnHostLeave?: boolean;
+
+  // internal
+  debug?: boolean;
+  environment?: EnvironmentTypes;
+}
+
+export interface OldSuperVizSdkOptions {
   debug?: boolean;
   environment?: EnvironmentTypes;
   roomId: string;

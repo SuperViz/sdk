@@ -19,7 +19,7 @@ export interface DefaultRealtimeService {
 export interface DefaultRealtimeMethods {
   start: (options: StartRealtimeType) => void;
   leave: () => void;
-  join: (myParticipantProperties: any, additionalRoomProperties: any) => void;
+  join: (participant?: Participant) => void;
   setSyncProperty: <T>(name: string, property: T) => void;
   setHost: (masterParticipantId: string) => void;
   setGridMode: (value: boolean) => void;
@@ -30,17 +30,16 @@ export interface RealtimeJoinOptions {
   name: string;
 }
 
-export interface ParticipantInfo extends Participant {
+export interface ParticipantInfo extends Partial<Participant> {
   participantId?: string;
   slotIndex?: number;
 }
 
 export interface StartRealtimeType {
-  initialParticipantData: ParticipantInfo;
+  participant: Participant;
   roomId: string;
   apiKey: string;
   shouldKickParticipantsOnHostLeave: boolean;
-  isBroadcast: boolean;
 }
 
 export interface SyncProperty {

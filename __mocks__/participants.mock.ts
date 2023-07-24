@@ -1,4 +1,4 @@
-import { Avatar, Participant, ParticipantType } from '../src/common/types/participant.types';
+import { Avatar, Group, Participant, ParticipantType } from '../src/common/types/participant.types';
 
 export const MOCK_AVATAR: Avatar = {
   model: 'unit-test-avatar-model.glb',
@@ -10,4 +10,9 @@ export const MOCK_LOCAL_PARTICIPANT: Participant = {
   name: 'unit-test-local-participant-name',
   color: '#000',
   type: ParticipantType.HOST,
+};
+
+export const MOCK_GROUP: Group = {
+  id: 'unit-test-group-id',
+  name: 'unit-test-group-name',
 };

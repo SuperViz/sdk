@@ -1,4 +1,4 @@
-import { SuperVizSdk } from '../../services/communicator/types';
+import { SuperVizSdk } from '../../types';
 
 import {
   DeviceEvent,

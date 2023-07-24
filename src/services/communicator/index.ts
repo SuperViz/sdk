@@ -23,7 +23,12 @@ import { HostObserverCallbackResponse, ParticipantInfo } from '../realtime/base/
 import VideoConferencingManager from '../video-conference-manager';
 import { VideoFrameState, VideoManagerOptions } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
+import {
+  CommunicatorFacade,
+  CommunicatorOptions,
+  PluginOptions,
+  ParticipandToFrame,
+} from './types';
 
 class Communicator {
   private readonly logger: Logger;
@@ -143,14 +148,10 @@ class Communicator {
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
-      initialParticipantData: {
-        participantId: this.participant.id,
-        ...this.participant,
-      },
+      participant: this.participant,
       roomId: this.roomId,
       apiKey,
       shouldKickParticipantsOnHostLeave: shouldKickParticipantsOnHostLeave ?? true,
-      isBroadcast: this.isBroadcast,
     });
   }
 
@@ -392,8 +393,8 @@ class Communicator {
    * @param {ParticipantInfo} participantInfo - participant info
    * @returns {void}
    */
-  private onRealtimeJoin = (participantInfo: ParticipantInfo): void => {
-    this.realtime.join(participantInfo);
+  private onRealtimeJoin = (participant: Participant): void => {
+    this.realtime.join(participant);
   };
 
   /**
@@ -781,7 +782,7 @@ class Communicator {
   }
 }
 
-export default (params: CommunicatorOptions): SuperVizSdk => {
+export default (params: CommunicatorOptions): CommunicatorFacade => {
   const communicator = new Communicator(params);
 
   return {
