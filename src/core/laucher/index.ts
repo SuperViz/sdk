@@ -40,11 +40,11 @@ export class Laucher implements DefaultLaucher {
     this.roomId = roomId;
     this.group = group;
 
-    this.logger = new Logger('@superviz/sdk/inicializator');
+    this.logger = new Logger('@superviz/sdk/laucher');
     this.realtime = new AblyRealtimeService(this.apiUrl, this.ablyKey);
     this.pubsub = new PubSub(this.realtime);
 
-    this.logger.log('Inicializator created');
+    this.logger.log('laucher created');
 
     this.startRealtime();
   }
@@ -57,7 +57,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   public subscribeToPubSubEvent = (event: string, callback: (data: unknown) => void): void => {
-    this.logger.log('inicializator service @ subscribeToPubSubEvent');
+    this.logger.log('laucher service @ subscribeToPubSubEvent');
     this.pubsub.subscribe(event, callback);
   };
 
@@ -69,7 +69,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   public unsubscribeFromPubSubEvent = (event: string, callback: (data: unknown) => void): void => {
-    this.logger.log('inicializator service @ unsubscribeFromPubSubEvent');
+    this.logger.log('laucher service @ unsubscribeFromPubSubEvent');
     this.pubsub.unsubscribe(event, callback);
   };
 
@@ -81,7 +81,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   public publishToPubSubEvent = (event: string, data: unknown): void => {
-    this.logger.log('inicializator service @ publishToPubSubEvent');
+    this.logger.log('laucher service @ publishToPubSubEvent');
     this.pubsub.publish(event, data);
   };
 
@@ -103,7 +103,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   private startRealtime = (): void => {
-    this.logger.log('inicializator service @ startRealtime');
+    this.logger.log('laucher service @ startRealtime');
 
     this.realtime.start({
       apiKey: this.apiKey,
@@ -118,8 +118,8 @@ export class Laucher implements DefaultLaucher {
 
 /**
  * @function Laucher
- * @description create inicializator instance
- * @param options - inicializator options
+ * @description create laucher instance
+ * @param options - laucher options
  * @returns {LaucherFacade}
  */
 export default (options: LaucherOptions): LaucherFacade => {
