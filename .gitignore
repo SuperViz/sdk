@@ -131,6 +131,7 @@ dist
 
 dist/
 coverage/
+coverage-components/
 .DS_Store
 .version.js
 .remote-config.js

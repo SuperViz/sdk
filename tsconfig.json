@@ -9,12 +9,13 @@
     "declaration": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
   },
   "include": [
     "./src"
   ],
   "exclude": [
-    "./src/**/*.test.ts"
+    "./src/**/*.test.ts",
+    "node_modules"
   ]
 }
