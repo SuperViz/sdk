@@ -6,7 +6,7 @@ on:
       - opened
       - synchronize
 jobs:
-  test:
+  test-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,9 +20,23 @@ jobs:
           touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
       - name: Run tests
         run: yarn test:unit:ci
+  test-web-components:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+      - name: Install dependencies
+        run: yarn install
+      - name: Create a .version.js file
+        run: |
+          touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
+      - name: Run tests
+        run: yarn test:unit:web-components
   build:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test-unit, test-web-components]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
