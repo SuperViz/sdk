@@ -20,6 +20,10 @@ class DummyComponent extends BaseComponent {
   protected destroy(): void {
     this.logger.log('destroyed');
   }
+
+  protected start(): void {
+    this.logger.log('started');
+  }
 }
 
 describe('BaseComponent', () => {
@@ -36,6 +40,7 @@ describe('BaseComponent', () => {
 
   describe('attach', () => {
     test('should attach the component with success', () => {
+      DummyComponentInstance['start'] = jest.fn();
       expect(DummyComponentInstance.attach).toBeDefined();
 
       DummyComponentInstance.attach({
@@ -45,6 +50,8 @@ describe('BaseComponent', () => {
 
       expect(DummyComponentInstance['localParticipant']).toEqual(MOCK_LOCAL_PARTICIPANT);
       expect(DummyComponentInstance['realitme']).toEqual(MOCK_REALTIME_SERVICE);
+      expect(DummyComponentInstance['isAttached']).toBeTruthy();
+      expect(DummyComponentInstance['start']).toBeCalled();
     });
 
     test('should throw error if realtime or localParticipant are not provided', () => {

@@ -29,6 +29,7 @@ export abstract class BaseComponent {
     this.realitme = realtime;
     this.localParticipant = localParticipant;
     this.isAttached = true;
+    this.start();
   };
 
   /*
@@ -51,4 +52,5 @@ export abstract class BaseComponent {
   };
 
   protected abstract destroy(): void;
+  protected abstract start(): void;
 }
