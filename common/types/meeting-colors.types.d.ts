@@ -1,0 +1,38 @@
+export declare enum MeetingColors {
+    'yellow' = 0,
+    'turquoise' = 1,
+    'orange' = 2,
+    'blue' = 3,
+    'pink' = 4,
+    'purple' = 5,
+    'green' = 6,
+    'red' = 7,
+    'bluedark' = 8,
+    'pinklight' = 9,
+    'purplelight' = 10,
+    'greenlight' = 11,
+    'orangelight' = 12,
+    'bluelight' = 13,
+    'redlight' = 14,
+    'brown' = 15,
+    'gray' = 16
+}
+export declare enum MeetingColorsHex {
+    '#FFEF33' = 0,
+    '#31E0B0' = 1,
+    '#FF5E10' = 2,
+    '#00ABF7' = 3,
+    '#FF00BB' = 4,
+    '#9C29FF' = 5,
+    '#6FDD00' = 6,
+    '#E30000' = 7,
+    '#304AFF' = 8,
+    '#FF89C4' = 9,
+    '#D597FF' = 10,
+    '#C6EC5C' = 11,
+    '#FFA115' = 12,
+    '#75DEFE' = 13,
+    '#FAA291' = 14,
+    '#BB813F' = 15,
+    '#878291' = 16
+}
