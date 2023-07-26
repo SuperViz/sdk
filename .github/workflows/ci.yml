@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - beta
+      - lab
 jobs:
   development:
     if: "github.ref == 'refs/heads/beta'"
