@@ -1,5 +1,6 @@
 import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils/logger';
+import { BaseComponent } from '../../components/base';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { RealtimeMessage } from '../../services/realtime/ably/types';
@@ -48,6 +49,29 @@ export class Laucher implements DefaultLaucher {
 
     this.startRealtime();
   }
+
+  /**
+   * @function addComponent
+   * @description add component to laucher
+   * @param component - component to add
+   * @returns {void}
+   */
+  public addComponent = (component: BaseComponent): void => {
+    component.attach({
+      localParticipant: this.participant,
+      realtime: this.realtime,
+    });
+  };
+
+  /**
+   * @function removeComponent
+   * @description remove component from laucher
+   * @param component - component to remove
+   * @returns {void}
+   */
+  public removeComponent = (component: BaseComponent): void => {
+    component.detach();
+  };
 
   /**
    * @function subscribeToPubSubEvent
@@ -130,5 +154,7 @@ export default (options: LaucherOptions): LaucherFacade => {
     unsubscribe: laucher.unsubscribeFromPubSubEvent,
     publish: laucher.publishToPubSubEvent,
     fetchHistory: laucher.fetchPubSubHistory,
+    addComponent: laucher.addComponent,
+    removeComponent: laucher.removeComponent,
   };
 };

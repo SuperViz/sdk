@@ -1,5 +1,7 @@
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { Logger } from '../../common/utils';
+import { BaseComponent } from '../../components/base';
 
 import { LaucherFacade, LaucherOptions } from './types';
 
@@ -8,6 +10,11 @@ import Facade, { Laucher } from '.';
 jest.mock('../../services/realtime', () => ({
   AblyRealtimeService: jest.fn().mockImplementation(() => ABLY_REALTIME_MOCK),
 }));
+
+const MOCK_COMPONENT = {
+  attach: jest.fn(),
+  detach: jest.fn(),
+} as unknown as BaseComponent;
 
 const DEFAULT_INITIALIZATION_MOCK: LaucherOptions = {
   apiKey: 'unit-test-api-key',
@@ -76,6 +83,23 @@ describe('Laucher', () => {
       expect(PUB_SUB_MOCK.fetchHistory).toHaveBeenCalledWith('test');
     });
   });
+
+  describe('Components', () => {
+    test('should be add component', () => {
+      LaucherInstance.addComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
+        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        realtime: ABLY_REALTIME_MOCK,
+      });
+    });
+
+    test('should be remove component', () => {
+      LaucherInstance.removeComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
+    });
+  });
 });
 
 describe('Laucher Facade', () => {
@@ -94,5 +118,8 @@ describe('Laucher Facade', () => {
     expect(LaucherFacadeInstance).toHaveProperty('subscribe');
     expect(LaucherFacadeInstance).toHaveProperty('unsubscribe');
     expect(LaucherFacadeInstance).toHaveProperty('publish');
+    expect(LaucherFacadeInstance).toHaveProperty('fetchHistory');
+    expect(LaucherFacadeInstance).toHaveProperty('addComponent');
+    expect(LaucherFacadeInstance).toHaveProperty('removeComponent');
   });
 });
