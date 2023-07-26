@@ -1,5 +1,5 @@
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
-import { Debug } from '../../common/utils/logger';
+import { Logger } from '../../common/utils/logger';
 
 import { MessageBridge } from '.';
 
@@ -15,7 +15,7 @@ describe('MessageBridge', () => {
 
     MessageBridgeInstance = new MessageBridge({
       contentWindow: window,
-      logger: new Debug('@superviz/message-bridge'),
+      logger: new Logger('@superviz/message-bridge'),
       sourceBlockList: ['https://google.com'],
     });
   });
@@ -163,7 +163,7 @@ describe('MessageBridge', () => {
     expect(() => {
       const instance = new MessageBridge({
         contentWindow: window,
-        logger: new Debug('@superviz/message-bridge'),
+        logger: new Logger('@superviz/message-bridge'),
       });
     }).toThrowError();
   });

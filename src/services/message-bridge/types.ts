@@ -4,11 +4,11 @@ import {
   MeetingEvent,
   RealtimeEvent,
 } from '../../common/types/events.types';
-import { Debug } from '../../common/utils/logger';
+import { Logger } from '../../common/utils/logger';
 
 export interface MessageBridgeOptions {
   contentWindow: Window;
-  logger: Debug;
+  logger: Logger;
   domains?: Array<string>;
   allowedOrigins?: string;
   sourceBlockList?: Array<string>;

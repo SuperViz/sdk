@@ -1,10 +1,10 @@
 import { Observer } from '../../common/utils';
-import { Debug } from '../../common/utils/logger';
+import { Logger } from '../../common/utils/logger';
 
 import { Message, MessageBridgeOptions } from './types';
 
 export class MessageBridge {
-  private logger: Debug;
+  private logger: Logger;
   private allowedOrigins: string;
   private contentWindow: Window;
   private domains: Array<string>;

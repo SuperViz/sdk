@@ -5,8 +5,18 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   collectCoverage: true,
-  collectCoverageFrom: ['<rootDir>/src/**/*.ts', '<rootDir>/src/**/*.js'],
+  collectCoverageFrom: [
+    '<rootDir>/src/**/*.ts',
+    '<rootDir>/src/**/*.js',
+    '!<rootDir>/src/web-components/**/*',
+  ],
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['html', 'lcov'].concat(argv.coverage ? ['text'] : []),
-  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/coverage/', '/e2e/'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    '/coverage/',
+    '/e2e/',
+    '/src/web-components',
+  ],
 };

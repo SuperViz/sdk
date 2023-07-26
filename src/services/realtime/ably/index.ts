@@ -2,9 +2,8 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
-import { ParticipantType } from '../../../common/types/participant.types';
+import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { logger } from '../../../common/utils';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -30,9 +29,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private participants: AblyParticipants = {};
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
-
-  private localParticipantId: string = null;
-  private isBroadcast: boolean = false;
 
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
@@ -103,26 +99,36 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.myParticipant;
   }
 
+  public get localParticipantId(): string | null {
+    return this.myParticipant.data?.participantId ?? null;
+  }
+
+  public get isBroadcast(): boolean {
+    return Object.values(this.participants).some(
+      (participant) => participant.data.type === ParticipantType.AUDIENCE,
+    );
+  }
+
   public start({
-    initialParticipantData,
+    participant,
     roomId,
     apiKey,
     shouldKickParticipantsOnHostLeave,
-    isBroadcast,
   }: StartRealtimeType): void {
     this.myParticipant = {
-      data: initialParticipantData,
+      data: {
+        ...participant,
+        participantId: participant.id,
+      },
       timestamp: null,
       action: null,
-      clientId: initialParticipantData.participantId,
+      clientId: participant.id,
       connectionId: null,
       encoding: null,
       id: null,
     };
-    this.isBroadcast = isBroadcast;
-    this.enableSync = initialParticipantData.type !== ParticipantType.AUDIENCE;
+    this.enableSync = participant.type !== ParticipantType.AUDIENCE;
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
-    this.localParticipantId = this.myParticipant.data.participantId;
 
     this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave;
     this.apiKey = apiKey;
@@ -168,9 +174,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    * @param joinProperties
    */
-  public join(joinProperties: ParticipantInfo): void {
-    logger.log('REALTIME', `Entering room. Room ID: ${this.roomId}`);
-    this.updateMyProperties(joinProperties);
+  public join(participant?: Participant): void {
+    const participantInfo = participant
+      ? Object.assign({}, participant, { participantId: participant.id })
+      : this.myParticipant.data;
+
+    this.logger.log('REALTIME', `Entering room. Room ID: ${this.roomId}`);
+    this.updateMyProperties(participantInfo);
 
     // join custom sync channel
     this.clientSyncChannel = this.client.channels.get(`${this.roomId}:client-sync`);
@@ -205,7 +215,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public leave(): void {
-    logger.log('REALTIME', 'Disconnecting from ably servers');
+    this.logger.log('REALTIME', 'Disconnecting from ably servers');
     this.client.close();
     this.isJoinedRoom = false;
     this.isReconnecting = false;
@@ -278,17 +288,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     // if the property is too big, don't add to the queue
     if (this.isMessageTooBig(createEvent(name, property), CLIENT_MESSAGE_SIZE_LIMIT)) {
-      logger.log('REALTIME', 'Message too big, not sending');
+      this.logger.log('REALTIME', 'Message too big, not sending');
       this.throw('Message too long, the message limit size is 10kb.');
     }
 
     // if the queue is too big, publish before add more events
     if (this.isMessageTooBig(queue)) {
-      logger.log('REALTIME', 'Message queue too big, publishing');
+      this.logger.log('REALTIME', 'Message queue too big, publishing');
       this.publishClientSyncProperties();
     }
 
-    logger.log('adding to queue', name, property);
+    this.logger.log('adding to queue', name, property);
 
     if (!this.clientSyncPropertiesQueue[name]) {
       this.clientSyncPropertiesQueue[name] = [];
@@ -362,7 +372,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return;
     }
 
-    this.join(this.myParticipant.data);
+    this.join();
   };
 
   /**
@@ -471,7 +481,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.clientRoomState[name] = data[data.length - 1];
     this.clientRoomStateChannel.publish('update', this.clientRoomState);
 
-    logger.log('REALTIME', 'setting new room state backup');
+    this.logger.log('REALTIME', 'setting new room state backup');
   };
 
   /**
@@ -618,22 +628,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         participants[member.clientId] = { ...member };
       });
       this.participants = participants;
-      this.checkBroadcast();
       this.participantsObserver.publish(this.participants);
     });
   };
-
-  /**
-   * @function checkBroadcast
-   * @description check if it has any audience in participant list
-   * and change the isBroadcast parameter based on it
-   * @returns {void}
-   */
-  private checkBroadcast() {
-    this.isBroadcast = Object.values(this.participants).some(
-      (participant) => participant.data.type === ParticipantType.AUDIENCE,
-    );
-  }
 
   /**
    * @function updateHostInfo
@@ -669,7 +666,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       newHostParticipantId: this.hostParticipantId,
     });
 
-    logger.log(
+    this.logger.log(
       'REALTIME',
       `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`,
     );
@@ -708,7 +705,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private forceReconnect(): void {
-    logger.log(
+    this.logger.log(
       'REALTIME',
       `RECONNECT: Starting force realtime reconnect | Current attempt: ${this.currentReconnectAttempt}`,
     );
@@ -718,12 +715,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) {
-      logger.log('REALTIME', 'Rejoining room since client already connected to ably servers.');
-      this.join(this.myParticipant.data);
+      this.logger.log('REALTIME', 'Rejoining room since client already connected to ably servers.');
+      this.join();
       return;
     }
 
-    logger.log('REALTIME', 'RECONNECT: Restarting ably server since participant lost connection.');
+    this.logger.log(
+      'REALTIME',
+      'RECONNECT: Restarting ably server since participant lost connection.',
+    );
 
     this.buildClient();
 
@@ -736,7 +736,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private throw(message: string): void {
-    logger.log(message);
+    this.logger.log(message);
     throw new Error(message);
   }
 
@@ -751,7 +751,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.state = state;
 
-    logger.log(
+    this.logger.log(
       'REALTIME',
       `Realtime state did change. New state: ${RealtimeStateTypes[this.state]}`,
     );
@@ -817,7 +817,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
       return clienthistory;
     } catch (error) {
-      logger.log('REALTIME', 'Error in fetch client realtime data', error.message);
+      this.logger.log('REALTIME', 'Error in fetch client realtime data', error.message);
       this.throw(error.message);
     }
   }
@@ -1037,7 +1037,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.isReconnecting = false;
     this.publishStateUpdate(RealtimeStateTypes.CONNECTED);
     this.participantJoinedObserver.publish(myPresence);
-    logger.log('REALTIME', 'Joined realtime room');
+    this.logger.log('REALTIME', 'Joined realtime room');
   }
 
   /**
@@ -1115,7 +1115,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const size = new TextEncoder().encode(messageString).length;
 
     if (size > limit) {
-      logger.log('Message too long, the message limit size is 60kb.');
+      this.logger.log('Message too long, the message limit size is 60kb.');
       return true;
     }
     return false;

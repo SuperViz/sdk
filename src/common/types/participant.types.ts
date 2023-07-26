@@ -1,13 +1,13 @@
 export enum ParticipantType {
   HOST = 'host',
   GUEST = 'guest',
-  AUDIENCE = 'audience'
+  AUDIENCE = 'audience',
 }
 
 export interface Participant {
-  id?: string;
+  id: string;
   name?: string;
-  type?: ParticipantType
+  type?: ParticipantType;
   color?: string;
   avatar?: Avatar;
   isHost?: boolean;

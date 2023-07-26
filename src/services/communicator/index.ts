@@ -12,7 +12,7 @@ import {
   TranscriptionEvent,
 } from '../../common/types/events.types';
 import { Participant, Group } from '../../common/types/participant.types';
-import { Observer, logger } from '../../common/utils';
+import { Observer, Logger } from '../../common/utils';
 import { BrowserService } from '../browser';
 import { ConnectionService } from '../connection-status';
 import { IntegrationManager } from '../integration';
@@ -27,11 +27,15 @@ import {
   VideoManagerOptions,
 } from '../video-conference-manager/types';
 
-import { SuperVizSdk, CommunicatorOptions, PluginOptions, ParticipandToFrame } from './types';
-
-const PACKAGE_JSON = require('../../../package.json');
+import {
+  CommunicatorFacade,
+  CommunicatorOptions,
+  PluginOptions,
+  ParticipandToFrame,
+} from './types';
 
 class Communicator {
+  private readonly logger: Logger;
   private readonly realtime: AblyRealtimeService;
   private readonly connectionService: ConnectionService;
   private readonly browserService: BrowserService;
@@ -80,6 +84,7 @@ class Communicator {
     this.group = group;
     this.participant = participant;
 
+    this.logger = new Logger('@superviz/sdk/communicator');
     this.realtime = new AblyRealtimeService(apiUrl, ablyKey);
     this.browserService = new BrowserService();
 
@@ -147,14 +152,10 @@ class Communicator {
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
-      initialParticipantData: {
-        participantId: this.participant.id,
-        ...this.participant,
-      },
+      participant: this.participant,
       roomId: this.roomId,
       apiKey,
       shouldKickParticipantsOnHostLeave: shouldKickParticipantsOnHostLeave ?? true,
-      isBroadcast: this.isBroadcast,
     });
   }
 
@@ -167,8 +168,6 @@ class Communicator {
   }
 
   public start() {
-    // log sdk version
-    logger.log('SUPERVIZ SDK VERSION', PACKAGE_JSON.version);
     this.videoManager.start({
       roomId: this.roomId,
       participant: this.participant,
@@ -244,7 +243,7 @@ class Communicator {
    */
   public subscribe = (type: string, listener: Function): void => {
     if (!this.observers[type]) {
-      this.observers[type] = new Observer({ logger });
+      this.observers[type] = new Observer({ logger: this.logger });
     }
 
     this.observers[type].subscribe(listener);
@@ -402,8 +401,8 @@ class Communicator {
    * @param {ParticipantInfo} participantInfo - participant info
    * @returns {void}
    */
-  private onRealtimeJoin = (participantInfo: ParticipantInfo): void => {
-    this.realtime.join(participantInfo);
+  private onRealtimeJoin = (participant: Participant): void => {
+    this.realtime.join(participant);
   };
 
   /**
@@ -693,7 +692,7 @@ class Communicator {
    * @returns {void}
    */
   private onMeetingStateUpdate = (newState: MeetingState): void => {
-    logger.log('MEETING STATE', newState);
+    this.logger.log('MEETING STATE', newState);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, newState);
   };
 
@@ -802,7 +801,7 @@ class Communicator {
   }
 }
 
-export default (params: CommunicatorOptions): SuperVizSdk => {
+export default (params: CommunicatorOptions): CommunicatorFacade => {
   const communicator = new Communicator(params);
 
   return {
