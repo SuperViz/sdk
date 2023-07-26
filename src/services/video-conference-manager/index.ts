@@ -51,6 +51,7 @@ export default class VideoConfereceManager {
 
   public readonly realtimeObserver = new Observer({ logger });
   public readonly hostChangeObserver = new Observer({ logger });
+  public readonly kickParticipantObserver = new Observer({ logger });
   public readonly gridModeChangeObserver = new Observer({ logger });
   public readonly drawingChangeObserver = new Observer({ logger });
 
@@ -252,6 +253,7 @@ export default class VideoConfereceManager {
     );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
+    this.messageBridge.listen(MeetingEvent.MEETING_KICK_PARTICIPANT, this.onMeetingKickParticipant);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(
@@ -464,6 +466,15 @@ export default class VideoConfereceManager {
   };
 
   /**
+   * @function onMeetingKickParticipant
+   * @param {string} participantId - ID of the participant
+   * @returns {void}
+   */
+  private onMeetingKickParticipant = (participantId: string): void => {
+    this.kickParticipantObserver.publish(participantId);
+  };
+
+  /**
    * @function onFollowParticipantDidChange
    * @param {string} participantId
    * @returns {void}
@@ -580,6 +591,7 @@ export default class VideoConfereceManager {
     this.frameSizeObserver.destroy();
     this.realtimeObserver.destroy();
     this.hostChangeObserver.destroy();
+    this.kickParticipantObserver.destroy();
     this.gridModeChangeObserver.destroy();
     this.drawingChangeObserver.destroy();
 

@@ -17,6 +17,7 @@ export enum MeetingEvent {
   MY_PARTICIPANT_UPDATED = 'my-participant.update',
   MY_PARTICIPANT_LEFT = 'my-participant.left',
   MY_PARTICIPANT_JOINED = 'my-participant.joined',
+  MEETING_KICK_PARTICIPANT = 'meeting.kick-participant',
   DESTROY = 'destroy',
 }
 
@@ -51,6 +52,7 @@ export enum RealtimeEvent {
   REALTIME_FOLLOW_PARTICIPANT = 'realtime.follow-participant',
   REALTIME_SET_AVATAR = 'realtime.set-avatar',
   REALTIME_DRAWING_CHANGE = 'realtime.drawing-change',
+  REALTIME_KICK_PARTICIPANT = 'realtime.kick-participant',
 }
 
 export enum TranscriptionEvent {

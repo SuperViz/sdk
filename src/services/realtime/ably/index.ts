@@ -235,6 +235,23 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
+   * @function setKickParticipant
+   * @param {string} kickParticipantId
+   * @description set a participant to be kicked from the room
+   * @returns {void}
+   */
+  public setKickParticipant = (kickParticipantId: string): Promise<void> => {
+    // eslint-disable-next-line no-debugger
+    debugger;
+    if (!kickParticipantId) return;
+
+    const participant = this.participants[kickParticipantId];
+    this.updateRoomProperties({
+      kickParticipant: participant,
+    });
+  };
+
+  /**
    * @function setGridMode
    * @param {boolean} isGridModeEnable
    * @description synchronizes the grid mode of the cameras in the room
@@ -520,6 +537,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     this.updateParticipants();
+
+    if (data.kickParticipant && data.kickParticipant.clientId === this.myParticipant.clientId) {
+      this.updateRoomProperties({ kickParticipant: null });
+      this.kickParticipantObserver.publish(this.myParticipant.clientId);
+    }
   };
 
   /**

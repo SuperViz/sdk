@@ -17,6 +17,7 @@ export interface AblyRealtimeData {
   followParticipantId?: string;
   gather?: boolean;
   drawing?: DrawingData;
+  kickParticipant?: AblyParticipant;
 }
 
 export type AblyTokenCallBack = (

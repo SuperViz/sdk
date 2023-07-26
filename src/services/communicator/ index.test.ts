@@ -68,6 +68,7 @@ const AblyRealtimeMock = {
   hostObserver: MOCK_OBSERVER_HELPER,
   syncPropertiesObserver: MOCK_OBSERVER_HELPER,
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
+  kickParticipantObserver: MOCK_OBSERVER_HELPER,
   authenticationObserver: MOCK_OBSERVER_HELPER,
 };
 
@@ -78,6 +79,7 @@ const VideoManagerMock = {
   frameSizeObserver: MOCK_OBSERVER_HELPER,
   realtimeObserver: MOCK_OBSERVER_HELPER,
   hostChangeObserver: MOCK_OBSERVER_HELPER,
+  kickParticipantObserver: MOCK_OBSERVER_HELPER,
   gridModeChangeObserver: MOCK_OBSERVER_HELPER,
   drawingChangeObserver: MOCK_OBSERVER_HELPER,
   followParticipantObserver: MOCK_OBSERVER_HELPER,
@@ -219,11 +221,13 @@ describe('Communicator', () => {
       expect(AblyRealtimeMock.hostObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.syncPropertiesObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.kickAllParticipantsObserver.unsubscribe).toBeCalled();
+      expect(AblyRealtimeMock.kickParticipantObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.authenticationObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.frameStateObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.frameSizeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.realtimeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.hostChangeObserver.unsubscribe).toBeCalled();
+      expect(VideoManagerMock.kickParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.followParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.goToParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.gatherParticipantsObserver.unsubscribe).toBeCalled();
