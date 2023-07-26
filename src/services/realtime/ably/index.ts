@@ -241,8 +241,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setKickParticipant = (kickParticipantId: string): Promise<void> => {
-    // eslint-disable-next-line no-debugger
-    debugger;
     if (!kickParticipantId) return;
 
     const participant = this.participants[kickParticipantId];
