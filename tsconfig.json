@@ -3,11 +3,13 @@
     "target": "ES2020",
     "module": "ES2020",
     "outDir": "./dist",
+    "lib": ["ES2020", "DOM"],
     "preserveWatchOutput": true,
     "emitDeclarationOnly": true,
     "declaration": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
+    "experimentalDecorators": true
   },
   "include": [
     "./src"
