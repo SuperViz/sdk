@@ -19,7 +19,14 @@ jobs:
         run: |
           touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
       - name: Run tests
-        run: yarn test:unit:ci
+        run: yarn test:unit:ci --coverage
+      - name: Code Coverage Report
+        uses: romeovs/lcov-reporter-action@v0.2.11
+        with:
+          title: Code Coverage Report - ${{ github.event.pull_request.head.ref }}
+          github-token: ${{ secrets.TOKEN_GITHUB }}
+          lcov-file: ./coverage/lcov.info
+          delete-old-comments: true
   test-web-components:
     runs-on: ubuntu-latest
     steps:
