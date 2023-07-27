@@ -13,6 +13,7 @@ export interface DefaultRealtimeService {
     realtimeStateObserver: Observer;
     syncPropertiesObserver: Observer;
     kickAllParticipantsObserver: Observer;
+    kickParticipantObserver: Observer;
     authenticationObserver: Observer;
 }
 export interface DefaultRealtimeMethods {

@@ -70,6 +70,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     setHost: (participantId: string) => Promise<void>;
     /**
+     * @function setKickParticipant
+     * @param {string} kickParticipantId
+     * @description set a participant to be kicked from the room
+     * @returns {void}
+     */
+    setKickParticipant: (kickParticipantId: string) => Promise<void>;
+    /**
      * @function setGridMode
      * @param {boolean} isGridModeEnable
      * @description synchronizes the grid mode of the cameras in the room

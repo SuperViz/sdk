@@ -15,6 +15,7 @@ export default class VideoConfereceManager {
     readonly frameSizeObserver: Observer;
     readonly realtimeObserver: Observer;
     readonly hostChangeObserver: Observer;
+    readonly kickParticipantObserver: Observer;
     readonly gridModeChangeObserver: Observer;
     readonly drawingChangeObserver: Observer;
     readonly followParticipantObserver: Observer;
@@ -113,6 +114,12 @@ export default class VideoConfereceManager {
      * @returns {void}
      */
     private onMeetingHostChange;
+    /**
+     * @function onMeetingKickParticipant
+     * @param {string} participantId - ID of the participant
+     * @returns {void}
+     */
+    private onMeetingKickParticipant;
     /**
      * @function onFollowParticipantDidChange
      * @param {string} participantId

@@ -12,6 +12,7 @@ export declare class RealtimeService implements DefaultRealtimeService {
     realtimeStateObserver: Observer;
     syncPropertiesObserver: Observer;
     kickAllParticipantsObserver: Observer;
+    kickParticipantObserver: Observer;
     authenticationObserver: Observer;
     constructor();
     /**

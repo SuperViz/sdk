@@ -17,6 +17,7 @@ export declare enum MeetingEvent {
     MY_PARTICIPANT_UPDATED = "my-participant.update",
     MY_PARTICIPANT_LEFT = "my-participant.left",
     MY_PARTICIPANT_JOINED = "my-participant.joined",
+    MEETING_KICK_PARTICIPANT = "meeting.kick-participant",
     DESTROY = "destroy"
 }
 export declare enum FrameEvent {
