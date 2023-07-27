@@ -15,6 +15,7 @@ export class RealtimeService implements DefaultRealtimeService {
   public realtimeStateObserver: Observer;
   public syncPropertiesObserver: Observer;
   public kickAllParticipantsObserver: Observer;
+  public kickParticipantObserver: Observer;
   public authenticationObserver: Observer;
 
   constructor() {
@@ -32,6 +33,7 @@ export class RealtimeService implements DefaultRealtimeService {
     this.hostObserver = new Observer({ logger });
     this.realtimeStateObserver = new Observer({ logger });
     this.kickAllParticipantsObserver = new Observer({ logger });
+    this.kickParticipantObserver = new Observer({ logger });
     this.authenticationObserver = new Observer({ logger });
   }
 

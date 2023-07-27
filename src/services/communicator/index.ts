@@ -144,6 +144,7 @@ class Communicator {
     this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
+    this.realtime.kickParticipantObserver.subscribe(this.onMyParticipantLeft);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
 
     this.realtime.start({
@@ -191,6 +192,7 @@ class Communicator {
 
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
+    this.videoManager.kickParticipantObserver.unsubscribe(this.onKickParticipant);
     this.videoManager.followParticipantObserver.unsubscribe(this.onFollowParticipantDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
     this.videoManager.drawingChangeObserver.unsubscribe(this.onDrawingDidChange);
@@ -211,6 +213,7 @@ class Communicator {
     this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.unsubscribe(this.onKickAllParticipantsDidChange);
+    this.realtime.kickParticipantObserver.unsubscribe(this.onMyParticipantLeft);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeft);
@@ -342,6 +345,7 @@ class Communicator {
 
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
+    this.videoManager.kickParticipantObserver.subscribe(this.onKickParticipant);
     this.videoManager.followParticipantObserver.subscribe(this.onFollowParticipantDidChange);
     this.videoManager.goToParticipantObserver.subscribe(this.onGoToParticipantDidChange);
     this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
@@ -414,6 +418,16 @@ class Communicator {
    */
   private onHostDidChange = (hostId: string): void => {
     this.realtime.setHost(hostId);
+  };
+
+  /**
+   * @function onKickParticipant
+   * @description on kick a participant event
+   * @param {string} participantId - participant Id
+   * @returns {void}
+   */
+  private onKickParticipant = (participantId: string): void => {
+    this.realtime.setKickParticipant(participantId);
   };
 
   /**
