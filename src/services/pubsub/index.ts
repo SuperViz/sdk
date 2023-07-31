@@ -81,7 +81,7 @@ export class PubSub {
    * @param data - data to publish
    * @returns {void}
    */
-  private publishEventToClient = (event: string, data: unknown): void => {
+  public publishEventToClient = (event: string, data: unknown): void => {
     this.logger.log('pubsub service @ publishEventToClient', { event, data });
 
     if (!this.observers.has(event)) return;

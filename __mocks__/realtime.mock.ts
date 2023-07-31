@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 
+import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-colors.types';
 import { AblyRealtimeService } from '../src/services/realtime';
 
 import { MOCK_OBSERVER_HELPER } from './observer-helper.mock';
@@ -45,6 +46,9 @@ export const ABLY_REALTIME_MOCK = {
     }
 
     return createRealtimeHistory();
+  }),
+  getSlotColor: jest.fn(() => {
+    return { color: MeetingColorsHex['#FFEF33'], name: MeetingColors.yellow };
   }),
   roomInfoUpdatedObserver: MOCK_OBSERVER_HELPER,
   participantsObserver: MOCK_OBSERVER_HELPER,

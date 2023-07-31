@@ -1,9 +1,12 @@
+import { isEqual } from 'lodash';
+
+import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
-import { RealtimeMessage } from '../../services/realtime/ably/types';
+import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
 
 import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
 
@@ -21,6 +24,9 @@ export class Laucher implements DefaultLaucher {
 
   private readonly realtime: AblyRealtimeService;
   private readonly pubsub: PubSub;
+
+  private components: BaseComponent[] = [];
+  private participants: Participant[] = [];
 
   constructor({
     ablyKey,
@@ -137,6 +143,108 @@ export class Laucher implements DefaultLaucher {
     });
 
     this.realtime.join();
+
+    // subscribe to realtime events
+    this.subscribeToRealtimeEvents();
+  };
+
+  /**
+   * @function subscribeToRealtimeEvents
+   * @description subscribe to realtime events
+   * @returns {void}
+   */
+  private subscribeToRealtimeEvents = (): void => {
+    this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
+    this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
+    this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
+  };
+
+  /** Realtime Listeners */
+
+  /**
+   * @function onParticipantListUpdate
+   * @description on participant list update
+   * @param participants - participants list
+   * @returns {void}
+   */
+  private onParticipantListUpdate = (participants: Record<string, AblyParticipant>): void => {
+    this.logger.log('laucher service @ onParticipantListUpdate');
+
+    const participantList = Object.values(participants).map((participant) => ({
+      id: participant.data.id,
+      name: participant.data?.name,
+      type: participant.data?.type,
+      avatar: participant.data?.avatar,
+      avatarConfig: participant.data?.avatarConfig,
+      isHost: this.realtime.hostClientId === participant.clientId,
+      color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
+    }));
+
+    const localParticipant = participantList.find((participant) => {
+      return participant?.id === this.participant?.id;
+    });
+
+    if (!isEqual(this.participants, participantList)) {
+      this.participants = participantList;
+      this.pubsub.publishEventToClient(ParticipantEvent.LIST_UPDATED, participantList);
+
+      this.logger.log('Publishing ParticipantEvent.LIST_UPDATED', participantList);
+    }
+
+    if (localParticipant && !isEqual(this.participant, localParticipant)) {
+      this.participant = localParticipant;
+      this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_UPDATED, localParticipant);
+
+      this.logger.log('Publishing ParticipantEvent.UPDATED', localParticipant);
+    }
+  };
+
+  /**
+   * @function onParticipantJoined
+   * @description on participant joined
+   * @param ablyParticipant - ably participant
+   * @returns {void}
+   */
+  private onParticipantJoined = (ablyParticipant: AblyParticipant): void => {
+    this.logger.log('laucher service @ onParticipantJoined');
+
+    const participant = this.participants.find(
+      (participant) => participant.id === ablyParticipant.data.id,
+    );
+
+    if (!participant) return;
+
+    if (participant.id === this.participant.id) {
+      this.logger.log('laucher service @ onParticipantJoined - local participant joined');
+      this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_JOINED, participant);
+    }
+
+    this.logger.log('laucher service @ onParticipantJoined - participant joined', participant);
+    this.pubsub.publishEventToClient(ParticipantEvent.JOINED, participant);
+  };
+
+  /**
+   * @function onParticipantLeave
+   * @description on participant leave
+   * @param ablyParticipant - ably participant
+   * @returns {void}
+   */
+  private onParticipantLeave = (ablyParticipant: AblyParticipant): void => {
+    this.logger.log('laucher service @ onParticipantLeave');
+
+    const participant = this.participants.find((participant) => {
+      return participant.id === ablyParticipant.data.id;
+    });
+
+    if (!participant) return;
+
+    if (participant.id === this.participant.id) {
+      this.logger.log('laucher service @ onParticipantLeave - local participant left');
+      this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_LEFT, participant);
+    }
+
+    this.logger.log('laucher service @ onParticipantLeave - participant left', participant);
+    this.pubsub.publishEventToClient(ParticipantEvent.LEFT, participant);
   };
 }
 

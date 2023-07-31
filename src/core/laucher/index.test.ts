@@ -1,7 +1,9 @@
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { ParticipantEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../../components/base';
+import { AblyParticipant } from '../../services/realtime/ably/types';
 
 import { LaucherFacade, LaucherOptions } from './types';
 
@@ -31,6 +33,7 @@ const PUB_SUB_MOCK = {
   unsubscribe: jest.fn(),
   publish: jest.fn(),
   fetchHistory: jest.fn(),
+  publishEventToClient: jest.fn(),
 };
 
 jest.mock('../../services/pubsub', () => ({
@@ -98,6 +101,174 @@ describe('Laucher', () => {
       LaucherInstance.removeComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
+    });
+  });
+
+  describe('Participant Events', () => {
+    test('should publish ParticipantEvent.JOINED event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.LIST_UPDATED, callback);
+
+      LaucherInstance['onParticipantListUpdate']({
+        participant1: {
+          clientId: 'client1',
+          action: 'present',
+          connectionId: 'connection1',
+          encoding: 'h264',
+          id: 'unit-test-participant-ably-id',
+          timestamp: new Date().getTime(),
+          data: {
+            participantId: 'participant1',
+          },
+        },
+      });
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LIST_UPDATED, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+    });
+
+    test('should publish ParticipantEvent.LOCAL_UPDATED event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.JOINED, callback);
+
+      LaucherInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          clientId: 'client1',
+          action: 'present',
+          connectionId: 'connection1',
+          encoding: 'h264',
+          id: 'unit-test-participant-ably-id',
+          timestamp: new Date().getTime(),
+          data: {
+            id: MOCK_LOCAL_PARTICIPANT.id,
+          },
+        },
+      });
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalledTimes(2);
+    });
+
+    test('should publish ParticipantEvent.LEFT event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.LEFT, callback);
+
+      const participant = {
+        clientId: 'client1',
+        action: 'absent',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: 'participant1',
+        },
+      };
+
+      LaucherInstance['onParticipantListUpdate']({
+        [participant.data.participantId]: participant as AblyParticipant,
+      });
+      LaucherInstance['onParticipantLeave'](participant as AblyParticipant);
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+    });
+
+    test('should skip and not publish ParticipantEvent.LEFT event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.LEFT, callback);
+
+      const participant = {
+        clientId: 'client1',
+        action: 'absent',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: 'participant1',
+        },
+      };
+
+      LaucherInstance['onParticipantLeave'](participant as AblyParticipant);
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
+    });
+
+    test('should publish ParticipantEvent.LOCAL_LEFT event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.LEFT, callback);
+
+      const participant = {
+        clientId: 'client1',
+        action: 'absent',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+        },
+      };
+
+      LaucherInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: participant as AblyParticipant,
+      });
+      LaucherInstance['onParticipantLeave'](participant as AblyParticipant);
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+    });
+
+    test('should publish ParticipantEvent.JOINED event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.JOINED, callback);
+
+      const participant = {
+        clientId: 'client1',
+        action: 'absent',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+        },
+      };
+
+      LaucherInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: participant as AblyParticipant,
+      });
+      LaucherInstance['onParticipantJoined'](participant as AblyParticipant);
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+    });
+
+    test('should skip and publish ParticipantEvent.JOINED event', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(ParticipantEvent.JOINED, callback);
+
+      const participant = {
+        clientId: 'client1',
+        action: 'absent',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+        },
+      };
+
+      LaucherInstance['onParticipantJoined'](participant as AblyParticipant);
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
+      expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
     });
   });
 });
