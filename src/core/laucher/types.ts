@@ -4,12 +4,8 @@ import { PubSub } from '../../services/pubsub';
 
 export interface DefaultLaucher {}
 
-export interface LaucherOptions extends Omit<SuperVizSdkOptions, 'environment' | 'debug'> {
-  apiUrl: string;
-  apiKey: string;
-  ablyKey: string;
-  conferenceLayerUrl: string;
-}
+export interface LaucherOptions
+  extends Omit<SuperVizSdkOptions, 'environment' | 'debug' | 'roomId'> {}
 
 export interface LaucherFacade {
   subscribe: typeof PubSub.prototype.subscribe;

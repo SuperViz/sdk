@@ -17,6 +17,7 @@ import AuthService from './services/auth-service';
 import { BrowserService } from './services/browser';
 import { BrowserStats } from './services/browser/types';
 import { PluginOptions } from './services/communicator/types';
+import config from './services/config';
 import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 import { RealtimeMessage } from './services/realtime/ably/types';
@@ -82,6 +83,15 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
   }
 
   const { ablyKey } = environment;
+
+  config.setConfig({
+    apiUrl,
+    ablyKey,
+    apiKey,
+    conferenceLayerUrl,
+    environment,
+    roomId: options.roomId,
+  });
 
   return Laucher(Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }));
 };

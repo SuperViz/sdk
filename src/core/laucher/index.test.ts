@@ -1,7 +1,7 @@
+import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent } from '../../common/types/events.types';
-import { Logger } from '../../common/utils';
 import { BaseComponent } from '../../components/base';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
@@ -19,11 +19,6 @@ const MOCK_COMPONENT = {
 } as unknown as BaseComponent;
 
 const DEFAULT_INITIALIZATION_MOCK: LaucherOptions = {
-  apiKey: 'unit-test-api-key',
-  ablyKey: 'unit-test-ably-key',
-  conferenceLayerUrl: 'https://unit-test-conference-layer-url.com',
-  apiUrl: 'https://unit-test-apiurl.com',
-  roomId: 'unit-test-room-id',
   participant: MOCK_LOCAL_PARTICIPANT,
   group: MOCK_GROUP,
 };
