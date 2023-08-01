@@ -2,20 +2,15 @@ import { BaseComponent } from '../../components/base';
 import { RealtimeMessage } from '../../services/realtime/ably/types';
 import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
 export declare class Laucher implements DefaultLaucher {
-    private readonly apiKey;
-    private readonly ablyKey;
-    private readonly apiUrl;
-    private readonly conferenceLayerUrl;
     private readonly shouldKickParticipantsOnHostLeave;
     private readonly logger;
     private participant;
-    private readonly roomId;
     private group;
     private readonly realtime;
     private readonly pubsub;
     private components;
     private participants;
-    constructor({ ablyKey, apiUrl, apiKey, conferenceLayerUrl, participant, group, roomId, shouldKickParticipantsOnHostLeave, }: LaucherOptions);
+    constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LaucherOptions);
     /**
      * @function addComponent
      * @description add component to laucher
