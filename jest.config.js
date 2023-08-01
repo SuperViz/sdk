@@ -19,4 +19,5 @@ module.exports = {
     '/e2e/',
     '/src/web-components',
   ],
+  setupFiles: ['<rootDir>/jest.setup.js'],
 };
