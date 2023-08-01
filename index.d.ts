@@ -1,4 +1,4 @@
-import { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent } from './common/types/events.types';
+import { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 import { BrowserService } from './services/browser';
@@ -17,4 +17,4 @@ import { SuperVizSdk } from './types';
  */
 declare const init: (apiKey: string, options: SuperVizSdkOptions) => Promise<SuperVizSdk>;
 export default init;
-export { MeetingEvent, RealtimeEvent, SuperVizSdkOptions, DeviceEvent, SuperVizSdk, MeetingState, Participant, ParticipantType, Group, MeetingConnectionStatus, PluginMethods, PluginOptions, Plugin, ParticipantOn3D, ParticipantTo3D, BrowserService, BrowserStats, Avatar, MeetingControlsEvent, DevicesOptions, RealtimeMessage, };
+export { MeetingEvent, RealtimeEvent, SuperVizSdkOptions, DeviceEvent, SuperVizSdk, MeetingState, Participant, ParticipantType, Group, MeetingConnectionStatus, PluginMethods, PluginOptions, Plugin, ParticipantOn3D, ParticipantTo3D, BrowserService, BrowserStats, Avatar, MeetingControlsEvent, DevicesOptions, RealtimeMessage, ParticipantEvent, };

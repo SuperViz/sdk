@@ -13,6 +13,8 @@ export declare class Laucher implements DefaultLaucher {
     private group;
     private readonly realtime;
     private readonly pubsub;
+    private components;
+    private participants;
     constructor({ ablyKey, apiUrl, apiKey, conferenceLayerUrl, participant, group, roomId, shouldKickParticipantsOnHostLeave, }: LaucherOptions);
     /**
      * @function addComponent
@@ -65,6 +67,34 @@ export declare class Laucher implements DefaultLaucher {
      * @returns {void}
      */
     private startRealtime;
+    /**
+     * @function subscribeToRealtimeEvents
+     * @description subscribe to realtime events
+     * @returns {void}
+     */
+    private subscribeToRealtimeEvents;
+    /** Realtime Listeners */
+    /**
+     * @function onParticipantListUpdate
+     * @description on participant list update
+     * @param participants - participants list
+     * @returns {void}
+     */
+    private onParticipantListUpdate;
+    /**
+     * @function onParticipantJoined
+     * @description on participant joined
+     * @param ablyParticipant - ably participant
+     * @returns {void}
+     */
+    private onParticipantJoined;
+    /**
+     * @function onParticipantLeave
+     * @description on participant leave
+     * @param ablyParticipant - ably participant
+     * @returns {void}
+     */
+    private onParticipantLeave;
 }
 /**
  * @function Laucher
