@@ -3,6 +3,12 @@ import { customElement } from 'lit/decorators.js';
 
 @customElement('superviz-hello-world')
 export class HelloWorld extends LitElement {
+  declare name: string;
+
+  static properties = {
+    name: { type: String },
+  };
+
   static styles = css`
     div {
       position: absolute;
@@ -16,6 +22,6 @@ export class HelloWorld extends LitElement {
   `;
 
   protected render() {
-    return html` <div>Hello from SuperViz!</div> `;
+    return html` <div>Hello from SuperViz, ${this.name}</div> `;
   }
 }
