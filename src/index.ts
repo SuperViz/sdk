@@ -7,6 +7,7 @@ import {
   MeetingState,
   MeetingConnectionStatus,
   MeetingControlsEvent,
+  ParticipantEvent,
 } from './common/types/events.types';
 import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
@@ -94,6 +95,7 @@ if (window) {
     MeetingState,
     MeetingConnectionStatus,
     MeetingControlsEvent,
+    ParticipantEvent,
   };
 }
 
@@ -120,4 +122,5 @@ export {
   MeetingControlsEvent,
   DevicesOptions,
   RealtimeMessage,
+  ParticipantEvent,
 };

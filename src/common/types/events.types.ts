@@ -72,6 +72,15 @@ export enum MeetingState {
   FRAME_UNINITIALIZED = 8,
 }
 
+export enum ParticipantEvent {
+  JOINED = 'participant.joined',
+  LOCAL_JOINED = 'participant.local-joined',
+  LEFT = 'participant.left',
+  LOCAL_LEFT = 'participant.local-left',
+  LOCAL_UPDATED = 'participant.updated',
+  LIST_UPDATED = 'participant.list-updated',
+}
+
 /**
  * @enum { number }
  * @description Defines the possible Meeting connection states
