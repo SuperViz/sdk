@@ -4,6 +4,7 @@ import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types
 import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
+import config from '../../services/config';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
@@ -11,15 +12,10 @@ import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/t
 import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
 
 export class Laucher implements DefaultLaucher {
-  private readonly apiKey: string;
-  private readonly ablyKey: string;
-  private readonly apiUrl: string;
-  private readonly conferenceLayerUrl: string;
   private readonly shouldKickParticipantsOnHostLeave: boolean;
   private readonly logger: Logger;
 
   private participant: Participant;
-  private readonly roomId: string;
   private group: Group;
 
   private readonly realtime: AblyRealtimeService;
@@ -28,27 +24,16 @@ export class Laucher implements DefaultLaucher {
   private components: BaseComponent[] = [];
   private participants: Participant[] = [];
 
-  constructor({
-    ablyKey,
-    apiUrl,
-    apiKey,
-    conferenceLayerUrl,
-    participant,
-    group,
-    roomId,
-    shouldKickParticipantsOnHostLeave,
-  }: LaucherOptions) {
-    this.apiUrl = apiUrl;
-    this.apiKey = apiKey;
-    this.ablyKey = ablyKey;
-    this.conferenceLayerUrl = conferenceLayerUrl;
+  constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LaucherOptions) {
     this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave ?? true;
     this.participant = participant;
-    this.roomId = roomId;
     this.group = group;
 
     this.logger = new Logger('@superviz/sdk/laucher');
-    this.realtime = new AblyRealtimeService(this.apiUrl, this.ablyKey);
+    this.realtime = new AblyRealtimeService(
+      config.get<string>('apiUrl'),
+      config.get<string>('ablyKey'),
+    );
     this.pubsub = new PubSub(this.realtime);
 
     this.logger.log('laucher created');
@@ -136,9 +121,9 @@ export class Laucher implements DefaultLaucher {
     this.logger.log('laucher service @ startRealtime');
 
     this.realtime.start({
-      apiKey: this.apiKey,
       participant: this.participant,
-      roomId: this.roomId,
+      apiKey: config.get<string>('apiKey'),
+      roomId: config.get<string>('roomId'),
       shouldKickParticipantsOnHostLeave: this.shouldKickParticipantsOnHostLeave,
     });
 
