@@ -8,6 +8,7 @@ import config from '../../services/config';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
+import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 
 import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
 
@@ -142,6 +143,7 @@ export class Laucher implements DefaultLaucher {
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
+    this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
   };
 
   /** Realtime Listeners */
@@ -230,6 +232,22 @@ export class Laucher implements DefaultLaucher {
 
     this.logger.log('laucher service @ onParticipantLeave - participant left', participant);
     this.pubsub.publishEventToClient(ParticipantEvent.LEFT, participant);
+  };
+
+  /**
+   * @function onHostParticipantDidChange
+   * @description handler for host participant change event
+   * @param {HostObserverCallbackResponse} data - host change data
+   * @returns {void}
+   * */
+  private onHostParticipantDidChange = (data: HostObserverCallbackResponse): void => {
+    const newHost = this.participants.find((participant) => {
+      return participant.id === data?.newHostParticipantId;
+    });
+
+    if (this.realtime.isLocalParticipantHost) {
+      this.publishToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
+    }
   };
 }
 

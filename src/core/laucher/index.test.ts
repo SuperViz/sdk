@@ -1,7 +1,7 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { ParticipantEvent } from '../../common/types/events.types';
+import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { BaseComponent } from '../../components/base';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
@@ -264,6 +264,40 @@ describe('Laucher', () => {
 
       expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
       expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
+    });
+
+    test("should not publish RealtimeEvent.REALTIME_HOST_CHANGE if my participant isn't host", () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
+
+      LaucherInstance['onHostParticipantDidChange']({
+        newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
+        oldHostParticipantId: 'test',
+      });
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_HOST_CHANGE,
+        callback,
+      );
+      expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
+    });
+
+    test('should publish RealtimeEvent.REALTIME_HOST_CHANGE', () => {
+      const callback = jest.fn();
+      LaucherInstance.subscribeToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
+      LaucherInstance['participants'] = [MOCK_LOCAL_PARTICIPANT];
+
+      LaucherInstance['onHostParticipantDidChange']({
+        newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
+        oldHostParticipantId: 'test',
+      });
+
+      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_HOST_CHANGE,
+        callback,
+      );
+
+      expect(PUB_SUB_MOCK.publish).toHaveBeenCalled();
     });
   });
 });
