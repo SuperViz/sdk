@@ -14,6 +14,7 @@ import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
 import { Logger, Observer } from '../../common/utils';
 import { BrowserService } from '../browser';
+import config from '../config';
 import { FrameBricklayer } from '../frame-brick-layer';
 import { MessageBridge } from '../message-bridge';
 
@@ -71,13 +72,7 @@ export default class VideoConfereceManager {
 
   constructor(options: VideoManagerOptions) {
     const {
-      conferenceLayerUrl,
-      ablyKey,
-      apiKey,
-      apiUrl,
-      debug,
       language,
-      roomId,
       canUseCams,
       canUseChat,
       canUseScreenshare,
@@ -115,10 +110,10 @@ export default class VideoConfereceManager {
     const wrapper = document.createElement('div');
 
     this.frameConfig = {
-      apiKey,
-      apiUrl,
-      ablyKey,
-      debug,
+      apiKey: config.get<string>('apiKey'),
+      apiUrl: config.get<string>('apiUrl'),
+      ablyKey: config.get<string>('ablyKey'),
+      debug: config.get<boolean>('debug'),
       canUseFollow,
       canUseGoTo,
       canUseCams,
@@ -128,7 +123,7 @@ export default class VideoConfereceManager {
       canUseDefaultAvatars,
       camerasPosition: positions.camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
-      roomId,
+      roomId: config.get<string>('roomId'),
       devices: {
         audioInput: devices?.audioInput ?? true,
         audioOutput: devices?.audioOutput ?? true,
@@ -150,9 +145,15 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
-    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, undefined, {
-      allow: 'camera *;microphone *; display-capture *;',
-    });
+    this.bricklayer.build(
+      wrapper.id,
+      config.get<string>('conferenceLayerUrl'),
+      FRAME_ID,
+      undefined,
+      {
+        allow: 'camera *;microphone *; display-capture *;',
+      },
+    );
 
     this.setFrameOffset(offset);
     this.setFrameStyle(positions.camerasPosition);
@@ -180,9 +181,15 @@ export default class VideoConfereceManager {
 
   /**
    * @function layoutModalsAndCamerasConfig
-   * @returns {any}
+   * @description returns the correct layout and cameras position
+   * @param {LayoutPosition} layout - layout position
+   * @param {CamerasPosition} cameras - cameras position
+   * @returns {LayoutModalsAndCameras}
    */
-  private layoutModalsAndCamerasConfig = (layout, cameras): LayoutModalsAndCameras => {
+  private layoutModalsAndCamerasConfig = (
+    layout: LayoutPosition,
+    cameras: CamerasPosition,
+  ): LayoutModalsAndCameras => {
     let layoutPosition = layout;
     let camerasPosition = cameras;
 

@@ -17,11 +17,6 @@ import VideoConferenceManager from './index';
 
 const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
   const defaultOptions: VideoManagerOptions = {
-    ablyKey: 'unit-test-ably-key',
-    apiKey: 'unit-test-api-key',
-    apiUrl: 'https://unit-test-api-url',
-    conferenceLayerUrl: 'https://unit-test-conference-layer-url/',
-    roomId: 'unit-test-room-id',
     browserService: new BrowserService(),
     camerasPosition: CamerasPosition.RIGHT,
     canUseCams: true,
@@ -32,7 +27,6 @@ const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
     canUseFollow: true,
     canUseGather: true,
     canUseGoTo: true,
-    debug: true,
     devices: {
       audioInput: true,
       audioOutput: true,

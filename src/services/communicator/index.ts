@@ -113,7 +113,6 @@ class Communicator {
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
 
     this.startVideo({
-      conferenceLayerUrl,
       canUseChat,
       canUseCams,
       canUseScreenshare,
@@ -123,12 +122,7 @@ class Communicator {
       canUseGather,
       canUseDefaultToolbar,
       devices,
-      ablyKey,
-      apiKey,
-      apiUrl,
-      debug,
       language,
-      roomId,
       browserService: this.browserService,
       offset,
       locales: locales ?? [],

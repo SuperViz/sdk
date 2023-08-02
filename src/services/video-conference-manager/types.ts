@@ -2,13 +2,7 @@ import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
-  conferenceLayerUrl: string;
-  ablyKey: string;
-  apiKey: string;
-  apiUrl: string;
-  debug: boolean;
   language?: string;
-  roomId: string;
   canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;
