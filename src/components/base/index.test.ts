@@ -1,7 +1,9 @@
-import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { MOCK_REALTIME_SERVICE } from '../../../__mocks__/realtime.mock';
-import { Participant } from '../../common/types/participant.types';
+import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
+import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
+import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
+import { Configuration } from '../../services/config/types';
 import { AblyRealtimeService } from '../../services/realtime';
 
 import { BaseComponent } from '.';
@@ -45,11 +47,13 @@ describe('BaseComponent', () => {
 
       DummyComponentInstance.attach({
         localParticipant: MOCK_LOCAL_PARTICIPANT,
-        realtime: MOCK_REALTIME_SERVICE,
+        realtime: ABLY_REALTIME_MOCK,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
       });
 
       expect(DummyComponentInstance['localParticipant']).toEqual(MOCK_LOCAL_PARTICIPANT);
-      expect(DummyComponentInstance['realtime']).toEqual(MOCK_REALTIME_SERVICE);
+      expect(DummyComponentInstance['realtime']).toEqual(ABLY_REALTIME_MOCK);
       expect(DummyComponentInstance['isAttached']).toBeTruthy();
       expect(DummyComponentInstance['start']).toBeCalled();
     });
@@ -61,6 +65,8 @@ describe('BaseComponent', () => {
         DummyComponentInstance.attach({
           localParticipant: null as unknown as Participant,
           realtime: null as unknown as AblyRealtimeService,
+          group: null as unknown as Group,
+          config: null as unknown as Configuration,
         });
       }).toThrowError();
     });
@@ -73,7 +79,9 @@ describe('BaseComponent', () => {
 
       DummyComponentInstance.attach({
         localParticipant: MOCK_LOCAL_PARTICIPANT,
-        realtime: MOCK_REALTIME_SERVICE,
+        realtime: ABLY_REALTIME_MOCK,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
       });
 
       DummyComponentInstance.detach();

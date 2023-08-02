@@ -18,21 +18,7 @@ export const createRealtimeHistory = () => ({
   'unit-test-message-3': new Array(10).fill(createRealtimeMessage('unit-test-message-3')),
 });
 
-export const MOCK_REALTIME_SERVICE: AblyRealtimeService = {
-  participantJoinedObserver: MOCK_OBSERVER_HELPER,
-  participantLeaveObserver: MOCK_OBSERVER_HELPER,
-  roomInfoUpdatedObserver: MOCK_OBSERVER_HELPER,
-  syncPropertiesObserver: MOCK_OBSERVER_HELPER,
-  participantsObserver: MOCK_OBSERVER_HELPER,
-  subscribeToParticipantUpdate: jest.fn(),
-  unsubscribeFromParticipantUpdate: jest.fn(),
-  updateMyProperties: jest.fn(),
-  subscribe: MOCK_OBSERVER_HELPER.subscribe,
-  unsubscribe: MOCK_OBSERVER_HELPER.unsubscribe,
-  getParticipantSlot: jest.fn(),
-} as unknown as AblyRealtimeService;
-
-export const ABLY_REALTIME_MOCK = {
+export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   isLocalParticipantHost: true,
   setGather: jest.fn(),
   setParticipantData: jest.fn(),
@@ -48,8 +34,9 @@ export const ABLY_REALTIME_MOCK = {
 
     return createRealtimeHistory();
   }),
-  getSlotColor: jest.fn(() => {
-    return { color: MeetingColorsHex['#FFEF33'], name: MeetingColors.yellow };
+  getSlotColor: jest.fn().mockReturnValue({
+    color: MeetingColorsHex[0],
+    name: MeetingColors[0],
   }),
   roomInfoUpdatedObserver: MOCK_OBSERVER_HELPER,
   participantsObserver: MOCK_OBSERVER_HELPER,
@@ -59,4 +46,8 @@ export const ABLY_REALTIME_MOCK = {
   syncPropertiesObserver: MOCK_OBSERVER_HELPER,
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
   authenticationObserver: MOCK_OBSERVER_HELPER,
-};
+  subscribeToParticipantUpdate: jest.fn(),
+  unsubscribeFromParticipantUpdate: jest.fn(),
+  updateMyProperties: jest.fn(),
+  getParticipantSlot: jest.fn(),
+} as unknown as AblyRealtimeService;
