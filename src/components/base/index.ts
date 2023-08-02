@@ -1,12 +1,12 @@
 import { Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
-import { AblyRealtime } from '../../services/realtime/ably/types';
+import { AblyRealtimeService } from '../../services/realtime';
 
 import { DefaultAttachComponentOptions } from './types';
 
 export abstract class BaseComponent {
   protected localParticipant: Participant;
-  protected realitme: AblyRealtime;
+  protected realtime: AblyRealtimeService;
   protected abstract name: string;
   protected abstract logger: Logger;
 
@@ -26,7 +26,7 @@ export abstract class BaseComponent {
     }
 
     this.logger.log('attached');
-    this.realitme = realtime;
+    this.realtime = realtime;
     this.localParticipant = localParticipant;
     this.isAttached = true;
     this.start();
@@ -43,7 +43,7 @@ export abstract class BaseComponent {
       return;
     }
 
-    this.realitme = undefined;
+    this.realtime = undefined;
     this.localParticipant = undefined;
     this.isAttached = false;
 
