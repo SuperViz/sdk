@@ -7,4 +7,5 @@ export interface Configuration {
   ablyKey: string;
   apiUrl: string;
   conferenceLayerUrl: string;
+  debug: boolean;
 }

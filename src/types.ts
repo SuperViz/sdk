@@ -1,4 +1,4 @@
-import { LaucherFacade } from './core/laucher/types';
+import { LauncherFacade } from './core/launcher/types';
 import { CommunicatorFacade } from './services/communicator/types';
 
-export type SuperVizSdk = CommunicatorFacade | LaucherFacade;
+export type SuperVizSdk = CommunicatorFacade | LauncherFacade;

@@ -5,7 +5,8 @@ export const MOCK_CONFIG: Configuration = {
   ablyKey: 'unit-test-ably-key',
   apiKey: 'unit-test-api-key',
   apiUrl: 'unit-test-api-url',
-  conferenceLayerUrl: 'unit-test-conference-layer-url',
+  conferenceLayerUrl: 'https://unit-test-conference-layer-url',
   environment: EnvironmentTypes.DEV,
   roomId: 'unit-test-room-id',
+  debug: true,
 };
