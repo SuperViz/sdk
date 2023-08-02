@@ -1,7 +1,7 @@
 import { BaseComponent } from '../../components/base';
 import { RealtimeMessage } from '../../services/realtime/ably/types';
-import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
-export declare class Laucher implements DefaultLaucher {
+import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
+export declare class Launcher implements DefaultLauncher {
     private readonly shouldKickParticipantsOnHostLeave;
     private readonly logger;
     private participant;
@@ -10,17 +10,17 @@ export declare class Laucher implements DefaultLaucher {
     private readonly pubsub;
     private components;
     private participants;
-    constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LaucherOptions);
+    constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions);
     /**
      * @function addComponent
-     * @description add component to laucher
+     * @description add component to launcher
      * @param component - component to add
      * @returns {void}
      */
     addComponent: (component: BaseComponent) => void;
     /**
      * @function removeComponent
-     * @description remove component from laucher
+     * @description remove component from launcher
      * @param component - component to remove
      * @returns {void}
      */
@@ -90,12 +90,19 @@ export declare class Laucher implements DefaultLaucher {
      * @returns {void}
      */
     private onParticipantLeave;
+    /**
+     * @function onHostParticipantDidChange
+     * @description handler for host participant change event
+     * @param {HostObserverCallbackResponse} data - host change data
+     * @returns {void}
+     * */
+    private onHostParticipantDidChange;
 }
 /**
- * @function Laucher
- * @description create laucher instance
- * @param options - laucher options
- * @returns {LaucherFacade}
+ * @function Launcher
+ * @description create launcher instance
+ * @param options - launcher options
+ * @returns {LauncherFacade}
  */
-declare const _default: (options: LaucherOptions) => LaucherFacade;
+declare const _default: (options: LauncherOptions) => LauncherFacade;
 export default _default;

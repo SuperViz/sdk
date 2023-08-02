@@ -1,20 +1,14 @@
 import { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent } from './common/types/events.types';
-import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
-import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
-import { BrowserService } from './services/browser';
-import { BrowserStats } from './services/browser/types';
-import { PluginOptions } from './services/communicator/types';
-import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
-import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
-import { RealtimeMessage } from './services/realtime/ably/types';
-import { SuperVizSdk } from './types';
-/**
- * @function init
- * @description Initialize the SDK
- * @param apiKey - API key
- * @param options - SDK options
- * @returns {SuperVizSdk}
- */
-declare const init: (apiKey: string, options: SuperVizSdkOptions) => Promise<SuperVizSdk>;
+import init from './core';
+import './web-components';
+export { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
+export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
+export { BrowserService } from './services/browser';
+export { BrowserStats } from './services/browser/types';
+export { PluginOptions } from './services/communicator/types';
+export { PluginMethods, Plugin } from './services/integration/base-plugin/types';
+export { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
+export { RealtimeMessage } from './services/realtime/ably/types';
+export { SuperVizSdk } from './types';
+export { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent, };
 export default init;
-export { MeetingEvent, RealtimeEvent, SuperVizSdkOptions, DeviceEvent, SuperVizSdk, MeetingState, Participant, ParticipantType, Group, MeetingConnectionStatus, PluginMethods, PluginOptions, Plugin, ParticipantOn3D, ParticipantTo3D, BrowserService, BrowserStats, Avatar, MeetingControlsEvent, DevicesOptions, RealtimeMessage, ParticipantEvent, };
