@@ -49,7 +49,7 @@ describe('BaseComponent', () => {
       });
 
       expect(DummyComponentInstance['localParticipant']).toEqual(MOCK_LOCAL_PARTICIPANT);
-      expect(DummyComponentInstance['realitme']).toEqual(MOCK_REALTIME_SERVICE);
+      expect(DummyComponentInstance['realtime']).toEqual(MOCK_REALTIME_SERVICE);
       expect(DummyComponentInstance['isAttached']).toBeTruthy();
       expect(DummyComponentInstance['start']).toBeCalled();
     });
@@ -79,7 +79,7 @@ describe('BaseComponent', () => {
       DummyComponentInstance.detach();
 
       expect(DummyComponentInstance['localParticipant']).toBeUndefined();
-      expect(DummyComponentInstance['realitme']).toBeUndefined();
+      expect(DummyComponentInstance['realtime']).toBeUndefined();
       expect(DummyComponentInstance['isAttached']).toBeFalsy();
       expect(DummyComponentInstance['destroy']).toBeCalled();
     });
