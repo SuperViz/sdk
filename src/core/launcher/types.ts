@@ -2,12 +2,12 @@ import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { BaseComponent } from '../../components/base';
 import { PubSub } from '../../services/pubsub';
 
-export interface DefaultLaucher {}
+export interface DefaultLauncher {}
 
-export interface LaucherOptions
+export interface LauncherOptions
   extends Omit<SuperVizSdkOptions, 'environment' | 'debug' | 'roomId'> {}
 
-export interface LaucherFacade {
+export interface LauncherFacade {
   subscribe: typeof PubSub.prototype.subscribe;
   unsubscribe: typeof PubSub.prototype.unsubscribe;
   publish: typeof PubSub.prototype.publish;

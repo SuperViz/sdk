@@ -10,9 +10,9 @@ import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 
-import { DefaultLaucher, LaucherFacade, LaucherOptions } from './types';
+import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 
-export class Laucher implements DefaultLaucher {
+export class Launcher implements DefaultLauncher {
   private readonly shouldKickParticipantsOnHostLeave: boolean;
   private readonly logger: Logger;
 
@@ -25,26 +25,26 @@ export class Laucher implements DefaultLaucher {
   private components: BaseComponent[] = [];
   private participants: Participant[] = [];
 
-  constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LaucherOptions) {
+  constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions) {
     this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave ?? true;
     this.participant = participant;
     this.group = group;
 
-    this.logger = new Logger('@superviz/sdk/laucher');
+    this.logger = new Logger('@superviz/sdk/launcher');
     this.realtime = new AblyRealtimeService(
       config.get<string>('apiUrl'),
       config.get<string>('ablyKey'),
     );
     this.pubsub = new PubSub(this.realtime);
 
-    this.logger.log('laucher created');
+    this.logger.log('launcher created');
 
     this.startRealtime();
   }
 
   /**
    * @function addComponent
-   * @description add component to laucher
+   * @description add component to launcher
    * @param component - component to add
    * @returns {void}
    */
@@ -57,7 +57,7 @@ export class Laucher implements DefaultLaucher {
 
   /**
    * @function removeComponent
-   * @description remove component from laucher
+   * @description remove component from launcher
    * @param component - component to remove
    * @returns {void}
    */
@@ -73,7 +73,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   public subscribeToPubSubEvent = (event: string, callback: (data: unknown) => void): void => {
-    this.logger.log('laucher service @ subscribeToPubSubEvent');
+    this.logger.log('launcher service @ subscribeToPubSubEvent');
     this.pubsub.subscribe(event, callback);
   };
 
@@ -85,7 +85,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   public unsubscribeFromPubSubEvent = (event: string, callback: (data: unknown) => void): void => {
-    this.logger.log('laucher service @ unsubscribeFromPubSubEvent');
+    this.logger.log('launcher service @ unsubscribeFromPubSubEvent');
     this.pubsub.unsubscribe(event, callback);
   };
 
@@ -97,7 +97,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   public publishToPubSubEvent = (event: string, data: unknown): void => {
-    this.logger.log('laucher service @ publishToPubSubEvent');
+    this.logger.log('launcher service @ publishToPubSubEvent');
     this.pubsub.publish(event, data);
   };
 
@@ -119,7 +119,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   private startRealtime = (): void => {
-    this.logger.log('laucher service @ startRealtime');
+    this.logger.log('launcher service @ startRealtime');
 
     this.realtime.start({
       participant: this.participant,
@@ -155,7 +155,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   private onParticipantListUpdate = (participants: Record<string, AblyParticipant>): void => {
-    this.logger.log('laucher service @ onParticipantListUpdate');
+    this.logger.log('launcher service @ onParticipantListUpdate');
 
     const participantList = Object.values(participants).map((participant) => ({
       id: participant.data.id,
@@ -193,7 +193,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   private onParticipantJoined = (ablyParticipant: AblyParticipant): void => {
-    this.logger.log('laucher service @ onParticipantJoined');
+    this.logger.log('launcher service @ onParticipantJoined');
 
     const participant = this.participants.find(
       (participant) => participant.id === ablyParticipant.data.id,
@@ -202,11 +202,11 @@ export class Laucher implements DefaultLaucher {
     if (!participant) return;
 
     if (participant.id === this.participant.id) {
-      this.logger.log('laucher service @ onParticipantJoined - local participant joined');
+      this.logger.log('launcher service @ onParticipantJoined - local participant joined');
       this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_JOINED, participant);
     }
 
-    this.logger.log('laucher service @ onParticipantJoined - participant joined', participant);
+    this.logger.log('launcher service @ onParticipantJoined - participant joined', participant);
     this.pubsub.publishEventToClient(ParticipantEvent.JOINED, participant);
   };
 
@@ -217,7 +217,7 @@ export class Laucher implements DefaultLaucher {
    * @returns {void}
    */
   private onParticipantLeave = (ablyParticipant: AblyParticipant): void => {
-    this.logger.log('laucher service @ onParticipantLeave');
+    this.logger.log('launcher service @ onParticipantLeave');
 
     const participant = this.participants.find((participant) => {
       return participant.id === ablyParticipant.data.id;
@@ -226,11 +226,11 @@ export class Laucher implements DefaultLaucher {
     if (!participant) return;
 
     if (participant.id === this.participant.id) {
-      this.logger.log('laucher service @ onParticipantLeave - local participant left');
+      this.logger.log('launcher service @ onParticipantLeave - local participant left');
       this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_LEFT, participant);
     }
 
-    this.logger.log('laucher service @ onParticipantLeave - participant left', participant);
+    this.logger.log('launcher service @ onParticipantLeave - participant left', participant);
     this.pubsub.publishEventToClient(ParticipantEvent.LEFT, participant);
   };
 
@@ -252,20 +252,20 @@ export class Laucher implements DefaultLaucher {
 }
 
 /**
- * @function Laucher
- * @description create laucher instance
- * @param options - laucher options
- * @returns {LaucherFacade}
+ * @function Launcher
+ * @description create launcher instance
+ * @param options - launcher options
+ * @returns {LauncherFacade}
  */
-export default (options: LaucherOptions): LaucherFacade => {
-  const laucher = new Laucher(options);
+export default (options: LauncherOptions): LauncherFacade => {
+  const launcher = new Launcher(options);
 
   return {
-    subscribe: laucher.subscribeToPubSubEvent,
-    unsubscribe: laucher.unsubscribeFromPubSubEvent,
-    publish: laucher.publishToPubSubEvent,
-    fetchHistory: laucher.fetchPubSubHistory,
-    addComponent: laucher.addComponent,
-    removeComponent: laucher.removeComponent,
+    subscribe: launcher.subscribeToPubSubEvent,
+    unsubscribe: launcher.unsubscribeFromPubSubEvent,
+    publish: launcher.publishToPubSubEvent,
+    fetchHistory: launcher.fetchPubSubHistory,
+    addComponent: launcher.addComponent,
+    removeComponent: launcher.removeComponent,
   };
 };
