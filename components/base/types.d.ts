@@ -1,6 +1,6 @@
 import { Participant } from '../../common/types/participant.types';
-import { AblyRealtime } from '../../services/realtime/ably/types';
+import { AblyRealtimeService } from '../../services/realtime';
 export interface DefaultAttachComponentOptions {
-    realtime: AblyRealtime;
+    realtime: AblyRealtimeService;
     localParticipant: Participant;
 }
