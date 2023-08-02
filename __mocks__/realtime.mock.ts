@@ -33,6 +33,7 @@ export const MOCK_REALTIME_SERVICE: AblyRealtimeService = {
 } as unknown as AblyRealtimeService;
 
 export const ABLY_REALTIME_MOCK = {
+  isLocalParticipantHost: true,
   setGather: jest.fn(),
   setParticipantData: jest.fn(),
   setSyncProperty: jest.fn(),
