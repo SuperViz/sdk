@@ -101,4 +101,48 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance['logger'].log).toBeCalled();
     });
   });
+
+  describe('subscribe', () => {
+    test('should subscribe to the event component with success', () => {
+      const callback = jest.fn();
+
+      expect(DummyComponentInstance.subscribe).toBeDefined();
+
+      DummyComponentInstance.subscribe('test', callback);
+
+      DummyComponentInstance['publish']('test', 'test');
+
+      expect(callback).toBeCalledWith('test');
+    });
+
+    test('should unsubscribe to the event component with success', () => {
+      const callback = jest.fn();
+
+      expect(DummyComponentInstance.subscribe).toBeDefined();
+
+      DummyComponentInstance.subscribe('test', callback);
+
+      DummyComponentInstance['publish']('test', 'test');
+
+      expect(callback).toBeCalledWith('test');
+
+      DummyComponentInstance.unsubscribe('test');
+
+      DummyComponentInstance['publish']('test', 'test');
+
+      expect(callback).toBeCalledTimes(1);
+    });
+
+    test('should skip unsubscribe if the event is not subscribed', () => {
+      expect(DummyComponentInstance.subscribe).toBeDefined();
+
+      DummyComponentInstance.unsubscribe('test');
+    });
+
+    test('should skip publish if the event is not subscribed', () => {
+      expect(DummyComponentInstance.subscribe).toBeDefined();
+
+      DummyComponentInstance['publish']('test', 'test');
+    });
+  });
 });
