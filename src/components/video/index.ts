@@ -8,7 +8,12 @@ import { ConnectionService } from '../../services/connection-status';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 import VideoConfereceManager from '../../services/video-conference-manager';
-import { VideoManagerOptions } from '../../services/video-conference-manager/types';
+import {
+  DrawingData,
+  RealtimeObserverPayload,
+  VideoFrameState,
+  VideoManagerOptions,
+} from '../../services/video-conference-manager/types';
 import { BaseComponent } from '../base';
 
 import { ParticipandToFrame, VideoComponentOptions } from './types';
@@ -99,6 +104,7 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ destroy');
 
     this.unsubscribeFromRealtimeEvents();
+    this.unsubscribeFromVideoEvents();
   }
 
   /**
@@ -110,6 +116,31 @@ export class VideoComponent extends BaseComponent {
   private startVideo = (): void => {
     this.logger.log('video component @ start video');
     this.videoManager = new VideoConfereceManager(this.videoConfig);
+
+    this.subscribeToVideoEvents();
+  };
+
+  /**
+   * @function subscribeToVideoEvents
+   * @description subscribe to video events
+   * @returns {void}
+   */
+  private subscribeToVideoEvents = (): void => {
+    this.logger.log('video component @ subscribe to video events');
+
+    this.videoManager.frameStateObserver.subscribe(this.onFrameStateChange);
+    this.videoManager.realtimeEventsObserver.subscribe(this.onRealtimeEvent);
+  };
+
+  /**
+   * @function unsubscribeFromVideoEvents
+   * @description unsubscribe from video events
+   * @returns {void}
+   * */
+  private unsubscribeFromVideoEvents = (): void => {
+    this.logger.log('video component @ unsubscribe from video events');
+
+    this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateChange);
   };
 
   /**
@@ -134,6 +165,46 @@ export class VideoComponent extends BaseComponent {
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantsDidChange);
     this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
+  };
+
+  /** Video Events */
+
+  /**
+   * @function onFrameStateChange
+   * @description handler for frame state change event
+   * @param {VideoFrameState} state - frame state
+   * @returns
+   */
+  private onFrameStateChange = (state: VideoFrameState): void => {
+    this.logger.log('video component @ on frame state change', state);
+
+    if (state !== VideoFrameState.INITIALIZED) return;
+
+    this.videoManager.start({
+      group: this.group,
+      participant: this.localParticipant,
+      roomId: config.get<string>('roomId'),
+    });
+  };
+
+  /**
+   * @function onRealtimeEvent
+   * @description handler for realtime event
+   * @param {RealtimeObserverPayload} payload - realtime event payload
+   * @returns {void}
+   * */
+  private onRealtimeEvent = ({ event, data }: RealtimeObserverPayload): void => {
+    const _ = {
+      [RealtimeEvent.REALTIME_HOST_CHANGE]: (data: string) => this.realtime.setHost(data),
+      [RealtimeEvent.REALTIME_GATHER]: (data: boolean) => this.realtime.setGather(data),
+      [RealtimeEvent.REALTIME_GRID_MODE_CHANGE]: (data: boolean) => this.realtime.setGridMode(data),
+      [RealtimeEvent.REALTIME_DRAWING_CHANGE]: (data: DrawingData) => {
+        this.realtime.setDrawing(data);
+      },
+      [RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT]: (data: string) => {
+        this.realtime.setFollowParticipant(data);
+      },
+    }[event](data);
   };
 
   /** Realtime Events */

@@ -21,6 +21,9 @@ export const createRealtimeHistory = () => ({
 export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   isLocalParticipantHost: true,
   setGather: jest.fn(),
+  setHost: jest.fn(),
+  setGridMode: jest.fn(),
+  setDrawing: jest.fn(),
   setParticipantData: jest.fn(),
   setSyncProperty: jest.fn(),
   start: jest.fn(),
