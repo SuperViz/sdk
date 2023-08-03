@@ -6,7 +6,14 @@ import {
   MOCK_LOCAL_PARTICIPANT,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import {
+  DeviceEvent,
+  FrameEvent,
+  MeetingConnectionStatus,
+  MeetingEvent,
+  MeetingState,
+  RealtimeEvent,
+} from '../../common/types/events.types';
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
@@ -80,6 +87,7 @@ describe('VideoComponent', () => {
   });
 
   test('should subscribe from video events', () => {
+    expect(VIDEO_MANAGER_MOCK.meetingStateObserver.subscribe).toHaveBeenCalled();
     expect(VIDEO_MANAGER_MOCK.frameStateObserver.subscribe).toHaveBeenCalled();
     expect(VIDEO_MANAGER_MOCK.realtimeEventsObserver.subscribe).toHaveBeenCalled();
     expect(VIDEO_MANAGER_MOCK.participantJoinedObserver.subscribe).toHaveBeenCalled();
@@ -100,10 +108,27 @@ describe('VideoComponent', () => {
     });
 
     test('should unsubscribe from video events', () => {
+      expect(VIDEO_MANAGER_MOCK.meetingStateObserver.unsubscribe).toHaveBeenCalled();
       expect(VIDEO_MANAGER_MOCK.frameStateObserver.unsubscribe).toHaveBeenCalled();
       expect(VIDEO_MANAGER_MOCK.realtimeEventsObserver.unsubscribe).toHaveBeenCalled();
       expect(VIDEO_MANAGER_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
       expect(VIDEO_MANAGER_MOCK.participantLeftObserver.unsubscribe).toHaveBeenCalled();
+    });
+  });
+
+  describe('connection events', () => {
+    test('should freeze sync if the connection status is bad', () => {
+      VideoComponentInstance['onConnectionStatusChange'](MeetingConnectionStatus.BAD);
+
+      expect(ABLY_REALTIME_MOCK.freezeSync).toBeCalledWith(true);
+    });
+
+    test('should enable sync if the connection status becomes good', () => {
+      VideoComponentInstance['connectionService'].oldConnectionStatus = MeetingConnectionStatus.BAD;
+
+      VideoComponentInstance['onConnectionStatusChange'](MeetingConnectionStatus.GOOD);
+
+      expect(ABLY_REALTIME_MOCK.freezeSync).toBeCalledWith(false);
     });
   });
 
@@ -205,6 +230,66 @@ describe('VideoComponent', () => {
         MeetingEvent.MY_PARTICIPANT_LEFT,
         MOCK_LOCAL_PARTICIPANT,
       );
+    });
+
+    test('should publish message to client when meeting state changed', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      VideoComponentInstance['onMeetingStateChange'](MeetingState.MEETING_CONNECTED);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_STATE_UPDATE,
+        MeetingState.MEETING_CONNECTED,
+      );
+    });
+
+    test('should publish message to client and detach when same account error happened', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+      VideoComponentInstance['detach'] = jest.fn();
+
+      VideoComponentInstance['onSameAccountError']('same-account-error');
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR,
+        'same-account-error',
+      );
+      expect(VideoComponentInstance['detach']).toBeCalled();
+    });
+
+    test('should publish a message to client when devices change', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      VideoComponentInstance['onDevicesChange'](DeviceEvent.DEVICES_BLOCKED);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_DEVICES_CHANGE,
+        DeviceEvent.DEVICES_BLOCKED,
+      );
+    });
+
+    test('should publish a message to client when waiting for host', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      VideoComponentInstance['onWaitingForHost'](true);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_WAITING_FOR_HOST,
+        true,
+      );
+    });
+
+    test('should publish a message to client when frame size change', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      VideoComponentInstance['onFrameSizeDidChange']({
+        height: 100,
+        width: 100,
+      });
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(FrameEvent.FRAME_DIMENSIONS_UPDATE, {
+        height: 100,
+        width: 100,
+      });
     });
   });
 
@@ -361,6 +446,20 @@ describe('VideoComponent', () => {
         MeetingEvent.MEETING_PARTICIPANT_LEFT,
         VideoComponentInstance['createParticipantFromAblyPresence'](ablyParticipant),
       );
+    });
+
+    test('should publish a message to client and detach when kick participants happend', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+      VideoComponentInstance['detach'] = jest.fn();
+
+      VideoComponentInstance['onKickAllParticipantsDidChange'](true);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_KICK_PARTICIPANTS,
+        true,
+      );
+
+      expect(VideoComponentInstance['detach']).toBeCalled();
     });
   });
 });

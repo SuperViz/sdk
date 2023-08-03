@@ -1,6 +1,14 @@
 import { isEqual } from 'lodash';
 
-import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import {
+  DeviceEvent,
+  Dimensions,
+  FrameEvent,
+  MeetingConnectionStatus,
+  MeetingEvent,
+  MeetingState,
+  RealtimeEvent,
+} from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
@@ -61,6 +69,9 @@ export class VideoComponent extends BaseComponent {
     this.connectionService = new ConnectionService();
     this.connectionService.addListeners();
 
+    // Connection observers
+    this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
+
     this.videoConfig = {
       language,
       canUseChat: !chatOff,
@@ -92,6 +103,8 @@ export class VideoComponent extends BaseComponent {
   protected start(): void {
     this.logger.log('video component @ start');
 
+    this.publish(MeetingEvent.MEETING_START);
+
     this.suscribeToRealtimeEvents();
     this.startVideo();
   }
@@ -103,6 +116,8 @@ export class VideoComponent extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('video component @ destroy');
+
+    this.publish(MeetingEvent.DESTROY);
 
     this.unsubscribeFromRealtimeEvents();
     this.unsubscribeFromVideoEvents();
@@ -129,10 +144,18 @@ export class VideoComponent extends BaseComponent {
   private subscribeToVideoEvents = (): void => {
     this.logger.log('video component @ subscribe to video events');
 
+    this.videoManager.meetingConnectionObserver.subscribe(
+      this.connectionService.updateMeetingConnectionStatus,
+    );
+    this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
+    this.videoManager.frameSizeObserver.subscribe(this.onFrameSizeDidChange);
+    this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateChange);
     this.videoManager.frameStateObserver.subscribe(this.onFrameStateChange);
     this.videoManager.realtimeEventsObserver.subscribe(this.onRealtimeEventFromFrame);
     this.videoManager.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.videoManager.participantLeftObserver.subscribe(this.onParticipantLeft);
+    this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
+    this.videoManager.devicesObserver.subscribe(this.onDevicesChange);
   };
 
   /**
@@ -142,10 +165,19 @@ export class VideoComponent extends BaseComponent {
    * */
   private unsubscribeFromVideoEvents = (): void => {
     this.logger.log('video component @ unsubscribe from video events');
+
+    this.videoManager.meetingConnectionObserver.unsubscribe(
+      this.connectionService.updateMeetingConnectionStatus,
+    );
+    this.videoManager.waitingForHostObserver.unsubscribe(this.onWaitingForHost);
+    this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
+    this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateChange);
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateChange);
     this.videoManager.realtimeEventsObserver.unsubscribe(this.onRealtimeEventFromFrame);
     this.videoManager.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.videoManager.participantLeftObserver.unsubscribe(this.onParticipantLeft);
+    this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
+    this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
   };
 
   /**
@@ -155,6 +187,7 @@ export class VideoComponent extends BaseComponent {
    */
   private suscribeToRealtimeEvents = (): void => {
     this.logger.log('video component @ subscribe to realtime events');
+    this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
@@ -169,6 +202,7 @@ export class VideoComponent extends BaseComponent {
    */
   private unsubscribeFromRealtimeEvents = (): void => {
     this.logger.log('video component @ unsubscribe from realtime events');
+    this.realtime.kickAllParticipantsObserver.unsubscribe(this.onKickAllParticipantsDidChange);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
@@ -194,6 +228,88 @@ export class VideoComponent extends BaseComponent {
   };
 
   /** Video Events */
+
+  /**
+   * @function onFrameSizeDidChange
+   * @description handler for frame size change event
+   * @param {Dimensions} dimensions - frame dimensions
+   * @returns {void}
+   * */
+  private onFrameSizeDidChange = (dimensions: Dimensions): void => {
+    this.publish(FrameEvent.FRAME_DIMENSIONS_UPDATE, dimensions);
+  };
+
+  /**
+   * @function onWaitingForHost
+   * @description handler for waiting for host event
+   * @param {boolean} waiting - whether or not waiting for host
+   * @returns {void}
+   */
+  private onWaitingForHost = (waiting: boolean): void => {
+    this.publish(MeetingEvent.MEETING_WAITING_FOR_HOST, waiting);
+  };
+
+  /**
+   * @function onCOnnectionStatusChange
+   * @description handler for connection status change event
+   * @param {MeetingConnectionStatus} newStatus - new connection status
+   * @returns {void}
+   */
+  private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
+    this.logger.log('video component @ on connection status change', newStatus);
+
+    const connectionProblemStatus = [
+      MeetingConnectionStatus.BAD,
+      MeetingConnectionStatus.DISCONNECTED,
+      MeetingConnectionStatus.POOR,
+      MeetingConnectionStatus.LOST_CONNECTION,
+    ];
+
+    if (connectionProblemStatus.includes(newStatus)) {
+      this.realtime.freezeSync(true);
+    }
+
+    if (
+      connectionProblemStatus.includes(this.connectionService.oldConnectionStatus) &&
+      !connectionProblemStatus.includes(newStatus)
+    ) {
+      this.realtime.freezeSync(false);
+    }
+
+    this.publish(MeetingEvent.MEETING_CONNECTION_STATUS_CHANGE, newStatus);
+  };
+
+  /**
+   * @function onMeetingStateChange
+   * @description handler for meeting state change event
+   * @param {MeetingState} state - meeting state
+   * @returns {void}
+   */
+  private onMeetingStateChange = (state: MeetingState): void => {
+    this.logger.log('video component @ on meeting state change', state);
+    this.publish(MeetingEvent.MEETING_STATE_UPDATE, state);
+  };
+
+  /**
+   * @function onSameAccountError
+   * @description handler for same account error event
+   * @param {string} error - error message
+   * @returns {void}
+   * */
+  private onSameAccountError = (error: string): void => {
+    this.publish(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, error);
+    this.detach();
+  };
+
+  /**
+   * @function onDevicesChange
+   * @description handler for devices change event
+   * @param {DeviceEvent} state - device state
+   * @returns {void}
+   * */
+  private onDevicesChange = (state: DeviceEvent): void => {
+    this.publish(MeetingEvent.MEETING_DEVICES_CHANGE, state);
+  };
 
   /**
    * @function onFrameStateChange
@@ -270,6 +386,17 @@ export class VideoComponent extends BaseComponent {
   /** Realtime Events */
 
   /**
+   * @function onKickAllParticipantsDidChange
+   * @description handler for kick all participants event
+   * @param {boolean} kick - whether or not to kick all participants
+   * @returns {void}
+   */
+  private onKickAllParticipantsDidChange = (kick: boolean): void => {
+    this.publish(MeetingEvent.MEETING_KICK_PARTICIPANTS, kick);
+    this.detach();
+  };
+
+  /**
    * @function onRoomInfoUpdated
    * @description handler for room info update event
    * @param {AblyRealtimeData} room - room info
@@ -320,6 +447,16 @@ export class VideoComponent extends BaseComponent {
         RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE,
         participantList,
       );
+
+      const participantsToPublish = Object.values(participants).map((participant) => {
+        return this.createParticipantFromAblyPresence(participant);
+      });
+
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, participantsToPublish);
+    }
+
+    if (this.participantList.length !== participantList.length) {
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participantList.length);
     }
 
     this.participantList = participantList;
