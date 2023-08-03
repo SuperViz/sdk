@@ -14,11 +14,11 @@ export { Participant, Group, Avatar, ParticipantType } from './common/types/part
 export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 export { BrowserService } from './services/browser';
 export { BrowserStats } from './services/browser/types';
-export { PluginOptions } from './services/communicator/types';
 export { PluginMethods, Plugin } from './services/integration/base-plugin/types';
 export { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
 export { RealtimeMessage } from './services/realtime/ably/types';
-export { SuperVizSdk } from './types';
+export { LauncherFacade } from './core/launcher/types';
+export { DefaultPluginOptions as PluginOptions } from './services/integration/base-plugin/types';
 
 if (window) {
   window.SuperVizSdk = {
