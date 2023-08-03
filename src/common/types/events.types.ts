@@ -40,7 +40,6 @@ export enum MeetingControlsEvent {
 }
 
 export enum RealtimeEvent {
-  REALTIME_JOIN = 'realtime.join',
   REALTIME_PARTICIPANT_LIST_UPDATE = 'realtime.participant-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',

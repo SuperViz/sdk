@@ -1,3 +1,4 @@
+import { RealtimeEvent } from '../../common/types/events.types';
 import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
 
@@ -136,6 +137,11 @@ export interface DrawingData {
   externalClickX: number;
   externalClickY: number;
   fadeOut: boolean;
+}
+
+export interface RealtimeObserverPayload {
+  event: RealtimeEvent;
+  data: unknown;
 }
 
 export enum WaterMark {

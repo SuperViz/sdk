@@ -51,14 +51,8 @@ export default class VideoConfereceManager {
   public readonly frameStateObserver = new Observer({ logger: this.logger });
   public readonly frameSizeObserver = new Observer({ logger: this.logger });
 
-  public readonly realtimeObserver = new Observer({ logger: this.logger });
-  public readonly hostChangeObserver = new Observer({ logger: this.logger });
-  public readonly gridModeChangeObserver = new Observer({ logger: this.logger });
-  public readonly followParticipantObserver = new Observer({ logger: this.logger });
-  public readonly goToParticipantObserver = new Observer({ logger: this.logger });
-  public readonly gatherParticipantsObserver = new Observer({ logger: this.logger });
   public readonly waitingForHostObserver = new Observer({ logger: this.logger });
-  public readonly drawingChangeObserver = new Observer({ logger: this.logger });
+  public readonly realtimeEventsObserver = new Observer({ logger: this.logger });
 
   public readonly sameAccountErrorObserver = new Observer({ logger: this.logger });
   public readonly devicesObserver = new Observer({ logger: this.logger });
@@ -266,7 +260,6 @@ export default class VideoConfereceManager {
       this.onConnectionStatusChange,
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_DRAWING_CHANGE, this.onDrawingChange);
 
@@ -453,21 +446,15 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @function realtimeJoin
-   * @param participantInfo
-   * @returns {void}
-   */
-  private realtimeJoin = (participantInfo = {}): void => {
-    this.realtimeObserver.publish(participantInfo);
-  };
-
-  /**
    * @function onMeetingHostChange
    * @param {string} hostId
    * @returns {void}
    */
   private onMeetingHostChange = (hostId: string): void => {
-    this.hostChangeObserver.publish(hostId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_HOST_CHANGE,
+      data: hostId,
+    });
   };
 
   /**
@@ -476,7 +463,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onFollowParticipantDidChange = (participantId?: string): void => {
-    this.followParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -485,7 +475,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGoToDidChange = (participantId: string): void => {
-    this.goToParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -493,7 +486,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGather = (): void => {
-    this.gatherParticipantsObserver.publish();
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GATHER,
+      data: true,
+    });
   };
 
   /**
@@ -502,7 +498,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGridModeChange = (isGridModeEnable: boolean): void => {
-    this.gridModeChangeObserver.publish(isGridModeEnable);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
+      data: isGridModeEnable,
+    });
   };
 
   /**
@@ -511,7 +510,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onDrawingChange = (drawing: DrawingData): void => {
-    this.drawingChangeObserver.publish(drawing);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_DRAWING_CHANGE,
+      data: drawing,
+    });
   };
 
   /**
@@ -585,14 +587,8 @@ export default class VideoConfereceManager {
     this.bricklayer?.destroy();
 
     this.frameSizeObserver.destroy();
-    this.realtimeObserver.destroy();
-    this.hostChangeObserver.destroy();
-    this.gridModeChangeObserver.destroy();
-    this.drawingChangeObserver.destroy();
 
-    this.followParticipantObserver.destroy();
-    this.goToParticipantObserver.destroy();
-    this.gatherParticipantsObserver.destroy();
+    this.realtimeEventsObserver.destroy();
     this.sameAccountErrorObserver.destroy();
     this.devicesObserver.destroy();
     this.meetingStateObserver.destroy();

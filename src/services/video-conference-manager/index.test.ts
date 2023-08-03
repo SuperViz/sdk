@@ -6,6 +6,7 @@ import {
   MeetingControlsEvent,
   MeetingEvent,
   MeetingState,
+  RealtimeEvent,
   TranscriptionEvent,
 } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
@@ -104,28 +105,8 @@ describe('VideoConferenceManager', () => {
         VideoConferenceManagerInstance.frameSizeObserver,
         'destroy',
       );
-      const realtimeObserverSpy = jest.spyOn(
-        VideoConferenceManagerInstance.realtimeObserver,
-        'destroy',
-      );
-      const hostChangeObserverSpy = jest.spyOn(
-        VideoConferenceManagerInstance.hostChangeObserver,
-        'destroy',
-      );
-      const gridModeChangeObserverSpy = jest.spyOn(
-        VideoConferenceManagerInstance.gridModeChangeObserver,
-        'destroy',
-      );
-      const followParticipantObserverrSpy = jest.spyOn(
-        VideoConferenceManagerInstance.followParticipantObserver,
-        'destroy',
-      );
-      const goToParticipantObserverSpy = jest.spyOn(
-        VideoConferenceManagerInstance.goToParticipantObserver,
-        'destroy',
-      );
-      const gatherParticipantsObserverSpy = jest.spyOn(
-        VideoConferenceManagerInstance.gatherParticipantsObserver,
+      const realtimeEventsObserverSpy = jest.spyOn(
+        VideoConferenceManagerInstance.realtimeEventsObserver,
         'destroy',
       );
       const sameAccountErrorSpy = jest.spyOn(
@@ -156,12 +137,7 @@ describe('VideoConferenceManager', () => {
       VideoConferenceManagerInstance.destroy();
 
       expect(frameSizeObserverSpy).toBeCalled();
-      expect(realtimeObserverSpy).toBeCalled();
-      expect(hostChangeObserverSpy).toBeCalled();
-      expect(gridModeChangeObserverSpy).toBeCalled();
-      expect(followParticipantObserverrSpy).toBeCalled();
-      expect(goToParticipantObserverSpy).toBeCalled();
-      expect(gatherParticipantsObserverSpy).toBeCalled();
+      expect(realtimeEventsObserverSpy).toBeCalled();
       expect(sameAccountErrorSpy).toBeCalled();
       expect(devicesObserverSpy).toBeCalled();
       expect(meetingStateObserverSpy).toBeCalled();
@@ -476,68 +452,72 @@ describe('VideoConferenceManager', () => {
     });
   });
 
-  describe('realtimeJoin', () => {
-    test('should publish the participant info', () => {
-      const participantInfo = { id: '1', name: 'Alice' };
-      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeObserver, 'publish');
-
-      VideoConferenceManagerInstance['realtimeJoin'](participantInfo);
-
-      expect(spy).toHaveBeenCalledWith(participantInfo);
-    });
-  });
-
   describe('onMeetingHostChange', () => {
     test('should publish the new host ID', () => {
       const hostId = '1';
-      const spy = jest.spyOn(VideoConferenceManagerInstance.hostChangeObserver, 'publish');
+      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
       VideoConferenceManagerInstance['onMeetingHostChange'](hostId);
 
-      expect(spy).toHaveBeenCalledWith(hostId);
+      expect(spy).toHaveBeenCalledWith({
+        event: RealtimeEvent.REALTIME_HOST_CHANGE,
+        data: hostId,
+      });
     });
   });
 
   describe('onFollowParticipantDidChange', () => {
     test('should publish the new participant ID', () => {
       const participantId = '1';
-      const spy = jest.spyOn(VideoConferenceManagerInstance.followParticipantObserver, 'publish');
+      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
       VideoConferenceManagerInstance['onFollowParticipantDidChange'](participantId);
 
-      expect(spy).toHaveBeenCalledWith(participantId);
+      expect(spy).toHaveBeenCalledWith({
+        event: RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+        data: participantId,
+      });
     });
   });
 
   describe('onGoToDidChange', () => {
     test('should publish the new participant ID', () => {
       const participantId = '1';
-      const spy = jest.spyOn(VideoConferenceManagerInstance.goToParticipantObserver, 'publish');
+      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
       VideoConferenceManagerInstance['onGoToDidChange'](participantId);
 
-      expect(spy).toHaveBeenCalledWith(participantId);
+      expect(spy).toHaveBeenCalledWith({
+        event: RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+        data: participantId,
+      });
     });
   });
 
   describe('onGather', () => {
     test('should publish an empty message', () => {
-      const spy = jest.spyOn(VideoConferenceManagerInstance.gatherParticipantsObserver, 'publish');
+      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
       VideoConferenceManagerInstance['onGather']();
 
-      expect(spy).toHaveBeenCalledWith();
+      expect(spy).toHaveBeenCalledWith({
+        event: RealtimeEvent.REALTIME_GATHER,
+        data: true,
+      });
     });
   });
 
   describe('onGridModeChange', () => {
     test('should publish the new grid mode state', () => {
       const isGridModeEnable = true;
-      const spy = jest.spyOn(VideoConferenceManagerInstance.gridModeChangeObserver, 'publish');
+      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
       VideoConferenceManagerInstance['onGridModeChange'](isGridModeEnable);
 
-      expect(spy).toHaveBeenCalledWith(isGridModeEnable);
+      expect(spy).toHaveBeenCalledWith({
+        event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
+        data: isGridModeEnable,
+      });
     });
   });
 
