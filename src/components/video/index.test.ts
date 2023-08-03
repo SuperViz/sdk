@@ -6,7 +6,7 @@ import {
   MOCK_LOCAL_PARTICIPANT,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { RealtimeEvent } from '../../common/types/events.types';
+import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
@@ -57,10 +57,7 @@ describe('VideoComponent', () => {
     VideoComponentInstance = new VideoComponent();
     VideoComponentInstance.attach({
       realtime: ABLY_REALTIME_MOCK,
-      localParticipant: {
-        ...MOCK_LOCAL_PARTICIPANT,
-        avatar: MOCK_AVATAR,
-      },
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
     });
@@ -78,10 +75,15 @@ describe('VideoComponent', () => {
     expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.subscribe).toHaveBeenCalled();
     expect(ABLY_REALTIME_MOCK.participantsObserver.subscribe).toHaveBeenCalled();
     expect(ABLY_REALTIME_MOCK.hostObserver.subscribe).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.participantJoinedObserver.subscribe).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.participantLeaveObserver.subscribe).toHaveBeenCalled();
   });
 
   test('should subscribe from video events', () => {
     expect(VIDEO_MANAGER_MOCK.frameStateObserver.subscribe).toHaveBeenCalled();
+    expect(VIDEO_MANAGER_MOCK.realtimeEventsObserver.subscribe).toHaveBeenCalled();
+    expect(VIDEO_MANAGER_MOCK.participantJoinedObserver.subscribe).toHaveBeenCalled();
+    expect(VIDEO_MANAGER_MOCK.participantLeftObserver.subscribe).toHaveBeenCalled();
   });
 
   describe('detach', () => {
@@ -93,10 +95,15 @@ describe('VideoComponent', () => {
       expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
     });
 
     test('should unsubscribe from video events', () => {
       expect(VIDEO_MANAGER_MOCK.frameStateObserver.unsubscribe).toHaveBeenCalled();
+      expect(VIDEO_MANAGER_MOCK.realtimeEventsObserver.unsubscribe).toHaveBeenCalled();
+      expect(VIDEO_MANAGER_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
+      expect(VIDEO_MANAGER_MOCK.participantLeftObserver.unsubscribe).toHaveBeenCalled();
     });
   });
 
@@ -118,7 +125,7 @@ describe('VideoComponent', () => {
     });
 
     test('should change host from video frame', () => {
-      VideoComponentInstance['onRealtimeEvent']({
+      VideoComponentInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_HOST_CHANGE,
         data: MOCK_LOCAL_PARTICIPANT.id,
       });
@@ -127,7 +134,7 @@ describe('VideoComponent', () => {
     });
 
     test('should change grid mode from video frame', () => {
-      VideoComponentInstance['onRealtimeEvent']({
+      VideoComponentInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
         data: true,
       });
@@ -136,7 +143,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set gather from video frame', () => {
-      VideoComponentInstance['onRealtimeEvent']({
+      VideoComponentInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_GATHER,
         data: true,
       });
@@ -145,7 +152,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set draw data from video frame', () => {
-      VideoComponentInstance['onRealtimeEvent']({
+      VideoComponentInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_DRAWING_CHANGE,
         data: MOCK_DRAW_DATA,
       });
@@ -154,12 +161,50 @@ describe('VideoComponent', () => {
     });
 
     test('should set follow participant from video frame', () => {
-      VideoComponentInstance['onRealtimeEvent']({
+      VideoComponentInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
         data: MOCK_LOCAL_PARTICIPANT.id,
       });
 
       expect(ABLY_REALTIME_MOCK.setFollowParticipant).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
+    });
+
+    test('should update participant properties from video frame', () => {
+      const participant = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        name: 'John Doe',
+      };
+
+      VideoComponentInstance['onParticipantJoined'](participant);
+
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({ name: 'John Doe' });
+    });
+
+    test('should update participant avatar if it is not set and video frame has default avatars', () => {
+      const participant = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        name: 'John Doe',
+        avatar: MOCK_AVATAR,
+      };
+
+      VideoComponentInstance['videoConfig'].canUseDefaultAvatars = true;
+      VideoComponentInstance['onParticipantJoined'](participant);
+
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
+        name: 'John Doe',
+        avatar: MOCK_AVATAR,
+      });
+    });
+
+    test('should publish message to client when my participant left', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      VideoComponentInstance['onParticipantLeft'](MOCK_LOCAL_PARTICIPANT);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MY_PARTICIPANT_LEFT,
+        MOCK_LOCAL_PARTICIPANT,
+      );
     });
   });
 
@@ -178,7 +223,7 @@ describe('VideoComponent', () => {
 
     test('should update participants', () => {
       const ablyParticipant: AblyParticipant = {
-        clientId: 'client1',
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
         action: 'present',
         connectionId: 'connection1',
         encoding: 'h264',
@@ -264,6 +309,58 @@ describe('VideoComponent', () => {
       VideoComponentInstance['onRoomInfoUpdated'](realtimeData);
 
       expect(ABLY_REALTIME_MOCK.setGather).not.toHaveBeenCalled();
+    });
+
+    test('should publish message to client when participant joined', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      const ablyParticipant: AblyParticipant = {
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          slotIndex: 0,
+          avatar: MOCK_AVATAR,
+          ...MOCK_LOCAL_PARTICIPANT,
+        },
+      };
+
+      VideoComponentInstance['onParticipantJoinedOnRealtime'](ablyParticipant);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_PARTICIPANT_JOINED,
+        VideoComponentInstance['createParticipantFromAblyPresence'](ablyParticipant),
+      );
+    });
+
+    test('should publish message to client when participant left', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+
+      const ablyParticipant: AblyParticipant = {
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          slotIndex: 0,
+          avatar: MOCK_AVATAR,
+          ...MOCK_LOCAL_PARTICIPANT,
+        },
+      };
+
+      VideoComponentInstance['onParticipantLeftOnRealtime'](ablyParticipant);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_PARTICIPANT_LEFT,
+        VideoComponentInstance['createParticipantFromAblyPresence'](ablyParticipant),
+      );
     });
   });
 });

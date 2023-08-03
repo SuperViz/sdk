@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 
-import { RealtimeEvent } from '../../common/types/events.types';
+import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
+import { Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
@@ -129,7 +130,9 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ subscribe to video events');
 
     this.videoManager.frameStateObserver.subscribe(this.onFrameStateChange);
-    this.videoManager.realtimeEventsObserver.subscribe(this.onRealtimeEvent);
+    this.videoManager.realtimeEventsObserver.subscribe(this.onRealtimeEventFromFrame);
+    this.videoManager.participantJoinedObserver.subscribe(this.onParticipantJoined);
+    this.videoManager.participantLeftObserver.subscribe(this.onParticipantLeft);
   };
 
   /**
@@ -139,8 +142,10 @@ export class VideoComponent extends BaseComponent {
    * */
   private unsubscribeFromVideoEvents = (): void => {
     this.logger.log('video component @ unsubscribe from video events');
-
     this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateChange);
+    this.videoManager.realtimeEventsObserver.unsubscribe(this.onRealtimeEventFromFrame);
+    this.videoManager.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
+    this.videoManager.participantLeftObserver.unsubscribe(this.onParticipantLeft);
   };
 
   /**
@@ -150,6 +155,8 @@ export class VideoComponent extends BaseComponent {
    */
   private suscribeToRealtimeEvents = (): void => {
     this.logger.log('video component @ subscribe to realtime events');
+    this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoinedOnRealtime);
+    this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
     this.realtime.participantsObserver.subscribe(this.onParticipantsDidChange);
     this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
@@ -162,9 +169,28 @@ export class VideoComponent extends BaseComponent {
    */
   private unsubscribeFromRealtimeEvents = (): void => {
     this.logger.log('video component @ unsubscribe from realtime events');
+    this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoinedOnRealtime);
+    this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantsDidChange);
     this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
+  };
+
+  /**
+   * @function createParticipantListFromAblyList
+   * @description update participant list from ably participant list
+   * @param {Record<string, AblyParticipant>} participants - ably participant list
+   * @returns {Participant[]} participant list
+   * */
+  private createParticipantFromAblyPresence = (participant: AblyParticipant): Participant => {
+    return {
+      id: participant.clientId,
+      color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
+      avatar: participant.data.avatar,
+      type: participant.data.type,
+      name: participant.data.name,
+      isHost: this.realtime.hostClientId === participant.clientId,
+    };
   };
 
   /** Video Events */
@@ -188,12 +214,14 @@ export class VideoComponent extends BaseComponent {
   };
 
   /**
-   * @function onRealtimeEvent
+   * @function onRealtimeEventFromFrame
    * @description handler for realtime event
    * @param {RealtimeObserverPayload} payload - realtime event payload
    * @returns {void}
    * */
-  private onRealtimeEvent = ({ event, data }: RealtimeObserverPayload): void => {
+  private onRealtimeEventFromFrame = ({ event, data }: RealtimeObserverPayload): void => {
+    this.logger.log('video component @ on realtime event from frame', event, data);
+
     const _ = {
       [RealtimeEvent.REALTIME_HOST_CHANGE]: (data: string) => this.realtime.setHost(data),
       [RealtimeEvent.REALTIME_GATHER]: (data: boolean) => this.realtime.setGather(data),
@@ -205,6 +233,38 @@ export class VideoComponent extends BaseComponent {
         this.realtime.setFollowParticipant(data);
       },
     }[event](data);
+
+    this.publish(event, data);
+  };
+
+  /**
+   * @function onParticipantJoined
+   * @description handler for participant joined event
+   * @param {Participant} participant - participant
+   * @returns {void}
+   */
+  private onParticipantJoined = (participant: Participant): void => {
+    this.localParticipant = participant;
+
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
+    this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
+
+    if (this.videoConfig.canUseDefaultAvatars) {
+      this.realtime.updateMyProperties({
+        avatar: participant.avatar,
+        name: participant.name,
+      });
+
+      return;
+    }
+
+    this.realtime.updateMyProperties({
+      name: participant.name,
+    });
+  };
+
+  private onParticipantLeft = (_: Participant): void => {
+    this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
   };
 
   /** Realtime Events */
@@ -248,7 +308,7 @@ export class VideoComponent extends BaseComponent {
         return {
           timestamp: participant.timestamp,
           connectionId: participant.connectionId,
-          participantId: participant.data.participantId,
+          participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
           name: participant.data.name,
         };
@@ -277,6 +337,36 @@ export class VideoComponent extends BaseComponent {
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_HOST_CHANGE,
       data?.newHostParticipantId,
+    );
+  };
+
+  /**
+   * @function onParticipantJoinedOnRealtime
+   * @description handler for participant joined event
+   * @param {AblyParticipant} participant - participant
+   * @returns {void}
+   */
+  private onParticipantJoinedOnRealtime = (participant: AblyParticipant): void => {
+    this.logger.log('video component @ on participant joined on realtime', participant);
+
+    this.publish(
+      MeetingEvent.MEETING_PARTICIPANT_JOINED,
+      this.createParticipantFromAblyPresence(participant),
+    );
+  };
+
+  /**
+   * @function onParticipantLeftOnRealtime
+   * @description handler for participant left event
+   * @param {AblyParticipant} participant
+   * @returns {void}
+   */
+  private onParticipantLeftOnRealtime = (participant: AblyParticipant): void => {
+    this.logger.log('video component @ on participant left on realtime', participant);
+
+    this.publish(
+      MeetingEvent.MEETING_PARTICIPANT_LEFT,
+      this.createParticipantFromAblyPresence(participant),
     );
   };
 }

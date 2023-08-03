@@ -251,6 +251,7 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_WAITING_FOR_HOST,
       this.onWaitingForHostDidChange,
     );
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
@@ -412,6 +413,10 @@ export default class VideoConfereceManager {
    */
   private updateMeetingAvatars = (): void => {
     this.messageBridge.publish(FrameEvent.FRAME_AVATAR_LIST_UPDATE, this.meetingAvatars);
+  };
+
+  private onParticipantJoined = (participant: Participant): void => {
+    this.participantJoinedObserver.publish(participant);
   };
 
   /**
