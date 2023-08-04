@@ -50,6 +50,7 @@ const AblyRealtimeMock = {
   start: jest.fn(),
   leave: jest.fn(),
   setFollowParticipant: jest.fn(),
+  setTranscript: jest.fn(),
   fetchSyncClientProperty: jest.fn((key?: string) => {
     if (key) {
       return createRealtimeMessage(key);
@@ -88,6 +89,7 @@ const VideoManagerMock = {
   meetingConnectionObserver: MOCK_OBSERVER_HELPER,
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
   participantLeftObserver: MOCK_OBSERVER_HELPER,
+  transcriptChangeObserver: MOCK_OBSERVER_HELPER,
 };
 
 jest.mock('../realtime', () => ({
@@ -103,7 +105,7 @@ describe('Communicator', () => {
     expect(Communicator).toBeDefined();
   });
 
-  test('should exprt a function', () => {
+  test('should expect a function', () => {
     expect(typeof Communicator).toBe('function');
   });
 
@@ -232,6 +234,7 @@ describe('Communicator', () => {
       expect(VideoManagerMock.participantLeftObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.meetingStateObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.meetingConnectionObserver.unsubscribe).toBeCalled();
+      expect(VideoManagerMock.transcriptChangeObserver.unsubscribe).toBeCalled();
     });
   });
 
