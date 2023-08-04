@@ -1,7 +1,4 @@
-import exp from 'constants';
-
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
-import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import {
   MOCK_AVATAR_CONFIG,
   MOCK_PARTICIPANT_TO_3D,
@@ -10,7 +7,6 @@ import {
 import {
   MeetingControlsEvent,
   RealtimeEvent,
-  TranscriptionEvent,
 } from '../../common/types/events.types';
 import { AblyRealtimeService } from '../realtime';
 
@@ -131,8 +127,6 @@ describe('Communicator', () => {
     expect(communicator).toHaveProperty('hangUp');
     expect(communicator).toHaveProperty('toggleCam');
     expect(communicator).toHaveProperty('toggleChat');
-    expect(communicator).toHaveProperty('startTranscription');
-    expect(communicator).toHaveProperty('stopTranscription');
     expect(communicator).toHaveProperty('loadPlugin');
     expect(communicator).toHaveProperty('unloadPlugin');
   });
@@ -397,46 +391,6 @@ describe('Communicator', () => {
       expect(communicator.toggleChat).toBeCalled();
       expect(VideoManagerMock.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_MEETING_CHAT,
-      );
-    });
-  });
-
-  describe('startTranscription', () => {
-    let communicator: SuperVizSdk;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      communicator = Communicator(COMMUNICATOR_INITIALIZATION_MOCK);
-    });
-
-    test('should call the startTranscription method', () => {
-      jest.spyOn(communicator, 'startTranscription');
-      communicator.startTranscription('en-US');
-
-      expect(communicator.startTranscription).toBeCalled();
-      expect(VideoManagerMock.publishMessageToFrame).toBeCalledWith(
-        TranscriptionEvent.TRANSCRIPTION_START,
-        'en-US',
-      );
-    });
-  });
-
-  describe('stopTranscription', () => {
-    let communicator: SuperVizSdk;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      communicator = Communicator(COMMUNICATOR_INITIALIZATION_MOCK);
-    });
-
-    test('should call the stopTranscription method', () => {
-      jest.spyOn(communicator, 'stopTranscription');
-      communicator.stopTranscription();
-
-      expect(communicator.stopTranscription).toBeCalled();
-      expect(VideoManagerMock.publishMessageToFrame).toBeCalledWith(
-        TranscriptionEvent.TRANSCRIPTION_STOP,
-        undefined,
       );
     });
   });

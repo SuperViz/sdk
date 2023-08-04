@@ -9,7 +9,7 @@ import {
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
-  TranscriptionEvent,
+  TranscriptState,
 } from '../../common/types/events.types';
 import { Participant, Group } from '../../common/types/participant.types';
 import { Observer, logger } from '../../common/utils';
@@ -196,6 +196,7 @@ class Communicator {
     this.videoManager.followParticipantObserver.unsubscribe(this.onFollowParticipantDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
     this.videoManager.drawingChangeObserver.unsubscribe(this.onDrawingDidChange);
+    this.videoManager.transcriptChangeObserver.unsubscribe(this.onTranscriptDidChange);
 
     this.videoManager.goToParticipantObserver.unsubscribe(this.onGoToParticipantDidChange);
     this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
@@ -268,8 +269,8 @@ class Communicator {
 
   /**
    * @function publishMeetingControlEvent
-   * @param event: MeetingControlsEvent
    * @description publish event to meeting controls
+   * @param {MeetingControlsEvent} event
    * @returns {void}
    */
   public publishMeetingControlEvent(event: MeetingControlsEvent): void {
@@ -290,7 +291,7 @@ class Communicator {
   /**
    * @function follow
    * @description - send follow message to all participants on plugin
-   * @param participantId: string
+   * @param {string | undefined} participantId
    * @returns {void}
    */
   public follow(participantId?: string): void {
@@ -313,22 +314,12 @@ class Communicator {
   /**
    * @function goTo
    * @description call goTo on plugin
-   * @param participantId: string
+   * @param {string} participantId
    * @returns {void}
    */
   public goTo(participantId: string): void {
     this.integrationManager.goToParticipant(participantId);
   }
-
-  /**
-   * @function publishTranscriptionEvent
-   * @description publish transcription event to transcription service
-   * @param {TranscriptionEvent} event - event to be published
-   * @param {unknown} payload - payload to be sent to transcription service
-   */
-  public publishTranscriptionEvent = (event: TranscriptionEvent, payload?: unknown): void => {
-    this.videoManager.publishMessageToFrame(event, payload);
-  };
 
   /**
    * @function startVideo
@@ -351,6 +342,7 @@ class Communicator {
     this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.drawingChangeObserver.subscribe(this.onDrawingDidChange);
+    this.videoManager.transcriptChangeObserver.subscribe(this.onTranscriptDidChange);
 
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
@@ -500,13 +492,14 @@ class Communicator {
    * @returns {void}
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
-    const { isGridModeEnable, followParticipantId, gather, drawing } = room;
+    const { isGridModeEnable, followParticipantId, gather, drawing, transcript } = room;
 
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
       isGridModeEnable,
     );
     this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_DRAWING_CHANGE, drawing);
+    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, transcript);
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       followParticipantId,
@@ -601,6 +594,16 @@ class Communicator {
    * */
   private onDrawingDidChange = (drawing: DrawingData): void => {
     this.realtime.setDrawing(drawing);
+  };
+
+  /**
+   * @function onTranscriptDidChange
+   * @description handler when transcript state changes
+   * @param {TranscriptState} state
+   * @returns {void}
+   * */
+  private onTranscriptDidChange = (state: TranscriptState): void => {
+    this.realtime.setTranscript(state);
   };
 
   /**
@@ -712,7 +715,7 @@ class Communicator {
   };
 
   /**
-   * @function onCOnnectionStatusChange
+   * @function onConnectionStatusChange
    * @description handler for connection status change event
    * @param {MeetingConnectionStatus} newStatus - new connection status
    * @returns {void}
@@ -842,16 +845,6 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     hangUp: () => communicator.publishMeetingControlEvent(MeetingControlsEvent.HANG_UP),
     toggleChat: () => {
       return communicator.publishMeetingControlEvent(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
-    },
-
-    startTranscription: (language) => {
-      return communicator.publishTranscriptionEvent(
-        TranscriptionEvent.TRANSCRIPTION_START,
-        language,
-      );
-    },
-    stopTranscription: () => {
-      return communicator.publishTranscriptionEvent(TranscriptionEvent.TRANSCRIPTION_STOP);
     },
 
     loadPlugin: (plugin, props) => communicator.loadPlugin(plugin, props),
