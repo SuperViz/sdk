@@ -349,7 +349,7 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.setTranscript(transcriptionState);
 
       expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
-        transcriptionState,
+        transcript: transcriptionState,
       });
     });
 
