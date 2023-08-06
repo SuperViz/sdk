@@ -28,6 +28,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   setParticipantData: jest.fn(),
   setSyncProperty: jest.fn(),
   setKickParticipant: jest.fn(),
+  setTranscript: jest.fn(),
   start: jest.fn(),
   join: jest.fn(),
   leave: jest.fn(),

@@ -13,6 +13,7 @@ import {
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
+  TranscriptState,
 } from '../../common/types/events.types';
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
@@ -201,6 +202,15 @@ describe('VideoComponent', () => {
       });
 
       expect(ABLY_REALTIME_MOCK.setKickParticipant).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
+    });
+
+    test('should set follow participant from video frame', () => {
+      VideoComponentInstance['onRealtimeEventFromFrame']({
+        event: RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE,
+        data: TranscriptState.TRANSCRIPT_START,
+      });
+
+      expect(ABLY_REALTIME_MOCK.setTranscript).toBeCalledWith(TranscriptState.TRANSCRIPT_START);
     });
 
     test('should update participant properties from video frame', () => {

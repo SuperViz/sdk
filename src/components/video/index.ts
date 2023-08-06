@@ -8,6 +8,7 @@ import {
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
+  TranscriptState,
 } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
@@ -352,6 +353,9 @@ export class VideoComponent extends BaseComponent {
       [MeetingEvent.MEETING_KICK_PARTICIPANT]: (data: string) => {
         this.realtime.setKickParticipant(data);
       },
+      [RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE]: (data: TranscriptState) => {
+        this.realtime.setTranscript(data);
+      },
     }[event](data);
 
     this.publish(event, data);
@@ -429,7 +433,7 @@ export class VideoComponent extends BaseComponent {
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
     this.logger.log('video component @ on room info updated', room);
-    const { isGridModeEnable, followParticipantId, gather, drawing } = room;
+    const { isGridModeEnable, followParticipantId, gather, drawing, transcript } = room;
 
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
@@ -440,6 +444,7 @@ export class VideoComponent extends BaseComponent {
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       followParticipantId,
     );
+    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, transcript);
 
     if (this.realtime.hostClientId === this.localParticipant.id && gather) {
       this.realtime.setGather(false);
