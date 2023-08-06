@@ -469,11 +469,14 @@ describe('VideoConferenceManager', () => {
   describe('onMeetingKickParticipant', () => {
     test('should publish the participant ID to be kicked', () => {
       const participantId = '1';
-      const spy = jest.spyOn(VideoConferenceManagerInstance.kickParticipantObserver, 'publish');
+      const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
       VideoConferenceManagerInstance['onMeetingKickParticipant'](participantId);
 
-      expect(spy).toHaveBeenCalledWith(participantId);
+      expect(spy).toHaveBeenCalledWith({
+        event: MeetingEvent.MEETING_KICK_PARTICIPANT,
+        data: participantId,
+      });
     });
   });
 

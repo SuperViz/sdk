@@ -188,6 +188,7 @@ export class VideoComponent extends BaseComponent {
   private suscribeToRealtimeEvents = (): void => {
     this.logger.log('video component @ subscribe to realtime events');
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
+    this.realtime.kickParticipantObserver.subscribe(this.onKickLocalParticipant);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
@@ -348,6 +349,9 @@ export class VideoComponent extends BaseComponent {
       [RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT]: (data: string) => {
         this.realtime.setFollowParticipant(data);
       },
+      [MeetingEvent.MEETING_KICK_PARTICIPANT]: (data: string) => {
+        this.realtime.setKickParticipant(data);
+      },
     }[event](data);
 
     this.publish(event, data);
@@ -360,6 +364,8 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onParticipantJoined = (participant: Participant): void => {
+    this.logger.log('video component @ on participant joined', participant);
+
     this.localParticipant = participant;
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
@@ -380,7 +386,10 @@ export class VideoComponent extends BaseComponent {
   };
 
   private onParticipantLeft = (_: Participant): void => {
+    this.logger.log('video component @ on participant left', this.localParticipant);
+
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
+    this.detach();
   };
 
   /** Realtime Events */
@@ -392,7 +401,23 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onKickAllParticipantsDidChange = (kick: boolean): void => {
+    this.logger.log('video component @ on kick all participants did change', kick);
+
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANTS, kick);
+    this.detach();
+  };
+
+  /**
+   * @function onKickLocalParticipant
+   * @description handler for kick local participant event
+   * @param {string} participantId - participant id
+   * @returns {void}
+   */
+
+  private onKickLocalParticipant = (): void => {
+    this.logger.log('video component @ on kick local participant');
+
+    this.publish(MeetingEvent.MEETING_KICK_PARTICIPANT, this.localParticipant);
     this.detach();
   };
 

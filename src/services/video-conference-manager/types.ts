@@ -1,4 +1,4 @@
-import { RealtimeEvent } from '../../common/types/events.types';
+import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
 
@@ -140,7 +140,7 @@ export interface DrawingData {
 }
 
 export interface RealtimeObserverPayload {
-  event: RealtimeEvent;
+  event: RealtimeEvent | MeetingEvent;
   data: unknown;
 }
 

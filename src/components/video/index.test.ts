@@ -194,6 +194,15 @@ describe('VideoComponent', () => {
       expect(ABLY_REALTIME_MOCK.setFollowParticipant).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
     });
 
+    test('should set follow participant from video frame', () => {
+      VideoComponentInstance['onRealtimeEventFromFrame']({
+        event: MeetingEvent.MEETING_KICK_PARTICIPANT,
+        data: MOCK_LOCAL_PARTICIPANT.id,
+      });
+
+      expect(ABLY_REALTIME_MOCK.setKickParticipant).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
+    });
+
     test('should update participant properties from video frame', () => {
       const participant = {
         ...MOCK_LOCAL_PARTICIPANT,
@@ -457,6 +466,20 @@ describe('VideoComponent', () => {
       expect(VideoComponentInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_KICK_PARTICIPANTS,
         true,
+      );
+
+      expect(VideoComponentInstance['detach']).toBeCalled();
+    });
+
+    test('should publish a message to client and detach when kick local participant happend', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+      VideoComponentInstance['detach'] = jest.fn();
+
+      VideoComponentInstance['onKickLocalParticipant']();
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_KICK_PARTICIPANT,
+        VideoComponentInstance['localParticipant'],
       );
 
       expect(VideoComponentInstance['detach']).toBeCalled();
