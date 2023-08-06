@@ -7,7 +7,6 @@ import {
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
-  TranscriptionEvent,
 } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
