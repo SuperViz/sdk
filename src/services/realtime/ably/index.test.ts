@@ -1040,6 +1040,30 @@ describe('AblyRealtimeService', () => {
     });
   });
 
+  describe('kick participant event', () => {
+    test('should update the kickParticipant in the room properties', async () => {
+      const participantId = 'participant1';
+      const participant: AblyParticipant = {
+        clientId: 'client1',
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId,
+        },
+      };
+      AblyRealtimeServiceInstance['participants'][participantId] = participant;
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+      await AblyRealtimeServiceInstance.setKickParticipant(participantId);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        kickParticipant: participant,
+      });
+    });
+  });
+
   describe('presence events handlers', () => {
     beforeEach(() => {
       AblyRealtimeServiceInstance.start({

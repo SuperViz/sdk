@@ -254,6 +254,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
+    this.messageBridge.listen(MeetingEvent.MEETING_KICK_PARTICIPANT, this.onMeetingKickParticipant);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(
@@ -459,6 +460,18 @@ export default class VideoConfereceManager {
     this.realtimeEventsObserver.publish({
       event: RealtimeEvent.REALTIME_HOST_CHANGE,
       data: hostId,
+    });
+  };
+
+  /**
+   * @function onMeetingKickParticipant
+   * @param {string} participantId - ID of the participant
+   * @returns {void}
+   */
+  private onMeetingKickParticipant = (participantId: string): void => {
+    this.realtimeEventsObserver.publish({
+      event: MeetingEvent.MEETING_KICK_PARTICIPANT,
+      data: participantId,
     });
   };
 

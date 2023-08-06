@@ -466,6 +466,17 @@ describe('VideoConferenceManager', () => {
     });
   });
 
+  describe('onMeetingKickParticipant', () => {
+    test('should publish the participant ID to be kicked', () => {
+      const participantId = '1';
+      const spy = jest.spyOn(VideoConferenceManagerInstance.kickParticipantObserver, 'publish');
+
+      VideoConferenceManagerInstance['onMeetingKickParticipant'](participantId);
+
+      expect(spy).toHaveBeenCalledWith(participantId);
+    });
+  });
+
   describe('onFollowParticipantDidChange', () => {
     test('should publish the new participant ID', () => {
       const participantId = '1';
