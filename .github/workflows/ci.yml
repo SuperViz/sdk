@@ -40,7 +40,7 @@ jobs:
         run: yarn install
       - name: Build package
         run: |
-          touch .version.js && echo "echo \"export const version = 'beta'\" > .version.js" | bash -
+          touch .version.js && echo "echo \"export const version = 'lab'\" > .version.js" | bash -
           yarn build
       - name: Push
         uses: s0/git-publish-subdir-action@develop

@@ -8,12 +8,13 @@ import {
   Dimensions,
   MeetingControlsEvent,
   FrameEvent,
-  TranscriptionEvent,
+  TranscriptState,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
 import { Logger, Observer } from '../../common/utils';
 import { BrowserService } from '../browser';
+import config from '../config';
 import { FrameBricklayer } from '../frame-brick-layer';
 import { MessageBridge } from '../message-bridge';
 
@@ -50,14 +51,8 @@ export default class VideoConfereceManager {
   public readonly frameStateObserver = new Observer({ logger: this.logger });
   public readonly frameSizeObserver = new Observer({ logger: this.logger });
 
-  public readonly realtimeObserver = new Observer({ logger: this.logger });
-  public readonly hostChangeObserver = new Observer({ logger: this.logger });
-  public readonly gridModeChangeObserver = new Observer({ logger: this.logger });
-  public readonly followParticipantObserver = new Observer({ logger: this.logger });
-  public readonly goToParticipantObserver = new Observer({ logger: this.logger });
-  public readonly gatherParticipantsObserver = new Observer({ logger: this.logger });
   public readonly waitingForHostObserver = new Observer({ logger: this.logger });
-  public readonly drawingChangeObserver = new Observer({ logger: this.logger });
+  public readonly realtimeEventsObserver = new Observer({ logger: this.logger });
 
   public readonly sameAccountErrorObserver = new Observer({ logger: this.logger });
   public readonly devicesObserver = new Observer({ logger: this.logger });
@@ -71,13 +66,7 @@ export default class VideoConfereceManager {
 
   constructor(options: VideoManagerOptions) {
     const {
-      conferenceLayerUrl,
-      ablyKey,
-      apiKey,
-      apiUrl,
-      debug,
       language,
-      roomId,
       canUseCams,
       canUseChat,
       canUseScreenshare,
@@ -115,10 +104,10 @@ export default class VideoConfereceManager {
     const wrapper = document.createElement('div');
 
     this.frameConfig = {
-      apiKey,
-      apiUrl,
-      ablyKey,
-      debug,
+      apiKey: config.get<string>('apiKey'),
+      apiUrl: config.get<string>('apiUrl'),
+      ablyKey: config.get<string>('ablyKey'),
+      debug: config.get<boolean>('debug'),
       canUseFollow,
       canUseGoTo,
       canUseCams,
@@ -128,7 +117,7 @@ export default class VideoConfereceManager {
       canUseDefaultAvatars,
       camerasPosition: positions.camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
-      roomId,
+      roomId: config.get<string>('roomId'),
       devices: {
         audioInput: devices?.audioInput ?? true,
         audioOutput: devices?.audioOutput ?? true,
@@ -150,9 +139,15 @@ export default class VideoConfereceManager {
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
-    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, undefined, {
-      allow: 'camera *;microphone *; display-capture *;',
-    });
+    this.bricklayer.build(
+      wrapper.id,
+      config.get<string>('conferenceLayerUrl'),
+      FRAME_ID,
+      undefined,
+      {
+        allow: 'camera *;microphone *; display-capture *;',
+      },
+    );
 
     this.setFrameOffset(offset);
     this.setFrameStyle(positions.camerasPosition);
@@ -180,9 +175,15 @@ export default class VideoConfereceManager {
 
   /**
    * @function layoutModalsAndCamerasConfig
-   * @returns {any}
+   * @description returns the correct layout and cameras position
+   * @param {LayoutPosition} layout - layout position
+   * @param {CamerasPosition} cameras - cameras position
+   * @returns {LayoutModalsAndCameras}
    */
-  private layoutModalsAndCamerasConfig = (layout, cameras): LayoutModalsAndCameras => {
+  private layoutModalsAndCamerasConfig = (
+    layout: LayoutPosition,
+    cameras: CamerasPosition,
+  ): LayoutModalsAndCameras => {
     let layoutPosition = layout;
     let camerasPosition = cameras;
 
@@ -250,8 +251,10 @@ export default class VideoConfereceManager {
       MeetingEvent.MEETING_WAITING_FOR_HOST,
       this.onWaitingForHostDidChange,
     );
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
+    this.messageBridge.listen(MeetingEvent.MEETING_KICK_PARTICIPANT, this.onMeetingKickParticipant);
     this.messageBridge.listen(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, this.onSameAccountError);
     this.messageBridge.listen(MeetingEvent.MEETING_STATE_UPDATE, this.meetingStateUpdate);
     this.messageBridge.listen(
@@ -259,9 +262,9 @@ export default class VideoConfereceManager {
       this.onConnectionStatusChange,
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_DRAWING_CHANGE, this.onDrawingChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, this.onTranscriptChange);
 
     this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
@@ -406,12 +409,16 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function updateMeetingAvatar
+   * @function updateMeetingAvatars
    * @description update list of avatars
    * @returns {void}
    */
   private updateMeetingAvatars = (): void => {
     this.messageBridge.publish(FrameEvent.FRAME_AVATAR_LIST_UPDATE, this.meetingAvatars);
+  };
+
+  private onParticipantJoined = (participant: Participant): void => {
+    this.participantJoinedObserver.publish(participant);
   };
 
   /**
@@ -446,21 +453,27 @@ export default class VideoConfereceManager {
   }
 
   /**
-   * @function realtimeJoin
-   * @param participantInfo
-   * @returns {void}
-   */
-  private realtimeJoin = (participantInfo = {}): void => {
-    this.realtimeObserver.publish(participantInfo);
-  };
-
-  /**
    * @function onMeetingHostChange
    * @param {string} hostId
    * @returns {void}
    */
   private onMeetingHostChange = (hostId: string): void => {
-    this.hostChangeObserver.publish(hostId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_HOST_CHANGE,
+      data: hostId,
+    });
+  };
+
+  /**
+   * @function onMeetingKickParticipant
+   * @param {string} participantId - ID of the participant
+   * @returns {void}
+   */
+  private onMeetingKickParticipant = (participantId: string): void => {
+    this.realtimeEventsObserver.publish({
+      event: MeetingEvent.MEETING_KICK_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -469,7 +482,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onFollowParticipantDidChange = (participantId?: string): void => {
-    this.followParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -478,7 +494,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGoToDidChange = (participantId: string): void => {
-    this.goToParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -486,7 +505,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGather = (): void => {
-    this.gatherParticipantsObserver.publish();
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GATHER,
+      data: true,
+    });
   };
 
   /**
@@ -495,7 +517,10 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onGridModeChange = (isGridModeEnable: boolean): void => {
-    this.gridModeChangeObserver.publish(isGridModeEnable);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
+      data: isGridModeEnable,
+    });
   };
 
   /**
@@ -504,7 +529,22 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onDrawingChange = (drawing: DrawingData): void => {
-    this.drawingChangeObserver.publish(drawing);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_DRAWING_CHANGE,
+      data: drawing,
+    });
+  };
+
+  /**
+   * @function onTranscriptChange
+   * @param state {TranscriptState}
+   * @returns {void}
+   */
+  private onTranscriptChange = (state: TranscriptState): void => {
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE,
+      data: state,
+    });
   };
 
   /**
@@ -578,14 +618,8 @@ export default class VideoConfereceManager {
     this.bricklayer?.destroy();
 
     this.frameSizeObserver.destroy();
-    this.realtimeObserver.destroy();
-    this.hostChangeObserver.destroy();
-    this.gridModeChangeObserver.destroy();
-    this.drawingChangeObserver.destroy();
 
-    this.followParticipantObserver.destroy();
-    this.goToParticipantObserver.destroy();
-    this.gatherParticipantsObserver.destroy();
+    this.realtimeEventsObserver.destroy();
     this.sameAccountErrorObserver.destroy();
     this.devicesObserver.destroy();
     this.meetingStateObserver.destroy();
@@ -600,11 +634,11 @@ export default class VideoConfereceManager {
   /**
    * @function publishMessageToFrame
    * @description Publishes a message to the frame
-   * @param message - The event to publish
+   * @param event - The event to publish
    * @param payload  - The payload to publish
    */
   public publishMessageToFrame(
-    event: MeetingControlsEvent | MeetingEvent | RealtimeEvent | TranscriptionEvent,
+    event: MeetingControlsEvent | MeetingEvent | RealtimeEvent,
     payload?: unknown,
   ): void {
     this.messageBridge.publish(event, payload);

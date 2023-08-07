@@ -1,6 +1,6 @@
 import { AblyRealtimeService } from '../../realtime';
 import { AblyParticipant } from '../../realtime/ably/types';
-import { ParticipantOn3D, ParticipantTo3D } from '../participants/types';
+import { AvatarConfig, ParticipantOn3D, ParticipantTo3D } from '../participants/types';
 
 export interface DefaultPluginManager {
   isAvatarsEnabled: boolean;
@@ -19,6 +19,7 @@ export interface DefaultPluginOptions {
   plugin: Plugin;
   localParticipant: ParticipantTo3D;
   RealtimeService: AblyRealtimeService;
+  avatarConfig: AvatarConfig;
 }
 
 export interface PluginMethods {

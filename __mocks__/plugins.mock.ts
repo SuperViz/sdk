@@ -9,7 +9,7 @@ import {
 import { DefaultIntegrationManagerOptions } from '../src/services/integration/types';
 
 import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from './participants.mock';
-import { MOCK_REALTIME_SERVICE } from './realtime.mock';
+import { ABLY_REALTIME_MOCK } from './realtime.mock';
 
 export const MOCK_AVATAR_CONFIG: AvatarConfig = {
   height: 1.8,
@@ -76,5 +76,5 @@ export const MOCK_INTEGRATION_MANAGER_OPTIONS: DefaultIntegrationManagerOptions 
   avatarConfig: MOCK_AVATAR_CONFIG,
   participantList: MOCK_PARTICIPANT_TO_3D_LIST,
   plugin: MOCK_PLUGIN,
-  RealtimeService: MOCK_REALTIME_SERVICE,
+  RealtimeService: ABLY_REALTIME_MOCK,
 };

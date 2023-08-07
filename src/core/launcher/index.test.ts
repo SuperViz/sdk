@@ -89,6 +89,8 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
         localParticipant: MOCK_LOCAL_PARTICIPANT,
         realtime: ABLY_REALTIME_MOCK,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
       });
     });
 

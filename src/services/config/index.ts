@@ -5,7 +5,7 @@ import { Nullable } from '../../common/types/global.types';
 import type { Configuration } from './types';
 
 export class ConfigurationService {
-  private configuration: Nullable<Configuration>;
+  public configuration: Nullable<Configuration>;
 
   public setConfig(config: Configuration): void {
     this.configuration = config;
@@ -24,6 +24,4 @@ export class ConfigurationService {
   }
 }
 
-const configService = new ConfigurationService();
-
-export default configService;
+export default new ConfigurationService();
