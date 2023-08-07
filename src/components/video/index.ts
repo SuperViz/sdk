@@ -122,6 +122,9 @@ export class VideoComponent extends BaseComponent {
 
     this.unsubscribeFromRealtimeEvents();
     this.unsubscribeFromVideoEvents();
+
+    this.videoManager.leave();
+    this.connectionService.removeListeners();
   }
 
   /**
