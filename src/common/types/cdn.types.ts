@@ -1,3 +1,4 @@
+import { VideoComponent } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
 
 import {
@@ -20,4 +21,5 @@ export interface SuperVizCdn {
   MeetingConnectionStatus: typeof MeetingConnectionStatus;
   MeetingControlsEvent: typeof MeetingControlsEvent;
   ParticipantEvent: typeof ParticipantEvent;
+  VideoComponent: typeof VideoComponent;
 }

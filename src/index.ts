@@ -7,6 +7,7 @@ import {
   MeetingControlsEvent,
   ParticipantEvent,
 } from './common/types/events.types';
+import { VideoComponent } from './components';
 import init from './core';
 import './web-components';
 
@@ -30,6 +31,7 @@ if (window) {
     MeetingConnectionStatus,
     MeetingControlsEvent,
     ParticipantEvent,
+    VideoComponent,
   };
 }
 
