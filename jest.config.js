@@ -9,6 +9,7 @@ module.exports = {
     '<rootDir>/src/**/*.ts',
     '<rootDir>/src/**/*.js',
     '!<rootDir>/src/web-components/**/*',
+    '!<rootDir>/src/index.ts',
   ],
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['html', 'lcov'].concat(argv.coverage ? ['text'] : []),

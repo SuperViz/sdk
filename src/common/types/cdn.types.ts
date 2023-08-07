@@ -1,4 +1,5 @@
-import { SuperVizSdk } from '../../types';
+import { VideoComponent } from '../../components';
+import { LauncherFacade } from '../../core/launcher/types';
 
 import {
   DeviceEvent,
@@ -12,7 +13,7 @@ import {
 import { SuperVizSdkOptions } from './sdk-options.types';
 
 export interface SuperVizCdn {
-  init: (apiKey: string, options: SuperVizSdkOptions) => Promise<SuperVizSdk>;
+  init: (apiKey: string, options: SuperVizSdkOptions) => Promise<LauncherFacade>;
   MeetingEvent: typeof MeetingEvent;
   RealtimeEvent: typeof RealtimeEvent;
   DeviceEvent: typeof DeviceEvent;
@@ -20,4 +21,5 @@ export interface SuperVizCdn {
   MeetingConnectionStatus: typeof MeetingConnectionStatus;
   MeetingControlsEvent: typeof MeetingControlsEvent;
   ParticipantEvent: typeof ParticipantEvent;
+  VideoComponent: typeof VideoComponent;
 }

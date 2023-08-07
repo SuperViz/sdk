@@ -22,7 +22,6 @@ export class Launcher implements DefaultLauncher {
   private readonly realtime: AblyRealtimeService;
   private readonly pubsub: PubSub;
 
-  private components: BaseComponent[] = [];
   private participants: Participant[] = [];
 
   constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions) {
@@ -52,6 +51,8 @@ export class Launcher implements DefaultLauncher {
     component.attach({
       localParticipant: this.participant,
       realtime: this.realtime,
+      group: this.group,
+      config: config.configuration,
     });
   };
 

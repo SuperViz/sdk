@@ -10,27 +10,6 @@ const REMOTE_CONFIG_MOCK = {
   conferenceLayerUrl: 'https://video-conference-layer.superviz.com/14.0.1-rc.2/index.html',
 };
 
-const COMMUNICATOR_INSTANCE_MOCK = {
-  setSyncProperty: jest.fn(),
-  subscribe: jest.fn(),
-  unsubscribe: jest.fn(),
-  destroy: jest.fn(),
-  follow: jest.fn(),
-  fetchSyncProperty: jest.fn(),
-  gather: jest.fn(),
-  goTo: jest.fn(),
-  toggleMeetingSetup: jest.fn(),
-  toggleMicrophone: jest.fn(),
-  toggleCam: jest.fn(),
-  toggleScreenShare: jest.fn(),
-  hangUp: jest.fn(),
-  toggleChat: jest.fn(),
-  startTranscription: jest.fn(),
-  stopTranscription: jest.fn(),
-  loadPlugin: jest.fn(),
-  unloadPlugin: jest.fn(),
-};
-
 const UNIT_TEST_API_KEY = 'unit-test-api-key';
 
 const SIMPLE_INITIALIZATION_MOCK: SuperVizSdkOptions = {
@@ -57,12 +36,6 @@ jest.mock('../services/auth-service', () => ({
   }),
 }));
 jest.mock('../services/remote-config-service');
-jest.mock('../services/communicator', () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => {
-    return COMMUNICATOR_INSTANCE_MOCK;
-  }),
-}));
 
 beforeEach(() => {
   jest.clearAllMocks();
