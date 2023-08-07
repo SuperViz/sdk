@@ -60,6 +60,8 @@ export abstract class BaseComponent {
     this.realtime = undefined;
     this.localParticipant = undefined;
     this.isAttached = false;
+
+    Object.keys(this.observers).forEach((type) => this.unsubscribe(type));
   };
 
   /**

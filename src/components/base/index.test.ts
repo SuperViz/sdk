@@ -1,4 +1,5 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
+import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { Group, Participant } from '../../common/types/participant.types';
@@ -90,6 +91,26 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance['realtime']).toBeUndefined();
       expect(DummyComponentInstance['isAttached']).toBeFalsy();
       expect(DummyComponentInstance['destroy']).toBeCalled();
+    });
+
+    test('should unsubscribe from all events', () => {
+      const callback = jest.fn();
+      DummyComponentInstance['destroy'] = jest.fn();
+
+      DummyComponentInstance.attach({
+        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        realtime: ABLY_REALTIME_MOCK,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
+      });
+
+      DummyComponentInstance.subscribe('test', callback);
+
+      expect(DummyComponentInstance['observers']['test']).toBeDefined();
+
+      DummyComponentInstance.detach();
+
+      expect(DummyComponentInstance['observers']['test']).toBeUndefined();
     });
 
     test('should not detach the component if it is not attached', () => {
