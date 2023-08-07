@@ -1,5 +1,6 @@
 /// <reference types="lodash" />
 import Ably from 'ably';
+import { TranscriptState } from '../../../common/types/events.types';
 import { Participant } from '../../../common/types/participant.types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
@@ -51,7 +52,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     private auth;
     /**
-     * @function Join
+     * @function join
      * @description join realtime room
      * @returns {void}
      * @param joinProperties
@@ -71,6 +72,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     setHost: (participantId: string) => Promise<void>;
     /**
+     * @function setKickParticipant
+     * @param {string} kickParticipantId
+     * @description set a participant to be kicked from the room
+     * @returns {void}
+     */
+    setKickParticipant: (kickParticipantId: string) => Promise<void>;
+    /**
      * @function setGridMode
      * @param {boolean} isGridModeEnable
      * @description synchronizes the grid mode of the cameras in the room
@@ -84,6 +92,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     setDrawing(drawing: DrawingData): void;
+    /**
+     * @function setTranscript
+     * @param state {TranscriptState}
+     * @description synchronizes the transcript state in the room
+     * @returns {void}
+     */
+    setTranscript(state: TranscriptState): void;
     /**
      * @function setSyncProperty
      * @param {string} name
@@ -269,7 +284,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @function fetchSyncClientProperty
      * @description
      * @param {string} eventName - name event to be fetched
-     * @returns {ClientRealtimeData}
+     * @returns {Promise<RealtimeMessage | Record<string, RealtimeMessage>}
      */
     fetchSyncClientProperty(eventName?: string): Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
     /**
@@ -347,6 +362,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @function isMessageTooBig
      * @description calculates the size of a sync message and checks if it's bigger than limit
      * @param {unknown} msg
+     * @param {number} limit
      * @returns {boolean}
      */
     private isMessageTooBig;

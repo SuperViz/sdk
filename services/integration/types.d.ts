@@ -1,5 +1,4 @@
-import { PluginOptions } from '../communicator/types';
-import { DefaultPluginManager } from './base-plugin/types';
+import { DefaultPluginManager, DefaultPluginOptions } from './base-plugin/types';
 import { ParticipantOn3D, ParticipantTo3D } from './participants/types';
 export interface DefaultIntegrationManager extends DefaultPluginManager {
     participants: ParticipantOn3D[];
@@ -8,6 +7,6 @@ export interface DefaultIntegrationManager extends DefaultPluginManager {
     isMouseEnabled: boolean;
     isLaserEnabled: boolean;
 }
-export interface DefaultIntegrationManagerOptions extends PluginOptions {
+export interface DefaultIntegrationManagerOptions extends DefaultPluginOptions {
     participantList: ParticipantTo3D[];
 }

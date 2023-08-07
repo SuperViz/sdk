@@ -1,8 +1,9 @@
+import { Nullable } from '../../common/types/global.types';
 import type { Configuration } from './types';
 export declare class ConfigurationService {
-    private configuration;
+    configuration: Nullable<Configuration>;
     setConfig(config: Configuration): void;
     get<T>(key: keyof Configuration, defaultValue?: T): T;
 }
-declare const configService: ConfigurationService;
-export default configService;
+declare const _default: ConfigurationService;
+export default _default;

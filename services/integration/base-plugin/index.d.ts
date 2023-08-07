@@ -1,7 +1,6 @@
-import { PluginOptions } from '../../communicator/types';
 import { AblyRealtimeService } from '../../realtime';
 import { ParticipantOn3D } from '../participants/types';
-import { DefaultPluginManager, Plugin } from './types';
+import { DefaultPluginManager, DefaultPluginOptions, Plugin } from './types';
 export declare class BasePluginManager implements DefaultPluginManager {
     private _isAvatarsEnabled;
     private _isMouseEnabled;
@@ -11,7 +10,7 @@ export declare class BasePluginManager implements DefaultPluginManager {
     plugin: Plugin;
     private _localParticipant;
     RealtimeService: AblyRealtimeService;
-    constructor({ isAvatarsEnabled, isMouseEnabled, isLaserEnabled, isNameEnabled, renderLocalAvatar, plugin, RealtimeService, localParticipant, }: PluginOptions);
+    constructor({ isAvatarsEnabled, isMouseEnabled, isLaserEnabled, isNameEnabled, renderLocalAvatar, plugin, RealtimeService, localParticipant, }: DefaultPluginOptions);
     get isAvatarsEnabled(): boolean;
     get isMouseEnabled(): boolean;
     get isLaserEnabled(): boolean;
