@@ -1,17 +1,25 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { CSSResultGroup, LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { variableStyle, typography, topbarStyle } from '../css';
+import { WebComponentsBase } from '../../base';
+import { topbarStyle } from '../css';
+
+const WebComponentsBaseElement = WebComponentsBase(LitElement);
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], topbarStyle];
 
 @customElement('superviz-comments-topbar')
-export class CommentsTopbar extends LitElement {
-  static styles = [variableStyle, typography, topbarStyle];
+export class CommentsTopbar extends WebComponentsBase(LitElement) {
+  static styles = styles;
+
+  private close() {
+    this.dispatchEvent(new CustomEvent('close'));
+  }
 
   protected render() {
     return html`
       <div class="topbar">
         <span class="text text-bold">COMMENTS</span>
-        <span>></span>
+        <span @click=${this.close}>></span>
       </div>
     `;
   }

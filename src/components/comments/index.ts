@@ -15,11 +15,21 @@ export class CommentsComponent extends BaseComponent {
 
   protected start(): void {
     this.element = document.createElement('superviz-comments') as Comments;
-    document.body.appendChild(this.element);
     this.element.setAttributeNode(document.createAttribute('open'));
+    this.element.setAttribute('comments', JSON.stringify([]));
+    document.body.appendChild(this.element);
+
+    this.addListeners();
   }
 
   protected destroy(): void {
     document.body.removeChild(this.element);
+  }
+
+  private addListeners() {
+    this.element.addEventListener('comments', (e: CustomEvent) => {
+      // this.logger.info('comments', e);
+      console.log('comments', e);
+    });
   }
 }

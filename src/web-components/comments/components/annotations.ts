@@ -1,11 +1,15 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { CSSResultGroup, LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { variableStyle, typography, annotationsStyle } from '../css';
+import { WebComponentsBase } from '../../base';
+import { annotationsStyle } from '../css';
+
+const WebComponentsBaseElement = WebComponentsBase(LitElement);
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], annotationsStyle];
 
 @customElement('superviz-comments-annotations')
-export class CommentsAnnotations extends LitElement {
-  static styles = [variableStyle, typography, annotationsStyle];
+export class CommentsAnnotations extends WebComponentsBaseElement {
+  static styles = styles;
 
   protected render() {
     return html`

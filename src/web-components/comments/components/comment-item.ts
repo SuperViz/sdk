@@ -1,11 +1,15 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { CSSResultGroup, LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { variableStyle, typography, commentItemStyle } from '../css';
+import { WebComponentsBase } from '../../base';
+import { commentItemStyle } from '../css';
+
+const WebComponentsBaseElement = WebComponentsBase(LitElement);
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], commentItemStyle];
 
 @customElement('superviz-comments-comment-item')
-export class CommentsCommentItem extends LitElement {
-  static styles = [variableStyle, typography, commentItemStyle];
+export class CommentsCommentItem extends WebComponentsBaseElement {
+  static styles = styles;
 
   declare avatar: string;
   declare username: string;
@@ -24,17 +28,17 @@ export class CommentsCommentItem extends LitElement {
   protected render() {
     return html`
       <div class="comment-item">
-        <div class="comment-item__avatar">
-          <img src=${this.avatar} />
+        <div class="comment-item__user">
+          <div class="comment-item__avatar">
+            <img src=${this.avatar} />
+          </div>
+          <span class="text text-bold sv-gray-600">${this.username}</span>
+          <span class="text text-small sv-gray-500">${this.createdAt}</span>
         </div>
 
         <div class="comment-item__content">
-          <div class="comment-item__content__header">
-            <span class="text text-bold">${this.username}</span>
-            <span class="text text-small">${this.createdAt}</span>
-          </div>
           <div class="comment-item__content__body">
-            <span class="text text-big">${this.text}</span>
+            <span class="text text-big sv-gray-700">${this.text}</span>
           </div>
         </div>
       </div>

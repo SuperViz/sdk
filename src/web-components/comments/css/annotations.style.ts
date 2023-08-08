@@ -5,9 +5,9 @@ export const annotationsStyle = css`
     display: flex;
     justify-content: center;
     padding: 16px;
-    margin-bottom: 8px;
     background-color: var(--sv-gray-400);
     min-height: 10px;
+    width: 100%;
   }
 
   div.annotations .add-comment-btn {

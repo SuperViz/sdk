@@ -1,11 +1,14 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { CSSResultGroup, LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { variableStyle, typography } from '../css';
+import { WebComponentsBase } from '../../base';
+
+const WebComponentsBaseElement = WebComponentsBase(LitElement);
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || []];
 
 @customElement('superviz-comments-comment-input')
-export class CommentsCommentInput extends LitElement {
-  static styles = [variableStyle, typography];
+export class CommentsCommentInput extends WebComponentsBaseElement {
+  static styles = styles;
 
   protected render() {
     return html` <div class="comment-input">//</div> `;
