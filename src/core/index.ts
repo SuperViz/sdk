@@ -6,9 +6,9 @@ import AuthService from '../services/auth-service';
 import { BrowserService } from '../services/browser';
 import config from '../services/config';
 import RemoteConfigService from '../services/remote-config-service';
-import { SuperVizSdk } from '../types';
 
 import LauncherFacade from './launcher';
+import { LauncherFacade as LauncherFacadeType } from './launcher/types';
 
 /**
  * @function validateOptions
@@ -35,9 +35,9 @@ const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions): vo
  * @description Initialize the SDK
  * @param apiKey - API key
  * @param options - SDK options
- * @returns {SuperVizSdk}
+ * @returns {LauncherFacadeType}
  */
-const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
+const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<LauncherFacadeType> => {
   const validApiKey = apiKey && apiKey.trim();
 
   if (!validApiKey) throw new Error('API key is required');

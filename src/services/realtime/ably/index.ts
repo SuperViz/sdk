@@ -1,7 +1,7 @@
 import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
-import { RealtimeEvent } from '../../../common/types/events.types';
+import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { DrawingData } from '../../video-conference-manager/types';
@@ -169,7 +169,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function Join
+   * @function join
    * @description join realtime room
    * @returns {void}
    * @param joinProperties
@@ -245,6 +245,21 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
+   * @function setKickParticipant
+   * @param {string} kickParticipantId
+   * @description set a participant to be kicked from the room
+   * @returns {void}
+   */
+  public setKickParticipant = (kickParticipantId: string): Promise<void> => {
+    if (!kickParticipantId) return;
+
+    const participant = this.participants[kickParticipantId];
+    this.updateRoomProperties({
+      kickParticipant: participant,
+    });
+  };
+
+  /**
    * @function setGridMode
    * @param {boolean} isGridModeEnable
    * @description synchronizes the grid mode of the cameras in the room
@@ -264,6 +279,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public setDrawing(drawing: DrawingData): void {
     const roomProperties = this.localRoomProperties;
     this.updateRoomProperties(Object.assign({}, roomProperties, { drawing }));
+  }
+
+  /**
+   * @function setTranscript
+   * @param state {TranscriptState}
+   * @description synchronizes the transcript state in the room
+   * @returns {void}
+   */
+  public setTranscript(state: TranscriptState): void {
+    const roomProperties = this.localRoomProperties;
+    this.updateRoomProperties(Object.assign({}, roomProperties, { transcript: state }));
   }
 
   /**
@@ -530,6 +556,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     this.updateParticipants();
+
+    if (data.kickParticipant && data.kickParticipant.clientId === this.myParticipant.clientId) {
+      this.updateRoomProperties({ kickParticipant: null });
+      this.kickParticipantObserver.publish(this.myParticipant.clientId);
+    }
   };
 
   /**
@@ -785,13 +816,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @function fetchSyncClientProperty
    * @description
    * @param {string} eventName - name event to be fetched
-   * @returns {ClientRealtimeData}
+   * @returns {Promise<RealtimeMessage | Record<string, RealtimeMessage>}
    */
   public async fetchSyncClientProperty(
     eventName?: string,
   ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
     try {
-      const clienthistory: Record<string, RealtimeMessage> = await new Promise(
+      const clientHistory: Record<string, RealtimeMessage> = await new Promise(
         (resolve, reject) => {
           this.clientRoomStateChannel.history((error, resultPage) => {
             if (error) reject(error);
@@ -807,15 +838,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         },
       );
 
-      if (eventName && !clienthistory[eventName]) {
+      if (eventName && !clientHistory[eventName]) {
         throw new Error(`Event ${eventName} not found in the history`);
       }
 
       if (eventName) {
-        return clienthistory[eventName];
+        return clientHistory[eventName];
       }
 
-      return clienthistory;
+      return clientHistory;
     } catch (error) {
       this.logger.log('REALTIME', 'Error in fetch client realtime data', error.message);
       this.throw(error.message);
@@ -1108,6 +1139,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @function isMessageTooBig
    * @description calculates the size of a sync message and checks if it's bigger than limit
    * @param {unknown} msg
+   * @param {number} limit
    * @returns {boolean}
    */
   private isMessageTooBig = (msg: unknown, limit: number = MESSAGE_SIZE_LIMIT): boolean => {

@@ -1,14 +1,9 @@
+import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
 
 export interface VideoManagerOptions {
-  conferenceLayerUrl: string;
-  ablyKey: string;
-  apiKey: string;
-  apiUrl: string;
-  debug: boolean;
   language?: string;
-  roomId: string;
   canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;
@@ -142,6 +137,11 @@ export interface DrawingData {
   externalClickX: number;
   externalClickY: number;
   fadeOut: boolean;
+}
+
+export interface RealtimeObserverPayload {
+  event: RealtimeEvent | MeetingEvent;
+  data: unknown;
 }
 
 export enum WaterMark {
