@@ -11,6 +11,8 @@ export interface Participant {
   color?: string;
   avatar?: Avatar;
   isHost?: boolean;
+  mousePositionX?: string;
+  mousePositionY?: string;
 }
 
 export interface Group {
