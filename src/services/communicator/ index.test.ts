@@ -66,6 +66,7 @@ const AblyRealtimeMock = {
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
   participantLeaveObserver: MOCK_OBSERVER_HELPER,
   hostObserver: MOCK_OBSERVER_HELPER,
+  hostAvailabilityObserver: MOCK_OBSERVER_HELPER,
   syncPropertiesObserver: MOCK_OBSERVER_HELPER,
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
   kickParticipantObserver: MOCK_OBSERVER_HELPER,
@@ -219,6 +220,7 @@ describe('Communicator', () => {
       expect(AblyRealtimeMock.participantJoinedObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.participantLeaveObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.hostObserver.unsubscribe).toBeCalled();
+      expect(AblyRealtimeMock.hostAvailabilityObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.syncPropertiesObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.kickAllParticipantsObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.kickParticipantObserver.unsubscribe).toBeCalled();

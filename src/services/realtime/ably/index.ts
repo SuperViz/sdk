@@ -163,7 +163,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function Join
+   * @function join
    * @description join realtime room
    * @returns {void}
    * @param joinProperties
@@ -281,7 +281,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public setSyncProperty<T>(name: string, property: T): void {
     const queue = this.clientSyncPropertiesQueue[name] ?? [];
 
-    // clousure to create the event
+    // closure to create the event
     const createEvent = (name: string, data: T): RealtimeMessage => {
       return {
         name,
@@ -529,6 +529,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
 
     if (!data.hostClientId) {
+      this.hostParticipantId = null;
       this.hostPassingHandle();
     } else if (data?.hostClientId !== this.hostParticipantId) {
       this.updateHostInfo(data.hostClientId);
@@ -679,6 +680,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     if (KICK_PARTICIPANTS_TIMEOUT) {
       clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
+      this.hostAvailabilityObserver.publish(true);
     }
 
     const oldHostParticipantId = this.hostParticipantId;
@@ -860,6 +862,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
       // no proper host candidate, kick everyone
       if (this.shouldKickParticipantsOnHostLeave && hostCandidates.length === 0) {
+        this.hostAvailabilityObserver.publish(false);
         KICK_PARTICIPANTS_TIMEOUT = setTimeout(() => {
           this.kickAllParticipantsObserver.publish(true);
         }, KICK_PARTICIPANTS_TIME);
@@ -1045,11 +1048,16 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (!this.localRoomProperties) {
       this.initializeRoomProperties();
     } else {
-      await Promise.all([
-        this.updateParticipants(),
-        this.localRoomProperties?.hostClientId &&
-          this.updateHostInfo(this.localRoomProperties.hostClientId),
-      ]);
+      this.updateParticipants();
+
+      const isHostCandidate = this.myParticipant.data.type === ParticipantType.HOST;
+
+      if (this.localRoomProperties?.hostClientId) {
+        await this.updateHostInfo(this.localRoomProperties.hostClientId);
+      } else if (isHostCandidate) {
+        await this.setHost(this.myParticipant.data.participantId);
+      }
+
       this.localRoomProperties = await this.fetchRoomProperties();
       this.updateLocalRoomState(this.localRoomProperties);
     }
