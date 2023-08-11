@@ -514,6 +514,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
 
     if (!data.hostClientId) {
+      this.hostParticipantId = null;
       this.hostPassingHandle();
     } else if (data?.hostClientId !== this.hostParticipantId) {
       this.updateHostInfo(data.hostClientId);
@@ -1027,11 +1028,16 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (!this.localRoomProperties) {
       this.initializeRoomProperties();
     } else {
-      await Promise.all([
-        this.updateParticipants(),
-        this.localRoomProperties?.hostClientId &&
-          this.updateHostInfo(this.localRoomProperties.hostClientId),
-      ]);
+      this.updateParticipants();
+
+      const isHostCandidate = this.myParticipant.data.type === ParticipantType.HOST;
+
+      if (this.localRoomProperties?.hostClientId) {
+        await this.updateHostInfo(this.localRoomProperties.hostClientId);
+      } else if (isHostCandidate) {
+        await this.setHost(this.myParticipant.data.participantId);
+      }
+
       this.localRoomProperties = await this.fetchRoomProperties();
       this.updateLocalRoomState(this.localRoomProperties);
     }
