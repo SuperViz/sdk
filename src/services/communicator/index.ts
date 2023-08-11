@@ -145,6 +145,7 @@ class Communicator {
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
+    this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityDidChange);
 
     this.realtime.start({
       initialParticipantData: {
@@ -265,7 +266,7 @@ class Communicator {
 
   /**
    * @function publishMeetingControlEvent
-   * @param event: MeetingControlsEvent
+   * @param {MeetingControlsEvent} event
    * @description publish event to meeting controls
    * @returns {void}
    */
@@ -570,6 +571,21 @@ class Communicator {
   };
 
   /**
+   * @function onHostAvailabilityDidChange
+   * @description handler for host availability inside room
+   * @param {boolean} hasHost
+   * @return {void}
+   */
+
+  private onHostAvailabilityDidChange = (hasHost: boolean): void => {
+    if (hasHost) {
+      this.publish(RealtimeEvent.REALTIME_HOST_AVAILABLE);
+      return;
+    }
+    this.publish(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
+  };
+
+  /**
    * @function onGridModeDidChange
    * @description handler for grid mode change event
    * @param {boolean} isGridModeEnable - is grid mode enable
@@ -698,7 +714,7 @@ class Communicator {
   };
 
   /**
-   * @function onCOnnectionStatusChange
+   * @function onConnectionStatusChange
    * @description handler for connection status change event
    * @param {MeetingConnectionStatus} newStatus - new connection status
    * @returns {void}
