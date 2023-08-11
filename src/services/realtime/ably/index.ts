@@ -163,7 +163,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function Join
+   * @function join
    * @description join realtime room
    * @returns {void}
    * @param joinProperties
@@ -266,7 +266,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public setSyncProperty<T>(name: string, property: T): void {
     const queue = this.clientSyncPropertiesQueue[name] ?? [];
 
-    // clousure to create the event
+    // closure to create the event
     const createEvent = (name: string, data: T): RealtimeMessage => {
       return {
         name,
@@ -659,6 +659,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     if (KICK_PARTICIPANTS_TIMEOUT) {
       clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
+      this.hostAvailabilityObserver.publish(true);
     }
 
     const oldHostParticipantId = this.hostParticipantId;
@@ -840,6 +841,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
       // no proper host candidate, kick everyone
       if (this.shouldKickParticipantsOnHostLeave && hostCandidates.length === 0) {
+        this.hostAvailabilityObserver.publish(false);
         KICK_PARTICIPANTS_TIMEOUT = setTimeout(() => {
           this.kickAllParticipantsObserver.publish(true);
         }, KICK_PARTICIPANTS_TIME);
