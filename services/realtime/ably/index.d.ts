@@ -50,7 +50,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     private auth;
     /**
-     * @function Join
+     * @function join
      * @description join realtime room
      * @returns {void}
      * @param joinProperties
