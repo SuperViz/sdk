@@ -10,6 +10,7 @@ export interface Participant {
     color?: string;
     avatar?: Avatar;
     isHost?: boolean;
+    avatarConfig?: unknown;
 }
 export interface Group {
     id: string;

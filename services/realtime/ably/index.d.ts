@@ -19,7 +19,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private clientSyncPropertiesQueue;
     private clientSyncPropertiesTimeOut;
     private isReconnecting;
-    private isJoinedRoom;
+    isJoinedRoom: boolean;
     private currentReconnectAttempt;
     private localRoomProperties?;
     private enableSync;
@@ -212,7 +212,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @description updates local participant properties
      * @returns {void}
      */
-    updateMyProperties: import("lodash").DebouncedFunc<(newProperties: ParticipantInfo) => void>;
+    updateMyProperties: import("lodash").DebouncedFunc<(newProperties?: ParticipantInfo) => void>;
     /**
      * @function updateRoomProperties
      * @param {AblyRealtimeData} properties

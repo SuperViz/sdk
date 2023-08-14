@@ -32,6 +32,7 @@ export interface RealtimeJoinOptions {
 export interface ParticipantInfo extends Partial<Participant> {
     participantId?: string;
     slotIndex?: number;
+    [key: string]: unknown;
 }
 export interface StartRealtimeType {
     participant: Participant;
