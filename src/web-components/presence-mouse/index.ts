@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { mouseOptions } from '../../components/presence-mouse/types';
+import { MouseOptions } from '../../components/presence-mouse/types';
 
 import { styles as customMouseStyles } from './styles';
 
@@ -19,10 +19,10 @@ export class PresenceMouse extends LitElement {
   /**
    * @function updatePresenceMouse
    * @description handler for update presence mouse change event
-   * @param {mouseOptions} externalParticipant - presence mouse change data
+   * @param {MouseOptions} externalParticipant - presence mouse change data
    * @returns {void}
    * */
-  public updatePresenceMouseParticipant = (externalParticipant: mouseOptions): void => {
+  public updatePresenceMouseParticipant = (externalParticipant: MouseOptions): void => {
     const userMouseIdExist = this.shadowRoot.getElementById(`mouse-${externalParticipant.id}`);
     if (!userMouseIdExist) {
       const mouseSync = this.shadowRoot.getElementById('mouse-sync');
@@ -64,8 +64,27 @@ export class PresenceMouse extends LitElement {
         mouseUser.style.backgroundColor = externalParticipant.color;
         mouseUser.innerHTML = externalParticipant.name;
       }
-      divMouseFollower.style.left = `${externalParticipant.mousePositionX.toString()}px`;
-      divMouseFollower.style.top = `${externalParticipant.mousePositionY.toString()}px`;
+
+      const { containerId } = externalParticipant;
+
+      const presenceContainerId = containerId ?
+        document.getElementById(containerId) :
+        document?.body;
+
+      let adjustedX = externalParticipant.mousePositionX;
+      let adjustedY = externalParticipant.mousePositionY;
+
+      if (containerId) {
+        const windowWidth = presenceContainerId.clientWidth;
+        const windowHeight = presenceContainerId.clientHeight;
+        adjustedX = (externalParticipant.mousePositionX /
+        externalParticipant.originalWidth) * windowWidth;
+        adjustedY = (externalParticipant.mousePositionY /
+        externalParticipant.originalHeight) * windowHeight;
+      }
+
+      divMouseFollower.style.left = `${adjustedX}px`;
+      divMouseFollower.style.top = `${adjustedY}px`;
     }
   };
 

@@ -1,4 +1,7 @@
-export interface mouseOptions {
+export interface MouseOptions {
+  containerId?: string;
+  originalHeight: number;
+  originalWidth: number;
   name: string;
   id: string;
   color: string;

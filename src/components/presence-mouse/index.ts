@@ -4,18 +4,19 @@ import { AblyParticipant } from '../../services/realtime/ably/types';
 import { PresenceMouse } from '../../web-components/presence-mouse';
 import { BaseComponent } from '../base';
 
-import { mouseOptions } from './types';
+import { MouseOptions } from './types';
 
 export class PresenceMouseComponent extends BaseComponent {
   protected name: string;
   protected logger: Logger;
   private presenceMouseElement: PresenceMouse;
+  private containerId: string | null;
 
-  constructor() {
+  constructor(container?: string | null) {
     super();
-
     this.name = 'presence-mouse-component';
     this.logger = new Logger('@superviz/sdk/presence-mouse-component');
+    this.containerId = container ?? null;
   }
 
   /**
@@ -41,8 +42,11 @@ export class PresenceMouseComponent extends BaseComponent {
 
     this.unsubscribeFromRealtimeEvents();
 
-    window.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    document.body.removeChild(this.presenceMouseElement);
+    const presenceContainerId = this.containerId ?
+      document.getElementById(this.containerId) : document?.body;
+
+    presenceContainerId.removeEventListener('mousemove', this.onMyParticipantMouseMove);
+    presenceContainerId.removeChild(this.presenceMouseElement);
   }
 
   /**
@@ -76,9 +80,17 @@ export class PresenceMouseComponent extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseMove = (e): void => {
+    const presenceContainerId = this.containerId ?
+      document.getElementById(this.containerId) : document?.body;
+
+    const rect = presenceContainerId.getBoundingClientRect();
+
     this.realtime.updateMyProperties({
-      mousePositionX: e.clientX,
-      mousePositionY: e.clientY,
+      mousePositionX: this.containerId ? e.x - rect.x : e.x,
+      mousePositionY: this.containerId ? e.y - rect.y : e.y,
+      originalWidth: this.containerId ? rect.width : 1,
+      originalHeight: this.containerId ? rect.height : 1,
+      containerId: this.containerId,
     });
   };
 
@@ -92,7 +104,7 @@ export class PresenceMouseComponent extends BaseComponent {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
     Object.values(participants).forEach((participant: AblyParticipant) => {
-      const externalParticipantData: mouseOptions = participant.data;
+      const externalParticipantData: MouseOptions = participant.data;
       const hasPresenceMouseElement = externalParticipantData?.mousePositionX
       && this.presenceMouseElement;
       const myParticipant = externalParticipantData?.id === this.localParticipant?.id;
@@ -116,9 +128,13 @@ export class PresenceMouseComponent extends BaseComponent {
     this.logger.log('presence-mouse component @ on participant joined on realtime', participant);
 
     if (participant?.data?.id === this.localParticipant?.id) {
+      const presenceContainerId = this.containerId ?
+        document.getElementById(this.containerId) : document?.body;
+
       this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
-      document.body.appendChild(this.presenceMouseElement);
-      window.addEventListener('mousemove', this.onMyParticipantMouseMove);
+
+      presenceContainerId.appendChild(this.presenceMouseElement);
+      presenceContainerId.addEventListener('mousemove', this.onMyParticipantMouseMove);
     }
   };
 

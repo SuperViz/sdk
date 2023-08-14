@@ -11,8 +11,11 @@ export interface Participant {
   color?: string;
   avatar?: Avatar;
   isHost?: boolean;
-  mousePositionX?: string;
-  mousePositionY?: string;
+  mousePositionX?: number;
+  mousePositionY?: number;
+  originalWidth?: number,
+  originalHeight?: number,
+  containerId?: string,
 }
 
 export interface Group {
