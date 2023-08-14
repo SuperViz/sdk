@@ -36,6 +36,8 @@ export interface RealtimeJoinOptions {
 export interface ParticipantInfo extends Partial<Participant> {
   participantId?: string;
   slotIndex?: number;
+  // @NOTE - this is a hack to make the participant info work with the 3D avatar
+  [key: string]: unknown;
 }
 
 export interface StartRealtimeType {

@@ -40,7 +40,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
 
   private isReconnecting: boolean = false;
-  private isJoinedRoom: boolean = false;
+  public isJoinedRoom: boolean = false;
   private currentReconnectAttempt: number = 0;
   private localRoomProperties?: AblyRealtimeData = null;
   private enableSync: boolean = true;
@@ -569,10 +569,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates local participant properties
    * @returns {void}
    */
-  public updateMyProperties = throttle((newProperties: ParticipantInfo): void => {
+  public updateMyProperties = throttle((newProperties?: ParticipantInfo): void => {
     const properties = newProperties;
 
-    if (this.isMessageTooBig(newProperties) || this.left || !this.enableSync || this.isSyncFrozen) {
+    if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
       return;
     }
 
@@ -582,12 +582,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.myParticipant.data = {
       ...this.myParticipant.data,
-      ...newProperties,
+      ...properties,
     };
 
-    if (!this.isJoinedRoom) {
-      return;
-    }
+    if (!this.isJoinedRoom) return;
 
     return this.supervizChannel.presence.update(this.myParticipant.data);
   }, SYNC_PROPERTY_INTERVAL);
@@ -1079,7 +1077,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private onParticipantJoin = (presence: Ably.Types.PresenceMessage): void => {
     this.updateParticipants();
     this.participantJoinedObserver.publish(presence);
-    this.updateMyProperties({}); // send a sync
+    this.updateMyProperties(); // send a sync
   };
 
   /**
