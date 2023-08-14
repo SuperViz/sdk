@@ -569,7 +569,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates local participant properties
    * @returns {void}
    */
-  public updateMyProperties = throttle((newProperties?: ParticipantInfo): void => {
+  public updateMyProperties = throttle((newProperties: ParticipantInfo = {}): void => {
     const properties = newProperties;
 
     if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
