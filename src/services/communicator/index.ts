@@ -146,6 +146,7 @@ class Communicator {
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
     this.realtime.kickParticipantObserver.subscribe(this.onMyParticipantLeft);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
+    this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityDidChange);
 
     this.realtime.start({
       initialParticipantData: {
@@ -574,6 +575,21 @@ class Communicator {
     if (this.realtime.isLocalParticipantHost) {
       this.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, newHost);
     }
+  };
+
+  /**
+   * @function onHostAvailabilityDidChange
+   * @description handler for host availability inside room
+   * @param {boolean} hasHost
+   * @return {void}
+   */
+
+  private onHostAvailabilityDidChange = (hasHost: boolean): void => {
+    if (hasHost) {
+      this.publish(RealtimeEvent.REALTIME_HOST_AVAILABLE);
+      return;
+    }
+    this.publish(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
   };
 
   /**

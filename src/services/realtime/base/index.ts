@@ -12,6 +12,7 @@ export class RealtimeService implements DefaultRealtimeService {
   public roomInfoUpdatedObserver: Observer;
   public roomListUpdatedObserver: Observer;
   public hostObserver: Observer;
+  public hostAvailabilityObserver: Observer;
   public realtimeStateObserver: Observer;
   public syncPropertiesObserver: Observer;
   public kickAllParticipantsObserver: Observer;
@@ -27,10 +28,11 @@ export class RealtimeService implements DefaultRealtimeService {
     this.syncPropertiesObserver = new Observer({ logger });
     this.reconnectObserver = new Observer({ logger });
 
-    // Room info obervers helpers
+    // Room info observers helpers
     this.roomInfoUpdatedObserver = new Observer({ logger });
     this.roomListUpdatedObserver = new Observer({ logger });
     this.hostObserver = new Observer({ logger });
+    this.hostAvailabilityObserver = new Observer({ logger });
     this.realtimeStateObserver = new Observer({ logger });
     this.kickAllParticipantsObserver = new Observer({ logger });
     this.kickParticipantObserver = new Observer({ logger });
@@ -66,7 +68,7 @@ export class RealtimeService implements DefaultRealtimeService {
   }
 
   /**
-   * @function getParticipantColor
+   * @function getSlotColor
    * @description get slot color string
    * @returns {string}
    * @param slotIndex
