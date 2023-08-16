@@ -1,4 +1,5 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
+import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import {
   MOCK_AVATAR,
@@ -68,6 +69,7 @@ describe('VideoComponent', () => {
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
     });
   });
 
