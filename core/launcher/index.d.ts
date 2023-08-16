@@ -8,6 +8,7 @@ export declare class Launcher implements DefaultLauncher {
     private group;
     private readonly realtime;
     private readonly pubsub;
+    private readonly eventBus;
     private participants;
     constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions);
     /**
