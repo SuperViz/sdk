@@ -1,5 +1,6 @@
 /// <reference types="lodash" />
 import Ably from 'ably';
+import { TranscriptState } from '../../../common/types/events.types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -90,6 +91,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     setDrawing(drawing: DrawingData): void;
+    /**
+     * @function setTranscript
+     * @param state {TranscriptState}
+     * @description synchronizes the transcript state in the room
+     * @returns {void}
+     */
+    setTranscript(state: TranscriptState): void;
     /**
      * @function setSyncProperty
      * @param {string} name
@@ -282,7 +290,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @function fetchSyncClientProperty
      * @description
      * @param {string} eventName - name event to be fetched
-     * @returns {ClientRealtimeData}
+     * @returns {Promise<RealtimeMessage | Record<string, RealtimeMessage>}
      */
     fetchSyncClientProperty(eventName?: string): Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
     /**
@@ -360,6 +368,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @function isMessageTooBig
      * @description calculates the size of a sync message and checks if it's bigger than limit
      * @param {unknown} msg
+     * @param {number} limit
      * @returns {boolean}
      */
     private isMessageTooBig;

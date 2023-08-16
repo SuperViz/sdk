@@ -35,8 +35,6 @@ export declare type SuperVizSdk = {
     hangUp: () => void;
     toggleCam: () => void;
     toggleChat: () => void;
-    startTranscription: (language: string) => void;
-    stopTranscription: () => void;
     loadPlugin: (plugin: Plugin, props: PluginOptions) => PluginMethods;
     unloadPlugin: () => void;
 };

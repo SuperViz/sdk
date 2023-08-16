@@ -1,8 +1,8 @@
-import { MeetingEvent, RealtimeEvent, MeetingControlsEvent, TranscriptionEvent } from '../../common/types/events.types';
+import { MeetingEvent, RealtimeEvent, MeetingControlsEvent } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Observer } from '../../common/utils';
 import { VideoFrameState, VideoManagerOptions } from './types';
-export default class VideoConfereceManager {
+export default class VideoConferenceManager {
     private messageBridge;
     private bricklayer;
     private browserService;
@@ -18,6 +18,7 @@ export default class VideoConfereceManager {
     readonly kickParticipantObserver: Observer;
     readonly gridModeChangeObserver: Observer;
     readonly drawingChangeObserver: Observer;
+    readonly transcriptChangeObserver: Observer;
     readonly followParticipantObserver: Observer;
     readonly goToParticipantObserver: Observer;
     readonly gatherParticipantsObserver: Observer;
@@ -83,7 +84,7 @@ export default class VideoConfereceManager {
      */
     private updateFrameLocale;
     /**
-     * @function updateMeetingAvatar
+     * @function updateMeetingAvatars
      * @description update list of avatars
      * @returns {void}
      */
@@ -150,6 +151,12 @@ export default class VideoConfereceManager {
      */
     private onDrawingChange;
     /**
+     * @function onTranscriptChange
+     * @param state {TranscriptState}
+     * @returns {void}
+     */
+    private onTranscriptChange;
+    /**
      * @function onSameAccountError
      * @param {string} error
      * @returns {void}
@@ -193,8 +200,8 @@ export default class VideoConfereceManager {
     /**
      * @function publishMessageToFrame
      * @description Publishes a message to the frame
-     * @param message - The event to publish
+     * @param event - The event to publish
      * @param payload  - The payload to publish
      */
-    publishMessageToFrame(event: MeetingControlsEvent | MeetingEvent | RealtimeEvent | TranscriptionEvent, payload?: unknown): void;
+    publishMessageToFrame(event: MeetingControlsEvent | MeetingEvent | RealtimeEvent, payload?: unknown): void;
 }

@@ -1,4 +1,5 @@
 import type Ably from 'ably';
+import { TranscriptState } from '../../../common/types/events.types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { DefaultRealtimeMethods } from '../base/types';
 export interface AblyRealtime extends DefaultRealtimeMethods {
@@ -15,6 +16,7 @@ export interface AblyRealtimeData {
     gather?: boolean;
     drawing?: DrawingData;
     kickParticipant?: AblyParticipant;
+    transcript?: TranscriptState;
 }
 export declare type AblyTokenCallBack = (error: Ably.Types.ErrorInfo | string, tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string) => void;
 export interface ParticipantDataInput {
