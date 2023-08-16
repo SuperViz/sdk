@@ -7,8 +7,7 @@ import {
   RealtimeEvent,
   Dimensions,
   MeetingControlsEvent,
-  FrameEvent,
-  TranscriptionEvent,
+  FrameEvent, TranscriptState,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
@@ -33,7 +32,7 @@ import {
 
 const FRAME_ID = 'sv-video-frame';
 
-export default class VideoConfereceManager {
+export default class VideoConferenceManager {
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
   private browserService: BrowserService;
@@ -54,6 +53,7 @@ export default class VideoConfereceManager {
   public readonly kickParticipantObserver = new Observer({ logger });
   public readonly gridModeChangeObserver = new Observer({ logger });
   public readonly drawingChangeObserver = new Observer({ logger });
+  public readonly transcriptChangeObserver = new Observer({ logger });
 
   public readonly followParticipantObserver = new Observer({ logger });
   public readonly goToParticipantObserver = new Observer({ logger });
@@ -264,6 +264,7 @@ export default class VideoConfereceManager {
     this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_DRAWING_CHANGE, this.onDrawingChange);
+    this.messageBridge.listen(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, this.onTranscriptChange);
 
     this.messageBridge.listen(FrameEvent.FRAME_DIMENSIONS_UPDATE, this.onFrameDimensionsUpdate);
     this.messageBridge.listen(
@@ -408,7 +409,7 @@ export default class VideoConfereceManager {
   };
 
   /**
-   * @function updateMeetingAvatar
+   * @function updateMeetingAvatars
    * @description update list of avatars
    * @returns {void}
    */
@@ -519,6 +520,15 @@ export default class VideoConfereceManager {
   };
 
   /**
+   * @function onTranscriptChange
+   * @param state {TranscriptState}
+   * @returns {void}
+   */
+  private onTranscriptChange = (state: TranscriptState): void => {
+    this.transcriptChangeObserver.publish(state);
+  };
+
+  /**
    * @function onSameAccountError
    * @param {string} error
    * @returns {void}
@@ -594,6 +604,7 @@ export default class VideoConfereceManager {
     this.kickParticipantObserver.destroy();
     this.gridModeChangeObserver.destroy();
     this.drawingChangeObserver.destroy();
+    this.transcriptChangeObserver.destroy();
 
     this.followParticipantObserver.destroy();
     this.goToParticipantObserver.destroy();
@@ -612,11 +623,11 @@ export default class VideoConfereceManager {
   /**
    * @function publishMessageToFrame
    * @description Publishes a message to the frame
-   * @param message - The event to publish
+   * @param event - The event to publish
    * @param payload  - The payload to publish
    */
   public publishMessageToFrame(
-    event: MeetingControlsEvent | MeetingEvent | RealtimeEvent | TranscriptionEvent,
+    event: MeetingControlsEvent | MeetingEvent | RealtimeEvent,
     payload?: unknown,
   ): void {
     this.messageBridge.publish(event, payload);

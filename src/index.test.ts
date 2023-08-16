@@ -38,8 +38,6 @@ const COMMUNICATOR_INSTANCE_MOCK = {
   toggleScreenShare: jest.fn(),
   hangUp: jest.fn(),
   toggleChat: jest.fn(),
-  startTranscription: jest.fn(),
-  stopTranscription: jest.fn(),
   loadPlugin: jest.fn(),
   unloadPlugin: jest.fn(),
 };
@@ -83,11 +81,7 @@ jest.mock('./services/api');
 jest.mock('./services/auth-service', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation((_, apiKey: string) => {
-    if (apiKey === UNIT_TEST_API_KEY) {
-      return true;
-    }
-
-    return false;
+    return apiKey === UNIT_TEST_API_KEY;
   }),
 }));
 jest.mock('./services/remote-config-service');
