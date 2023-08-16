@@ -359,6 +359,9 @@ export class VideoComponent extends BaseComponent {
       [RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE]: (data: TranscriptState) => {
         this.realtime.setTranscript(data);
       },
+      [RealtimeEvent.REALTIME_GO_TO_PARTICIPANT]: (data: string) => {
+        this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, data);
+      },
     }[event](data);
 
     this.publish(event, data);
