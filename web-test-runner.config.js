@@ -45,7 +45,7 @@ module.exports = {
       functions: 70,
       lines: 70,
     },
-    include: ['src/web-components/**/*.{ts}'],
+    include: ['src/web-components/**/*.ts'],
   },
   testRunnerHtml: (testFramework) => `
     <html>
