@@ -13,7 +13,7 @@ describe('comments', () => {
 
   test('should close superviz comments', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments')[0];
-    const app = renderedElement.shadowRoot?.getElementById('app');
+    const app = renderedElement.shadowRoot?.getElementById('superviz-comments');
 
     renderedElement.removeAttribute('open');
 
@@ -25,13 +25,13 @@ describe('comments', () => {
 
   test('should open superviz comments', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments')[0];
-    const app = renderedElement.shadowRoot?.getElementById('app');
+    const app = renderedElement.shadowRoot?.getElementById('superviz-comments');
 
     renderedElement.setAttributeNode(document.createAttribute('open'));
 
     await sleep();
 
     expect(renderedElement.hasAttribute('open')).toBeTruthy();
-    expect(app?.classList.contains('container')).toBeTruthy();
+    expect(app?.classList.contains('container')).toBe(true);
   });
 });
