@@ -1,21 +1,17 @@
-export type AnnotationDto = {
+export type AnnotationParams = {
   roomId: string;
   url: string;
   position: string;
   userId: string;
 }
 
-export type CommentDto = {
+export type CommentParams = {
   annotationId: string;
   userId: string;
   text: string;
 }
 
-export type FetchAnnotationsDto = {
+export type FetchAnnotationsParams = {
   roomId: string;
   url: string;
-}
-
-export type Annotation = {
-  //
 }

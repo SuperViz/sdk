@@ -1,4 +1,4 @@
 export const remoteConfig = {
-    apiUrl: 'dev-url',
-    conferenceLayerUrl: 'frame-url',
-}
+  apiUrl: 'dev-url',
+  conferenceLayerUrl: 'frame-url',
+};

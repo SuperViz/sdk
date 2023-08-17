@@ -10,6 +10,11 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], content
 
 @customElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {
+  constructor() {
+    super();
+    this.annotations = [];
+  }
+
   static styles = styles;
 
   declare annotations: Annotation[];

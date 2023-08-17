@@ -1,6 +1,6 @@
 import { doRequest } from '../../common/utils';
 
-import { AnnotationDto, CommentDto, FetchAnnotationsDto } from './types';
+import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
 
 export default class ApiService {
   static createUrl(baseUrl: string, path: string, query = {}): string {
@@ -29,19 +29,19 @@ export default class ApiService {
     return message;
   }
 
-  static async createAnnotations(baseUrl: string, apiKey: string, annotations: AnnotationDto) {
+  static async createAnnotations(baseUrl: string, apiKey: string, annotations: AnnotationParams) {
     const path = '/annotations';
     const url = this.createUrl(baseUrl, path);
     return doRequest(url, 'POST', { ...annotations }, { apikey: apiKey });
   }
 
-  static async createComment(baseUrl: string, apiKey: string, comment: CommentDto) {
+  static async createComment(baseUrl: string, apiKey: string, comment: CommentParams) {
     const path = '/comments';
     const url = this.createUrl(baseUrl, path);
     return doRequest(url, 'POST', { ...comment }, { apikey: apiKey });
   }
 
-  static async fetchAnnotation(baseUrl: string, apiKey: string, query: FetchAnnotationsDto) {
+  static async fetchAnnotation(baseUrl: string, apiKey: string, query: FetchAnnotationsParams) {
     const path = '/annotations';
     const url = this.createUrl(baseUrl, path, {
       roomId: query.roomId,

@@ -5,6 +5,7 @@ import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
 import config from '../../services/config';
+import { EventBus } from '../../services/event-bus';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
@@ -21,6 +22,7 @@ export class Launcher implements DefaultLauncher {
 
   private readonly realtime: AblyRealtimeService;
   private readonly pubsub: PubSub;
+  private readonly eventBus: EventBus = new EventBus();
 
   private participants: Participant[] = [];
 
@@ -34,7 +36,11 @@ export class Launcher implements DefaultLauncher {
       config.get<string>('apiUrl'),
       config.get<string>('ablyKey'),
     );
+
+    // events with realtime
     this.pubsub = new PubSub(this.realtime);
+    // internal events without realtime
+    this.eventBus = new EventBus();
 
     this.logger.log('launcher created');
 
@@ -53,6 +59,7 @@ export class Launcher implements DefaultLauncher {
       realtime: this.realtime,
       group: this.group,
       config: config.configuration,
+      eventBus: this.eventBus,
     });
   };
 

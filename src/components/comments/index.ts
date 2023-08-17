@@ -10,9 +10,6 @@ export class CommentsComponent extends BaseComponent {
   protected name: string;
   protected logger: Logger;
   protected element: Comments;
-  private apiKey: string;
-  private apiUrl: string;
-  private roomId: string;
   private url: string;
 
   constructor() {
@@ -27,9 +24,6 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   protected start(): void {
-    this.apiKey = config.get<string>('apiKey');
-    this.apiUrl = config.get<string>('apiUrl');
-    this.roomId = config.get<string>('roomId');
     this.url = window.location.href;
 
     this.element = document.createElement('superviz-comments') as Comments;
@@ -47,8 +41,10 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   protected destroy(): void {
-    document.body.removeChild(this.element);
     this.destroyListeners();
+
+    document.body.removeChild(this.element);
+    this.element = undefined;
   }
 
   /**
@@ -77,10 +73,10 @@ export class CommentsComponent extends BaseComponent {
    */
   private createAnnotation = async (e: CustomEvent): Promise<void> => {
     const { text, position } = e.detail;
-    const { apiUrl, apiKey, roomId, url } = this;
+    const { url } = this;
 
-    const annotation: Annotation = await ApiService.createAnnotations(apiUrl, apiKey, {
-      roomId,
+    const annotation: Annotation = await ApiService.createAnnotations(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
+      roomId: config.get<string>('roomId'),
       position: JSON.stringify(position),
       url,
       userId: this.localParticipant.id,
@@ -102,9 +98,7 @@ export class CommentsComponent extends BaseComponent {
    * @returns {Promise<Comment>} - A promise that resolves with the created comment object
    */
   private async createComment(annotationId: string, text: string): Promise<Comment> {
-    const { apiUrl, apiKey } = this;
-
-    return ApiService.createComment(apiUrl, apiKey, {
+    return ApiService.createComment(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
       annotationId,
       userId: this.localParticipant.id,
       text,
@@ -128,12 +122,15 @@ export class CommentsComponent extends BaseComponent {
    */
   private async fetchAnnotations(): Promise<void> {
     try {
-      const { apiUrl, apiKey, roomId } = this;
+      const annotations: Annotation[] = await ApiService.fetchAnnotation(
+        config.get('apiUrl'),
+        config.get('apiKey'),
 
-      const annotations: Annotation[] = await ApiService.fetchAnnotation(apiUrl, apiKey, {
-        roomId,
-        url: window.location.href,
-      });
+        {
+          roomId: config.get('roomId'),
+          url: this.url,
+        },
+      );
 
       this.addAnnotation(annotations);
     } catch (error) {

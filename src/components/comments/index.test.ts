@@ -1,4 +1,5 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
+import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 
@@ -33,9 +34,10 @@ describe('CommentsComponent', () => {
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
     });
     commentsComponent.detach();
-    expect(commentsComponent['element']).toBeDefined();
+    expect(commentsComponent['element']).toBeUndefined();
   });
 
   it('should add the element to the document body when start() is called', () => {
@@ -44,6 +46,7 @@ describe('CommentsComponent', () => {
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
     });
 
     expect(document.body.contains(commentsComponent['element'])).toBe(true);
@@ -55,6 +58,7 @@ describe('CommentsComponent', () => {
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
     });
     commentsComponent.detach();
 
