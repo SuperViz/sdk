@@ -57,6 +57,10 @@ jest.mock('../../services/video-conference-manager', () => {
   return jest.fn().mockImplementation(() => VIDEO_MANAGER_MOCK);
 });
 
+jest.mock('../../services/event-bus', () => {
+  return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
+});
+
 describe('VideoComponent', () => {
   let VideoComponentInstance: VideoComponent;
 
@@ -177,6 +181,18 @@ describe('VideoComponent', () => {
       });
 
       expect(ABLY_REALTIME_MOCK.setGather).toBeCalledWith(true);
+    });
+
+    test('should set go to from video frame', () => {
+      VideoComponentInstance['onRealtimeEventFromFrame']({
+        event: RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+        data: MOCK_LOCAL_PARTICIPANT.id,
+      });
+
+      expect(EVENT_BUS_MOCK.publish).toBeCalledWith(
+        RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+        MOCK_LOCAL_PARTICIPANT.id,
+      );
     });
 
     test('should set draw data from video frame', () => {
