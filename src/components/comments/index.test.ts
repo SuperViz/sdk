@@ -60,6 +60,8 @@ describe('CommentsComponent', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
+    expect(commentsComponent['element']).toBeDefined();
+
     commentsComponent.detach();
 
     expect(document.body.contains(commentsComponent['element'])).toBe(false);
