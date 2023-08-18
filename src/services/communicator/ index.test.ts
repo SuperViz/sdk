@@ -1,7 +1,4 @@
-import exp from 'constants';
-
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
-import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import {
   MOCK_AVATAR_CONFIG,
   MOCK_PARTICIPANT_TO_3D,
@@ -10,7 +7,6 @@ import {
 import {
   MeetingControlsEvent,
   RealtimeEvent,
-  TranscriptionEvent,
 } from '../../common/types/events.types';
 import { AblyRealtimeService } from '../realtime';
 
@@ -54,6 +50,7 @@ const AblyRealtimeMock = {
   start: jest.fn(),
   leave: jest.fn(),
   setFollowParticipant: jest.fn(),
+  setTranscript: jest.fn(),
   fetchSyncClientProperty: jest.fn((key?: string) => {
     if (key) {
       return createRealtimeMessage(key);
@@ -69,6 +66,7 @@ const AblyRealtimeMock = {
   hostAvailabilityObserver: MOCK_OBSERVER_HELPER,
   syncPropertiesObserver: MOCK_OBSERVER_HELPER,
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
+  kickParticipantObserver: MOCK_OBSERVER_HELPER,
   authenticationObserver: MOCK_OBSERVER_HELPER,
 };
 
@@ -79,6 +77,7 @@ const VideoManagerMock = {
   frameSizeObserver: MOCK_OBSERVER_HELPER,
   realtimeObserver: MOCK_OBSERVER_HELPER,
   hostChangeObserver: MOCK_OBSERVER_HELPER,
+  kickParticipantObserver: MOCK_OBSERVER_HELPER,
   gridModeChangeObserver: MOCK_OBSERVER_HELPER,
   drawingChangeObserver: MOCK_OBSERVER_HELPER,
   followParticipantObserver: MOCK_OBSERVER_HELPER,
@@ -91,6 +90,7 @@ const VideoManagerMock = {
   meetingConnectionObserver: MOCK_OBSERVER_HELPER,
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
   participantLeftObserver: MOCK_OBSERVER_HELPER,
+  transcriptChangeObserver: MOCK_OBSERVER_HELPER,
 };
 
 jest.mock('../realtime', () => ({
@@ -106,7 +106,7 @@ describe('Communicator', () => {
     expect(Communicator).toBeDefined();
   });
 
-  test('should exprt a function', () => {
+  test('should expect a function', () => {
     expect(typeof Communicator).toBe('function');
   });
 
@@ -130,8 +130,6 @@ describe('Communicator', () => {
     expect(communicator).toHaveProperty('hangUp');
     expect(communicator).toHaveProperty('toggleCam');
     expect(communicator).toHaveProperty('toggleChat');
-    expect(communicator).toHaveProperty('startTranscription');
-    expect(communicator).toHaveProperty('stopTranscription');
     expect(communicator).toHaveProperty('loadPlugin');
     expect(communicator).toHaveProperty('unloadPlugin');
   });
@@ -221,11 +219,13 @@ describe('Communicator', () => {
       expect(AblyRealtimeMock.hostAvailabilityObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.syncPropertiesObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.kickAllParticipantsObserver.unsubscribe).toBeCalled();
+      expect(AblyRealtimeMock.kickParticipantObserver.unsubscribe).toBeCalled();
       expect(AblyRealtimeMock.authenticationObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.frameStateObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.frameSizeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.realtimeObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.hostChangeObserver.unsubscribe).toBeCalled();
+      expect(VideoManagerMock.kickParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.followParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.goToParticipantObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.gatherParticipantsObserver.unsubscribe).toBeCalled();
@@ -236,6 +236,7 @@ describe('Communicator', () => {
       expect(VideoManagerMock.participantLeftObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.meetingStateObserver.unsubscribe).toBeCalled();
       expect(VideoManagerMock.meetingConnectionObserver.unsubscribe).toBeCalled();
+      expect(VideoManagerMock.transcriptChangeObserver.unsubscribe).toBeCalled();
     });
   });
 
@@ -395,46 +396,6 @@ describe('Communicator', () => {
       expect(communicator.toggleChat).toBeCalled();
       expect(VideoManagerMock.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_MEETING_CHAT,
-      );
-    });
-  });
-
-  describe('startTranscription', () => {
-    let communicator: SuperVizSdk;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      communicator = Communicator(COMMUNICATOR_INITIALIZATION_MOCK);
-    });
-
-    test('should call the startTranscription method', () => {
-      jest.spyOn(communicator, 'startTranscription');
-      communicator.startTranscription('en-US');
-
-      expect(communicator.startTranscription).toBeCalled();
-      expect(VideoManagerMock.publishMessageToFrame).toBeCalledWith(
-        TranscriptionEvent.TRANSCRIPTION_START,
-        'en-US',
-      );
-    });
-  });
-
-  describe('stopTranscription', () => {
-    let communicator: SuperVizSdk;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      communicator = Communicator(COMMUNICATOR_INITIALIZATION_MOCK);
-    });
-
-    test('should call the stopTranscription method', () => {
-      jest.spyOn(communicator, 'stopTranscription');
-      communicator.stopTranscription();
-
-      expect(communicator.stopTranscription).toBeCalled();
-      expect(VideoManagerMock.publishMessageToFrame).toBeCalledWith(
-        TranscriptionEvent.TRANSCRIPTION_STOP,
-        undefined,
       );
     });
   });

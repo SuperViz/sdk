@@ -3,6 +3,7 @@ import { TextEncoder } from 'util';
 import Ably from 'ably';
 
 import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { TranscriptState } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { ParticipantInfo } from '../base/types';
@@ -191,7 +192,7 @@ describe('AblyRealtimeService', () => {
     expect(AblyRealtimeMock.connection.on).toHaveBeenCalledTimes(1);
   });
 
-  test('should subscribe to broadcast channe if participant is audience', () => {
+  test('should subscribe to broadcast channel if participant is audience', () => {
     expect(AblyRealtimeServiceInstance.join).toBeDefined();
 
     const participant: ParticipantInfo = {
@@ -339,6 +340,19 @@ describe('AblyRealtimeService', () => {
         drawing,
       });
     });
+
+    test('should update the room properties with transcript state', () => {
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+
+      const transcriptionState = TranscriptState.TRANSCRIPT_START;
+
+      AblyRealtimeServiceInstance.setTranscript(transcriptionState);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        transcript: transcriptionState,
+      });
+    });
+
     /**
      * initializeRoomProperties
      */
@@ -1092,6 +1106,30 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
         hostClientId: null,
+      });
+    });
+  });
+
+  describe('kick participant event', () => {
+    test('should update the kickParticipant in the room properties', async () => {
+      const participantId = 'participant1';
+      const participant: AblyParticipant = {
+        clientId: 'client1',
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId,
+        },
+      };
+      AblyRealtimeServiceInstance['participants'][participantId] = participant;
+      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
+      await AblyRealtimeServiceInstance.setKickParticipant(participantId);
+
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        kickParticipant: participant,
       });
     });
   });

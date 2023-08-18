@@ -6,7 +6,6 @@ import {
   MeetingControlsEvent,
   MeetingEvent,
   MeetingState,
-  TranscriptionEvent,
 } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
@@ -501,6 +500,17 @@ describe('VideoConferenceManager', () => {
       VideoConferenceManagerInstance['onMeetingHostChange'](hostId);
 
       expect(spy).toHaveBeenCalledWith(hostId);
+    });
+  });
+
+  describe('onMeetingKickParticipant', () => {
+    test('should publish the participant ID to be kicked', () => {
+      const participantId = '1';
+      const spy = jest.spyOn(VideoConferenceManagerInstance.kickParticipantObserver, 'publish');
+
+      VideoConferenceManagerInstance['onMeetingKickParticipant'](participantId);
+
+      expect(spy).toHaveBeenCalledWith(participantId);
     });
   });
 

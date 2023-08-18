@@ -9,7 +9,7 @@ import {
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
-  TranscriptionEvent,
+  TranscriptState,
 } from '../../common/types/events.types';
 import { Participant, Group } from '../../common/types/participant.types';
 import { Observer, logger } from '../../common/utils';
@@ -144,6 +144,7 @@ class Communicator {
     this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
     this.realtime.syncPropertiesObserver.subscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
+    this.realtime.kickParticipantObserver.subscribe(this.onMyParticipantLeft);
     this.realtime.authenticationObserver.subscribe(this.onAuthenticationFailed);
     this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityDidChange);
 
@@ -192,9 +193,11 @@ class Communicator {
 
     this.videoManager.realtimeObserver.unsubscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.unsubscribe(this.onHostDidChange);
+    this.videoManager.kickParticipantObserver.unsubscribe(this.onKickParticipant);
     this.videoManager.followParticipantObserver.unsubscribe(this.onFollowParticipantDidChange);
     this.videoManager.gridModeChangeObserver.unsubscribe(this.onGridModeDidChange);
     this.videoManager.drawingChangeObserver.unsubscribe(this.onDrawingDidChange);
+    this.videoManager.transcriptChangeObserver.unsubscribe(this.onTranscriptDidChange);
 
     this.videoManager.goToParticipantObserver.unsubscribe(this.onGoToParticipantDidChange);
     this.videoManager.gatherParticipantsObserver.unsubscribe(this.onGatherDidChange);
@@ -212,6 +215,7 @@ class Communicator {
     this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
     this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesDidChange);
     this.realtime.kickAllParticipantsObserver.unsubscribe(this.onKickAllParticipantsDidChange);
+    this.realtime.kickParticipantObserver.unsubscribe(this.onMyParticipantLeft);
     this.realtime.authenticationObserver.unsubscribe(this.onAuthenticationFailed);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeft);
@@ -266,8 +270,8 @@ class Communicator {
 
   /**
    * @function publishMeetingControlEvent
-   * @param {MeetingControlsEvent} event
    * @description publish event to meeting controls
+   * @param {MeetingControlsEvent} event
    * @returns {void}
    */
   public publishMeetingControlEvent(event: MeetingControlsEvent): void {
@@ -288,7 +292,7 @@ class Communicator {
   /**
    * @function follow
    * @description - send follow message to all participants on plugin
-   * @param participantId: string
+   * @param {string | undefined} participantId
    * @returns {void}
    */
   public follow(participantId?: string): void {
@@ -311,22 +315,12 @@ class Communicator {
   /**
    * @function goTo
    * @description call goTo on plugin
-   * @param participantId: string
+   * @param {string} participantId
    * @returns {void}
    */
   public goTo(participantId: string): void {
     this.integrationManager.goToParticipant(participantId);
   }
-
-  /**
-   * @function publishTranscriptionEvent
-   * @description publish transcription event to transcription service
-   * @param {TranscriptionEvent} event - event to be published
-   * @param {unknown} payload - payload to be sent to transcription service
-   */
-  public publishTranscriptionEvent = (event: TranscriptionEvent, payload?: unknown): void => {
-    this.videoManager.publishMessageToFrame(event, payload);
-  };
 
   /**
    * @function startVideo
@@ -343,11 +337,13 @@ class Communicator {
 
     this.videoManager.realtimeObserver.subscribe(this.onRealtimeJoin);
     this.videoManager.hostChangeObserver.subscribe(this.onHostDidChange);
+    this.videoManager.kickParticipantObserver.subscribe(this.onKickParticipant);
     this.videoManager.followParticipantObserver.subscribe(this.onFollowParticipantDidChange);
     this.videoManager.goToParticipantObserver.subscribe(this.onGoToParticipantDidChange);
     this.videoManager.gatherParticipantsObserver.subscribe(this.onGatherDidChange);
     this.videoManager.gridModeChangeObserver.subscribe(this.onGridModeDidChange);
     this.videoManager.drawingChangeObserver.subscribe(this.onDrawingDidChange);
+    this.videoManager.transcriptChangeObserver.subscribe(this.onTranscriptDidChange);
 
     this.videoManager.sameAccountErrorObserver.subscribe(this.onSameAccountError);
     this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
@@ -415,6 +411,16 @@ class Communicator {
    */
   private onHostDidChange = (hostId: string): void => {
     this.realtime.setHost(hostId);
+  };
+
+  /**
+   * @function onKickParticipant
+   * @description on kick a participant event
+   * @param {string} participantId - participant Id
+   * @returns {void}
+   */
+  private onKickParticipant = (participantId: string): void => {
+    this.realtime.setKickParticipant(participantId);
   };
 
   /**
@@ -487,13 +493,14 @@ class Communicator {
    * @returns {void}
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
-    const { isGridModeEnable, followParticipantId, gather, drawing } = room;
+    const { isGridModeEnable, followParticipantId, gather, drawing, transcript } = room;
 
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
       isGridModeEnable,
     );
     this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_DRAWING_CHANGE, drawing);
+    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, transcript);
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       followParticipantId,
@@ -603,6 +610,16 @@ class Communicator {
    * */
   private onDrawingDidChange = (drawing: DrawingData): void => {
     this.realtime.setDrawing(drawing);
+  };
+
+  /**
+   * @function onTranscriptDidChange
+   * @description handler when transcript state changes
+   * @param {TranscriptState} state
+   * @returns {void}
+   * */
+  private onTranscriptDidChange = (state: TranscriptState): void => {
+    this.realtime.setTranscript(state);
   };
 
   /**
@@ -844,16 +861,6 @@ export default (params: CommunicatorOptions): SuperVizSdk => {
     hangUp: () => communicator.publishMeetingControlEvent(MeetingControlsEvent.HANG_UP),
     toggleChat: () => {
       return communicator.publishMeetingControlEvent(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
-    },
-
-    startTranscription: (language) => {
-      return communicator.publishTranscriptionEvent(
-        TranscriptionEvent.TRANSCRIPTION_START,
-        language,
-      );
-    },
-    stopTranscription: () => {
-      return communicator.publishTranscriptionEvent(TranscriptionEvent.TRANSCRIPTION_STOP);
     },
 
     loadPlugin: (plugin, props) => communicator.loadPlugin(plugin, props),
