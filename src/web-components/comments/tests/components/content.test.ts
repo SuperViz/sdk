@@ -1,4 +1,4 @@
-import { mockAnnotation } from '../../../../../__mocks__/comments.mock';
+import { MOCK_ANNOTATION } from '../../../../../__mocks__/comments.mock';
 import sleep from '../../../../common/utils/sleep';
 import '../../components';
 
@@ -22,7 +22,7 @@ describe('CommentsContent', () => {
 
   test('should select annotation', async () => {
     element.setAttribute('annotations', JSON.stringify([
-      mockAnnotation,
+      MOCK_ANNOTATION,
     ]));
 
     await sleep();
@@ -43,7 +43,7 @@ describe('CommentsContent', () => {
 
   test('if is last annotation and add hr', async () => {
     element.setAttribute('annotations', JSON.stringify([
-      mockAnnotation,
+      MOCK_ANNOTATION,
     ]));
 
     await sleep();
@@ -55,8 +55,8 @@ describe('CommentsContent', () => {
 
   test('if is last annotation and add hr', async () => {
     element.setAttribute('annotations', JSON.stringify([
-      mockAnnotation,
-      mockAnnotation,
+      MOCK_ANNOTATION,
+      MOCK_ANNOTATION,
     ]));
 
     await sleep();

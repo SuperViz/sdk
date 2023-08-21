@@ -24,22 +24,22 @@ export const variableStyle = css`
   }
 
   .sv-gray-200 {
-    color: rgba(var(--sv-gray-200), 1);
+    color: rgb(var(--sv-gray-200));
   }
 
   .sv-gray-400 {
-    color: rgba(var(--sv-gray-400), 1);
+    color: rgb(var(--sv-gray-400));
   }
 
   .sv-gray-500 {
-    color: rgba(var(--sv-gray-500), 1);
+    color: rgb(var(--sv-gray-500));
   }
 
   .sv-gray-600 {
-    color: rgba(var(--sv-gray-600), 1);
+    color: rgb(var(--sv-gray-600));
   }
 
   .sv-gray-700 {
-    color: rgba(var(--sv-gray-700), 1);
+    color: rgb(var(--sv-gray-700));
   }
 `;
