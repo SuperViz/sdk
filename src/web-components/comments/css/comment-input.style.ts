@@ -5,7 +5,7 @@ export const commentInputStyle = css`
     display: flex;
     flex-direction: column;
     width: 288px;
-    background: #fff;
+    background: rgb(var(--sv-white));
     border-radius: 4px;
   }
 
@@ -16,7 +16,7 @@ export const commentInputStyle = css`
     outline: none;
     height: 14px;
     font-size: 14px;
-    color: var(--sv-gray-700);
+    color: rgb(var(--sv-gray-700));
     padding: 12px 11px !important;
     font-family: Roboto;
     white-space: pre-wrap;
@@ -28,7 +28,7 @@ export const commentInputStyle = css`
   }
 
   #comment-input--textarea::placeholder {
-    color: var(--sv-gray-400);
+    color: rgb(var(--sv-gray-400));
     font-size: 14px;
   }
 
@@ -42,11 +42,11 @@ export const commentInputStyle = css`
     display: flex;
     justify-content: center;
     align-items: center;
-    background: var(--sv-primary);
+    background: rgb(var(--sv-primary));
     border-radius: 100%;
     width: 32px;
     height: 32px;
-    color: var(--sv-white);
+    color: rgba(var(--sv-white), 1);
     border: 0px;
     cursor: pointer;
   }
@@ -55,11 +55,11 @@ export const commentInputStyle = css`
     display: flex;
     justify-content: center;
     align-items: center;
-    background: var(--sv-gray-200);
+    background: rgb(var(--sv-gray-200));
     border-radius: 100%;
     width: 32px;
     height: 32px;
-    color: var(--sv-gray-400);
+    color: rgb(var(--sv-gray-400));
     border: 0px;
   }
 `;

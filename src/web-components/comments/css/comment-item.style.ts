@@ -14,7 +14,7 @@ export const commentItemStyle = css`
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    color: var(--sv-gray-500);
+    color: rgb(var(--sv-gray-500));
   }
 
   .comment-item__avatar {
@@ -31,6 +31,6 @@ export const commentItemStyle = css`
   }
 
   .comment-item__content__body {
-    color: var(--sv-gray-700);
+    color: rgb(var(--sv-gray-700));
   }
 `;

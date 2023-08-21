@@ -2,7 +2,7 @@ import { css } from 'lit';
 
 export const annotationItemStyle = css`
 .annotation-item--selected {
-    background-color: var(--sv-gray-200);
+    background-color: rgba(var(--sv-gray-200), 0.3);
   }
 
   .avatars-comments {
