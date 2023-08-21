@@ -30,7 +30,7 @@ export class CommentsContent extends WebComponentsBaseElement {
       return this.annotations.length === index + 1 ? 'hidden' : '';
     };
 
-    const selectedAnnotation = (uuid: string) => {
+    const selectAnnotation = (uuid: string) => {
       this.selectedAnnotation = uuid;
     };
 
@@ -45,7 +45,7 @@ export class CommentsContent extends WebComponentsBaseElement {
           <superviz-comments-annotation-item
             annotation=${JSON.stringify(annotation)}
             selected="${this.selectedAnnotation}"
-            @selectAnnotation=${(e: CustomEvent) => selectedAnnotation(e.detail.uuid)}
+            @selectAnnotation=${(e: CustomEvent) => selectAnnotation(e.detail.uuid)}
           >
           </superviz-comments-annotation-item>
 

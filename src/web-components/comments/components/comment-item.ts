@@ -39,6 +39,9 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           </div>
           <span class="text text-bold sv-gray-600">${this.username}</span>
           <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
+          <span>
+            <button>ICON</button>
+          </span>
         </div>
 
         <div class="comment-item__content">
