@@ -5,7 +5,7 @@ import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], commentInputStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
 
 @customElement('superviz-comments-comment-input')
 export class CommentsCommentInput extends WebComponentsBaseElement {

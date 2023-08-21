@@ -6,7 +6,7 @@ import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], commentItemStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
 
 @customElement('superviz-comments-comment-item')
 export class CommentsCommentItem extends WebComponentsBaseElement {

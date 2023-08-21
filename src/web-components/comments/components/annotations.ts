@@ -5,7 +5,7 @@ import { WebComponentsBase } from '../../base';
 import { annotationsStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], annotationsStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationsStyle];
 
 @customElement('superviz-comments-annotations')
 export class CommentsAnnotations extends WebComponentsBaseElement {

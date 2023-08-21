@@ -5,7 +5,7 @@ import { WebComponentsBase } from '../../base';
 import { topbarStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], topbarStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, topbarStyle];
 
 @customElement('superviz-comments-topbar')
 export class CommentsTopbar extends WebComponentsBase(LitElement) {

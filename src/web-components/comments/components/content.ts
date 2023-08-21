@@ -6,7 +6,7 @@ import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], contentStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle];
 
 @customElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {

@@ -4,7 +4,7 @@ import { customElement } from 'lit/decorators.js';
 import { WebComponentsBase } from '../../base';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || []];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 
 @customElement('superviz-comments-annotation-pin')
 export class CommentsAnnotationPin extends WebComponentsBaseElement {

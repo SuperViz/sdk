@@ -7,7 +7,7 @@ import { WebComponentsBase } from '../base';
 import { commentsStyle } from './css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], commentsStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentsStyle];
 
 @customElement('superviz-comments')
 export class Comments extends WebComponentsBaseElement {
@@ -40,8 +40,7 @@ export class Comments extends WebComponentsBaseElement {
   protected render() {
     const containerClass = [
       this.open ? 'container' : 'container-close',
-    ]
-      .join(' ');
+    ].join(' ');
 
     return html`
       <div id="superviz-comments" class=${containerClass}>
