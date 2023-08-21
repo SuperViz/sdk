@@ -7,7 +7,7 @@ import { annotationItemStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [
-  WebComponentsBaseElement.styles || [],
+  WebComponentsBaseElement.styles,
   annotationItemStyle,
 ];
 
@@ -25,6 +25,13 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     selected: { type: String, reflect: true },
   };
 
+  updated(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('selected')) {
+      const isSelected = this.selected === this.annotation.uuid;
+      this.expandComments = isSelected;
+    }
+  }
+
   protected render() {
     const replies = this.annotation.comments.length;
 
@@ -32,8 +39,16 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
     const annotationClasses: string = [
       'annotation-item',
-      isSelected ? 'annotation-item--selected' : '',
+      isSelected ? 'annotation-item--selected' : 'annotation-item',
     ].join(' ');
+
+    const shouldExpandAvatarComments = () => {
+      return !this.expandComments && replies > 1 ? 'comment-avatar--expand' : 'hidden';
+    };
+
+    const shouldExpandComments = () => {
+      return isSelected && this.expandComments ? 'comment-item--expand' : 'hidden';
+    };
 
     const avatarComments = (comment: Comment, index: number) => {
       if (index === 1) return html``;
@@ -51,33 +66,22 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       if (index === 0) return html``;
 
       return html`
-        <div>
-          <superviz-comments-comment-item
-          avatar="https://picsum.photos/200/300"
-          username="username"
-          text=${comment.text}
-          createdAt=${comment.createdAt}
-          ></superviz-comments-comment-item>
-        </div>
+        <superviz-comments-comment-item
+        avatar="https://picsum.photos/200/300"
+        username="username"
+        text=${comment.text}
+        createdAt=${comment.createdAt}
+        ></superviz-comments-comment-item>
       `;
     };
 
-    const shouldExpandAvatarComments = () => {
-      return !this.expandComments && replies > 1 ? 'comment-avatar--expand' : 'hidden';
-    };
-
-    const shouldExpandComments = () => {
-      return isSelected && this.expandComments ? 'comment-item--expand' : 'hidden';
-    };
-
-    const toggle = () => {
-      this.expandComments = !this.expandComments;
+    const selectAnnotation = () => {
       this.emitEvent('selectAnnotation', { uuid: this.annotation.uuid });
     };
 
     return html`
-      <div class=${annotationClasses}>
-        <div class="" @click=${() => toggle()}>
+      <div class=${annotationClasses} @click=${() => selectAnnotation()}>
+        <div>
           <superviz-comments-comment-item
             avatar="https://picsum.photos/200/300"
             username="username"
@@ -93,12 +97,11 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
           </div>
         </div>
 
-
         <div class="comments-container ${shouldExpandComments()}">
           ${this.annotation.comments.map(expandedComments)}
           <superviz-comments-comment-input
             eventType="create-comment"
-          >
+          ></superviz-comments-comment-input>
         </div>
       </div>
     `;

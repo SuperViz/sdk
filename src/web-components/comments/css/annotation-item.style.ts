@@ -1,7 +1,11 @@
 import { css } from 'lit';
 
 export const annotationItemStyle = css`
-.annotation-item--selected {
+  .annotation-item--selected {
+    background-color: rgba(var(--sv-gray-200), 0.5);
+  }
+
+  .annotation-item:hover:not(.annotation-item--selected) {
     background-color: rgba(var(--sv-gray-200), 0.3);
   }
 
