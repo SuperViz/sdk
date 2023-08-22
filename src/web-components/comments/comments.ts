@@ -1,43 +1,59 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
-import { Comment } from './components/types/comments.types';
 import { commentsStyle } from './css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], commentsStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentsStyle];
 
 @customElement('superviz-comments')
 export class Comments extends WebComponentsBaseElement {
+  constructor() {
+    super();
+    this.annotations = [];
+  }
+
   static styles = styles;
 
   declare open: boolean;
-  declare comments: Comment[];
+  declare annotations: Annotation[];
 
   static properties = {
     open: { type: Boolean },
-    comments: { type: Object },
+    annotations: { type: Object },
   };
 
-  protected render() {
-    const containerClass = () => {
-      const classes = [this.open ? 'container' : 'container-close'];
-      return classes.join(' ');
-    };
+  addAnnotation(data: Annotation[]) {
+    this.annotations = [
+      ...this.annotations,
+      ...data,
+    ];
+  }
 
-    const close = (e: CustomEvent) => {
-      this.open = !this.open;
-    };
+  toggle() {
+    this.open = !this.open;
+  }
+
+  protected render() {
+    const containerClass = [
+      this.open ? 'container' : 'container-close',
+    ].join(' ');
 
     return html`
-      <div id="app" class=${containerClass()}>
+      <div id="superviz-comments" class=${containerClass}>
         <div class="header">
-          <superviz-comments-topbar @close=${close}></superviz-comments-topbar>
-          <superviz-comments-annotations></superviz-comments-annotations>
+          <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
+          <superviz-comments-annotations 
+            id="annotations" 
+            open=${this.open}
+          >
+          </superviz-comments-annotations>
         </div>
-        <superviz-comments-content class="content"></superviz-comments-content>
+        <!-- <div class="icon-alert_md"></div> -->
+        <superviz-comments-content annotations=${JSON.stringify(this.annotations)} class="content"></superviz-comments-content>
       </div>
     `;
   }

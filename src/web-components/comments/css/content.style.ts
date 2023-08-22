@@ -7,4 +7,8 @@ export const contentStyle = css`
     align-items: center;
     width: 288px;
   }
+
+  .hidden {
+    display: none;
+  }
 `;

@@ -32,6 +32,18 @@ jest.mock('../../common/utils', () => {
           message: WaterMark.ALL,
         });
       }
+
+      if (url.includes('/annotations') && method === 'POST') {
+        return Promise.resolve({});
+      }
+
+      if (url.includes('/annotations') && method === 'GET') {
+        return Promise.resolve([]);
+      }
+
+      if (url.includes('/comments') && method === 'POST') {
+        return Promise.resolve({});
+      }
     }),
   };
 });
@@ -68,6 +80,53 @@ describe('ApiService', () => {
       const response = await ApiService.fetchWaterMark(baseUrl, VALID_API_KEY);
 
       expect(response).toEqual(WaterMark.ALL);
+    });
+  });
+
+  describe('Annotations and comments', () => {
+    test('should create an annotation', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.createAnnotations(
+        baseUrl,
+        VALID_API_KEY,
+        {
+          roomId: 'any_room_id',
+          url: 'any_url',
+          position: 'any_position',
+          userId: 'any_user_id',
+        },
+      );
+
+      expect(response).toEqual({});
+    });
+
+    test('should create a comment', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.createComment(
+        baseUrl,
+        VALID_API_KEY,
+        {
+          annotationId: 'any_annotation_id',
+          userId: 'any_user_id',
+          text: 'any_text',
+        },
+      );
+
+      expect(response).toEqual({});
+    });
+
+    test('should fetch annotations', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.fetchAnnotation(
+        baseUrl,
+        VALID_API_KEY,
+        {
+          roomId: 'any_room_id',
+          url: 'any_url',
+        },
+      );
+
+      expect(response).toEqual([]);
     });
   });
 });

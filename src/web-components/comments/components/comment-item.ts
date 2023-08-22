@@ -1,11 +1,12 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { DateTime } from 'luxon';
 
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], commentItemStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
 
 @customElement('superviz-comments-comment-item')
 export class CommentsCommentItem extends WebComponentsBaseElement {
@@ -26,6 +27,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   };
 
   protected render() {
+    const humanizeDate = (date: string) => {
+      return DateTime.fromISO(date).toFormat('yyyy-dd-MM');
+    };
+
     return html`
       <div class="comment-item">
         <div class="comment-item__user">
@@ -33,7 +38,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             <img src=${this.avatar} />
           </div>
           <span class="text text-bold sv-gray-600">${this.username}</span>
-          <span class="text text-small sv-gray-500">${this.createdAt}</span>
+          <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
+          <span>
+            <button>ICON</button>
+          </span>
         </div>
 
         <div class="comment-item__content">

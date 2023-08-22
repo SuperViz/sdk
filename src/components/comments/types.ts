@@ -1,11 +1,12 @@
 export type Annotation = {
-  id: string;
+  uuid: string;
   position: string;
   resolved: boolean;
   comments: Comment[];
 };
 
 export type Comment = {
+  uuid: string;
   username: string;
   avatar: string;
   text: string;

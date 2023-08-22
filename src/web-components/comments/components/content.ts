@@ -1,49 +1,56 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { Annotation } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
-import { Comment } from './types/comments.types';
-
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
-const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || [], contentStyle];
+const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle];
 
 @customElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {
   constructor() {
     super();
-    this.comments = [];
+    this.annotations = [];
   }
 
   static styles = styles;
 
-  declare comments: Comment[];
+  declare annotations: Annotation[];
+  declare selectedAnnotation: string;
 
   static properties = {
-    comments: { type: Object },
+    annotations: { type: Object },
+    selectedAnnotation: { type: String },
   };
 
   protected render() {
-    // ! WIP !
-    // const commentsTemplate = () => {
-    //   return this.comments.map(
-    //     (item: Comment) => html`
-    //       <div class="comments">
-    //         <superviz-comments-comment-item
-    //           avatar=${item.avatar}
-    //           username=${item.username}
-    //           text=${item.text}
-    //           createdAt=${item.createdAt}
-    //         ></superviz-comments-comment-item>
-    //       </div>
+    const isLastAnnotation = (index: number) => {
+      return this.annotations.length === index + 1 ? 'hidden' : '';
+    };
 
-    //       <div class="sv-hr"></div>
-    //     `,
-    //   );
-    // };
-    // return html` ${commentsTemplate()} `;
+    const selectAnnotation = (uuid: string) => {
+      this.selectedAnnotation = uuid;
+    };
 
-    return html`! WIP !`;
+    return this.annotations
+      .map((annotation: Annotation, index: number) => {
+        return html`
+          <superviz-comments-annotation-pin
+            id=${annotation.uuid}
+            pos=${annotation.position}>
+          </superviz-comments-annotation-pin>
+
+          <superviz-comments-annotation-item
+            annotation=${JSON.stringify(annotation)}
+            selected="${this.selectedAnnotation}"
+            @selectAnnotation=${(e: CustomEvent) => selectAnnotation(e.detail.uuid)}
+          >
+          </superviz-comments-annotation-item>
+
+          <div class="sv-hr ${isLastAnnotation(index)}"></div>
+        `;
+      });
   }
 }

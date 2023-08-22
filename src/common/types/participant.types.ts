@@ -11,6 +11,8 @@ export interface Participant {
   color?: string;
   avatar?: Avatar;
   isHost?: boolean;
+  // @NOTE - this is a hack to make the participant info work with the 3D avatar
+  avatarConfig?: unknown;
 }
 
 export interface Group {

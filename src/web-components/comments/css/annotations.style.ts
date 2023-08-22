@@ -4,15 +4,18 @@ export const annotationsStyle = css`
   div.annotations {
     display: flex;
     justify-content: center;
-    padding: 16px;
-    background-color: var(--sv-gray-400);
+    align-items: center;
+    flex-direction: column;
+    background-color: rgb(var(--sv-gray-400));
     min-height: 10px;
     width: 100%;
+    padding-bottom: 16px;
   }
 
   div.annotations .add-comment-btn {
-    color: #fff;
+    color: rgb(var(--sv-white));
     text-align: center;
     cursor: pointer;
+    padding: 16px;
   }
 `;
