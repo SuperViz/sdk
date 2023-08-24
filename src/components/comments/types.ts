@@ -11,4 +11,7 @@ export type Comment = {
   avatar: string;
   text: string;
   createdAt: string;
+
+  resolvable?: boolean;
+  resolved?: boolean;
 };

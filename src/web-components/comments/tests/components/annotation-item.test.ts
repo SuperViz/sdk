@@ -22,7 +22,6 @@ describe('CommentsAnnotationItem', () => {
     element = await createElement(MOCK_ANNOTATION);
 
     expect(element).toBeDefined();
-    expect(element['resolved']).toBe('false');
   });
 
   test('expands the comments when the annotation is selected', async () => {
@@ -60,7 +59,7 @@ describe('CommentsAnnotationItem', () => {
 
     await sleep();
 
-    expect(element['resolved']).toBe('true');
+    expect(element['options']['resolved']).toBe('true');
   });
 
   test('resolves the annotation when the comment is resolved', async () => {
@@ -68,13 +67,13 @@ describe('CommentsAnnotationItem', () => {
       ...MOCK_ANNOTATION,
       resolved: true,
     });
-    expect(element['annotation']['resolved']).toBe(true);
+    expect(element['options']['resolved']).toBe(true);
     const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item');
 
     commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: 'false' } }));
 
     await sleep();
 
-    expect(element['resolved']).toBe('false');
+    expect(element['options']['resolved']).toBe('false');
   });
 });

@@ -1,9 +1,11 @@
-import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
+import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { Annotation, Comment } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationItemStyle } from '../css';
+
+import { AnnotationOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationItemStyle];
@@ -13,7 +15,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare annotation: Annotation;
   declare expandComments: boolean;
   declare selected: string;
-  declare resolved: string;
+  declare options: AnnotationOptions;
 
   static styles = styles;
 
@@ -21,12 +23,14 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     annotation: { type: Object },
     expandComments: { type: Boolean },
     selected: { type: String, reflect: true },
-    resolved: { type: String },
+    options: { type: Object },
   };
 
   protected firstUpdated(): void {
-    const isResolved = this.annotation.resolved ? 'true' : 'false';
-    this.resolved = isResolved;
+    this.options = {
+      resolvable: true,
+      resolved: this.annotation.resolved,
+    };
   }
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -89,7 +93,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         resolved: resolved === 'true',
       });
 
-      this.resolved = resolved;
+      this.options.resolved = resolved;
     };
 
     return html`
@@ -99,9 +103,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
             avatar="https://picsum.photos/200/300"
             username="username"
             text=${this.annotation.comments[0].text}
-            resolved=${this.resolved}
             createdAt=${this.annotation.comments[0].createdAt}
-            resolvable
+            options=${JSON.stringify(this.options)}
             @resolve-annotation=${resolveAnnotation}
           ></superviz-comments-comment-item>
 

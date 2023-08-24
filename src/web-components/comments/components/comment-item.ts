@@ -5,6 +5,8 @@ import { DateTime } from 'luxon';
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
+import { AnnotationOptions } from './types';
+
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
 
@@ -18,6 +20,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare resolved: string;
   declare resolvable: boolean;
   declare createdAt: string;
+  declare options: AnnotationOptions;
 
   static properties = {
     avatar: { type: String },
@@ -26,6 +29,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     resolved: { type: String },
     resolvable: { type: Boolean },
     createdAt: { type: String },
+    options: { type: Object },
   };
 
   protected render() {
@@ -33,16 +37,13 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       return DateTime.fromISO(date).toFormat('yyyy-dd-MM');
     };
 
-    const isResolvable = this.resolvable ? 'comment-item__resolve' : 'hidden';
+    const isResolvable = this.options?.resolvable ? 'comment-item__resolve' : 'hidden';
 
-    const iconResolve = this.resolved === 'true' ? 'resolved' : 'unresolved';
+    const iconResolve = this.options?.resolved ? 'resolved' : 'unresolved';
 
     const resolveAnnotation = () => {
-      const isResolved = this.resolved === 'true';
-      this.resolved = isResolved ? 'false' : 'true';
-
       this.emitEvent('resolve-annotation', {
-        resolved: this.resolved,
+        resolved: !this.options.resolved,
       }, { composed: false, bubbles: false });
     };
 

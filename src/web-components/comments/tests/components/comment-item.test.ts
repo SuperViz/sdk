@@ -11,7 +11,7 @@ element.setAttribute('avatar', 'https://example.com/avatar.png');
 element.setAttribute('username', 'John Doe');
 element.setAttribute('text', 'This is a comment');
 element.setAttribute('createdAt', DateTime.now().toISO() as string);
-element.setAttributeNode(document.createAttribute('resolvable'));
+element.setAttribute('options', JSON.stringify({ resolved: false, resolvable: true }));
 
 describe('CommentsCommentItem', () => {
   test('renders the comment item with correct properties', async () => {
@@ -31,15 +31,23 @@ describe('CommentsCommentItem', () => {
   });
 
   test('resolves the annotation when the comment is unresolved', async () => {
-    await sleep();
+    await element['updateComplete'];
 
     const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
     const resolveButton = renderedElement.shadowRoot!.querySelector('.comment-item__resolve > button') as HTMLButtonElement;
+
+    element.dispatchEvent = jest.fn();
 
     resolveButton.click();
 
     await sleep();
 
-    expect(element['resolved']).toBe('true');
+    expect(element.dispatchEvent)
+      .toHaveBeenCalledWith(
+        new CustomEvent(
+          'resolve-annotation',
+          { detail: { resolved: true } },
+        ),
+      );
   });
 });
