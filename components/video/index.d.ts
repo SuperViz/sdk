@@ -9,6 +9,7 @@ export declare class VideoComponent extends BaseComponent {
     private connectionService;
     private browserService;
     private videoConfig;
+    private params?;
     constructor(params?: VideoComponentOptions);
     /**
      * @function start
