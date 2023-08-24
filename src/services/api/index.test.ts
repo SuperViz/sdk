@@ -44,6 +44,10 @@ jest.mock('../../common/utils', () => {
       if (url.includes('/comments') && method === 'POST') {
         return Promise.resolve({});
       }
+
+      if (url.includes('/annotations/resolve/any_annotation_id') && method === 'POST') {
+        return Promise.resolve({});
+      }
     }),
   };
 });
@@ -127,6 +131,17 @@ describe('ApiService', () => {
       );
 
       expect(response).toEqual([]);
+    });
+
+    test('should resolve an annotation', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.resolveAnnotation(
+        baseUrl,
+        VALID_API_KEY,
+        'any_annotation_id',
+      );
+
+      expect(response).toEqual({});
     });
   });
 });

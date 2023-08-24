@@ -33,6 +33,10 @@ export class Comments extends WebComponentsBaseElement {
     ];
   }
 
+  updateAnnotations(data: Annotation[]) {
+    this.annotations = data;
+  }
+
   toggle() {
     this.open = !this.open;
   }

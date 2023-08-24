@@ -1,4 +1,4 @@
-import { LitElement, css } from 'lit';
+import { LitElement } from 'lit';
 
 import { variableStyle, typography, svHr } from './styles';
 import { Constructor, WebComponentsBaseInterface } from './types';

@@ -12,11 +12,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   constructor() {
     super();
     this.btnActive = false;
+    this.text = '';
   }
 
   declare eventType: string;
   declare text: string;
   declare btnActive: boolean;
+
+  declare commentsInput: HTMLTextAreaElement;
 
   static styles = styles;
 
@@ -26,21 +29,26 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     btnActive: { type: Boolean },
   };
 
-  firstUpdated() {
-    if (this.btnActive) {
-      const btnSend = this.shadowRoot?.querySelector('.comment-input--send-btn') as HTMLButtonElement;
-      btnSend.disabled = false;
+  private getCommentInput = () => this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+  private getCommentInputContainer = () => this.shadowRoot!.getElementById('comment-input--container') as HTMLDivElement;
+  private getSendBtn = () => this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+
+  updated(changedProperties: Map<string, any>) {
+    if (changedProperties.has('text') && this.text.length > 0) {
+      const commentsInput = this.getCommentInput();
+      commentsInput.value = this.text;
+      this.updateHeight();
     }
 
-    if (this.text) {
-      const commentsInput = this.shadowRoot?.getElementById('comment-input--textarea') as HTMLTextAreaElement;
-      commentsInput.value = this.text;
+    if (changedProperties.has('btnActive')) {
+      const btnSend = this.getSendBtn();
+      btnSend.disabled = !this.btnActive;
     }
   }
 
   private updateHeight() {
-    const commentsInput = this.shadowRoot?.getElementById('comment-input--textarea') as HTMLTextAreaElement;
-    const commentsInputContainer = this.shadowRoot?.getElementById('comment-input--container') as HTMLDivElement;
+    const commentsInput = this.getCommentInput();
+    const commentsInputContainer = this.getCommentInputContainer();
 
     commentsInput.style.height = '0px';
     commentsInputContainer.style.height = '0px';
@@ -51,15 +59,15 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     commentsInput.style.height = `${textareaHeight}px`;
     commentsInputContainer.style.height = `${textareaContainerHeight}px`;
 
-    const btnSend = this.shadowRoot?.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const btnSend = this.getSendBtn();
     btnSend.disabled = !(commentsInput.value.length > 0);
   }
 
   private send(e: Event) {
     e.preventDefault();
 
-    const input = this.shadowRoot?.getElementById('comment-input--textarea') as HTMLTextAreaElement;
-    const sendBtn = this.shadowRoot?.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const input = this.getCommentInput();
+    const sendBtn = this.getSendBtn();
     const text = input.value;
 
     this.emitEvent(this.eventType, { text });

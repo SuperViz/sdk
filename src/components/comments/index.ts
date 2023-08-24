@@ -54,6 +54,7 @@ export class CommentsComponent extends BaseComponent {
    */
   private addListeners(): void {
     this.element.addEventListener('create-annotation', this.createAnnotation);
+    this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
   }
 
   /**
@@ -63,6 +64,7 @@ export class CommentsComponent extends BaseComponent {
    */
   private destroyListeners(): void {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
+    this.element.removeEventListener('resolve-annotation', this.createAnnotation);
   }
 
   /**
@@ -98,11 +100,16 @@ export class CommentsComponent extends BaseComponent {
    * @returns {Promise<Comment>} - A promise that resolves with the created comment object
    */
   private async createComment(annotationId: string, text: string): Promise<Comment> {
-    return ApiService.createComment(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
-      annotationId,
-      userId: this.localParticipant.id,
-      text,
-    });
+    try {
+      return await ApiService.createComment(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
+        annotationId,
+        userId: this.localParticipant.id,
+        text,
+      });
+    } catch (error) {
+      this.logger.log('error when creating comment', error);
+      throw error;
+    }
   }
 
   /**
@@ -135,6 +142,27 @@ export class CommentsComponent extends BaseComponent {
       this.addAnnotation(annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
+      throw error;
+    }
+  }
+
+  /**
+    * @function resolveAnnotation
+    * @description Resolves an annotation by UUID using the API
+    * @param {CustomEvent} e - The custom event containing the UUID of the annotation to resolve
+    * @returns {Promise<void>}
+    */
+  private async resolveAnnotation(e: CustomEvent): Promise<void> {
+    try {
+      const { uuid } = e.detail;
+      await ApiService.resolveAnnotation(
+        config.get('apiUrl'),
+        config.get('apiKey'),
+        uuid,
+      );
+    } catch (error) {
+      this.logger.log('error when fetching annotations', error);
+      throw error;
     }
   }
 }

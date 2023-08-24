@@ -27,9 +27,9 @@ describe('CommentsContent', () => {
 
     await sleep();
 
-    const annotationItem = element?.shadowRoot?.querySelectorAll('superviz-comments-annotation-item')[0];
+    const annotationItem = element.shadowRoot!.querySelectorAll('superviz-comments-annotation-item')[0];
 
-    annotationItem?.dispatchEvent(new CustomEvent('selectAnnotation', {
+    annotationItem?.dispatchEvent(new CustomEvent('select-annotation', {
       detail: {
         uuid: 'any_uuid',
       },
@@ -48,7 +48,7 @@ describe('CommentsContent', () => {
 
     await sleep();
 
-    const hr = element?.shadowRoot?.querySelectorAll('.sv-hr')[0];
+    const hr = element.shadowRoot!.querySelectorAll('.sv-hr')[0];
 
     expect(hr?.classList.contains('hidden')).toBe(true);
   });
@@ -61,7 +61,7 @@ describe('CommentsContent', () => {
 
     await sleep();
 
-    const hr = element?.shadowRoot?.querySelectorAll('.sv-hr')[0];
+    const hr = element.shadowRoot!.querySelectorAll('.sv-hr')[0];
 
     expect(hr?.classList.contains('hidden')).toBe(false);
   });
