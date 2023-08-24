@@ -6,10 +6,18 @@ import ApiService from '../../services/api';
 
 import { CommentsComponent } from './index';
 
+jest.mock('../../services/api', () => ({
+  fetchAnnotation: jest.fn().mockImplementation((): any => []),
+  createAnnotations: jest.fn().mockImplementation(() => []),
+  createComment: jest.fn().mockImplementation(() => []),
+  resolveAnnotation: jest.fn().mockImplementation(() => []),
+}));
+
 describe('CommentsComponent', () => {
   let commentsComponent: CommentsComponent;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     commentsComponent = new CommentsComponent();
 
     commentsComponent.attach({
@@ -22,19 +30,6 @@ describe('CommentsComponent', () => {
       },
       eventBus: EVENT_BUS_MOCK,
     });
-
-    const mockFetch = jest.fn();
-    global.fetch = mockFetch;
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: jest.fn(),
-    });
-
-    ApiService.fetchAnnotation = jest.fn().mockImplementation(() => []);
-    ApiService.createAnnotations = jest.fn().mockImplementation(() => []);
-    ApiService.createComment = jest.fn().mockImplementation(() => []);
-    ApiService.resolveAnnotation = jest.fn().mockImplementation(() => []);
 
     commentsComponent['element'].addAnnotation = jest.fn().mockImplementation(() => []);
   });
@@ -56,7 +51,7 @@ describe('CommentsComponent', () => {
   });
 
   it('should have an element property', () => {
-    expect(commentsComponent['element']).toBeUndefined();
+    expect(commentsComponent['element']).toBeDefined();
   });
 
   it('should create a new element when start() is called', () => {
@@ -74,5 +69,59 @@ describe('CommentsComponent', () => {
     commentsComponent.detach();
 
     expect(document.body.contains(commentsComponent['element'])).toBe(false);
+  });
+
+  it('should call apiService when fetch annotation', async () => {
+    const result = jest.spyOn(ApiService, 'fetchAnnotation');
+
+    expect(result).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      {
+        roomId: expect.any(String),
+        url: expect.any(String),
+      },
+    );
+  });
+
+  it('should call apiService when create annotation', async () => {
+    const result = jest.spyOn(ApiService, 'createAnnotations');
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('create-annotation', {
+      detail: {
+        text: 'test',
+        position: {
+          x: 0,
+          y: 0,
+        },
+      },
+    }));
+
+    expect(result).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      {
+        roomId: expect.any(String),
+        url: expect.any(String),
+        userId: expect.any(String),
+        position: expect.any(String),
+      },
+    );
+  });
+
+  it('should call apiService when resolve annotation', async () => {
+    const result = jest.spyOn(ApiService, 'resolveAnnotation');
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('resolve-annotation', {
+      detail: {
+        uuid: 'test',
+      },
+    }));
+
+    expect(result).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      'test',
+    );
   });
 });
