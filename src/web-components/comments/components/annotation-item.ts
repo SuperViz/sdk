@@ -90,7 +90,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
       this.emitEvent('resolve-annotation', {
         uuid,
-        resolved: resolved === 'true',
+        resolved,
       });
 
       this.options.resolved = resolved;

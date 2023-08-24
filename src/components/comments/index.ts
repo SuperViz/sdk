@@ -74,22 +74,27 @@ export class CommentsComponent extends BaseComponent {
    * @returns {Promise<void>}
    */
   private createAnnotation = async (e: CustomEvent): Promise<void> => {
-    const { text, position } = e.detail;
-    const { url } = this;
+    try {
+      const { text, position } = e.detail;
+      const { url } = this;
 
-    const annotation: Annotation = await ApiService.createAnnotations(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
-      roomId: config.get<string>('roomId'),
-      position: JSON.stringify(position),
-      url,
-      userId: this.localParticipant.id,
-    });
+      const annotation: Annotation = await ApiService.createAnnotations(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
+        roomId: config.get<string>('roomId'),
+        position: JSON.stringify(position),
+        url,
+        userId: this.localParticipant.id,
+      });
 
-    const comment = await this.createComment(annotation.uuid, text);
+      const comment = await this.createComment(annotation.uuid, text);
 
-    this.addAnnotation([{
-      ...annotation,
-      comments: [comment],
-    }]);
+      this.addAnnotation([{
+        ...annotation,
+        comments: [comment],
+      }]);
+    } catch (error) {
+      this.logger.log('error when creating annotation', error);
+      throw error;
+    }
   };
 
   /**
