@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { DateTime } from 'luxon';
 
@@ -12,13 +12,17 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemSt
 
 @customElement('superviz-comments-comment-item')
 export class CommentsCommentItem extends WebComponentsBaseElement {
+  constructor() {
+    super();
+    this.resolved = false;
+  }
+
   static styles = styles;
 
   declare avatar: string;
   declare username: string;
   declare text: string;
-  declare resolved: string;
-  declare resolvable: boolean;
+  declare resolved: boolean;
   declare createdAt: string;
   declare options: AnnotationOptions;
 
@@ -26,10 +30,15 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     avatar: { type: String },
     username: { type: String },
     text: { type: String },
-    resolved: { type: String },
-    resolvable: { type: Boolean },
+    resolved: { type: Boolean },
     createdAt: { type: String },
     options: { type: Object },
+  };
+
+  updated = (changedProperties: PropertyValueMap<any>) => {
+    if (changedProperties.has('options')) {
+      this.resolved = this.options?.resolved;
+    }
   };
 
   protected render() {
@@ -39,11 +48,13 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
     const isResolvable = this.options?.resolvable ? 'comment-item__resolve' : 'hidden';
 
-    const iconResolve = this.options?.resolved ? 'resolved' : 'unresolved';
+    const iconResolve = this.resolved ? 'resolved' : 'unresolved';
 
     const resolveAnnotation = () => {
+      this.resolved = !this.resolved;
+
       this.emitEvent('resolve-annotation', {
-        resolved: !this.options.resolved,
+        resolved: this.resolved,
       }, { composed: false, bubbles: false });
     };
 

@@ -45,6 +45,15 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     this.emitEvent('select-annotation', { uuid });
   };
 
+  private createComment({ detail }: CustomEvent) {
+    const { text } = detail;
+
+    this.emitEvent('create-comment', {
+      uuid: this.annotation.uuid,
+      text,
+    });
+  }
+
   protected render() {
     const replies = this.annotation.comments.length;
 
@@ -84,13 +93,13 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       `;
     };
 
-    const resolveAnnotation = (e: CustomEvent) => {
+    const resolveAnnotation = ({ detail }: CustomEvent) => {
       const { uuid } = this.annotation;
-      const { resolved } = e.detail;
+      const { resolved } = detail;
 
       this.emitEvent('resolve-annotation', {
         uuid,
-        resolved: resolved === 'true',
+        resolved,
       });
 
       this.options.resolved = resolved;
@@ -119,6 +128,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         <div class="comments-container ${shouldExpandComments}">
           ${this.annotation.comments.map(expandedComments)}
           <superviz-comments-comment-input
+            @create-comment=${this.createComment}
             eventType="create-comment"
           ></superviz-comments-comment-input>
         </div>

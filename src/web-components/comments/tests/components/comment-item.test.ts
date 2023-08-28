@@ -49,5 +49,6 @@ describe('CommentsCommentItem', () => {
           { detail: { resolved: true } },
         ),
       );
+    expect(element['resolved']).toEqual(true);
   });
 });

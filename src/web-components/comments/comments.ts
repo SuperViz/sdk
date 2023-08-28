@@ -1,7 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { Annotation } from '../../components/comments/types';
+import { Annotation, Comment } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
 import { commentsStyle } from './css';
@@ -30,6 +30,26 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = [
       ...this.annotations,
       ...data,
+    ];
+  }
+
+  addComment(annotationId: string, comment: Comment) {
+    const annotationIndex = this.annotations
+      .findIndex((annotation) => annotation.uuid === annotationId);
+
+    if (annotationIndex === -1) return;
+
+    const annotation = this.annotations[annotationIndex];
+
+    annotation.comments = [
+      ...annotation.comments,
+      comment,
+    ];
+
+    this.annotations = [
+      ...this.annotations.slice(0, annotationIndex),
+      annotation,
+      ...this.annotations.slice(annotationIndex + 1),
     ];
   }
 

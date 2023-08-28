@@ -24,14 +24,12 @@ describe('CommentsComponent', () => {
       realtime: ABLY_REALTIME_MOCK,
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
-      config: {
-        ...MOCK_CONFIG,
-        apiUrl: 'https://dev.nodeapi.superviz.com',
-      },
+      config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
 
     commentsComponent['element'].addAnnotation = jest.fn().mockImplementation(() => []);
+    commentsComponent['element'].addComment = jest.fn().mockImplementation(() => []);
   });
 
   afterEach(() => {
@@ -72,20 +70,20 @@ describe('CommentsComponent', () => {
   });
 
   it('should call apiService when fetch annotation', async () => {
-    const result = jest.spyOn(ApiService, 'fetchAnnotation');
+    const spy = jest.spyOn(ApiService, 'fetchAnnotation');
 
-    expect(result).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.any(String),
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
       {
-        roomId: expect.any(String),
+        roomId: MOCK_CONFIG.roomId,
         url: expect.any(String),
       },
     );
   });
 
   it('should call apiService when create annotation', async () => {
-    const result = jest.spyOn(ApiService, 'createAnnotations');
+    const spy = jest.spyOn(ApiService, 'createAnnotations');
 
     commentsComponent['element'].dispatchEvent(new CustomEvent('create-annotation', {
       detail: {
@@ -97,11 +95,11 @@ describe('CommentsComponent', () => {
       },
     }));
 
-    expect(result).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.any(String),
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
       {
-        roomId: expect.any(String),
+        roomId: MOCK_CONFIG.roomId,
         url: expect.any(String),
         userId: expect.any(String),
         position: expect.any(String),
@@ -110,7 +108,7 @@ describe('CommentsComponent', () => {
   });
 
   it('should call apiService when resolve annotation', async () => {
-    const result = jest.spyOn(ApiService, 'resolveAnnotation');
+    const spy = jest.spyOn(ApiService, 'resolveAnnotation');
 
     commentsComponent['element'].dispatchEvent(new CustomEvent('resolve-annotation', {
       detail: {
@@ -118,10 +116,47 @@ describe('CommentsComponent', () => {
       },
     }));
 
-    expect(result).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.any(String),
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
       'test',
+    );
+  });
+
+  it('should call apiService when resolve annotation', async () => {
+    const spy = jest.spyOn(ApiService, 'resolveAnnotation');
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('resolve-annotation', {
+      detail: {
+        uuid: 'test',
+      },
+    }));
+
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
+      'test',
+    );
+  });
+
+  it('should call apiService when create a new comment', async () => {
+    const spy = jest.spyOn(ApiService, 'createComment');
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('create-comment', {
+      detail: {
+        uuid: 'uuid-test',
+        text: 'text-test',
+      },
+    }));
+
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
+      {
+        annotationId: 'uuid-test',
+        userId: expect.any(String),
+        text: 'text-test',
+      },
     );
   });
 });

@@ -91,4 +91,48 @@ describe('comments', () => {
 
     expect(element['annotations']).toEqual([annotationUpdated]);
   });
+
+  test('should add comment', async () => {
+    const annotation = {
+      ...MOCK_ANNOTATION,
+      position: 'any_position',
+    };
+
+    element['addAnnotation']([annotation]);
+
+    const comment = {
+      uuid: 'teste',
+      username: 'any_username',
+      avatar: 'any_avatar',
+      text: 'any_text',
+      createdAt: new Date().toISOString(),
+    };
+
+    element['addComment'](annotation.uuid, comment);
+
+    const lastComment = element['annotations'][0].comments.at(-1);
+
+    expect(lastComment).toEqual(comment);
+  });
+
+  test('should return void when annotation is not found', async () => {
+    const annotation = {
+      ...MOCK_ANNOTATION,
+      position: 'any_position',
+    };
+
+    element['addAnnotation']([annotation]);
+
+    const comment = {
+      uuid: 'teste',
+      username: 'any_username',
+      avatar: 'any_avatar',
+      text: 'any_text',
+      createdAt: new Date().toISOString(),
+    };
+
+    element['addComment']('other_annotation_id', comment);
+
+    expect(element['annotations'][0].comments.length).toEqual(2);
+  });
 });

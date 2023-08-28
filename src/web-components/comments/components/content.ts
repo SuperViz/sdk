@@ -30,8 +30,8 @@ export class CommentsContent extends WebComponentsBaseElement {
       return this.annotations.length === index + 1 ? 'hidden' : '';
     };
 
-    const selectAnnotation = (e: CustomEvent) => {
-      const { uuid } = e.detail;
+    const selectAnnotation = ({ detail }: CustomEvent) => {
+      const { uuid } = detail;
       this.selectedAnnotation = uuid;
     };
 

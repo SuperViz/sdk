@@ -55,6 +55,7 @@ export class CommentsComponent extends BaseComponent {
   private addListeners(): void {
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
+    this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
   }
 
   /**
@@ -65,17 +66,18 @@ export class CommentsComponent extends BaseComponent {
   private destroyListeners(): void {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.createAnnotation);
+    this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
   }
 
   /**
    * @function createAnnotation
    * @description Creates a new annotation and comment and adds them to the Comments component
-   * @param {CustomEvent} e - The event object containing the annotation text and position
+   * @param {CustomEvent} event - The event object containing the annotation text and position
    * @returns {Promise<void>}
    */
-  private createAnnotation = async (e: CustomEvent): Promise<void> => {
+  private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { text, position } = e.detail;
+      const { text, position } = detail;
       const { url } = this;
 
       const annotation: Annotation = await ApiService.createAnnotations(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
@@ -104,13 +106,21 @@ export class CommentsComponent extends BaseComponent {
    * @param {string} text - The text content of the comment
    * @returns {Promise<Comment>} - A promise that resolves with the created comment object
    */
-  private async createComment(annotationId: string, text: string): Promise<Comment> {
+  private async createComment(
+    annotationId: string,
+    text: string,
+    addComment = false,
+  ): Promise<Comment> {
     try {
-      return await ApiService.createComment(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
+      const comment: Comment = await ApiService.createComment(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
         annotationId,
         userId: this.localParticipant.id,
         text,
       });
+
+      if (addComment) this.addComment(annotationId, comment);
+
+      return comment;
     } catch (error) {
       this.logger.log('error when creating comment', error);
       throw error;
@@ -123,8 +133,19 @@ export class CommentsComponent extends BaseComponent {
    * @param {Annotation[]} annotation - An array of annotation objects to add to the component
    * @returns {void}
    */
-  private addAnnotation(annotation: Annotation[]): void {
+  addAnnotation(annotation: Annotation[]): void {
     this.element.addAnnotation(annotation);
+  }
+
+  /**
+   * @function addComment
+   * @description Adds a new comment to an annotation in the Comments component
+   * @param {string} annotationId - The ID of the annotation to add the comment to
+   * @param {Comment} comment - The comment object to add to the annotation
+   * @returns {void}
+   */
+  addComment(annotationId: string, comment: Comment): void {
+    this.element.addComment(annotationId, comment);
   }
 
   /**
@@ -154,12 +175,12 @@ export class CommentsComponent extends BaseComponent {
   /**
     * @function resolveAnnotation
     * @description Resolves an annotation by UUID using the API
-    * @param {CustomEvent} e - The custom event containing the UUID of the annotation to resolve
+    * @param {CustomEvent} event - The custom event containing the UUID of the annotation to resolve
     * @returns {Promise<void>}
     */
-  private async resolveAnnotation(e: CustomEvent): Promise<void> {
+  private async resolveAnnotation({ detail }: CustomEvent): Promise<void> {
     try {
-      const { uuid } = e.detail;
+      const { uuid } = detail;
       await ApiService.resolveAnnotation(
         config.get('apiUrl'),
         config.get('apiKey'),

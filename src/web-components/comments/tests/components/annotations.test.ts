@@ -27,16 +27,16 @@ describe('CommentsAnnotations', () => {
 
   test('emits an event when the comment input is submitted', async () => {
     const commentInput = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
-    const eventSpy = jest.fn();
-    element.addEventListener('create-annotation', eventSpy);
-    commentInput.dispatchEvent(new CustomEvent('create-comment', {
+    const spy = jest.fn();
+    element.addEventListener('create-annotation', spy);
+    commentInput.dispatchEvent(new CustomEvent('create-annotation', {
       detail: {
         text: 'test',
       },
     }));
 
-    expect(eventSpy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
 
-    element.removeEventListener('create-annotation', eventSpy);
+    element.removeEventListener('create-annotation', spy);
   });
 });
