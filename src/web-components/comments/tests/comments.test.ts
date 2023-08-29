@@ -1,4 +1,5 @@
 import '..';
+import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import sleep from '../../../common/utils/sleep';
 
 let element: HTMLElement;
@@ -22,7 +23,7 @@ describe('comments', () => {
 
   test('should close superviz comments', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments')[0];
-    const app = renderedElement.shadowRoot?.getElementById('superviz-comments');
+    const app = renderedElement.shadowRoot!.getElementById('superviz-comments');
 
     renderedElement.setAttributeNode(document.createAttribute('open'));
     renderedElement.removeAttribute('open');
@@ -33,7 +34,7 @@ describe('comments', () => {
 
   test('should open superviz comments', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments')[0];
-    const app = renderedElement.shadowRoot?.getElementById('superviz-comments');
+    const app = renderedElement.shadowRoot!.getElementById('superviz-comments');
 
     renderedElement.setAttributeNode(document.createAttribute('open'));
 
@@ -71,5 +72,23 @@ describe('comments', () => {
     await sleep();
 
     expect(element['open']).toEqual(!isOpen);
+  });
+
+  test('should update annotation', async () => {
+    const annotation = {
+      ...MOCK_ANNOTATION,
+      position: 'any_position',
+    };
+
+    element['addAnnotation']([annotation]);
+
+    const annotationUpdated = {
+      ...MOCK_ANNOTATION,
+      position: 'any_position_updated',
+    };
+
+    element['updateAnnotations']([annotationUpdated]);
+
+    expect(element['annotations']).toEqual([annotationUpdated]);
   });
 });

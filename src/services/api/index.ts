@@ -49,4 +49,11 @@ export default class ApiService {
     });
     return doRequest(url, 'GET', undefined, { apikey: apiKey });
   }
+
+  static async resolveAnnotation(baseUrl: string, apiKey: string, annotationId: string) {
+    const path = `/annotations/resolve/${annotationId}`;
+    const url = this.createUrl(baseUrl, path);
+
+    return doRequest(url, 'POST', {}, { apikey: apiKey });
+  }
 }
