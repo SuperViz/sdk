@@ -31,9 +31,9 @@ module.exports = {
           contents: `
             export function injectStyle(text) {
               if (typeof document !== 'undefined') {
-                var style = document.createElement('style')
+                const style = document.createElement('style')
                 style.id = 'superviz-style'
-                var node = document.createTextNode(text)
+                const node = document.createTextNode(text)
                 style.appendChild(node)
                 document.head.appendChild(style)
               }
