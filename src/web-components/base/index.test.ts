@@ -20,11 +20,18 @@ class TestElement extends WebComponentsBaseElement {
 }
 
 customElements.define('test-element', TestElement);
-const element = document.createElement('test-element');
-document.body.appendChild(element);
+
+const createElement = (): Element => {
+  const element = document.createElement('test-element');
+  document.body.appendChild(element);
+
+  return element;
+};
 
 describe('WebComponentsBase', () => {
   test('should have correctly added styles', async () => {
+    const element = createElement();
+
     await sleep(0);
 
     const normalStyle = getComputedStyle(element.shadowRoot!.querySelector('#normal')!);
@@ -47,5 +54,15 @@ describe('WebComponentsBase', () => {
     expect(bigAndGray600.fontSize).toBe('14px');
     expect(bigAndGray600.fontWeight).toBe('400');
     expect(bigAndGray600.fontFamily).toBe('Roboto');
+  });
+
+  test('should inject styles from the superviz style tag', async () => {
+    const element = createElement();
+
+    await sleep();
+
+    expect(element.shadowRoot?.querySelector('style')?.innerHTML).toContain(
+      '@import"https://unpkg.com/@superviz/sv-icons@0.8.7/css/style.css";',
+    );
   });
 });

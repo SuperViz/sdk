@@ -12,6 +12,18 @@ export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass:
       (superClass as unknown as typeof LitElement).styles ?? [],
     ];
 
+    public connectedCallback() {
+      setTimeout(() => {
+        const rootStyleElement = document.getElementById('superviz-style');
+
+        const style = document.createElement('style');
+        style.innerHTML = rootStyleElement?.innerHTML || '';
+        this.shadowRoot?.appendChild(style);
+      });
+
+      super.connectedCallback();
+    }
+
     /**
      * @function emitEvent
      * @description Emits a custom event with the given name, detail and optional configuration
@@ -19,7 +31,7 @@ export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass:
      * @param {object} detail - The detail of the custom event
      * @param {object} configs - The configuration of the custom event
      * @returns {void}
-    */
+     */
     protected emitEvent(
       name: string,
       detail: object,
