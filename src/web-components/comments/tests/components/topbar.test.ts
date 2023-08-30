@@ -18,10 +18,10 @@ describe('CommentsTopbar', () => {
   test('dispatches a close event when the close button is clicked', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-topbar')[0];
     const closeButton = renderedElement.shadowRoot!.querySelector('span:last-child');
-    const eventSpy = jest.fn();
+    const spy = jest.fn();
 
-    renderedElement.addEventListener('close', eventSpy);
+    renderedElement.addEventListener('close', spy);
     closeButton?.dispatchEvent(new Event('click'));
-    expect(eventSpy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

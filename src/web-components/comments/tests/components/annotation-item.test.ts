@@ -55,11 +55,11 @@ describe('CommentsAnnotationItem', () => {
     element = await createElement(MOCK_ANNOTATION);
     const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item');
 
-    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: 'true' } }));
+    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: true } }));
 
     await sleep();
 
-    expect(element['options']['resolved']).toBe('true');
+    expect(element['options']['resolved']).toBe(true);
   });
 
   test('resolves the annotation when the comment is resolved', async () => {
@@ -70,10 +70,33 @@ describe('CommentsAnnotationItem', () => {
     expect(element['options']['resolved']).toBe(true);
     const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item');
 
-    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: 'false' } }));
+    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: false } }));
 
     await sleep();
 
-    expect(element['options']['resolved']).toBe('false');
+    expect(element['options']['resolved']).toBe(false);
+  });
+
+  test('should create a new comment in annotation', async () => {
+    element = await createElement(MOCK_ANNOTATION);
+    element['dispatchEvent'] = jest.fn();
+    const commentInput = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
+
+    commentInput!.dispatchEvent(new CustomEvent('create-comment', {
+      detail: {
+        text: 'new comment',
+      },
+    }));
+
+    await sleep();
+
+    expect(element['dispatchEvent']).toHaveBeenCalledWith(
+      new CustomEvent('create-comment', {
+        detail: {
+          text: 'new comment',
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
   });
 });

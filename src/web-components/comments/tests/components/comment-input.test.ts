@@ -42,17 +42,17 @@ describe('CommentsCommentInput', () => {
     const textarea = element.shadowRoot!.querySelector('#comment-input--textarea') as HTMLTextAreaElement;
     const sendButton = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
 
-    const eventSpy = jest.fn();
+    const spy = jest.fn();
 
     element.setAttribute('eventType', 'send');
-    element.addEventListener('send', eventSpy);
+    element.addEventListener('send', spy);
 
     textarea.value = 'test';
     textarea.dispatchEvent(new Event('input'));
 
     sendButton.click();
 
-    expect(eventSpy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   test('test custom props with text', async () => {

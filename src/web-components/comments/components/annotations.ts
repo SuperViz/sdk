@@ -17,10 +17,10 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
     open: { type: Boolean },
   };
 
-  private createAnnotation(e: CustomEvent) {
+  private createAnnotation({ detail }: CustomEvent) {
     this.emitEvent('create-annotation', {
       position: {},
-      text: e.detail.text,
+      text: detail.text,
     });
   }
 
@@ -29,8 +29,8 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
       <div class="annotations">
         <span class="text text-big text-bold add-comment-btn">Click anywhere to add a comment</span>
         <superviz-comments-comment-input 
-          @create-comment=${this.createAnnotation}
-          eventType="create-comment"
+          @create-annotation=${this.createAnnotation}
+          eventType="create-annotation"
         >
         </superviz-comments-comment-input>
       </div>

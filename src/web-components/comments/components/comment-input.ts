@@ -70,7 +70,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const sendBtn = this.getSendBtn();
     const text = input.value;
 
-    this.emitEvent(this.eventType, { text });
+    this.emitEvent(
+      this.eventType,
+      { text },
+      {
+        composed: false,
+        bubbles: false,
+      },
+    );
 
     input.value = '';
     sendBtn.disabled = true;
