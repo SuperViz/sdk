@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sassPlugin } = require('esbuild-sass-plugin');
+const { style } = require('./plugins/style-loader');
 
 const entries = Object.entries(process.env).filter((key) => key[0].startsWith('SDK_'));
 const env = Object.fromEntries(entries);
@@ -12,14 +12,14 @@ module.exports = {
     './src/web-components/index.ts',
   ],
   loader: {
-    '.png': 'dataurl',
-    '.svg': 'dataurl',
-    '.woff': 'dataurl',
-    '.woff2': 'dataurl',
-    '.eot': 'dataurl',
-    '.ttf': 'dataurl',
+    '.png': 'file',
+    '.svg': 'file',
+    '.woff': 'file',
+    '.woff2': 'file',
+    '.eot': 'file',
+    '.ttf': 'file',
   },
-  plugins: [sassPlugin()],
+  plugins: [style()],
   bundle: true,
   target: 'es6',
   format: 'esm',
