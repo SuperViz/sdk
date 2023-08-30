@@ -10,6 +10,7 @@ import {
 import { VideoComponent } from './components';
 import init from './core';
 import './web-components';
+import './common/styles/global.css';
 
 export { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
