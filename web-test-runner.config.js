@@ -50,6 +50,7 @@ module.exports = {
   testRunnerHtml: (testFramework) => `
     <html>
       <head>
+        <style id="superviz-style">@import"https://unpkg.com/@superviz/sv-icons@0.8.7/css/style.css";</style>
         <script type="module" src="${testFramework}"></script>
         <script type="module">import 'jest-browser-globals';</script>
       </head>
