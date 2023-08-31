@@ -32,6 +32,12 @@ jest.mock('../../common/utils', () => {
           message: WaterMark.ALL,
         });
       }
+
+      if (url.includes('/activity')) {
+        return Promise.resolve({
+          message: 'any message',
+        });
+      }
     }),
   };
 });
@@ -68,6 +74,18 @@ describe('ApiService', () => {
       const response = await ApiService.fetchWaterMark(baseUrl, VALID_API_KEY);
 
       expect(response).toEqual(WaterMark.ALL);
+    });
+  });
+
+  describe('sendActivity', () => {
+    test('should return any message', async () => {
+
+      const userId = 'user-id'
+      const groupId = 'group-id'
+      const product = 'video-component'
+      const response = await ApiService.sendActivity(userId, groupId, product);
+
+      expect(response).toEqual({ message: 'any message' });
     });
   });
 });
