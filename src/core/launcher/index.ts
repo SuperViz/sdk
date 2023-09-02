@@ -2,7 +2,7 @@ import { isEqual } from 'lodash';
 
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { Group, Participant } from '../../common/types/participant.types';
-import { Logger } from '../../common/utils/logger';
+import { Logger } from '../../common/utils';
 import { BaseComponent } from '../../components/base';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
@@ -12,6 +12,7 @@ import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/t
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
+import ApiService from "../../services/api";
 
 export class Launcher implements DefaultLauncher {
   private readonly shouldKickParticipantsOnHostLeave: boolean;
@@ -61,6 +62,7 @@ export class Launcher implements DefaultLauncher {
       config: config.configuration,
       eventBus: this.eventBus,
     });
+    ApiService.sendActivity(this.participant.id, this.group.id, component.name)
   };
 
   /**
