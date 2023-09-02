@@ -2,7 +2,7 @@ import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { VideoComponentOptions } from './types';
 export declare class VideoComponent extends BaseComponent {
-    protected name: string;
+    name: string;
     protected logger: Logger;
     private participantList;
     private videoManager;
@@ -26,7 +26,6 @@ export declare class VideoComponent extends BaseComponent {
     /**
      * @function startVideo
      * @description start video manager
-     * @param {VideoManagerOptions} options - video manager params
      * @returns {void}
      */
     private startVideo;
@@ -55,9 +54,9 @@ export declare class VideoComponent extends BaseComponent {
      */
     private unsubscribeFromRealtimeEvents;
     /**
-     * @function createParticipantListFromAblyList
+     * @function createParticipantFromAblyPresence
      * @description update participant list from ably participant list
-     * @param {Record<string, AblyParticipant>} participants - ably participant list
+     * @param {AblyParticipant} participant - ably participant list
      * @returns {Participant[]} participant list
      * */
     private createParticipantFromAblyPresence;
@@ -77,7 +76,7 @@ export declare class VideoComponent extends BaseComponent {
      */
     private onWaitingForHost;
     /**
-     * @function onCOnnectionStatusChange
+     * @function onConnectionStatusChange
      * @description handler for connection status change event
      * @param {MeetingConnectionStatus} newStatus - new connection status
      * @returns {void}
@@ -137,7 +136,6 @@ export declare class VideoComponent extends BaseComponent {
     /**
      * @function onKickLocalParticipant
      * @description handler for kick local participant event
-     * @param {string} participantId - participant id
      * @returns {void}
      */
     private onKickLocalParticipant;

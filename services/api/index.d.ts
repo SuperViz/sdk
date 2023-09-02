@@ -3,4 +3,5 @@ export default class ApiService {
     static validateApiKey(baseUrl: string, apiKey: string): Promise<any>;
     static fetchConfig(baseUrl: string, apiKey: string): Promise<any>;
     static fetchWaterMark(baseUrl: string, apiKey: string): Promise<any>;
+    static sendActivity(userId: string, groupId: string, product: string): Promise<any>;
 }

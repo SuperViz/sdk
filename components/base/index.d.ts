@@ -9,7 +9,7 @@ export declare abstract class BaseComponent {
     protected group: Group;
     protected realtime: AblyRealtimeService;
     protected eventBus: EventBus;
-    protected abstract name: string;
+    abstract name: string;
     protected abstract logger: Logger;
     protected isAttached: boolean;
     /**
