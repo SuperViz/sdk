@@ -19,7 +19,9 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
     return html`
       <div class="topbar">
         <span class="text text-bold">COMMENTS</span>
-        <span @click=${this.close}>></span>
+        <span @click=${this.close}>
+          <superviz-icon name="right" size="lg"></superviz-icon>
+        </span>
       </div>
     `;
   }

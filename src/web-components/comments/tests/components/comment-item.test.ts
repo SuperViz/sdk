@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import sleep from '../../../../common/utils/sleep';
 
 import '../../components';
+import { CommentDropdownOptions, CommentMode } from '../../components/types';
 
 const element = document.createElement('superviz-comments-comment-item');
 document.body.appendChild(element);
@@ -34,7 +35,7 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
-    const resolveButton = renderedElement.shadowRoot!.querySelector('.comment-item__resolve > button') as HTMLButtonElement;
+    const resolveButton = renderedElement.shadowRoot!.querySelector('.comment-item__user > button') as HTMLButtonElement;
 
     element.dispatchEvent = jest.fn();
 
@@ -50,5 +51,59 @@ describe('CommentsCommentItem', () => {
         ),
       );
     expect(element['resolved']).toEqual(true);
+  });
+
+  test('should turn on editable mode', async () => {
+    await element['updateComplete'];
+
+    const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
+    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.EDIT }));
+
+    await element['updateComplete'];
+
+    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
+
+    expect(renderedElement['mode']).toEqual(CommentMode.EDITABLE);
+  });
+
+  test('should turn off editable mode', async () => {
+    await element['updateComplete'];
+
+    const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
+    dropdown.dispatchEvent(new CustomEvent('selected', { detail: 'edit' }));
+
+    await element['updateComplete'];
+
+    const renderedElement = () => document.getElementsByTagName('superviz-comments-comment-item')[0];
+
+    await element['updateComplete'];
+
+    expect(renderedElement()['mode']).toEqual(CommentMode.EDITABLE);
+
+    const editableComment = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
+    editableComment.dispatchEvent(new CustomEvent('close-edit-mode'));
+
+    await element['updateComplete'];
+
+    expect(renderedElement()['mode']).toEqual('readonly');
+  });
+
+  test('should update comment', async () => {
+    await element['updateComplete'];
+
+    const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
+    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.EDIT }));
+
+    await element['updateComplete'];
+
+    const editableComment = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
+    editableComment['dispatchEvent'](new CustomEvent('update-comment', { detail: {
+      uuid: 'any_uuid',
+      text: 'This is an updated comment',
+    },
+    }));
+
+    expect(element['text']).toEqual('This is an updated comment');
+    expect(element['mode']).toEqual('readonly');
   });
 });

@@ -56,6 +56,7 @@ export class CommentsComponent extends BaseComponent {
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
+    this.element.addEventListener('update-comment', this.updateComment);
   }
 
   /**
@@ -67,6 +68,7 @@ export class CommentsComponent extends BaseComponent {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.createAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
+    this.element.removeEventListener('update-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
   }
 
   /**
@@ -126,6 +128,29 @@ export class CommentsComponent extends BaseComponent {
       throw error;
     }
   }
+
+  /**
+   * @function updateComment
+   * @description Updates an existing comment with new text
+   * @param {CustomEvent} event - The custom event containing the UUID
+   *  and new text of the comment to update
+   * @returns {Promise<void>} - A promise that resolves when
+   *  the comment has been successfully updated
+   */
+  private updateComment = async ({ detail }: CustomEvent): Promise<void> => {
+    try {
+      const { uuid, text } = detail;
+      await ApiService.updateComment(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+        uuid,
+        text,
+      );
+    } catch (error) {
+      this.logger.log('error when creating comment', error);
+      throw error;
+    }
+  };
 
   /**
    * @function addAnnotation

@@ -1,8 +1,6 @@
 import { css } from 'lit';
 
 export const variableStyle = css`
-  @import url('https://unpkg.com/@superviz/sv-icons@0.8.6/css/style.css');
-
   * {
     --sv-primary: 98, 16, 204;
     --sv-primary-900: 56, 7, 136;

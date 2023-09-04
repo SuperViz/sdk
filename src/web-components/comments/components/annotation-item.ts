@@ -85,10 +85,11 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
       return html`
         <superviz-comments-comment-item
-        avatar="https://picsum.photos/200/300"
-        username="username"
-        text=${comment.text}
-        createdAt=${comment.createdAt}
+          uuid=${comment.uuid}
+          avatar="https://picsum.photos/200/300"
+          username="username"
+          text=${comment.text}
+          createdAt=${comment.createdAt}
         ></superviz-comments-comment-item>
       `;
     };
@@ -109,6 +110,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       <div class=${annotationClasses} @click=${() => this.selectAnnotation()}>
         <div>
           <superviz-comments-comment-item
+            uuid=${this.annotation.comments[0].uuid}
             avatar="https://picsum.photos/200/300"
             username="username"
             text=${this.annotation.comments[0].text}

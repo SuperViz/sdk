@@ -35,6 +35,14 @@ export default class ApiService {
     return doRequest(url, 'POST', { ...annotations }, { apikey: apiKey });
   }
 
+  static async updateComment(baseUrl: string, apiKey: string, commentId: string, text: string) {
+    const path = `/comments/${commentId}`;
+    const url = this.createUrl(baseUrl, path);
+    return doRequest(url, 'PUT', {
+      text,
+    }, { apikey: apiKey });
+  }
+
   static async createComment(baseUrl: string, apiKey: string, comment: CommentParams) {
     const path = '/comments';
     const url = this.createUrl(baseUrl, path);

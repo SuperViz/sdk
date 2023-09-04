@@ -78,4 +78,19 @@ describe('CommentsCommentInput', () => {
     expect(textarea.value).toBe('');
     expect(btnSend.disabled).toBe(false);
   });
+
+  test('should close edit mode when close-edit-mode event is dispatched', async () => {
+    const spy = jest.fn();
+
+    element.addEventListener('close-edit-mode', spy);
+    element.setAttributeNode(document.createAttribute('editable'));
+
+    await sleep();
+
+    const button = element.shadowRoot!.querySelector('#close') as HTMLButtonElement;
+
+    button.click();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
 });

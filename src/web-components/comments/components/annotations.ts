@@ -27,12 +27,14 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
   protected render() {
     return html`
       <div class="annotations">
-        <span class="text text-big text-bold add-comment-btn">Click anywhere to add a comment</span>
-        <superviz-comments-comment-input 
-          @create-annotation=${this.createAnnotation}
-          eventType="create-annotation"
-        >
-        </superviz-comments-comment-input>
+        <span class="text text-big text-bold annotations--add-comment-btn">Click anywhere to add a comment</span>
+        <div class="annotations--comments-input">
+          <superviz-comments-comment-input 
+            @create-annotation=${this.createAnnotation}
+            eventType="create-annotation"
+          >
+          </superviz-comments-comment-input>
+        </div>
       </div>
     `;
   }
