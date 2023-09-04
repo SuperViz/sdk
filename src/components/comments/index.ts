@@ -7,7 +7,7 @@ import { BaseComponent } from '../base';
 import { Annotation, Comment } from './types';
 
 export class CommentsComponent extends BaseComponent {
-  name: string;
+  protected name: string;
   protected logger: Logger;
   protected element: Comments;
   private url: string;

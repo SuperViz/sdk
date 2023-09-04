@@ -1,5 +1,4 @@
 import { doRequest } from '../../common/utils';
-import config from '../config';
 
 import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
 
@@ -64,20 +63,5 @@ export default class ApiService {
     const url = this.createUrl(baseUrl, path);
 
     return doRequest(url, 'POST', {}, { apikey: apiKey });
-  }
-
-  static async sendActivity(userId: string, groupId: string, product: string) {
-    const path = '/activity';
-    const baseUrl = config.get<string>('apiUrl');
-    const meetingId = config.get<string>('roomId');
-    const apikey = config.get<string>('apiKey');
-    const url = this.createUrl(baseUrl, path);
-    const body = {
-      groupId,
-      meetingId,
-      product,
-      userId,
-    };
-    return doRequest(url, 'POST', body, { apikey });
   }
 }

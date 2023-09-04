@@ -52,12 +52,6 @@ jest.mock('../../common/utils', () => {
       if (url.includes('/annotations/resolve/any_annotation_id') && method === 'POST') {
         return Promise.resolve({});
       }
-
-      if (url.includes('/activity')) {
-        return Promise.resolve({
-          message: 'any message',
-        });
-      }
     }),
   };
 });
@@ -164,17 +158,6 @@ describe('ApiService', () => {
       );
 
       expect(response).toEqual({});
-    });
-  });
-
-  describe('sendActivity', () => {
-    test('should return any message', async () => {
-      const userId = 'user-id';
-      const groupId = 'group-id';
-      const product = 'video-component';
-      const response = await ApiService.sendActivity(userId, groupId, product);
-
-      expect(response).toEqual({ message: 'any message' });
     });
   });
 });

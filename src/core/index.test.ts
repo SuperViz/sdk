@@ -28,9 +28,11 @@ jest.mock('../services/api');
 jest.mock('../services/auth-service', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation((_, apiKey: string) => {
-    return apiKey === UNIT_TEST_API_KEY;
+    if (apiKey === UNIT_TEST_API_KEY) {
+      return true;
+    }
 
-
+    return false;
   }),
 }));
 jest.mock('../services/remote-config-service');
@@ -95,7 +97,7 @@ describe('initialization errors', () => {
     ).rejects.toThrow('Group fields is required');
   });
 
-  test('should throw an error if environment is invalid', async () => {
+  test('should throw an error if envoriment is invalid', async () => {
     ApiService.fetchConfig = jest.fn().mockResolvedValue(undefined);
 
     expect(sdk(UNIT_TEST_API_KEY, SIMPLE_INITIALIZATION_MOCK)).rejects.toThrow(

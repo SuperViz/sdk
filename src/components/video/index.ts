@@ -29,7 +29,7 @@ import { BaseComponent } from '../base';
 import { ParticipandToFrame, VideoComponentOptions } from './types';
 
 export class VideoComponent extends BaseComponent {
-  public name: string;
+  protected name: string;
   protected logger: Logger;
   private participantList: ParticipandToFrame[] = [];
 
@@ -90,6 +90,7 @@ export class VideoComponent extends BaseComponent {
   /**
    * @function startVideo
    * @description start video manager
+   * @param {VideoManagerOptions} options - video manager params
    * @returns {void}
    */
   private startVideo = (): void => {
@@ -197,9 +198,9 @@ export class VideoComponent extends BaseComponent {
   };
 
   /**
-   * @function createParticipantFromAblyPresence
+   * @function createParticipantListFromAblyList
    * @description update participant list from ably participant list
-   * @param {AblyParticipant} participant - ably participant list
+   * @param {Record<string, AblyParticipant>} participants - ably participant list
    * @returns {Participant[]} participant list
    * */
   private createParticipantFromAblyPresence = (participant: AblyParticipant): Participant => {
@@ -236,7 +237,7 @@ export class VideoComponent extends BaseComponent {
   };
 
   /**
-   * @function onConnectionStatusChange
+   * @function onCOnnectionStatusChange
    * @description handler for connection status change event
    * @param {MeetingConnectionStatus} newStatus - new connection status
    * @returns {void}
@@ -401,6 +402,7 @@ export class VideoComponent extends BaseComponent {
   /**
    * @function onKickLocalParticipant
    * @description handler for kick local participant event
+   * @param {string} participantId - participant id
    * @returns {void}
    */
 

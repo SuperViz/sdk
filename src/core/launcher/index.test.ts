@@ -18,8 +18,6 @@ jest.mock('../../services/event-bus', () => ({
   EventBus: jest.fn().mockImplementation(() => EVENT_BUS_MOCK),
 }));
 
-jest.mock('../../services/api');
-
 const MOCK_COMPONENT = {
   attach: jest.fn(),
   detach: jest.fn(),
@@ -55,7 +53,7 @@ describe('Launcher', () => {
     expect(Launcher).toBeDefined();
   });
 
-  test('should be initialize realtime service', () => {
+  test('should be inicialize realtime service', () => {
     expect(ABLY_REALTIME_MOCK.start).toHaveBeenCalled();
   });
 
