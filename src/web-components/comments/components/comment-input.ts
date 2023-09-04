@@ -1,5 +1,6 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
@@ -18,6 +19,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare eventType: string;
   declare text: string;
   declare btnActive: boolean;
+  declare editable: boolean;
 
   declare commentsInput: HTMLTextAreaElement;
 
@@ -27,6 +29,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     eventType: { type: String },
     text: { type: String },
     btnActive: { type: Boolean },
+    editable: { type: Boolean },
   };
 
   private getCommentInput = () => this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
@@ -84,7 +87,34 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.updateHeight();
   }
 
+  private closeEditMode = () => {
+    this.emitEvent('close-edit-mode', {}, { composed: false, bubbles: false });
+  };
+
   protected render() {
+    const commentInputEditableOptions = () => {
+      if (!this.editable) return;
+
+      return html`
+        <button id="close" @click=${() => this.closeEditMode()} class="icon-button icon-button--medium icon-button--clickable" @click=${this.send}>
+          <superviz-icon name="close" size="md"></superviz-icon>
+        </button>
+        <button id="confirm" class="comment-input--send-btn" disabled @click=${this.send}>
+          <superviz-icon name="check" size="md"></superviz-icon>
+        </button>
+      `;
+    };
+
+    const commentInputOptions = () => {
+      if (this.editable) return;
+
+      return html`
+        <button class="comment-input--send-btn" disabled @click=${this.send}>
+          <superviz-icon name="send" size="md"></superviz-icon>
+        </button>
+      `;
+    };
+
     return html`
       <div class="comment-input">
         <div id="comment-input--container">
@@ -93,11 +123,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="sv-hr"></div>
         <div class="comment-input--options">
           <div>
-            <button class="icon-minus_sm">X</button>
-            <button>X</button>
+            <button class="icon-button">
+              <superviz-icon name="mention" size="sm"></superviz-icon>
+            </button>
           </div>
-          <div>
-            <button class="comment-input--send-btn" disabled @click=${this.send}>X</button>
+          <div class="comment-input-options">
+            ${commentInputOptions()}
+            ${commentInputEditableOptions()}
           </div>
         </div>
       </div> 

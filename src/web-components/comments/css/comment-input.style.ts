@@ -4,7 +4,7 @@ export const commentInputStyle = css`
   .comment-input {
     display: flex;
     flex-direction: column;
-    width: 288px;
+    width: 100%;
     background: rgb(var(--sv-white));
     border-radius: 4px;
     border: 1px solid rgb(var(--sv-gray-200));
@@ -70,5 +70,10 @@ export const commentInputStyle = css`
     background: rgb(var(--sv-gray-300));
     padding: 0px;
     margin: 0px;
+  }
+
+  .comment-input-options {
+    display: flex;
+    gap: 4px;
   }
 `;

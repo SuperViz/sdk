@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
 
-import { variableStyle, typography, svHr } from './styles';
+import { variableStyle, typography, svHr, iconButtonStyle } from './styles';
 import { Constructor, WebComponentsBaseInterface } from './types';
 
 export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass: T) => {
@@ -9,6 +9,7 @@ export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass:
       variableStyle,
       typography,
       svHr,
+      iconButtonStyle,
       (superClass as unknown as typeof LitElement).styles ?? [],
     ];
 

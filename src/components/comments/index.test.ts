@@ -10,6 +10,7 @@ jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
   createAnnotations: jest.fn().mockImplementation(() => []),
   createComment: jest.fn().mockImplementation(() => []),
+  updateComment: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
 }));
 
@@ -157,6 +158,24 @@ describe('CommentsComponent', () => {
         userId: expect.any(String),
         text: 'text-test',
       },
+    );
+  });
+
+  it('should call apiService when update a comment', async () => {
+    const spy = jest.spyOn(ApiService, 'updateComment');
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('update-comment', {
+      detail: {
+        uuid: 'uuid-test',
+        text: 'text-test',
+      },
+    }));
+
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
+      'uuid-test',
+      'text-test',
     );
   });
 });

@@ -39,6 +39,10 @@ export const commentItemStyle = css`
     }
   }
 
+  .comment-item__content {
+    width: 100%;
+  }
+
   .comment-item__content__body {
     color: rgb(var(--sv-gray-700));
   }

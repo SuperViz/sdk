@@ -45,6 +45,10 @@ jest.mock('../../common/utils', () => {
         return Promise.resolve({});
       }
 
+      if (url.includes('/comments/any_comment_id') && method === 'PUT') {
+        return Promise.resolve({});
+      }
+
       if (url.includes('/annotations/resolve/any_annotation_id') && method === 'POST') {
         return Promise.resolve({});
       }
@@ -114,6 +118,18 @@ describe('ApiService', () => {
           userId: 'any_user_id',
           text: 'any_text',
         },
+      );
+
+      expect(response).toEqual({});
+    });
+
+    test('should update a comment', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.updateComment(
+        baseUrl,
+        VALID_API_KEY,
+        'any_comment_id',
+        'any_text',
       );
 
       expect(response).toEqual({});

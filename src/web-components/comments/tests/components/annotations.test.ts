@@ -15,7 +15,7 @@ describe('CommentsAnnotations', () => {
   });
 
   test('renders the add comment button', async () => {
-    const button = element.shadowRoot!.querySelector('.add-comment-btn') as HTMLSpanElement;
+    const button = element.shadowRoot!.querySelector('.annotations--add-comment-btn') as HTMLSpanElement;
     expect(button).toBeDefined();
     expect(button.textContent).toEqual('Click anywhere to add a comment');
   });
