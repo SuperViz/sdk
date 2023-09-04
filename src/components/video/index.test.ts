@@ -36,6 +36,7 @@ const VIDEO_MANAGER_MOCK = {
   meetingConnectionObserver: MOCK_OBSERVER_HELPER,
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
   participantLeftObserver: MOCK_OBSERVER_HELPER,
+  participantListObserver: MOCK_OBSERVER_HELPER,
 };
 
 const MOCK_DRAW_DATA = {
@@ -82,6 +83,23 @@ describe('VideoComponent', () => {
   });
 
   test('should not show avatar settings if local participant has avatar', () => {
+    VideoComponentInstance.detach();
+
+    VideoComponentInstance = new VideoComponent({
+      defaultAvatars: true,
+    });
+
+    VideoComponentInstance.attach({
+      realtime: ABLY_REALTIME_MOCK,
+      localParticipant: {
+        ...MOCK_LOCAL_PARTICIPANT,
+        avatar: MOCK_AVATAR,
+      },
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
     expect(VideoComponentInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();
   });
 
@@ -328,6 +346,33 @@ describe('VideoComponent', () => {
         width: 100,
       });
     });
+
+    test('should update participant list', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+      const participants = [MOCK_LOCAL_PARTICIPANT];
+
+      VideoComponentInstance['onParticipantListUpdate'](participants);
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
+        participants,
+      );
+
+      expect(VideoComponentInstance['publish']).toBeCalledWith(
+        MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE,
+        participants.length,
+      );
+    });
+
+    test('should not update participant list if new list is equal to old list', () => {
+      VideoComponentInstance['publish'] = jest.fn();
+      const participants = [MOCK_LOCAL_PARTICIPANT];
+
+      VideoComponentInstance['onParticipantListUpdate'](participants);
+      VideoComponentInstance['onParticipantListUpdate'](participants);
+
+      expect(VideoComponentInstance['publish']).toBeCalledTimes(2);
+    });
   });
 
   describe('realtime events', () => {
@@ -352,12 +397,15 @@ describe('VideoComponent', () => {
         id: 'unit-test-participant-ably-id',
         timestamp: new Date().getTime(),
         data: {
+          avatar: MOCK_LOCAL_PARTICIPANT.avatar,
+          isHost: VideoComponentInstance['realtime'].hostClientId === MOCK_LOCAL_PARTICIPANT.id,
+          type: MOCK_LOCAL_PARTICIPANT.type,
           participantId: MOCK_LOCAL_PARTICIPANT.id,
           slotIndex: 0,
         },
       };
 
-      VideoComponentInstance['onParticipantsDidChange']({
+      VideoComponentInstance['onRealtimeParticipantsDidChange']({
         [MOCK_LOCAL_PARTICIPANT.id]: ablyParticipant,
       });
 
@@ -367,6 +415,9 @@ describe('VideoComponent', () => {
         participantId: ablyParticipant.data.participantId,
         color: MeetingColors[ablyParticipant.data.slotIndex],
         name: ablyParticipant.data.name,
+        type: ablyParticipant.data.type,
+        avatar: ablyParticipant.data.avatar,
+        isHost: ablyParticipant.data.isHost,
       };
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
