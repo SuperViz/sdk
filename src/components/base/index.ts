@@ -13,7 +13,7 @@ export abstract class BaseComponent {
   protected group: Group;
   protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
-  protected abstract name: string;
+  public abstract name: string;
   protected abstract logger: Logger;
 
   protected isAttached = false;
