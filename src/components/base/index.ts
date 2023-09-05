@@ -1,6 +1,7 @@
 import { Group, Participant } from '../../common/types/participant.types';
 import { Logger, Observer } from '../../common/utils';
 import config from '../../services/config';
+import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
 
 import { DefaultAttachComponentOptions } from './types';
@@ -11,7 +12,8 @@ export abstract class BaseComponent {
   protected localParticipant: Participant;
   protected group: Group;
   protected realtime: AblyRealtimeService;
-  protected abstract name: string;
+  protected eventBus: EventBus;
+  public abstract name: string;
   protected abstract logger: Logger;
 
   protected isAttached = false;
@@ -29,13 +31,14 @@ export abstract class BaseComponent {
       throw new Error(message);
     }
 
-    const { realtime, localParticipant, group, config: globalConfig } = params;
+    const { realtime, localParticipant, group, config: globalConfig, eventBus } = params;
 
     config.setConfig(globalConfig);
 
     this.realtime = realtime;
     this.localParticipant = localParticipant;
     this.group = group;
+    this.eventBus = eventBus;
     this.isAttached = true;
 
     this.logger.log('attached');

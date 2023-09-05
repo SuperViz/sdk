@@ -29,39 +29,22 @@ import { BaseComponent } from '../base';
 import { ParticipandToFrame, VideoComponentOptions } from './types';
 
 export class VideoComponent extends BaseComponent {
-  protected name: string;
+  public name: string;
   protected logger: Logger;
-  private participantList: ParticipandToFrame[] = [];
+  private participantToFrameList: ParticipandToFrame[] = [];
+  private participantsOnMeeting: Partial<Participant>[] = [];
 
   private videoManager: VideoConfereceManager;
   private connectionService: ConnectionService;
   private browserService: BrowserService;
 
   private videoConfig: VideoManagerOptions;
+  private params?: VideoComponentOptions;
 
   constructor(params?: VideoComponentOptions) {
     super();
 
-    const {
-      language,
-      camsOff,
-      screenshareOff,
-      chatOff,
-      defaultAvatars,
-      offset,
-      enableFollow,
-      enableGoTo,
-      enableGather,
-      defaultToolbar,
-      locales,
-      avatars,
-      devices,
-      customColors,
-      camerasPosition,
-      skipMeetingSettings = false,
-      disableCameraOverlay = false,
-      layoutPosition,
-    } = params ?? {};
+    this.params = params;
 
     this.name = 'video-component';
     this.logger = new Logger('@superviz/sdk/video-component');
@@ -72,28 +55,6 @@ export class VideoComponent extends BaseComponent {
 
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
-
-    this.videoConfig = {
-      language,
-      canUseChat: !chatOff,
-      canUseCams: !camsOff,
-      canUseScreenshare: !screenshareOff,
-      canUseDefaultAvatars: !!defaultAvatars && !this.localParticipant?.avatar?.model,
-      canUseGather: !!enableGather,
-      canUseFollow: !!enableFollow,
-      canUseGoTo: !!enableGoTo,
-      canUseDefaultToolbar: defaultToolbar ?? true,
-      camerasPosition,
-      devices,
-      skipMeetingSettings,
-      disableCameraOverlay,
-      browserService: this.browserService,
-      offset,
-      locales: locales ?? [],
-      avatars: avatars ?? [],
-      customColors,
-      layoutPosition,
-    };
   }
 
   /**
@@ -130,11 +91,32 @@ export class VideoComponent extends BaseComponent {
   /**
    * @function startVideo
    * @description start video manager
-   * @param {VideoManagerOptions} options - video manager params
    * @returns {void}
    */
   private startVideo = (): void => {
-    this.logger.log('video component @ start video');
+    this.videoConfig = {
+      language: this.params?.language,
+      canUseChat: !this.params?.chatOff,
+      canUseCams: !this.params?.camsOff,
+      canUseScreenshare: !this.params?.screenshareOff,
+      canUseDefaultAvatars: !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model,
+      canUseGather: !!this.params?.enableGather,
+      canUseFollow: !!this.params?.enableFollow,
+      canUseGoTo: !!this.params?.enableGoTo,
+      canUseDefaultToolbar: this.params?.defaultToolbar ?? true,
+      camerasPosition: this.params?.camerasPosition,
+      devices: this.params?.devices,
+      skipMeetingSettings: this.params?.skipMeetingSettings,
+      disableCameraOverlay: this.params?.disableCameraOverlay,
+      browserService: this.browserService,
+      offset: this.params?.offset,
+      locales: this.params?.locales ?? [],
+      avatars: this.params?.avatars ?? [],
+      customColors: this.params?.customColors,
+      layoutPosition: this.params?.layoutPosition,
+    };
+
+    this.logger.log('video component @ start video', this.videoConfig);
     this.videoManager = new VideoConfereceManager(this.videoConfig);
 
     this.subscribeToVideoEvents();
@@ -151,6 +133,7 @@ export class VideoComponent extends BaseComponent {
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
+    this.videoManager.participantListObserver.subscribe(this.onParticipantListUpdate);
     this.videoManager.waitingForHostObserver.subscribe(this.onWaitingForHost);
     this.videoManager.frameSizeObserver.subscribe(this.onFrameSizeDidChange);
     this.videoManager.meetingStateObserver.subscribe(this.onMeetingStateChange);
@@ -173,6 +156,7 @@ export class VideoComponent extends BaseComponent {
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
+    this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
     this.videoManager.waitingForHostObserver.unsubscribe(this.onWaitingForHost);
     this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
     this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateChange);
@@ -196,7 +180,7 @@ export class VideoComponent extends BaseComponent {
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.subscribe(this.onRoomInfoUpdated);
-    this.realtime.participantsObserver.subscribe(this.onParticipantsDidChange);
+    this.realtime.participantsObserver.subscribe(this.onRealtimeParticipantsDidChange);
     this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
   };
 
@@ -211,14 +195,14 @@ export class VideoComponent extends BaseComponent {
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeftOnRealtime);
     this.realtime.roomInfoUpdatedObserver.unsubscribe(this.onRoomInfoUpdated);
-    this.realtime.participantsObserver.unsubscribe(this.onParticipantsDidChange);
+    this.realtime.participantsObserver.unsubscribe(this.onRealtimeParticipantsDidChange);
     this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
   };
 
   /**
-   * @function createParticipantListFromAblyList
+   * @function createParticipantFromAblyPresence
    * @description update participant list from ably participant list
-   * @param {Record<string, AblyParticipant>} participants - ably participant list
+   * @param {AblyParticipant} participant - ably participant list
    * @returns {Participant[]} participant list
    * */
   private createParticipantFromAblyPresence = (participant: AblyParticipant): Participant => {
@@ -255,7 +239,7 @@ export class VideoComponent extends BaseComponent {
   };
 
   /**
-   * @function onCOnnectionStatusChange
+   * @function onConnectionStatusChange
    * @description handler for connection status change event
    * @param {MeetingConnectionStatus} newStatus - new connection status
    * @returns {void}
@@ -359,6 +343,9 @@ export class VideoComponent extends BaseComponent {
       [RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE]: (data: TranscriptState) => {
         this.realtime.setTranscript(data);
       },
+      [RealtimeEvent.REALTIME_GO_TO_PARTICIPANT]: (data: string) => {
+        this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, data);
+      },
     }[event](data);
 
     this.publish(event, data);
@@ -392,11 +379,31 @@ export class VideoComponent extends BaseComponent {
     });
   };
 
+  /**
+   * @function onParticipantLeft
+   * @description handler for participant left event
+   * @param {Participant} _ - participant
+   * @returns {void}
+   */
   private onParticipantLeft = (_: Participant): void => {
     this.logger.log('video component @ on participant left', this.localParticipant);
 
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
     this.detach();
+  };
+
+  private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
+    this.logger.log('video component @ on participant list update', participants);
+
+    if (isEqual(this.participantsOnMeeting, participants)) return;
+
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, participants);
+
+    if (this.participantsOnMeeting.length !== participants.length) {
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participants.length);
+    }
+
+    this.participantsOnMeeting = participants;
   };
 
   /** Realtime Events */
@@ -417,7 +424,6 @@ export class VideoComponent extends BaseComponent {
   /**
    * @function onKickLocalParticipant
    * @description handler for kick local participant event
-   * @param {string} participantId - participant id
    * @returns {void}
    */
 
@@ -455,12 +461,14 @@ export class VideoComponent extends BaseComponent {
   };
 
   /**
-   * @function onParticipantsDidChange
+   * @function onRealtimeParticipantsDidChange
    * @description handler for participant list update event
    * @param {Record<string, AblyParticipant>} participants - participants
    * @returns {void}
    */
-  private onParticipantsDidChange = (participants: Record<string, AblyParticipant>): void => {
+  private onRealtimeParticipantsDidChange = (
+    participants: Record<string, AblyParticipant>,
+  ): void => {
     this.logger.log('video component @ on participants did change', participants);
 
     const participantList: ParticipandToFrame[] = Object.values(participants).map(
@@ -471,28 +479,21 @@ export class VideoComponent extends BaseComponent {
           participantId: participant.clientId,
           color: this.realtime.getSlotColor(participant.data.slotIndex).name,
           name: participant.data.name,
+          isHost: this.realtime.hostClientId === participant.clientId,
+          avatar: participant.data.avatar,
+          type: participant.data.type,
         };
       },
     );
 
-    if (!isEqual(this.participantList, participantList)) {
+    if (!isEqual(this.participantToFrameList, participantList)) {
       this.videoManager.publishMessageToFrame(
         RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE,
         participantList,
       );
-
-      const participantsToPublish = Object.values(participants).map((participant) => {
-        return this.createParticipantFromAblyPresence(participant);
-      });
-
-      this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, participantsToPublish);
     }
 
-    if (this.participantList.length !== participantList.length) {
-      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participantList.length);
-    }
-
-    this.participantList = participantList;
+    this.participantToFrameList = participantList;
   };
 
   /**

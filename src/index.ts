@@ -10,16 +10,15 @@ import {
 import { VideoComponent } from './components';
 import init from './core';
 import './web-components';
+import './common/styles/global.css';
 
 export { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 export { BrowserService } from './services/browser';
 export { BrowserStats } from './services/browser/types';
-export { PluginMethods, Plugin } from './services/integration/base-plugin/types';
-export { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
+
 export { RealtimeMessage } from './services/realtime/ably/types';
 export { LauncherFacade } from './core/launcher/types';
-export { DefaultPluginOptions as PluginOptions } from './services/integration/base-plugin/types';
 
 if (window) {
   window.SuperVizSdk = {

@@ -1,17 +1,18 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
-import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
+import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import { Configuration } from '../../services/config/types';
+import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
 
 import { BaseComponent } from '.';
 
 class DummyComponent extends BaseComponent {
   protected logger: Logger;
-  protected name: string;
+  public name: string;
 
   constructor() {
     super();
@@ -51,6 +52,7 @@ describe('BaseComponent', () => {
         realtime: ABLY_REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
       });
 
       expect(DummyComponentInstance['localParticipant']).toEqual(MOCK_LOCAL_PARTICIPANT);
@@ -68,6 +70,7 @@ describe('BaseComponent', () => {
           realtime: null as unknown as AblyRealtimeService,
           group: null as unknown as Group,
           config: null as unknown as Configuration,
+          eventBus: null as unknown as EventBus,
         });
       }).toThrowError();
     });
@@ -83,6 +86,7 @@ describe('BaseComponent', () => {
         realtime: ABLY_REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
       });
 
       DummyComponentInstance.detach();
@@ -102,6 +106,7 @@ describe('BaseComponent', () => {
         realtime: ABLY_REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
       });
 
       DummyComponentInstance.subscribe('test', callback);

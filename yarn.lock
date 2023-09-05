@@ -2432,6 +2432,11 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@superviz/sv-icons@^0.8.6":
+  version "0.8.6"
+  resolved "https://registry.yarnpkg.com/@superviz/sv-icons/-/sv-icons-0.8.6.tgz#4a9dfa8f70a676b5cb6d9b5a8e15fbb9c37b4e61"
+  integrity sha512-RFXIoS48zu5dn1xKk+8VKbPI2XJ2+RU07Q0sSGh1bQak/vDDjXMZuovSKbEY+00oFBtniv6V5Ge1mLpE7mVEaw==
+
 "@szmarczak/http-timer@^4.0.5":
   version "4.0.6"
   resolved "https://registry.npmjs.org/@szmarczak/http-timer/-/http-timer-4.0.6.tgz"

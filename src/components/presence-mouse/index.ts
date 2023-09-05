@@ -7,7 +7,7 @@ import { BaseComponent } from '../base';
 import { mouseOptions } from './types';
 
 export class PresenceMouseComponent extends BaseComponent {
-  protected name: string;
+  public name: string;
   protected logger: Logger;
   private presenceMouseElement: PresenceMouse;
 
@@ -93,8 +93,8 @@ export class PresenceMouseComponent extends BaseComponent {
 
     Object.values(participants).forEach((participant: AblyParticipant) => {
       const externalParticipantData: mouseOptions = participant.data;
-      const hasPresenceMouseElement = externalParticipantData?.mousePositionX
-      && this.presenceMouseElement;
+      const hasPresenceMouseElement =
+        externalParticipantData?.mousePositionX && this.presenceMouseElement;
       const myParticipant = externalParticipantData?.id === this.localParticipant?.id;
 
       externalParticipantData.color = this.realtime.getSlotColor(participant.data.slotIndex).color;
@@ -116,7 +116,9 @@ export class PresenceMouseComponent extends BaseComponent {
     this.logger.log('presence-mouse component @ on participant joined on realtime', participant);
 
     if (participant?.data?.id === this.localParticipant?.id) {
-      this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
+      this.presenceMouseElement = document.createElement(
+        'superviz-presence-mouse',
+      ) as PresenceMouse;
       document.body.appendChild(this.presenceMouseElement);
       window.addEventListener('mousemove', this.onMyParticipantMouseMove);
     }
