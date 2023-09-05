@@ -1,4 +1,5 @@
 import { doRequest } from '../../common/utils';
+import config from "../config";
 
 export default class ApiService {
   static createUrl(baseUrl: string, path: string): string {
@@ -22,5 +23,20 @@ export default class ApiService {
     const url = this.createUrl(baseUrl, path);
     const { message } = await doRequest(url, 'POST', { apiKey });
     return message;
+  }
+
+  static async sendActivity(userId: string, groupId: string, product: string) {
+    const path = '/activity';
+    const baseUrl = config.get<string>('apiUrl');
+    const meetingId = config.get<string>('roomId');
+    const apikey = config.get<string>('apiKey');
+    const url = this.createUrl(baseUrl, path);
+    const body = {
+      groupId,
+      meetingId,
+      product,
+      userId
+    }
+    return doRequest(url, 'POST', body, { apikey });
   }
 }

@@ -12,7 +12,7 @@ import { BaseComponent } from '.';
 
 class DummyComponent extends BaseComponent {
   protected logger: Logger;
-  protected name: string;
+  public name: string;
 
   constructor() {
     super();

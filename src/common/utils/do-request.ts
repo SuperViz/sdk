@@ -1,8 +1,9 @@
-export default async (url: string, method: string, body: any) => {
+export default async (url: string, method: string, body: any, customHeaders = {}) => {
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
+      ...customHeaders,
     },
     body: body ? JSON.stringify(body) : null,
   });

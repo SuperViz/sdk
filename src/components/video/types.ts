@@ -1,4 +1,4 @@
-import { Avatar } from '../../common/types/participant.types';
+import { Avatar, ParticipantType } from '../../common/types/participant.types';
 import { DevicesOptions } from '../../common/types/sdk-options.types';
 import {
   CamerasPosition,
@@ -37,4 +37,7 @@ export type ParticipandToFrame = {
   participantId: string;
   color: string;
   name: string;
+  isHost: boolean;
+  avatar?: Avatar;
+  type: ParticipantType;
 };
