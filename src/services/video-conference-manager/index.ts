@@ -61,6 +61,7 @@ export default class VideoConfereceManager {
 
   public readonly participantJoinedObserver = new Observer({ logger: this.logger });
   public readonly participantLeftObserver = new Observer({ logger: this.logger });
+  public readonly participantListObserver = new Observer({ logger: this.logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
@@ -252,6 +253,10 @@ export default class VideoConfereceManager {
       this.onWaitingForHostDidChange,
     );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
+    this.messageBridge.listen(
+      MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
+      this.onParticipantListUpdate,
+    );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_KICK_PARTICIPANT, this.onMeetingKickParticipant);
@@ -585,6 +590,10 @@ export default class VideoConfereceManager {
 
   private onWaitingForHostDidChange = (isWaitingForHost: boolean): void => {
     this.waitingForHostObserver.publish(isWaitingForHost);
+  };
+
+  private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
+    this.participantListObserver.publish(participants);
   };
 
   /**
