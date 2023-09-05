@@ -22,6 +22,7 @@ export default class VideoConfereceManager {
     readonly meetingConnectionObserver: Observer;
     readonly participantJoinedObserver: Observer;
     readonly participantLeftObserver: Observer;
+    readonly participantListObserver: Observer;
     frameState: VideoFrameState;
     constructor(options: VideoManagerOptions);
     get isWaterMarkEnabled(): boolean;
@@ -172,6 +173,7 @@ export default class VideoConfereceManager {
      */
     private onConnectionStatusChange;
     private onWaitingForHostDidChange;
+    private onParticipantListUpdate;
     /**
      * @function start
      * @param {StartMeetingOptions} options

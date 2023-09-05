@@ -4,7 +4,8 @@ import { VideoComponentOptions } from './types';
 export declare class VideoComponent extends BaseComponent {
     name: string;
     protected logger: Logger;
-    private participantList;
+    private participantToFrameList;
+    private participantsOnMeeting;
     private videoManager;
     private connectionService;
     private browserService;
@@ -124,7 +125,14 @@ export declare class VideoComponent extends BaseComponent {
      * @returns {void}
      */
     private onParticipantJoined;
+    /**
+     * @function onParticipantLeft
+     * @description handler for participant left event
+     * @param {Participant} _ - participant
+     * @returns {void}
+     */
     private onParticipantLeft;
+    private onParticipantListUpdate;
     /** Realtime Events */
     /**
      * @function onKickAllParticipantsDidChange
@@ -147,12 +155,12 @@ export declare class VideoComponent extends BaseComponent {
      * */
     private onRoomInfoUpdated;
     /**
-     * @function onParticipantsDidChange
+     * @function onRealtimeParticipantsDidChange
      * @description handler for participant list update event
      * @param {Record<string, AblyParticipant>} participants - participants
      * @returns {void}
      */
-    private onParticipantsDidChange;
+    private onRealtimeParticipantsDidChange;
     /**
      * @function onHostParticipantDidChange
      * @description handler for host participant change event

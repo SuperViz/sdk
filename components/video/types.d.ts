@@ -1,4 +1,4 @@
-import { Avatar } from '../../common/types/participant.types';
+import { Avatar, ParticipantType } from '../../common/types/participant.types';
 import { DevicesOptions } from '../../common/types/sdk-options.types';
 import { CamerasPosition, ColorsVariables, LayoutPosition, Locale, Offset } from '../../services/video-conference-manager/types';
 export interface VideoComponentOptions {
@@ -29,4 +29,7 @@ export declare type ParticipandToFrame = {
     participantId: string;
     color: string;
     name: string;
+    isHost: boolean;
+    avatar?: Avatar;
+    type: ParticipantType;
 };
