@@ -62,6 +62,8 @@ jest.mock('../../services/event-bus', () => {
   return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
 });
 
+jest.useFakeTimers();
+
 const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
 
 describe('VideoComponent', () => {
@@ -98,7 +100,14 @@ describe('VideoComponent', () => {
       eventBus: EVENT_BUS_MOCK,
     });
 
+    VideoComponentInstance['start'] = jest.fn(VideoComponentInstance['start']);
+    VideoComponentInstance['logger'].log = jest.fn();
+
     expect(VIDEO_MANAGER_MOCK.start).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1000);
+
+    expect(VideoComponentInstance['start']).toHaveBeenCalledTimes(1);
   });
 
   test('should not show avatar settings if local participant has avatar', () => {

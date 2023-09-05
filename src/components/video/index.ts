@@ -455,6 +455,8 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
+    if (!room) return;
+
     this.logger.log('video component @ on room info updated', room);
     const { isGridModeEnable, followParticipantId, gather, drawing, transcript, hostClientId } =
       room;
@@ -485,7 +487,7 @@ export class VideoComponent extends BaseComponent {
   private onRealtimeParticipantsDidChange = (
     participants: Record<string, AblyParticipant>,
   ): void => {
-    if (!this.videoManager) return;
+    if (!this.videoManager || !participants) return;
 
     this.logger.log('video component @ on participants did change', participants);
 
