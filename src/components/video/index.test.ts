@@ -62,6 +62,8 @@ jest.mock('../../services/event-bus', () => {
   return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
 });
 
+const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
+
 describe('VideoComponent', () => {
   let VideoComponentInstance: VideoComponent;
 
@@ -69,8 +71,9 @@ describe('VideoComponent', () => {
     jest.clearAllMocks();
 
     VideoComponentInstance = new VideoComponent();
+
     VideoComponentInstance.attach({
-      realtime: ABLY_REALTIME_MOCK,
+      realtime: REALTIME_MOCK,
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
@@ -82,6 +85,22 @@ describe('VideoComponent', () => {
     VideoComponentInstance.detach();
   });
 
+  test('should not initialize video if realtime is not joined room', () => {
+    VideoComponentInstance.detach();
+
+    VideoComponentInstance = new VideoComponent();
+
+    VideoComponentInstance.attach({
+      realtime: ABLY_REALTIME_MOCK,
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    expect(VIDEO_MANAGER_MOCK.start).not.toHaveBeenCalled();
+  });
+
   test('should not show avatar settings if local participant has avatar', () => {
     VideoComponentInstance.detach();
 
@@ -90,7 +109,7 @@ describe('VideoComponent', () => {
     });
 
     VideoComponentInstance.attach({
-      realtime: ABLY_REALTIME_MOCK,
+      realtime: REALTIME_MOCK,
       localParticipant: {
         ...MOCK_LOCAL_PARTICIPANT,
         avatar: MOCK_AVATAR,
