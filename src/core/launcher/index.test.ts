@@ -1,4 +1,5 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
+import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
@@ -11,6 +12,10 @@ import Facade, { Launcher } from '.';
 
 jest.mock('../../services/realtime', () => ({
   AblyRealtimeService: jest.fn().mockImplementation(() => ABLY_REALTIME_MOCK),
+}));
+
+jest.mock('../../services/event-bus', () => ({
+  EventBus: jest.fn().mockImplementation(() => EVENT_BUS_MOCK),
 }));
 
 const MOCK_COMPONENT = {
@@ -91,6 +96,7 @@ describe('Launcher', () => {
         realtime: ABLY_REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
       });
     });
 

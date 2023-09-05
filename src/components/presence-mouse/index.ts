@@ -1,7 +1,6 @@
 import { MeetingEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
-import { PresenceMouse } from '../../web-components/presence-mouse';
 import { BaseComponent } from '../base';
 
 import { MouseOptions } from './types';
@@ -9,7 +8,7 @@ import { MouseOptions } from './types';
 export class PresenceMouseComponent extends BaseComponent {
   protected name: string;
   protected logger: Logger;
-  private presenceMouseElement: PresenceMouse;
+  private presenceMouseElement: HTMLElement;
   private containerId: string | null;
 
   constructor(container?: string | null) {
@@ -27,7 +26,7 @@ export class PresenceMouseComponent extends BaseComponent {
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
 
-    this.suscribeToRealtimeEvents();
+    this.subscribeToRealtimeEvents();
   }
 
   /**
@@ -50,11 +49,11 @@ export class PresenceMouseComponent extends BaseComponent {
   }
 
   /**
-   * @function suscribeToRealtimeEvents
+   * @function subscribeToRealtimeEvents
    * @description subscribe to realtime events
    * @returns {void}
    */
-  private suscribeToRealtimeEvents = (): void => {
+  private subscribeToRealtimeEvents = (): void => {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
@@ -113,6 +112,7 @@ export class PresenceMouseComponent extends BaseComponent {
       externalParticipantData.slotIndex = participant.data.slotIndex;
 
       if (!myParticipant && hasPresenceMouseElement) {
+        // @ts-ignore
         this.presenceMouseElement.updatePresenceMouseParticipant(externalParticipantData);
       }
     });
@@ -131,7 +131,7 @@ export class PresenceMouseComponent extends BaseComponent {
       const presenceContainerId = this.containerId ?
         document.getElementById(this.containerId) : document?.body;
 
-      this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
+      this.presenceMouseElement = document.createElement('superviz-presence-mouse');
 
       presenceContainerId.appendChild(this.presenceMouseElement);
       presenceContainerId.addEventListener('mousemove', this.onMyParticipantMouseMove);
@@ -146,6 +146,7 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private onParticipantLeftOnRealtime = (participant: AblyParticipant): void => {
     this.logger.log('presence-mouse component @ on participant left on realtime', participant);
+    // @ts-ignore
     this.presenceMouseElement.removePresenceMouseParticipant(participant.clientId);
   };
 }

@@ -17,7 +17,7 @@ export class PresenceMouse extends LitElement {
   }
 
   /**
-   * @function updatePresenceMouse
+   * @function updatePresenceMouseParticipant
    * @description handler for update presence mouse change event
    * @param {MouseOptions} externalParticipant - presence mouse change data
    * @returns {void}

@@ -38,30 +38,12 @@ export class VideoComponent extends BaseComponent {
   private browserService: BrowserService;
 
   private videoConfig: VideoManagerOptions;
+  private params?: VideoComponentOptions;
 
   constructor(params?: VideoComponentOptions) {
     super();
 
-    const {
-      language,
-      camsOff,
-      screenshareOff,
-      chatOff,
-      defaultAvatars,
-      offset,
-      enableFollow,
-      enableGoTo,
-      enableGather,
-      defaultToolbar,
-      locales,
-      avatars,
-      devices,
-      customColors,
-      camerasPosition,
-      skipMeetingSettings = false,
-      disableCameraOverlay = false,
-      layoutPosition,
-    } = params ?? {};
+    this.params = params;
 
     this.name = 'video-component';
     this.logger = new Logger('@superviz/sdk/video-component');
@@ -72,28 +54,6 @@ export class VideoComponent extends BaseComponent {
 
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
-
-    this.videoConfig = {
-      language,
-      canUseChat: !chatOff,
-      canUseCams: !camsOff,
-      canUseScreenshare: !screenshareOff,
-      canUseDefaultAvatars: !!defaultAvatars && !this.localParticipant?.avatar?.model,
-      canUseGather: !!enableGather,
-      canUseFollow: !!enableFollow,
-      canUseGoTo: !!enableGoTo,
-      canUseDefaultToolbar: defaultToolbar ?? true,
-      camerasPosition,
-      devices,
-      skipMeetingSettings,
-      disableCameraOverlay,
-      browserService: this.browserService,
-      offset,
-      locales: locales ?? [],
-      avatars: avatars ?? [],
-      customColors,
-      layoutPosition,
-    };
   }
 
   /**
@@ -134,7 +94,29 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private startVideo = (): void => {
-    this.logger.log('video component @ start video');
+    this.videoConfig = {
+      language: this.params?.language,
+      canUseChat: !this.params?.chatOff,
+      canUseCams: !this.params?.camsOff,
+      canUseScreenshare: !this.params?.screenshareOff,
+      canUseDefaultAvatars: !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model,
+      canUseGather: !!this.params?.enableGather,
+      canUseFollow: !!this.params?.enableFollow,
+      canUseGoTo: !!this.params?.enableGoTo,
+      canUseDefaultToolbar: this.params?.defaultToolbar ?? true,
+      camerasPosition: this.params?.camerasPosition,
+      devices: this.params?.devices,
+      skipMeetingSettings: this.params?.skipMeetingSettings,
+      disableCameraOverlay: this.params?.disableCameraOverlay,
+      browserService: this.browserService,
+      offset: this.params?.offset,
+      locales: this.params?.locales ?? [],
+      avatars: this.params?.avatars ?? [],
+      customColors: this.params?.customColors,
+      layoutPosition: this.params?.layoutPosition,
+    };
+
+    this.logger.log('video component @ start video', this.videoConfig);
     this.videoManager = new VideoConfereceManager(this.videoConfig);
 
     this.subscribeToVideoEvents();
@@ -358,6 +340,9 @@ export class VideoComponent extends BaseComponent {
       },
       [RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE]: (data: TranscriptState) => {
         this.realtime.setTranscript(data);
+      },
+      [RealtimeEvent.REALTIME_GO_TO_PARTICIPANT]: (data: string) => {
+        this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, data);
       },
     }[event](data);
 

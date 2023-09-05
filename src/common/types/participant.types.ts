@@ -16,6 +16,8 @@ export interface Participant {
   originalWidth?: number,
   originalHeight?: number,
   containerId?: string,
+  // @NOTE - this is a hack to make the participant info work with the 3D avatar
+  avatarConfig?: unknown;
 }
 
 export interface Group {
