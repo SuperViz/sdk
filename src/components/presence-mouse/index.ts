@@ -6,7 +6,7 @@ import { BaseComponent } from '../base';
 import { MouseOptions } from './types';
 
 export class PresenceMouseComponent extends BaseComponent {
-  protected name: string;
+  public name: string;
   protected logger: Logger;
   private presenceMouseElement: HTMLElement;
   private containerId: string | null;
