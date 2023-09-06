@@ -126,6 +126,7 @@ describe('PresenceMouseComponent', () => {
                     slotIndex: 0,
                 },
             }
+
             const participant2 = MOCK_ABLY_PARTICIPANT
             participant2.id = 'unit-test-participant2-ably-id'
             participant2.data.participantId = 'participant2-id'
@@ -179,7 +180,7 @@ describe('PresenceMouseComponent', () => {
         it('should remove presence mouse participant', () => {
             // @ts-ignore
             const removePresenceMouseParticipantSpy = jest.spyOn(presenceMouseComponent['presenceMouseElement'], 'removePresenceMouseParticipant');
-
+            
             const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
                 clientId: 'MOCK_LOCAL_PARTICIPANT.id',
                 action: 'present',
