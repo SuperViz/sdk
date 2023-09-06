@@ -4,8 +4,8 @@ export type AnnotationOptions = {
 }
 
 export enum CommentDropdownOptions {
-  EDIT = 'Edit',
-  DELETE = 'Delete',
+  EDIT = 'EDIT',
+  DELETE = 'DELETE',
 }
 
 export enum CommentMode {
