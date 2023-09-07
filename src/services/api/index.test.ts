@@ -79,11 +79,11 @@ describe('ApiService', () => {
 
   describe('sendActivity', () => {
     test('should return any message', async () => {
-
-      const userId = 'user-id'
-      const groupId = 'group-id'
-      const product = 'video-component'
-      const response = await ApiService.sendActivity(userId, groupId, product);
+      const userId = 'user-id';
+      const groupId = 'group-id';
+      const groupName = 'group-name';
+      const product = 'video-component';
+      const response = await ApiService.sendActivity(userId, groupId, groupName, product);
 
       expect(response).toEqual({ message: 'any message' });
     });
