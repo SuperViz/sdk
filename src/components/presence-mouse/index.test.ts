@@ -180,7 +180,7 @@ describe('PresenceMouseComponent', () => {
         it('should remove presence mouse participant', () => {
             // @ts-ignore
             const removePresenceMouseParticipantSpy = jest.spyOn(presenceMouseComponent['presenceMouseElement'], 'removePresenceMouseParticipant');
-            
+
             const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
                 clientId: 'MOCK_LOCAL_PARTICIPANT.id',
                 action: 'present',

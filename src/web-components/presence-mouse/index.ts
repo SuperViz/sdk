@@ -75,8 +75,8 @@ export class PresenceMouse extends LitElement {
       let adjustedY = externalParticipant.mousePositionY;
 
       if (containerId) {
-        const windowWidth = presenceContainerId.clientWidth;
-        const windowHeight = presenceContainerId.clientHeight;
+        const windowWidth = presenceContainerId?.clientWidth || 1;
+        const windowHeight = presenceContainerId?.clientHeight || 1;
         adjustedX = (externalParticipant.mousePositionX /
             externalParticipant.originalWidth) * windowWidth;
         adjustedY = (externalParticipant.mousePositionY /
