@@ -1,6 +1,6 @@
-import { MOCK_ANNOTATION } from '../../../../../__mocks__/comments.mock';
-import sleep from '../../../../common/utils/sleep';
-import '../../components';
+import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import sleep from '../../../common/utils/sleep';
+import '.';
 
 let element: HTMLElement;
 

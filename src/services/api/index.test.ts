@@ -52,6 +52,10 @@ jest.mock('../../common/utils', () => {
       if (url.includes('/annotations/resolve/any_annotation_id') && method === 'POST') {
         return Promise.resolve({});
       }
+
+      if (url.includes('/comments/any_comment_id') && method === 'DELETE') {
+        return Promise.resolve({});
+      }
     }),
   };
 });
@@ -155,6 +159,17 @@ describe('ApiService', () => {
         baseUrl,
         VALID_API_KEY,
         'any_annotation_id',
+      );
+
+      expect(response).toEqual({});
+    });
+
+    test('should delete a comment', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.deleteComment(
+        baseUrl,
+        VALID_API_KEY,
+        'any_comment_id',
       );
 
       expect(response).toEqual({});

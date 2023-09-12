@@ -12,6 +12,7 @@ jest.mock('../../services/api', () => ({
   createComment: jest.fn().mockImplementation(() => []),
   updateComment: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
+  deleteComment: jest.fn().mockImplementation(() => []),
 }));
 
 describe('CommentsComponent', () => {
@@ -31,6 +32,7 @@ describe('CommentsComponent', () => {
 
     commentsComponent['element'].addAnnotation = jest.fn().mockImplementation(() => []);
     commentsComponent['element'].addComment = jest.fn().mockImplementation(() => []);
+    commentsComponent['element'].deleteComment = jest.fn().mockImplementation(() => []);
   });
 
   afterEach(() => {
@@ -176,6 +178,23 @@ describe('CommentsComponent', () => {
       MOCK_CONFIG.apiKey,
       'uuid-test',
       'text-test',
+    );
+  });
+
+  // create tests to delete comment
+  test('should call apiService when delete a comment', async () => {
+    const spy = jest.spyOn(ApiService, 'deleteComment');
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('delete-comment', {
+      detail: {
+        uuid: 'uuid-test',
+      },
+    }));
+
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
+      'uuid-test',
     );
   });
 });
