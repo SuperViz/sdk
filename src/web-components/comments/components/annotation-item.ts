@@ -116,13 +116,14 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
             text=${this.annotation.comments[0].text}
             createdAt=${this.annotation.comments[0].createdAt}
             options=${JSON.stringify(this.options)}
+            primaryComment
             @resolve-annotation=${resolveAnnotation}
           ></superviz-comments-comment-item>
 
           <div class="avatars-comments ${shouldExpandAvatarComments}">  
             <div class="avatar-container">
               ${this.annotation.comments.map(avatarComments)}
-              <div class="avatar-divs-${replies} replies text text-big sv-gray-500">${replies} replies</div>
+              <div class="avatar-divs-${replies} replies text text-big sv-gray-500">${replies - 1} replies</div>
             </div>
           </div>
         </div>

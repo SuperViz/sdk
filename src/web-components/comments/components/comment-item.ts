@@ -27,6 +27,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare createdAt: string;
   declare options: AnnotationOptions;
   declare mode: CommentMode;
+  declare deleteCommentModalOpen: boolean;
+  declare primaryComment: boolean;
 
   static properties = {
     uuid: { type: String },
@@ -37,6 +39,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     createdAt: { type: String },
     options: { type: Object },
     mode: { type: String },
+    deleteCommentModalOpen: { type: Boolean },
+    primaryComment: { type: Boolean },
   };
 
   updated = (changedProperties: PropertyValueMap<any>) => {
@@ -56,6 +60,24 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     });
   };
 
+  private resolveAnnotation = () => {
+    this.resolved = !this.resolved;
+
+    this.emitEvent('resolve-annotation', {
+      resolved: this.resolved,
+    }, { composed: false, bubbles: false });
+  };
+
+  private confirmDelete = () => {
+    this.deleteCommentModalOpen = false;
+
+    if (this.primaryComment) return;
+
+    this.emitEvent('delete-comment', {
+      uuid: this.uuid,
+    });
+  };
+
   private closeEditMode = () => {
     this.mode = CommentMode.READONLY;
   };
@@ -69,14 +91,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
     const iconResolve = this.resolved ? '1' : '0';
 
-    const resolveAnnotation = () => {
-      this.resolved = !this.resolved;
-
-      this.emitEvent('resolve-annotation', {
-        resolved: this.resolved,
-      }, { composed: false, bubbles: false });
-    };
-
     const options = [
       {
         label: CommentDropdownOptions.EDIT,
@@ -89,6 +103,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     const dropdownOptionsHandler = ({ detail }: CustomEvent) => {
       if (detail === CommentDropdownOptions.EDIT) {
         this.mode = CommentMode.EDITABLE;
+      }
+
+      if (detail === CommentDropdownOptions.DELETE) {
+        this.deleteCommentModalOpen = true;
       }
     };
 
@@ -114,6 +132,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       `;
     };
 
+    const closeModal = () => {
+      this.deleteCommentModalOpen = false;
+    };
+
     return html`
       <div class="comment-item">
         <div class="comment-item__user">
@@ -124,7 +146,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             <span class="text text-bold sv-gray-600">${this.username}</span>
             <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
           </div>
-          <button @click=${() => resolveAnnotation()} class="icon-button icon-button--clickable icon-button--medium icon-button--no-hover ${isResolvable}">
+          <button @click=${() => this.resolveAnnotation()} class="icon-button icon-button--clickable icon-button--medium icon-button--no-hover ${isResolvable}">
             <superviz-icon name="resolve" size="md"></superviz-icon>
           </button>
           <superviz-dropdown 
@@ -147,6 +169,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           </div>
         </div>
       </div>
+      <superviz-comments-delete-comments-modal ?open=${this.deleteCommentModalOpen} @close=${closeModal} @confirm=${this.confirmDelete}>
+      </superviz-comments-delete-comments-modal>
     `;
   }
 }

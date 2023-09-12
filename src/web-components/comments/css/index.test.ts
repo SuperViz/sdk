@@ -1,11 +1,11 @@
-import { commentsStyle } from '../../css';
-import * as cssStyles from '../../css';
-import { annotationItemStyle } from '../../css/annotation-item.style';
-import { annotationsStyle } from '../../css/annotations.style';
-import { commentInputStyle } from '../../css/comment-input.style';
-import { commentItemStyle } from '../../css/comment-item.style';
-import { contentStyle } from '../../css/content.style';
-import { topbarStyle } from '../../css/topbar.style';
+import { annotationItemStyle } from './annotation-item.style';
+import { annotationsStyle } from './annotations.style';
+import { commentInputStyle } from './comment-input.style';
+import { commentItemStyle } from './comment-item.style';
+import { contentStyle } from './content.style';
+import { topbarStyle } from './topbar.style';
+
+import * as cssStyles from '.';
 
 describe('css', () => {
   test('should be export CommentsAnnotations', () => {

@@ -53,6 +53,23 @@ export class Comments extends WebComponentsBaseElement {
     ];
   }
 
+  deleteComment = (commentId: string) => {
+    const annotationIndex = this.annotations
+      .findIndex((annotation) => annotation.comments.some((comment) => comment.uuid === commentId));
+
+    if (annotationIndex === -1) return;
+
+    const annotation = this.annotations[annotationIndex];
+
+    annotation.comments = annotation.comments.filter((comment) => comment.uuid !== commentId);
+
+    this.annotations = [
+      ...this.annotations.slice(0, annotationIndex),
+      annotation,
+      ...this.annotations.slice(annotationIndex + 1),
+    ];
+  };
+
   updateAnnotations(data: Annotation[]) {
     this.annotations = data;
   }
@@ -71,12 +88,11 @@ export class Comments extends WebComponentsBaseElement {
         <div class="header">
           <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
           <superviz-comments-annotations 
-            id="annotations" 
+            id="annotations"
             open=${this.open}
           >
           </superviz-comments-annotations>
         </div>
-        <!-- <div class="icon-alert_md"></div> -->
         <superviz-comments-content annotations=${JSON.stringify(this.annotations)} class="content"></superviz-comments-content>
       </div>
     `;

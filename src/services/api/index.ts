@@ -64,4 +64,11 @@ export default class ApiService {
 
     return doRequest(url, 'POST', {}, { apikey: apiKey });
   }
+
+  static async deleteComment(baseUrl: string, apiKey: string, commentId: string) {
+    const path = `/comments/${commentId}`;
+    const url = this.createUrl(baseUrl, path);
+
+    return doRequest(url, 'DELETE', {}, { apikey: apiKey });
+  }
 }

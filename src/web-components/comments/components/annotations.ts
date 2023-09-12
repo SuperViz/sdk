@@ -9,13 +9,7 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationsSt
 
 @customElement('superviz-comments-annotations')
 export class CommentsAnnotations extends WebComponentsBaseElement {
-  declare open: boolean;
-
   static styles = styles;
-
-  static properties = {
-    open: { type: Boolean },
-  };
 
   private createAnnotation({ detail }: CustomEvent) {
     this.emitEvent('create-annotation', {

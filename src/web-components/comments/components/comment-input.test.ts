@@ -1,5 +1,5 @@
-import sleep from '../../../../common/utils/sleep';
-import '../../components';
+import sleep from '../../../common/utils/sleep';
+import '.';
 
 let element: HTMLElement;
 

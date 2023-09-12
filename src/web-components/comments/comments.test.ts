@@ -1,6 +1,6 @@
-import '..';
-import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
-import sleep from '../../../common/utils/sleep';
+import '.';
+import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
+import sleep from '../../common/utils/sleep';
 
 let element: HTMLElement;
 
@@ -134,5 +134,46 @@ describe('comments', () => {
     element['addComment']('other_annotation_id', comment);
 
     expect(element['annotations'][0].comments.length).toEqual(2);
+  });
+
+  test('should delete comment', async () => {
+    const annotation = {
+      ...MOCK_ANNOTATION,
+      position: 'any_position',
+    };
+
+    element['addAnnotation']([annotation]);
+
+    const newComment = {
+      uuid: 'teste',
+      username: 'any_username',
+      avatar: 'any_avatar',
+      text: 'any_text',
+      createdAt: new Date().toISOString(),
+    };
+
+    element['addComment'](annotation.uuid, newComment);
+
+    const commentId = () => element['annotations'][0].comments.find((comment) => comment.uuid === newComment.uuid)?.uuid;
+    expect(commentId()).toBeTruthy();
+
+    element['deleteComment'](newComment.uuid);
+
+    expect(commentId()).toBeFalsy();
+  });
+
+  test('should return void when comment is not found in delete comment', async () => {
+    const annotation = {
+      ...MOCK_ANNOTATION,
+      position: 'any_position',
+    };
+
+    element['addAnnotation']([annotation]);
+
+    element['deleteComment']('any_comment_id');
+
+    const commentId = () => element['annotations'][0].comments.find((comment) => comment.uuid === 'any_comment_id')?.uuid;
+
+    expect(commentId()).toBeFalsy();
   });
 });

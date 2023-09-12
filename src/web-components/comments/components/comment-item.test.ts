@@ -1,9 +1,9 @@
 import { DateTime } from 'luxon';
 
-import sleep from '../../../../common/utils/sleep';
+import sleep from '../../../common/utils/sleep';
 
-import '../../components';
-import { CommentDropdownOptions, CommentMode } from '../../components/types';
+import '.';
+import { CommentDropdownOptions, CommentMode } from './types';
 
 const element = document.createElement('superviz-comments-comment-item');
 document.body.appendChild(element);
@@ -105,5 +105,45 @@ describe('CommentsCommentItem', () => {
 
     expect(element['text']).toEqual('This is an updated comment');
     expect(element['mode']).toEqual('readonly');
+  });
+
+  test('should click in delete button', async () => {
+    await element['updateComplete'];
+
+    const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
+    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.DELETE }));
+
+    await element['updateComplete'];
+
+    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
+
+    expect(renderedElement['deleteCommentModalOpen']).toBeTruthy();
+  });
+
+  test('should listen event close modal', async () => {
+    await element['updateComplete'];
+
+    const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
+    modal.dispatchEvent(new CustomEvent('close'));
+
+    await element['updateComplete'];
+
+    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
+
+    expect(renderedElement['deleteCommentModalOpen']).toBeFalsy();
+  });
+
+  test('should listen event confirm delete', async () => {
+    await element['updateComplete'];
+
+    const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
+    modal.dispatchEvent(new CustomEvent('confirm'));
+
+    await element['updateComplete'];
+
+    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
+
+    expect(renderedElement['deleteCommentModalOpen']).toBeFalsy();
+    expect(renderedElement['primaryComment']).toBeFalsy();
   });
 });

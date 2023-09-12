@@ -1,11 +1,12 @@
-import * as Components from '../../components';
-import { CommentsAnnotationItem } from '../../components/annotation-item';
-import { CommentsAnnotationPin } from '../../components/annotation-pin';
-import { CommentsAnnotations } from '../../components/annotations';
-import { CommentsCommentInput } from '../../components/comment-input';
-import { CommentsCommentItem } from '../../components/comment-item';
-import { CommentsContent } from '../../components/content';
-import { CommentsTopbar } from '../../components/topbar';
+import { CommentsAnnotationItem } from './annotation-item';
+import { CommentsAnnotationPin } from './annotation-pin';
+import { CommentsAnnotations } from './annotations';
+import { CommentsCommentInput } from './comment-input';
+import { CommentsCommentItem } from './comment-item';
+import { CommentsContent } from './content';
+import { CommentsTopbar } from './topbar';
+
+import * as Components from '.';
 
 describe('Components', () => {
   test('should be export CommentsTopbar', () => {
