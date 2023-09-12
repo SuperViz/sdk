@@ -34,7 +34,7 @@ export class VideoComponent extends BaseComponent {
   private participantToFrameList: ParticipandToFrame[] = [];
   private participantsOnMeeting: Partial<Participant>[] = [];
 
-  private videoManager?: VideoConfereceManager;
+  private videoManager: VideoConfereceManager;
   private connectionService: ConnectionService;
   private browserService: BrowserService;
 
@@ -62,25 +62,14 @@ export class VideoComponent extends BaseComponent {
    * @description start video component
    * @returns {void}
    */
-  protected start = (): void => {
+  protected start(): void {
     this.logger.log('video component @ start');
-
-    if (!this.realtime.isJoinedRoom) {
-      this.logger.log('video component @ start - not joined yet');
-
-      setTimeout(() => {
-        this.logger.log('video component @ start - retrying');
-        this.start();
-      }, 1000);
-
-      return;
-    }
 
     this.publish(MeetingEvent.MEETING_START);
 
     this.suscribeToRealtimeEvents();
     this.startVideo();
-  };
+  }
 
   /**
    * @function destroy
@@ -95,7 +84,7 @@ export class VideoComponent extends BaseComponent {
     this.unsubscribeFromRealtimeEvents();
     this.unsubscribeFromVideoEvents();
 
-    this.videoManager?.leave();
+    this.videoManager.leave();
     this.connectionService.removeListeners();
   }
 
@@ -164,19 +153,19 @@ export class VideoComponent extends BaseComponent {
   private unsubscribeFromVideoEvents = (): void => {
     this.logger.log('video component @ unsubscribe from video events');
 
-    this.videoManager?.meetingConnectionObserver.unsubscribe(
+    this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
     );
-    this.videoManager?.participantListObserver.unsubscribe(this.onParticipantListUpdate);
-    this.videoManager?.waitingForHostObserver.unsubscribe(this.onWaitingForHost);
-    this.videoManager?.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
-    this.videoManager?.meetingStateObserver.unsubscribe(this.onMeetingStateChange);
-    this.videoManager?.frameStateObserver.unsubscribe(this.onFrameStateChange);
-    this.videoManager?.realtimeEventsObserver.unsubscribe(this.onRealtimeEventFromFrame);
-    this.videoManager?.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
-    this.videoManager?.participantLeftObserver.unsubscribe(this.onParticipantLeft);
-    this.videoManager?.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
-    this.videoManager?.devicesObserver.unsubscribe(this.onDevicesChange);
+    this.videoManager.participantListObserver.unsubscribe(this.onParticipantListUpdate);
+    this.videoManager.waitingForHostObserver.unsubscribe(this.onWaitingForHost);
+    this.videoManager.frameSizeObserver.unsubscribe(this.onFrameSizeDidChange);
+    this.videoManager.meetingStateObserver.unsubscribe(this.onMeetingStateChange);
+    this.videoManager.frameStateObserver.unsubscribe(this.onFrameStateChange);
+    this.videoManager.realtimeEventsObserver.unsubscribe(this.onRealtimeEventFromFrame);
+    this.videoManager.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
+    this.videoManager.participantLeftObserver.unsubscribe(this.onParticipantLeft);
+    this.videoManager.sameAccountErrorObserver.unsubscribe(this.onSameAccountError);
+    this.videoManager.devicesObserver.unsubscribe(this.onDevicesChange);
   };
 
   /**
@@ -376,9 +365,6 @@ export class VideoComponent extends BaseComponent {
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
 
-    this.onRealtimeParticipantsDidChange(this.realtime.getParticipants);
-    this.onRoomInfoUpdated(this.realtime.roomProperties);
-
     if (this.videoConfig.canUseDefaultAvatars) {
       this.realtime.updateMyProperties({
         avatar: participant.avatar,
@@ -455,11 +441,8 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
-    if (!room) return;
-
     this.logger.log('video component @ on room info updated', room);
-    const { isGridModeEnable, followParticipantId, gather, drawing, transcript, hostClientId } =
-      room;
+    const { isGridModeEnable, followParticipantId, gather, drawing, transcript } = room;
 
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
@@ -471,7 +454,6 @@ export class VideoComponent extends BaseComponent {
       followParticipantId,
     );
     this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, transcript);
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostClientId);
 
     if (this.realtime.hostClientId === this.localParticipant.id && gather) {
       this.realtime.setGather(false);
@@ -487,8 +469,6 @@ export class VideoComponent extends BaseComponent {
   private onRealtimeParticipantsDidChange = (
     participants: Record<string, AblyParticipant>,
   ): void => {
-    if (!this.videoManager || !participants) return;
-
     this.logger.log('video component @ on participants did change', participants);
 
     const participantList: ParticipandToFrame[] = Object.values(participants).map(
