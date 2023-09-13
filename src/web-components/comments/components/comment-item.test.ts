@@ -146,4 +146,18 @@ describe('CommentsCommentItem', () => {
     expect(renderedElement['deleteCommentModalOpen']).toBeFalsy();
     expect(renderedElement['primaryComment']).toBeFalsy();
   });
+
+  test('should emit event to delete annotation when are primaryComment', async () => {
+    element.setAttributeNode(document.createAttribute('primaryComment'));
+    await element['updateComplete'];
+
+    element.dispatchEvent = jest.fn();
+
+    const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
+    modal.dispatchEvent(new CustomEvent('confirm'));
+
+    await element['updateComplete'];
+
+    expect(element.dispatchEvent).toHaveBeenCalledWith(new CustomEvent('delete-annotation'));
+  });
 });

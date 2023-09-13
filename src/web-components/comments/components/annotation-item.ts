@@ -111,6 +111,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         <div>
           <superviz-comments-comment-item
             uuid=${this.annotation.comments[0].uuid}
+            annotationId=${this.annotation.uuid}
             avatar="https://picsum.photos/200/300"
             username="username"
             text=${this.annotation.comments[0].text}

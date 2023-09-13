@@ -55,6 +55,7 @@ export class CommentsComponent extends BaseComponent {
   private addListeners(): void {
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
+    this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
@@ -68,6 +69,7 @@ export class CommentsComponent extends BaseComponent {
   private destroyListeners(): void {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.createAnnotation);
+    this.element.removeEventListener('delete-annotation', this.deleteAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
     this.element.removeEventListener('update-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
     this.element.removeEventListener('delete-comment', this.deleteComment);
@@ -99,6 +101,26 @@ export class CommentsComponent extends BaseComponent {
       }]);
     } catch (error) {
       this.logger.log('error when creating annotation', error);
+      throw error;
+    }
+  };
+
+  deleteAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
+    try {
+      const { uuid } = detail;
+      await ApiService.deleteAnnotation(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+        uuid,
+      );
+
+      const { annotations } = this.element;
+
+      const newAnnotations = annotations.filter((annotation) => annotation.uuid !== uuid);
+
+      this.element.updateAnnotations(newAnnotations);
+    } catch (error) {
+      this.logger.log('error when deleting annotation', error);
       throw error;
     }
   };

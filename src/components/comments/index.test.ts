@@ -1,3 +1,4 @@
+import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
@@ -13,6 +14,7 @@ jest.mock('../../services/api', () => ({
   updateComment: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
+  deleteAnnotation: jest.fn().mockImplementation(() => []),
 }));
 
 describe('CommentsComponent', () => {
@@ -186,6 +188,25 @@ describe('CommentsComponent', () => {
     const spy = jest.spyOn(ApiService, 'deleteComment');
 
     commentsComponent['element'].dispatchEvent(new CustomEvent('delete-comment', {
+      detail: {
+        uuid: 'uuid-test',
+      },
+    }));
+
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
+      'uuid-test',
+    );
+  });
+
+  test('should call apiService when delete annotation', async () => {
+    const spy = jest.spyOn(ApiService, 'deleteAnnotation');
+
+    commentsComponent['element']['annotations'] = [{ ...MOCK_ANNOTATION }];
+    commentsComponent['element']['updateAnnotations'] = jest.fn().mockImplementation(() => [{ uuid: 'uuid-test' }]);
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('delete-annotation', {
       detail: {
         uuid: 'uuid-test',
       },
