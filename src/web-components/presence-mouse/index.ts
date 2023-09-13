@@ -51,10 +51,10 @@ export class PresenceMouse extends LitElement {
     const divPointer = this.shadowRoot.getElementById(`mouse-${externalParticipant.id}`);
     if (divMouseUser && divPointer) {
       const mouseUser = divMouseUser.getElementsByClassName(
-          'mouse-user-name',
+        'mouse-user-name',
       )[0] as HTMLDivElement;
       const pointerUser = divPointer.getElementsByClassName(
-          'pointer-mouse',
+        'pointer-mouse',
       )[0] as HTMLDivElement;
       if (pointerUser) {
         pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${externalParticipant.slotIndex}.svg)`;
@@ -68,8 +68,8 @@ export class PresenceMouse extends LitElement {
       const { containerId } = externalParticipant;
 
       const presenceContainerId = containerId ?
-          document.getElementById(containerId) :
-          document?.body;
+        document.getElementById(containerId) :
+        document?.body;
 
       let adjustedX = externalParticipant.mousePositionX;
       let adjustedY = externalParticipant.mousePositionY;
@@ -103,10 +103,10 @@ export class PresenceMouse extends LitElement {
 
   protected render() {
     return html`
-    <div id="mouse-container" class="mouse-board">
-      <div id="mouse-sync">
+      <div id="mouse-container" class="mouse-board">
+        <div id="mouse-sync">
+        </div>
       </div>
-  </div>
     `;
   }
 }
