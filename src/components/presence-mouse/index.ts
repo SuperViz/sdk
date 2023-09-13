@@ -42,10 +42,12 @@ export class PresenceMouseComponent extends BaseComponent {
     this.unsubscribeFromRealtimeEvents();
 
     const presenceContainerId = this.containerId ?
-      document.getElementById(this.containerId) : document?.body;
+        document.getElementById(this.containerId) : null;
 
-    presenceContainerId.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    presenceContainerId.removeChild(this.presenceMouseElement);
+    if (presenceContainerId) {
+      presenceContainerId.removeEventListener('mousemove', this.onMyParticipantMouseMove);
+      presenceContainerId.removeChild(this.presenceMouseElement);
+    }
   }
 
   /**
@@ -80,7 +82,7 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private onMyParticipantMouseMove = (e): void => {
     const presenceContainerId = this.containerId ?
-      document.getElementById(this.containerId) : document?.body;
+        document.getElementById(this.containerId) : document?.body;
 
     const rect = presenceContainerId.getBoundingClientRect();
 
@@ -105,7 +107,7 @@ export class PresenceMouseComponent extends BaseComponent {
     Object.values(participants).forEach((participant: AblyParticipant) => {
       const externalParticipantData: MouseOptions = participant.data;
       const hasPresenceMouseElement = externalParticipantData?.mousePositionX
-      && this.presenceMouseElement;
+          && this.presenceMouseElement;
       const myParticipant = externalParticipantData?.id === this.localParticipant?.id;
 
       externalParticipantData.color = this.realtime.getSlotColor(participant.data.slotIndex).color;
@@ -129,7 +131,7 @@ export class PresenceMouseComponent extends BaseComponent {
 
     if (participant?.data?.id === this.localParticipant?.id) {
       const presenceContainerId = this.containerId ?
-        document.getElementById(this.containerId) : document?.body;
+          document.getElementById(this.containerId) : document?.body;
 
       this.presenceMouseElement = document.createElement('superviz-presence-mouse');
 

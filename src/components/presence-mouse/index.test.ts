@@ -2,8 +2,6 @@ import { PresenceMouseComponent } from './index';
 import { MeetingEvent } from '../../common/types/events.types';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { ABLY_REALTIME_MOCK } from "../../../__mocks__/realtime.mock";
-import { MOCK_ABLY_PARTICIPANT } from "../../../__mocks__/participants.mock";
-import { MouseOptions } from "./types";
 
 describe('PresenceMouseComponent', () => {
     let presenceMouseComponent: PresenceMouseComponent;
@@ -44,10 +42,16 @@ describe('PresenceMouseComponent', () => {
         });
 
         it('should remove event listener and remove presence mouse element from container', () => {
-            const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
-            const removeChildSpy = jest.spyOn(document.body, 'removeChild');
+            const presenceContainerId = document.createElement('div');
+            presenceMouseComponent['containerId'] = 'container';
+            document.getElementById = jest.fn().mockReturnValue(presenceContainerId);
+
+            const removeEventListenerSpy = jest.spyOn(presenceContainerId, 'removeEventListener');
+            const removeChildSpy = jest.spyOn(presenceContainerId, 'removeChild');
 
             presenceMouseComponent['containerId'] = 'container';
+
+            presenceContainerId.appendChild(presenceMouseComponent['presenceMouseElement']);
 
             presenceMouseComponent['destroy']();
 
@@ -109,6 +113,20 @@ describe('PresenceMouseComponent', () => {
             // @ts-ignore
             const updatePresenceMouseParticipantSpy = jest.spyOn(presenceMouseComponent['presenceMouseElement'], 'updatePresenceMouseParticipant');
 
+            const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
+                clientId: 'MOCK_LOCAL_PARTICIPANT.id',
+                action: 'present',
+                connectionId: 'connection1',
+                encoding: 'h264',
+                id: 'unit-test-participant1-ably-id',
+                timestamp: new Date().getTime(),
+                data: {
+                    participantId: 'MOCK_LOCAL_PARTICIPANT.id',
+                    mousePositionX: 1,
+                    slotIndex: 0,
+                },
+            }
+
             const participant2 = MOCK_ABLY_PARTICIPANT
             participant2.id = 'unit-test-participant2-ably-id'
             participant2.data.participantId = 'participant2-id'
@@ -128,11 +146,28 @@ describe('PresenceMouseComponent', () => {
 
     describe('onParticipantJoinedOnRealtime', () => {
         it('should create presence mouse element and add event listener', () => {
-            const appendChildSpy = jest.spyOn(document.body, 'appendChild');
-            const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
             const presenceContainerId = document.createElement('div');
             presenceMouseComponent['containerId'] = 'container';
+
+            const appendChildSpy = jest.spyOn(presenceContainerId, 'appendChild');
+            const addEventListenerSpy = jest.spyOn(presenceContainerId, 'addEventListener');
+
             document.getElementById = jest.fn().mockReturnValue(presenceContainerId);
+
+            const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
+                clientId: 'MOCK_LOCAL_PARTICIPANT.id',
+                action: 'present',
+                connectionId: 'connection1',
+                encoding: 'h264',
+                id: 'unit-test-participant-ably-id',
+                timestamp: new Date().getTime(),
+                data: {
+                    id: 'unit-test-participant-ably-id',
+                    slotIndex: 0,
+                },
+            }
+
+            presenceMouseComponent['localParticipant'] = { id: 'unit-test-participant-ably-id' };
 
             presenceMouseComponent['onParticipantJoinedOnRealtime'](MOCK_ABLY_PARTICIPANT);
 
@@ -145,6 +180,19 @@ describe('PresenceMouseComponent', () => {
         it('should remove presence mouse participant', () => {
             // @ts-ignore
             const removePresenceMouseParticipantSpy = jest.spyOn(presenceMouseComponent['presenceMouseElement'], 'removePresenceMouseParticipant');
+
+            const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
+                clientId: 'MOCK_LOCAL_PARTICIPANT.id',
+                action: 'present',
+                connectionId: 'connection1',
+                encoding: 'h264',
+                id: 'unit-test-participant1-ably-id',
+                timestamp: new Date().getTime(),
+                data: {
+                    participantId: 'MOCK_LOCAL_PARTICIPANT.id',
+                    slotIndex: 0,
+                },
+            }
 
             presenceMouseComponent['onParticipantLeftOnRealtime'](MOCK_ABLY_PARTICIPANT);
 

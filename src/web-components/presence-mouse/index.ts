@@ -75,12 +75,12 @@ export class PresenceMouse extends LitElement {
       let adjustedY = externalParticipant.mousePositionY;
 
       if (containerId) {
-        const windowWidth = presenceContainerId.clientWidth;
-        const windowHeight = presenceContainerId.clientHeight;
+        const windowWidth = presenceContainerId?.clientWidth || 1;
+        const windowHeight = presenceContainerId?.clientHeight || 1;
         adjustedX = (externalParticipant.mousePositionX /
-        externalParticipant.originalWidth) * windowWidth;
+            externalParticipant.originalWidth) * windowWidth;
         adjustedY = (externalParticipant.mousePositionY /
-        externalParticipant.originalHeight) * windowHeight;
+            externalParticipant.originalHeight) * windowHeight;
       }
 
       divMouseFollower.style.left = `${adjustedX}px`;
@@ -103,10 +103,10 @@ export class PresenceMouse extends LitElement {
 
   protected render() {
     return html`
-    <div id="mouse-container" class="mouse-board">
-      <div id="mouse-sync">
+      <div id="mouse-container" class="mouse-board">
+        <div id="mouse-sync">
+        </div>
       </div>
-  </div>
     `;
   }
 }
