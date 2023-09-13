@@ -6,7 +6,7 @@ export declare class VideoComponent extends BaseComponent {
     protected logger: Logger;
     private participantToFrameList;
     private participantsOnMeeting;
-    private videoManager?;
+    private videoManager;
     private connectionService;
     private browserService;
     private videoConfig;
@@ -17,7 +17,7 @@ export declare class VideoComponent extends BaseComponent {
      * @description start video component
      * @returns {void}
      */
-    protected start: () => void;
+    protected start(): void;
     /**
      * @function destroy
      * @description destroy video component
