@@ -42,7 +42,7 @@ export class PresenceMouseComponent extends BaseComponent {
     this.unsubscribeFromRealtimeEvents();
 
     const presenceContainerId = this.containerId ?
-        document.getElementById(this.containerId) : null;
+      document.getElementById(this.containerId) : null;
 
     if (presenceContainerId) {
       presenceContainerId.removeEventListener('mousemove', this.onMyParticipantMouseMove);
@@ -82,7 +82,7 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private onMyParticipantMouseMove = (e): void => {
     const presenceContainerId = this.containerId ?
-        document.getElementById(this.containerId) : document?.body;
+      document.getElementById(this.containerId) : document?.body;
 
     const rect = presenceContainerId.getBoundingClientRect();
 
@@ -114,8 +114,7 @@ export class PresenceMouseComponent extends BaseComponent {
       externalParticipantData.slotIndex = participant.data.slotIndex;
 
       if (!myParticipant && hasPresenceMouseElement) {
-        // @ts-ignore
-        this.presenceMouseElement.updatePresenceMouseParticipant(externalParticipantData);
+        this.presenceMouseElement['updatePresenceMouseParticipant'](externalParticipantData);
       }
     });
   };
@@ -131,7 +130,7 @@ export class PresenceMouseComponent extends BaseComponent {
 
     if (participant?.data?.id === this.localParticipant?.id) {
       const presenceContainerId = this.containerId ?
-          document.getElementById(this.containerId) : document?.body;
+        document.getElementById(this.containerId) : document?.body;
 
       this.presenceMouseElement = document.createElement('superviz-presence-mouse');
 
@@ -148,7 +147,6 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private onParticipantLeftOnRealtime = (participant: AblyParticipant): void => {
     this.logger.log('presence-mouse component @ on participant left on realtime', participant);
-    // @ts-ignore
-    this.presenceMouseElement.removePresenceMouseParticipant(participant.clientId);
+    this.presenceMouseElement['removePresenceMouseParticipant'](participant.clientId);
   };
 }
