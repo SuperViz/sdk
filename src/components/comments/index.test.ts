@@ -1,15 +1,17 @@
+import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 
 import { CommentsComponent } from './index';
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
-  createAnnotations: jest.fn().mockImplementation(() => []),
-  createComment: jest.fn().mockImplementation(() => []),
+  createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
+  createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
@@ -30,41 +32,39 @@ describe('CommentsComponent', () => {
       eventBus: EVENT_BUS_MOCK,
     });
 
-    commentsComponent['element'].addAnnotation = jest.fn().mockImplementation(() => []);
-    commentsComponent['element'].addComment = jest.fn().mockImplementation(() => []);
-    commentsComponent['element'].deleteComment = jest.fn().mockImplementation(() => []);
+    commentsComponent['element'].updateAnnotations = jest.fn();
   });
 
   afterEach(() => {
     commentsComponent.detach();
   });
 
-  it('should create a new instance of CommentsComponent', () => {
+  test('should create a new instance of CommentsComponent', () => {
     expect(commentsComponent).toBeInstanceOf(CommentsComponent);
   });
 
-  it('should have a name property', () => {
+  test('should have a name property', () => {
     expect(commentsComponent['name']).toBe('Comments');
   });
 
-  it('should have a logger property', () => {
+  test('should have a logger property', () => {
     expect(commentsComponent['logger']).toBeDefined();
   });
 
-  it('should have an element property', () => {
+  test('should have an element property', () => {
     expect(commentsComponent['element']).toBeDefined();
   });
 
-  it('should create a new element when start() is called', () => {
+  test('should create a new element when start() is called', () => {
     commentsComponent.detach();
     expect(commentsComponent['element']).toBeUndefined();
   });
 
-  it('should add the element to the document body when start() is called', () => {
+  test('should add the element to the document body when start() is called', () => {
     expect(document.body.contains(commentsComponent['element'])).toBe(true);
   });
 
-  it('should remove the element from the document body when destroy() is called', async () => {
+  test('should remove the element from the document body when destroy() is called', async () => {
     expect(commentsComponent['element']).toBeDefined();
 
     commentsComponent.detach();
@@ -72,106 +72,122 @@ describe('CommentsComponent', () => {
     expect(document.body.contains(commentsComponent['element'])).toBe(false);
   });
 
-  it('should call apiService when fetch annotation', async () => {
+  test('should call apiService when fetch annotation', async () => {
     const spy = jest.spyOn(ApiService, 'fetchAnnotation');
 
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      {
-        roomId: MOCK_CONFIG.roomId,
-        url: expect.any(String),
-      },
-    );
+    expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, {
+      roomId: MOCK_CONFIG.roomId,
+      url: expect.any(String),
+    });
   });
 
-  it('should call apiService when create annotation', async () => {
+  test('should call apiService when create annotation', async () => {
     const spy = jest.spyOn(ApiService, 'createAnnotations');
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('create-annotation', {
-      detail: {
-        text: 'test',
-        position: {
-          x: 0,
-          y: 0,
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('create-annotation', {
+        detail: {
+          text: 'test',
+          position: {
+            x: 0,
+            y: 0,
+          },
         },
-      },
-    }));
-
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      {
-        roomId: MOCK_CONFIG.roomId,
-        url: expect.any(String),
-        userId: expect.any(String),
-        position: expect.any(String),
-      },
+      }),
     );
+
+    expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, {
+      roomId: MOCK_CONFIG.roomId,
+      url: expect.any(String),
+      userId: expect.any(String),
+      position: expect.any(String),
+    });
   });
 
-  it('should call apiService when resolve annotation', async () => {
+  test('should call apiService when resolve annotation', async () => {
     const spy = jest.spyOn(ApiService, 'resolveAnnotation');
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('resolve-annotation', {
-      detail: {
-        uuid: 'test',
-      },
-    }));
-
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      'test',
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('resolve-annotation', {
+        detail: {
+          uuid: 'test',
+        },
+      }),
     );
+
+    expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, 'test');
   });
 
-  it('should call apiService when resolve annotation', async () => {
-    const spy = jest.spyOn(ApiService, 'resolveAnnotation');
+  test('should throw an error when resolve annotation fails', async () => {
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('resolve-annotation', {
-      detail: {
-        uuid: 'test',
-      },
-    }));
+    (ApiService.resolveAnnotation as jest.Mock).mockRejectedValueOnce('internal server error');
 
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      'test',
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('resolve-annotation', {
+        detail: {
+          uuid: 'test',
+        },
+      }),
     );
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('error when resolve annotation', 'internal server error');
   });
 
-  it('should call apiService when create a new comment', async () => {
+  test('should throw an error when fetch annotation fails', async () => {
+    (ApiService.fetchAnnotation as jest.Mock).mockRejectedValueOnce('internal server error');
+
+    commentsComponent.detach();
+    commentsComponent = new CommentsComponent();
+
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
+
+    commentsComponent.attach({
+      realtime: ABLY_REALTIME_MOCK,
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('attached');
+    expect(spy).toHaveBeenCalledWith('error when fetching annotations', 'internal server error');
+  });
+
+  test('should call apiService when create a new comment', async () => {
     const spy = jest.spyOn(ApiService, 'createComment');
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('create-comment', {
-      detail: {
-        uuid: 'uuid-test',
-        text: 'text-test',
-      },
-    }));
-
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      {
-        annotationId: 'uuid-test',
-        userId: expect.any(String),
-        text: 'text-test',
-      },
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('create-comment', {
+        detail: {
+          uuid: 'uuid-test',
+          text: 'text-test',
+        },
+      }),
     );
+
+    expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, {
+      annotationId: 'uuid-test',
+      userId: expect.any(String),
+      text: 'text-test',
+    });
   });
 
-  it('should call apiService when update a comment', async () => {
+  test('should call apiService when update a comment', async () => {
     const spy = jest.spyOn(ApiService, 'updateComment');
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('update-comment', {
-      detail: {
-        uuid: 'uuid-test',
-        text: 'text-test',
-      },
-    }));
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('update-comment', {
+        detail: {
+          uuid: 'uuid-test',
+          text: 'text-test',
+        },
+      }),
+    );
 
     expect(spy).toHaveBeenCalledWith(
       MOCK_CONFIG.apiUrl,
@@ -181,20 +197,143 @@ describe('CommentsComponent', () => {
     );
   });
 
-  // create tests to delete comment
+  test('should add anotation to list when it is created', async () => {
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('create-annotation', {
+        detail: {
+          text: MOCK_ANNOTATION.comments[0].text,
+          position: MOCK_ANNOTATION.position,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(commentsComponent['annotations'].length).toBe(1);
+    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+  });
+
+  test('should throw an error when create annotation fails', async () => {
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
+
+    (ApiService.createAnnotations as jest.Mock).mockRejectedValueOnce('internal server error');
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('create-annotation', {
+        detail: {
+          text: MOCK_ANNOTATION.comments[0].text,
+          position: MOCK_ANNOTATION.position,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('error when creating annotation', 'internal server error');
+  });
+
+  test('should add comment to annotation when it is created', async () => {
+    commentsComponent['annotations'] = [MOCK_ANNOTATION];
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('create-comment', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+          text: MOCK_ANNOTATION.comments[0].text,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(commentsComponent['annotations'][0].comments.length).toBe(3);
+    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+  });
+
+  test('should throw an error when create comment fails', async () => {
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
+
+    (ApiService.createComment as jest.Mock).mockRejectedValueOnce('internal server error');
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('create-comment', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+          text: MOCK_ANNOTATION.comments[0].text,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('error when creating comment', 'internal server error');
+  });
+
+  test('should throw an error when update comment fails', async () => {
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
+
+    (ApiService.updateComment as jest.Mock).mockRejectedValueOnce('internal server error');
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('update-comment', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+          text: MOCK_ANNOTATION.comments[0].text,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('error when updating comment', 'internal server error');
+  });
+
   test('should call apiService when delete a comment', async () => {
     const spy = jest.spyOn(ApiService, 'deleteComment');
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('delete-comment', {
-      detail: {
-        uuid: 'uuid-test',
-      },
-    }));
-
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      'uuid-test',
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('delete-comment', {
+        detail: {
+          uuid: 'uuid-test',
+        },
+      }),
     );
+
+    expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, 'uuid-test');
+  });
+
+  test('should remove comment from annotation when it is deleted', async () => {
+    commentsComponent['annotations'] = [MOCK_ANNOTATION];
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('delete-comment', {
+        detail: {
+          uuid: MOCK_ANNOTATION.comments[0].uuid,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(commentsComponent['annotations'][0].comments.length).toBe(1);
+    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+  });
+
+  test('should throw an error when delete comment fails', async () => {
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
+
+    (ApiService.deleteComment as jest.Mock).mockRejectedValueOnce('internal server error');
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('delete-comment', {
+        detail: {
+          uuid: MOCK_ANNOTATION.comments[0].uuid,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('error when deleting comment', 'internal server error');
   });
 });

@@ -153,7 +153,7 @@ describe('AblyRealtimeService', () => {
 
     AblyRealtimeServiceInstance.join();
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
     );
@@ -162,6 +162,9 @@ describe('AblyRealtimeService', () => {
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
+    );
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
+      'superviz:unit-test-room-id-unit-test-api-key:comments',
     );
 
     expect(AblyRealtimeMock.connection.on).toHaveBeenCalledTimes(1);
@@ -183,7 +186,7 @@ describe('AblyRealtimeService', () => {
 
     const spy = jest.spyOn(AblyRealtimeServiceInstance['broadcastChannel'], 'subscribe');
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
     );
@@ -192,6 +195,9 @@ describe('AblyRealtimeService', () => {
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
+    );
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
+      'superviz:unit-test-room-id-unit-test-api-key:comments',
     );
 
     expect(spy).toHaveBeenCalledTimes(1);

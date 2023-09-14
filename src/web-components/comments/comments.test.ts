@@ -1,5 +1,4 @@
 import '.';
-import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import sleep from '../../common/utils/sleep';
 
 let element: HTMLElement;
@@ -44,27 +43,6 @@ describe('comments', () => {
     expect(app?.classList.contains('container')).toBe(true);
   });
 
-  test('should add annotations', async () => {
-    const annotation = {
-      uuid: 'any_uuid',
-      position: 'any_position',
-      resolved: false,
-      comments: [
-        {
-          uuid: 'any_uuid',
-          username: 'any_username',
-          avatar: 'any_avatar',
-          text: 'any_text',
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    };
-
-    element['addAnnotation']([annotation]);
-
-    expect(element['annotations']).toEqual([annotation]);
-  });
-
   test('should toggle superviz comments', async () => {
     const isOpen = element['open'];
     element['toggle']();
@@ -74,106 +52,13 @@ describe('comments', () => {
     expect(element['open']).toEqual(!isOpen);
   });
 
-  test('should update annotation', async () => {
-    const annotation = {
-      ...MOCK_ANNOTATION,
-      position: 'any_position',
-    };
+  test('should update annotations', async () => {
+    const annotations = [{ id: '1', x: 0, y: 0, width: 0, height: 0, text: 'test' }];
 
-    element['addAnnotation']([annotation]);
+    element['updateAnnotations'](annotations);
 
-    const annotationUpdated = {
-      ...MOCK_ANNOTATION,
-      position: 'any_position_updated',
-    };
+    await sleep();
 
-    element['updateAnnotations']([annotationUpdated]);
-
-    expect(element['annotations']).toEqual([annotationUpdated]);
-  });
-
-  test('should add comment', async () => {
-    const annotation = {
-      ...MOCK_ANNOTATION,
-      position: 'any_position',
-    };
-
-    element['addAnnotation']([annotation]);
-
-    const comment = {
-      uuid: 'teste',
-      username: 'any_username',
-      avatar: 'any_avatar',
-      text: 'any_text',
-      createdAt: new Date().toISOString(),
-    };
-
-    element['addComment'](annotation.uuid, comment);
-
-    const lastComment = element['annotations'][0].comments.at(-1);
-
-    expect(lastComment).toEqual(comment);
-  });
-
-  test('should return void when annotation is not found', async () => {
-    const annotation = {
-      ...MOCK_ANNOTATION,
-      position: 'any_position',
-    };
-
-    element['addAnnotation']([annotation]);
-
-    const comment = {
-      uuid: 'teste',
-      username: 'any_username',
-      avatar: 'any_avatar',
-      text: 'any_text',
-      createdAt: new Date().toISOString(),
-    };
-
-    element['addComment']('other_annotation_id', comment);
-
-    expect(element['annotations'][0].comments.length).toEqual(2);
-  });
-
-  test('should delete comment', async () => {
-    const annotation = {
-      ...MOCK_ANNOTATION,
-      position: 'any_position',
-    };
-
-    element['addAnnotation']([annotation]);
-
-    const newComment = {
-      uuid: 'teste',
-      username: 'any_username',
-      avatar: 'any_avatar',
-      text: 'any_text',
-      createdAt: new Date().toISOString(),
-    };
-
-    element['addComment'](annotation.uuid, newComment);
-
-    const commentId = () => element['annotations'][0].comments.find((comment) => comment.uuid === newComment.uuid)?.uuid;
-    expect(commentId()).toBeTruthy();
-
-    element['deleteComment'](newComment.uuid);
-
-    expect(commentId()).toBeFalsy();
-  });
-
-  test('should return void when comment is not found in delete comment', async () => {
-    const annotation = {
-      ...MOCK_ANNOTATION,
-      position: 'any_position',
-    };
-
-    element['addAnnotation']([annotation]);
-
-    element['deleteComment']('any_comment_id');
-
-    const commentId = () => element['annotations'][0].comments.find((comment) => comment.uuid === 'any_comment_id')?.uuid;
-
-    expect(commentId()).toBeFalsy();
+    expect(element['annotations']).toEqual(annotations);
   });
 });
