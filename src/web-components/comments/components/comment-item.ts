@@ -20,6 +20,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   static styles = styles;
 
   declare uuid: string;
+  declare annotationId?: string;
   declare avatar: string;
   declare username: string;
   declare text: string;
@@ -32,6 +33,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
   static properties = {
     uuid: { type: String },
+    annotationId: { type: String },
     avatar: { type: String },
     username: { type: String },
     text: { type: String },
@@ -71,7 +73,11 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   private confirmDelete = () => {
     this.deleteCommentModalOpen = false;
 
-    if (this.primaryComment) return;
+    if (this.primaryComment) {
+      return this.emitEvent('delete-annotation', {
+        uuid: this.annotationId,
+      });
+    }
 
     this.emitEvent('delete-comment', {
       uuid: this.uuid,
