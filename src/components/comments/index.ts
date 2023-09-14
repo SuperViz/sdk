@@ -126,10 +126,10 @@ export class CommentsComponent extends BaseComponent {
 
       const annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
       this.annotations = annotations;
+
       this.element.updateAnnotations(annotations);
     } catch (error) {
       this.logger.log('error when deleting annotation', error);
-      throw error;
     }
   };
 

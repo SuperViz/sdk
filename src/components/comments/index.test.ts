@@ -342,18 +342,53 @@ describe('CommentsComponent', () => {
     const spy = jest.spyOn(ApiService, 'deleteAnnotation');
 
     commentsComponent['element']['annotations'] = [{ ...MOCK_ANNOTATION }];
-    commentsComponent['element']['updateAnnotations'] = jest.fn().mockImplementation(() => [{ uuid: 'uuid-test' }]);
+    commentsComponent['element']['updateAnnotations'] = jest
+      .fn()
+      .mockImplementation(() => [{ uuid: 'uuid-test' }]);
 
-    commentsComponent['element'].dispatchEvent(new CustomEvent('delete-annotation', {
-      detail: {
-        uuid: 'uuid-test',
-      },
-    }));
-
-    expect(spy).toHaveBeenCalledWith(
-      MOCK_CONFIG.apiUrl,
-      MOCK_CONFIG.apiKey,
-      'uuid-test',
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('delete-annotation', {
+        detail: {
+          uuid: 'uuid-test',
+        },
+      }),
     );
+
+    expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, 'uuid-test');
+  });
+
+  test('should remove annotation from list when it is deleted', async () => {
+    commentsComponent['annotations'] = [MOCK_ANNOTATION];
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('delete-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(commentsComponent['annotations'].length).toBe(0);
+    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+  });
+
+  test('should throw an error when delete annotation fails', async () => {
+    const spy = jest.spyOn(commentsComponent['logger'], 'log');
+
+    (ApiService.deleteAnnotation as jest.Mock).mockRejectedValueOnce('internal server error');
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('delete-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledWith('error when deleting annotation', 'internal server error');
   });
 });
