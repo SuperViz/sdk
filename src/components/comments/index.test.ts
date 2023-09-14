@@ -15,6 +15,7 @@ jest.mock('../../services/api', () => ({
   updateComment: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
+  deleteAnnotation: jest.fn().mockImplementation(() => []),
 }));
 
 describe('CommentsComponent', () => {
@@ -335,5 +336,24 @@ describe('CommentsComponent', () => {
     await sleep(1000);
 
     expect(spy).toHaveBeenCalledWith('error when deleting comment', 'internal server error');
+  });
+
+  test('should call apiService when delete annotation', async () => {
+    const spy = jest.spyOn(ApiService, 'deleteAnnotation');
+
+    commentsComponent['element']['annotations'] = [{ ...MOCK_ANNOTATION }];
+    commentsComponent['element']['updateAnnotations'] = jest.fn().mockImplementation(() => [{ uuid: 'uuid-test' }]);
+
+    commentsComponent['element'].dispatchEvent(new CustomEvent('delete-annotation', {
+      detail: {
+        uuid: 'uuid-test',
+      },
+    }));
+
+    expect(spy).toHaveBeenCalledWith(
+      MOCK_CONFIG.apiUrl,
+      MOCK_CONFIG.apiKey,
+      'uuid-test',
+    );
   });
 });

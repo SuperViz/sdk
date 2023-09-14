@@ -71,4 +71,11 @@ export default class ApiService {
 
     return doRequest(url, 'DELETE', {}, { apikey: apiKey });
   }
+
+  static async deleteAnnotation(baseUrl: string, apiKey: string, annotationId: string) {
+    const path = `/annotations/${annotationId}`;
+    const url = this.createUrl(baseUrl, path);
+
+    return doRequest(url, 'DELETE', {}, { apikey: apiKey });
+  }
 }

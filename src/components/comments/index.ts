@@ -57,6 +57,7 @@ export class CommentsComponent extends BaseComponent {
   private addListeners(): void {
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
+    this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
       this.createComment(detail.uuid, detail.text, true);
     });
@@ -111,6 +112,24 @@ export class CommentsComponent extends BaseComponent {
       ]);
     } catch (error) {
       this.logger.log('error when creating annotation', error);
+    }
+  };
+
+  deleteAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
+    try {
+      const { uuid } = detail;
+      await ApiService.deleteAnnotation(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+        uuid,
+      );
+
+      const annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
+      this.annotations = annotations;
+      this.element.updateAnnotations(annotations);
+    } catch (error) {
+      this.logger.log('error when deleting annotation', error);
+      throw error;
     }
   };
 
