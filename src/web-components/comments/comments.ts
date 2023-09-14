@@ -11,11 +11,6 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentsStyle
 
 @customElement('superviz-comments')
 export class Comments extends WebComponentsBaseElement {
-  constructor() {
-    super();
-    this.annotations = [];
-  }
-
   static styles = styles;
 
   declare open: boolean;
@@ -26,49 +21,10 @@ export class Comments extends WebComponentsBaseElement {
     annotations: { type: Object },
   };
 
-  addAnnotation(data: Annotation[]) {
-    this.annotations = [
-      ...this.annotations,
-      ...data,
-    ];
+  constructor() {
+    super();
+    this.annotations = [];
   }
-
-  addComment(annotationId: string, comment: Comment) {
-    const annotationIndex = this.annotations
-      .findIndex((annotation) => annotation.uuid === annotationId);
-
-    if (annotationIndex === -1) return;
-
-    const annotation = this.annotations[annotationIndex];
-
-    annotation.comments = [
-      ...annotation.comments,
-      comment,
-    ];
-
-    this.annotations = [
-      ...this.annotations.slice(0, annotationIndex),
-      annotation,
-      ...this.annotations.slice(annotationIndex + 1),
-    ];
-  }
-
-  deleteComment = (commentId: string) => {
-    const annotationIndex = this.annotations
-      .findIndex((annotation) => annotation.comments.some((comment) => comment.uuid === commentId));
-
-    if (annotationIndex === -1) return;
-
-    const annotation = this.annotations[annotationIndex];
-
-    annotation.comments = annotation.comments.filter((comment) => comment.uuid !== commentId);
-
-    this.annotations = [
-      ...this.annotations.slice(0, annotationIndex),
-      annotation,
-      ...this.annotations.slice(annotationIndex + 1),
-    ];
-  };
 
   updateAnnotations(data: Annotation[]) {
     this.annotations = data;
@@ -79,21 +35,19 @@ export class Comments extends WebComponentsBaseElement {
   }
 
   protected render() {
-    const containerClass = [
-      this.open ? 'container' : 'container-close',
-    ].join(' ');
+    const containerClass = [this.open ? 'container' : 'container-close'].join(' ');
 
     return html`
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
-          <superviz-comments-annotations 
-            id="annotations"
-            open=${this.open}
-          >
+          <superviz-comments-annotations id="annotations" open=${this.open}>
           </superviz-comments-annotations>
         </div>
-        <superviz-comments-content annotations=${JSON.stringify(this.annotations)} class="content"></superviz-comments-content>
+        <superviz-comments-content
+          annotations=${JSON.stringify(this.annotations)}
+          class="content"
+        ></superviz-comments-content>
       </div>
     `;
   }

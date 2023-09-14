@@ -1,7 +1,7 @@
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
-import { Comments } from '../../web-components';
+import type { Comments as CommentElement } from '../../web-components';
 import { BaseComponent } from '../base';
 
 import { Annotation, Comment } from './types';
@@ -9,13 +9,15 @@ import { Annotation, Comment } from './types';
 export class CommentsComponent extends BaseComponent {
   protected name: string;
   protected logger: Logger;
-  protected element: Comments;
+  protected element: CommentElement;
+  private annotations: Annotation[];
   private url: string;
 
   constructor() {
     super();
     this.name = 'Comments';
     this.logger = new Logger('@superviz/sdk/comments-component');
+    this.annotations = [];
   }
 
   /**
@@ -26,7 +28,7 @@ export class CommentsComponent extends BaseComponent {
   protected start(): void {
     this.url = window.location.href;
 
-    this.element = document.createElement('superviz-comments') as Comments;
+    this.element = document.createElement('superviz-comments') as CommentElement;
     this.element.setAttributeNode(document.createAttribute('open'));
     this.element.setAttribute('comments', JSON.stringify([]));
     document.body.appendChild(this.element);
@@ -56,7 +58,9 @@ export class CommentsComponent extends BaseComponent {
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
-    this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
+    this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
+      this.createComment(detail.uuid, detail.text, true);
+    });
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
   }
@@ -69,9 +73,10 @@ export class CommentsComponent extends BaseComponent {
   private destroyListeners(): void {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.createAnnotation);
-    this.element.removeEventListener('delete-annotation', this.deleteAnnotation);
-    this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
-    this.element.removeEventListener('update-comment', ({ detail }: CustomEvent) => this.createComment(detail.uuid, detail.text, true));
+    this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
+      this.createComment(detail.uuid, detail.text, true);
+    });
+    this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
   }
 
@@ -86,22 +91,27 @@ export class CommentsComponent extends BaseComponent {
       const { text, position } = detail;
       const { url } = this;
 
-      const annotation: Annotation = await ApiService.createAnnotations(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
-        roomId: config.get<string>('roomId'),
-        position: JSON.stringify(position),
-        url,
-        userId: this.localParticipant.id,
-      });
+      const annotation: Annotation = await ApiService.createAnnotations(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+        {
+          roomId: config.get<string>('roomId'),
+          position: JSON.stringify(position),
+          url,
+          userId: this.localParticipant.id,
+        },
+      );
 
       const comment = await this.createComment(annotation.uuid, text);
 
-      this.addAnnotation([{
-        ...annotation,
-        comments: [comment],
-      }]);
+      this.addAnnotation([
+        {
+          ...annotation,
+          comments: [comment],
+        },
+      ]);
     } catch (error) {
       this.logger.log('error when creating annotation', error);
-      throw error;
     }
   };
 
@@ -114,14 +124,12 @@ export class CommentsComponent extends BaseComponent {
         uuid,
       );
 
-      const { annotations } = this.element;
+      const annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
+      this.annotations = annotations;
 
-      const newAnnotations = annotations.filter((annotation) => annotation.uuid !== uuid);
-
-      this.element.updateAnnotations(newAnnotations);
+      this.element.updateAnnotations(annotations);
     } catch (error) {
       this.logger.log('error when deleting annotation', error);
-      throw error;
     }
   };
 
@@ -138,18 +146,23 @@ export class CommentsComponent extends BaseComponent {
     addComment = false,
   ): Promise<Comment> {
     try {
-      const comment: Comment = await ApiService.createComment(config.get<string>('apiUrl'), config.get<string>('apiKey'), {
-        annotationId,
-        userId: this.localParticipant.id,
-        text,
-      });
+      const comment: Comment = await ApiService.createComment(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+        {
+          annotationId,
+          userId: this.localParticipant.id,
+          text,
+        },
+      );
 
-      if (addComment) this.addComment(annotationId, comment);
+      if (addComment) {
+        this.addComment(annotationId, comment);
+      }
 
       return comment;
     } catch (error) {
       this.logger.log('error when creating comment', error);
-      throw error;
     }
   }
 
@@ -171,8 +184,7 @@ export class CommentsComponent extends BaseComponent {
         text,
       );
     } catch (error) {
-      this.logger.log('error when creating comment', error);
-      throw error;
+      this.logger.log('error when updating comment', error);
     }
   };
 
@@ -182,8 +194,9 @@ export class CommentsComponent extends BaseComponent {
    * @param {Annotation[]} annotation - An array of annotation objects to add to the component
    * @returns {void}
    */
-  addAnnotation(annotation: Annotation[]): void {
-    this.element.addAnnotation(annotation);
+  private addAnnotation(annotation: Annotation[]): void {
+    this.annotations = [...this.annotations, ...annotation];
+    this.element.updateAnnotations(this.annotations);
   }
 
   /**
@@ -193,8 +206,24 @@ export class CommentsComponent extends BaseComponent {
    * @param {Comment} comment - The comment object to add to the annotation
    * @returns {void}
    */
-  addComment(annotationId: string, comment: Comment): void {
-    this.element.addComment(annotationId, comment);
+  private addComment(annotationId: string, comment: Comment): void {
+    const annotationIndex = this.annotations.findIndex(
+      (annotation) => annotation.uuid === annotationId,
+    );
+
+    if (annotationIndex === -1) return;
+
+    const annotation = this.annotations[annotationIndex];
+
+    annotation.comments = [...annotation.comments, comment];
+
+    this.annotations = [
+      ...this.annotations.slice(0, annotationIndex),
+      annotation,
+      ...this.annotations.slice(annotationIndex + 1),
+    ];
+
+    this.element.updateAnnotations(this.annotations);
   }
 
   /**
@@ -217,29 +246,23 @@ export class CommentsComponent extends BaseComponent {
       this.addAnnotation(annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
-      throw error;
     }
   }
 
   /**
-    * @function resolveAnnotation
-    * @description Resolves an annotation by UUID using the API
-    * @param {CustomEvent} event - The custom event containing the UUID of the annotation to resolve
-    * @returns {Promise<void>}
-    */
-  private async resolveAnnotation({ detail }: CustomEvent): Promise<void> {
+   * @function resolveAnnotation
+   * @description Resolves an annotation by UUID using the API
+   * @param {CustomEvent} event - The custom event containing the UUID of the annotation to resolve
+   * @returns {Promise<void>}
+   */
+  private resolveAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
       const { uuid } = detail;
-      await ApiService.resolveAnnotation(
-        config.get('apiUrl'),
-        config.get('apiKey'),
-        uuid,
-      );
+      await ApiService.resolveAnnotation(config.get('apiUrl'), config.get('apiKey'), uuid);
     } catch (error) {
-      this.logger.log('error when fetching annotations', error);
-      throw error;
+      this.logger.log('error when resolve annotation', error);
     }
-  }
+  };
 
   /**
    * @function deleteComment
@@ -251,16 +274,27 @@ export class CommentsComponent extends BaseComponent {
     try {
       const { uuid } = detail;
 
-      await ApiService.deleteComment(
-        config.get('apiUrl'),
-        config.get('apiKey'),
-        uuid,
-      );
+      await ApiService.deleteComment(config.get('apiUrl'), config.get('apiKey'), uuid);
 
-      this.element.deleteComment(uuid);
+      const annotationIndex = this.annotations.findIndex((annotation) => {
+        return annotation.comments.some((comment) => comment.uuid === uuid);
+      });
+
+      if (annotationIndex === -1) return;
+
+      const annotation = this.annotations[annotationIndex];
+
+      annotation.comments = annotation.comments.filter((comment) => comment.uuid !== uuid);
+
+      this.annotations = [
+        ...this.annotations.slice(0, annotationIndex),
+        annotation,
+        ...this.annotations.slice(annotationIndex + 1),
+      ];
+
+      this.element.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when deleting comment', error);
-      throw error;
     }
   };
 }
