@@ -64,18 +64,6 @@ export class VideoComponent extends BaseComponent {
    */
   protected start = (): void => {
     this.logger.log('video component @ start');
-
-    if (!this.realtime.isJoinedRoom) {
-      this.logger.log('video component @ start - not joined yet');
-
-      setTimeout(() => {
-        this.logger.log('video component @ start - retrying');
-        this.start();
-      }, 1000);
-
-      return;
-    }
-
     this.publish(MeetingEvent.MEETING_START);
 
     this.suscribeToRealtimeEvents();

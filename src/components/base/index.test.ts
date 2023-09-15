@@ -30,6 +30,10 @@ class DummyComponent extends BaseComponent {
   }
 }
 
+const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
+
+jest.useFakeTimers();
+
 describe('BaseComponent', () => {
   let DummyComponentInstance: DummyComponent;
 
@@ -43,20 +47,40 @@ describe('BaseComponent', () => {
   });
 
   describe('attach', () => {
+    test('should not call start if realtime is not joined room', () => {
+      DummyComponentInstance.attach({
+        realtime: ABLY_REALTIME_MOCK,
+        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
+      });
+
+      DummyComponentInstance['start'] = jest.fn(DummyComponentInstance['start']);
+      DummyComponentInstance['attach'] = jest.fn(DummyComponentInstance['attach']);
+      DummyComponentInstance['logger'].log = jest.fn();
+
+      expect(DummyComponentInstance['start']).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(1000);
+
+      expect(DummyComponentInstance['attach']).toHaveBeenCalledTimes(1);
+    });
+
     test('should attach the component with success', () => {
       DummyComponentInstance['start'] = jest.fn();
       expect(DummyComponentInstance.attach).toBeDefined();
 
       DummyComponentInstance.attach({
         localParticipant: MOCK_LOCAL_PARTICIPANT,
-        realtime: ABLY_REALTIME_MOCK,
+        realtime: REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
       });
 
       expect(DummyComponentInstance['localParticipant']).toEqual(MOCK_LOCAL_PARTICIPANT);
-      expect(DummyComponentInstance['realtime']).toEqual(ABLY_REALTIME_MOCK);
+      expect(DummyComponentInstance['realtime']).toEqual(REALTIME_MOCK);
       expect(DummyComponentInstance['isAttached']).toBeTruthy();
       expect(DummyComponentInstance['start']).toBeCalled();
     });
@@ -83,7 +107,7 @@ describe('BaseComponent', () => {
 
       DummyComponentInstance.attach({
         localParticipant: MOCK_LOCAL_PARTICIPANT,
-        realtime: ABLY_REALTIME_MOCK,
+        realtime: REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
@@ -103,7 +127,7 @@ describe('BaseComponent', () => {
 
       DummyComponentInstance.attach({
         localParticipant: MOCK_LOCAL_PARTICIPANT,
-        realtime: ABLY_REALTIME_MOCK,
+        realtime: REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
