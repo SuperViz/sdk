@@ -11,7 +11,6 @@ import { ParticipantInfo, StartRealtimeType } from '../base/types';
 
 import {
   AblyParticipant,
-  AblyParticipants,
   AblyRealtime,
   AblyRealtimeData,
   AblyTokenCallBack,
@@ -27,7 +26,7 @@ const SYNC_PROPERTY_INTERVAL = 1000;
 let KICK_PARTICIPANTS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
-  private participants: AblyParticipants = {};
+  private participants: Record<string, AblyParticipant> = {};
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
 
@@ -95,7 +94,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.hostClientId === this.localParticipantId;
   }
 
-  public get getParticipants(): AblyParticipants {
+  public get getParticipants(): Record<string, AblyParticipant> {
     return this.participants;
   }
 
