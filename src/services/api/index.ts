@@ -1,4 +1,5 @@
 import { doRequest } from '../../common/utils';
+import config from '../config';
 
 import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
 
@@ -38,9 +39,14 @@ export default class ApiService {
   static async updateComment(baseUrl: string, apiKey: string, commentId: string, text: string) {
     const path = `/comments/${commentId}`;
     const url = this.createUrl(baseUrl, path);
-    return doRequest(url, 'PUT', {
-      text,
-    }, { apikey: apiKey });
+    return doRequest(
+      url,
+      'PUT',
+      {
+        text,
+      },
+      { apikey: apiKey },
+    );
   }
 
   static async createComment(baseUrl: string, apiKey: string, comment: CommentParams) {
@@ -77,5 +83,21 @@ export default class ApiService {
     const url = this.createUrl(baseUrl, path);
 
     return doRequest(url, 'DELETE', {}, { apikey: apiKey });
+  }
+
+  static async sendActivity(userId: string, groupId: string, groupName: string, product: string) {
+    const path = '/activity';
+    const baseUrl = config.get<string>('apiUrl');
+    const meetingId = config.get<string>('roomId');
+    const apikey = config.get<string>('apiKey');
+    const url = this.createUrl(baseUrl, path);
+    const body = {
+      groupId,
+      groupName,
+      meetingId,
+      product,
+      userId,
+    };
+    return doRequest(url, 'POST', body, { apikey });
   }
 }

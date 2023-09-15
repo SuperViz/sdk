@@ -7,15 +7,15 @@ import { AblyRealtimeService } from '../../services/realtime';
 import { DefaultAttachComponentOptions } from './types';
 
 export abstract class BaseComponent {
+  public abstract name: string;
+  protected abstract logger: Logger;
+
   private observers: Record<string, Observer> = {};
 
   protected localParticipant: Participant;
   protected group: Group;
   protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
-  protected abstract name: string;
-  protected abstract logger: Logger;
-
   protected isAttached = false;
 
   /**
