@@ -26,7 +26,7 @@ describe('CommentsComponent', () => {
     commentsComponent = new CommentsComponent();
 
     commentsComponent.attach({
-      realtime: ABLY_REALTIME_MOCK,
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
@@ -45,7 +45,7 @@ describe('CommentsComponent', () => {
   });
 
   test('should have a name property', () => {
-    expect(commentsComponent['name']).toBe('Comments');
+    expect(commentsComponent['name']).toBe('comments-component');
   });
 
   test('should have a logger property', () => {
@@ -132,7 +132,7 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(spy).toHaveBeenCalledWith('error when resolve annotation', 'internal server error');
   });
@@ -146,16 +146,16 @@ describe('CommentsComponent', () => {
     const spy = jest.spyOn(commentsComponent['logger'], 'log');
 
     commentsComponent.attach({
-      realtime: ABLY_REALTIME_MOCK,
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
 
-    await sleep(1000);
+    await sleep(1);
 
-    expect(spy).toHaveBeenCalledWith('attached');
+    expect(spy).toHaveBeenCalledWith('comments-component @ attached');
     expect(spy).toHaveBeenCalledWith('error when fetching annotations', 'internal server error');
   });
 
@@ -208,10 +208,12 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(commentsComponent['annotations'].length).toBe(1);
-    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
+      commentsComponent['annotations'],
+    );
   });
 
   test('should throw an error when create annotation fails', async () => {
@@ -228,7 +230,7 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(spy).toHaveBeenCalledWith('error when creating annotation', 'internal server error');
   });
@@ -245,10 +247,12 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments.length).toBe(3);
-    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
+      commentsComponent['annotations'],
+    );
   });
 
   test('should throw an error when create comment fails', async () => {
@@ -265,7 +269,7 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(spy).toHaveBeenCalledWith('error when creating comment', 'internal server error');
   });
@@ -284,9 +288,29 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(spy).toHaveBeenCalledWith('error when updating comment', 'internal server error');
+  });
+
+  test('should update comment on annotation when it is updated', async () => {
+    commentsComponent['annotations'] = [MOCK_ANNOTATION];
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('update-comment', {
+        detail: {
+          uuid: MOCK_ANNOTATION.comments[0].uuid,
+          text: 'text-test',
+        },
+      }),
+    );
+
+    await sleep(1);
+
+    expect(commentsComponent['annotations'][0].comments[0].text).toBe('text-test');
+    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
+      commentsComponent['annotations'],
+    );
   });
 
   test('should call apiService when delete a comment', async () => {
@@ -314,10 +338,12 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments.length).toBe(1);
-    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
+      commentsComponent['annotations'],
+    );
   });
 
   test('should throw an error when delete comment fails', async () => {
@@ -333,7 +359,7 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(spy).toHaveBeenCalledWith('error when deleting comment', 'internal server error');
   });
@@ -368,10 +394,12 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(commentsComponent['annotations'].length).toBe(0);
-    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
+      commentsComponent['annotations'],
+    );
   });
 
   test('should throw an error when delete annotation fails', async () => {
@@ -387,8 +415,14 @@ describe('CommentsComponent', () => {
       }),
     );
 
-    await sleep(1000);
+    await sleep(1);
 
     expect(spy).toHaveBeenCalledWith('error when deleting annotation', 'internal server error');
+  });
+
+  test('should update annotations list on component when annotations are updated on realtime', async () => {
+    commentsComponent['onAnnotationListUpdate']([MOCK_ANNOTATION]);
+
+    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalledWith([MOCK_ANNOTATION]);
   });
 });
