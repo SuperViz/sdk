@@ -87,29 +87,6 @@ describe('VideoComponent', () => {
     VideoComponentInstance.detach();
   });
 
-  test('should not initialize video if realtime is not joined room', () => {
-    VideoComponentInstance.detach();
-
-    VideoComponentInstance = new VideoComponent();
-
-    VideoComponentInstance.attach({
-      realtime: ABLY_REALTIME_MOCK,
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
-      config: MOCK_CONFIG,
-      eventBus: EVENT_BUS_MOCK,
-    });
-
-    VideoComponentInstance['start'] = jest.fn(VideoComponentInstance['start']);
-    VideoComponentInstance['logger'].log = jest.fn();
-
-    expect(VIDEO_MANAGER_MOCK.start).not.toHaveBeenCalled();
-
-    jest.advanceTimersByTime(1000);
-
-    expect(VideoComponentInstance['start']).toHaveBeenCalledTimes(1);
-  });
-
   test('should not show avatar settings if local participant has avatar', () => {
     VideoComponentInstance.detach();
 

@@ -41,7 +41,18 @@ export abstract class BaseComponent {
     this.eventBus = eventBus;
     this.isAttached = true;
 
-    this.logger.log('attached');
+    if (!this.realtime.isJoinedRoom) {
+      this.logger.log(`${this.name} @ attach - not joined yet`);
+
+      setTimeout(() => {
+        this.logger.log(`${this.name} @ attach - retrying`);
+        this.attach(params);
+      }, 1000);
+
+      return;
+    }
+
+    this.logger.log(`${this.name} @ attached`);
 
     this.start();
   };

@@ -15,7 +15,7 @@ export class CommentsComponent extends BaseComponent {
 
   constructor() {
     super();
-    this.name = 'Comments';
+    this.name = 'comments-component';
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
   }
@@ -63,6 +63,10 @@ export class CommentsComponent extends BaseComponent {
     });
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
+
+    // Realtime observers
+
+    this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
   }
 
   /**
@@ -78,6 +82,8 @@ export class CommentsComponent extends BaseComponent {
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
+
+    this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
   }
 
   /**
@@ -115,7 +121,13 @@ export class CommentsComponent extends BaseComponent {
     }
   };
 
-  deleteAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
+  /**
+   * @function deleteAnnotation
+   * @description Deletes an annotation from the server and updates the component's state.
+   * @param detail - The event detail containing the UUID of the annotation to delete.
+   * @returns {void}
+   */
+  private deleteAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
       const { uuid } = detail;
       await ApiService.deleteAnnotation(
@@ -125,9 +137,7 @@ export class CommentsComponent extends BaseComponent {
       );
 
       const annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
-      this.annotations = annotations;
-
-      this.element.updateAnnotations(annotations);
+      this.updateAnnotationList(annotations);
     } catch (error) {
       this.logger.log('error when deleting annotation', error);
     }
@@ -183,6 +193,20 @@ export class CommentsComponent extends BaseComponent {
         uuid,
         text,
       );
+
+      const annotations = this.annotations.map((annotation) => {
+        return Object.assign({}, annotation, {
+          comments: annotation.comments.map((comment) => {
+            if (comment.uuid === uuid) {
+              return Object.assign({}, comment, { text });
+            }
+
+            return comment;
+          }),
+        });
+      });
+
+      this.updateAnnotationList(annotations);
     } catch (error) {
       this.logger.log('error when updating comment', error);
     }
@@ -191,12 +215,23 @@ export class CommentsComponent extends BaseComponent {
   /**
    * @function addAnnotation
    * @description Adds a new annotation to the Comments component
-   * @param {Annotation[]} annotation - An array of annotation objects to add to the component
+   * @param {Annotation[]} annotations - An array of annotation objects to add to the component
    * @returns {void}
    */
-  private addAnnotation(annotation: Annotation[]): void {
-    this.annotations = [...this.annotations, ...annotation];
-    this.element.updateAnnotations(this.annotations);
+  private addAnnotation(annotations: Annotation[]): void {
+    const list = [...this.annotations, ...annotations];
+    this.updateAnnotationList(list);
+  }
+
+  /**
+   * @function updateAnnotationList
+   * @description Updates the list of annotations in the Comments component
+   * @param {Annotation[]} annotations - An array of annotation objects to update the component with
+   * @returns {void}
+   */
+  private updateAnnotationList(annotations: Annotation[]): void {
+    this.annotations = annotations;
+    this.realtime.updateComments(annotations);
   }
 
   /**
@@ -217,13 +252,13 @@ export class CommentsComponent extends BaseComponent {
 
     annotation.comments = [...annotation.comments, comment];
 
-    this.annotations = [
+    const list = [
       ...this.annotations.slice(0, annotationIndex),
       annotation,
       ...this.annotations.slice(annotationIndex + 1),
     ];
 
-    this.element.updateAnnotations(this.annotations);
+    this.updateAnnotationList(list);
   }
 
   /**
@@ -243,7 +278,8 @@ export class CommentsComponent extends BaseComponent {
         },
       );
 
-      this.addAnnotation(annotations);
+      this.annotations = annotations;
+      this.element.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
     }
@@ -286,15 +322,22 @@ export class CommentsComponent extends BaseComponent {
 
       annotation.comments = annotation.comments.filter((comment) => comment.uuid !== uuid);
 
-      this.annotations = [
+      const list = [
         ...this.annotations.slice(0, annotationIndex),
         annotation,
         ...this.annotations.slice(annotationIndex + 1),
       ];
 
-      this.element.updateAnnotations(this.annotations);
+      this.updateAnnotationList(list);
     } catch (error) {
       this.logger.log('error when deleting comment', error);
     }
+  };
+
+  /** Realtime Callbacks */
+
+  private onAnnotationListUpdate = (annotations: Annotation[]): void => {
+    this.annotations = annotations;
+    this.element.updateAnnotations(this.annotations);
   };
 }

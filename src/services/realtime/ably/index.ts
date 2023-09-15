@@ -4,6 +4,7 @@ import throttle from 'lodash/throttle';
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { Annotation } from '../../../components/comments/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -1158,10 +1159,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /** Comments */
   private onCommentsChannelUpdate = (message: Ably.Types.Message): void => {
-    console.log('onCommentsChannelUpdate', message);
+    this.logger.log('REALTIME', 'Comments channel update', message);
+    this.commentsObserver.publish(message.data);
   };
 
-  public updateComments = (params: any) => {
-    console.log('updateComments', params);
+  public updateComments = (annotations: Annotation[]) => {
+    this.commentsChannel.publish('update', annotations);
   };
 }
