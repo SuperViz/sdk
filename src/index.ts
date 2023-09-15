@@ -99,6 +99,8 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
 
   if (options.debug) {
     logger.enable('@superviz/*');
+  } else {
+    logger.disable();
   }
 
   const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
@@ -120,12 +122,14 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperV
 
   const { ablyKey } = environment;
   return Communicator(
-    Object.assign({}, options, { apiKey,
+    Object.assign({}, options, {
+      apiKey,
       ablyKey,
       conferenceLayerUrl,
       apiUrl,
       waterMark,
-      layoutPosition }),
+      layoutPosition,
+    }),
   );
 };
 
