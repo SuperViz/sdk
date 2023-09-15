@@ -4,10 +4,14 @@ import { DrawingData } from '../../video-conference-manager/types';
 import { DefaultRealtimeMethods } from '../base/types';
 export interface AblyRealtime extends DefaultRealtimeMethods {
 }
-export interface AblyParticipants {
-    [id: string]: AblyParticipant;
-}
-export interface AblyParticipant extends Ably.Types.PresenceMessage {
+export interface AblyParticipant {
+    action: Ably.Types.PresenceAction;
+    clientId: string;
+    connectionId: string;
+    data: any;
+    encoding: string;
+    id: string;
+    timestamp: number;
 }
 export interface AblyRealtimeData {
     hostClientId?: string;

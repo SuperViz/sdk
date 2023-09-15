@@ -4,7 +4,7 @@ import { TranscriptState } from '../../../common/types/events.types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
-import { AblyParticipant, AblyParticipants, AblyRealtime, AblyRealtimeData, ParticipantDataInput, RealtimeMessage } from './types';
+import { AblyParticipant, AblyRealtime, AblyRealtimeData, ParticipantDataInput, RealtimeMessage } from './types';
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
     private client;
     private participants;
@@ -39,7 +39,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     get getMyParticipant(): AblyParticipant;
     get hostClientId(): string;
     get isLocalParticipantHost(): boolean;
-    get getParticipants(): AblyParticipants;
+    get getParticipants(): Record<string, AblyParticipant>;
     get participant(): unknown;
     start({ initialParticipantData, roomId, apiKey, shouldKickParticipantsOnHostLeave, isBroadcast, }: StartRealtimeType): void;
     /**
