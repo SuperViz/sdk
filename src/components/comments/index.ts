@@ -278,7 +278,8 @@ export class CommentsComponent extends BaseComponent {
         },
       );
 
-      this.addAnnotation(annotations);
+      this.annotations = annotations;
+      this.element.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
     }

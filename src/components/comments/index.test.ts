@@ -159,6 +159,24 @@ describe('CommentsComponent', () => {
     expect(spy).toHaveBeenCalledWith('error when fetching annotations', 'internal server error');
   });
 
+  test('should update annotation list when fetch annotation is successful', async () => {
+    commentsComponent.detach();
+    commentsComponent = new CommentsComponent();
+    (ApiService.fetchAnnotation as jest.Mock).mockReturnValueOnce([MOCK_ANNOTATION]);
+
+    commentsComponent.attach({
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    await sleep(1);
+
+    expect(commentsComponent['annotations']).toEqual([MOCK_ANNOTATION]);
+  });
+
   test('should call apiService when create a new comment', async () => {
     const spy = jest.spyOn(ApiService, 'createComment');
 
