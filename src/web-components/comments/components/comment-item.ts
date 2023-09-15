@@ -1,5 +1,6 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { DateTime } from 'luxon';
 
 import { WebComponentsBase } from '../../base';
@@ -30,6 +31,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare mode: CommentMode;
   declare deleteCommentModalOpen: boolean;
   declare primaryComment: boolean;
+  declare expandElipsis: boolean;
 
   static properties = {
     uuid: { type: String },
@@ -43,6 +45,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     mode: { type: String },
     deleteCommentModalOpen: { type: Boolean },
     primaryComment: { type: Boolean },
+    expandElipsis: { type: Boolean },
   };
 
   updated = (changedProperties: PropertyValueMap<any>) => {
@@ -116,6 +119,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       }
     };
 
+    const expandElipsis = () => {
+      this.expandElipsis = true;
+    };
+
     const textareaHtml = () => {
       if (this.mode !== CommentMode.EDITABLE) return;
 
@@ -134,7 +141,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       if (this.mode === CommentMode.EDITABLE) return;
 
       return html`
-        <span class="text text-big sv-gray-700">${this.text}</span>
+        <span @click=${expandElipsis} class="text text-big sv-gray-700 ${shouldUseElipsis}">${this.text}</span>
       `;
     };
 
@@ -142,8 +149,15 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       this.deleteCommentModalOpen = false;
     };
 
+    const commentItemClass = {
+      'comment-item': true,
+      reply: !this.primaryComment,
+    };
+
+    const shouldUseElipsis = !this.expandElipsis && this.text.length > 120 ? 'line-clamp' : '';
+
     return html`
-      <div class="comment-item">
+      <div class=${classMap(commentItemClass)}>
         <div class="comment-item__user">
           <div class="comment-item__user-details">
             <div class="comment-item__avatar">
@@ -152,7 +166,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             <span class="text text-bold sv-gray-600">${this.username}</span>
             <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
           </div>
-          <button @click=${() => this.resolveAnnotation()} class="icon-button icon-button--clickable icon-button--medium icon-button--no-hover ${isResolvable}">
+          <button @click=${() => this.resolveAnnotation()} class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}">
             <superviz-icon name="resolve" size="md"></superviz-icon>
           </button>
           <superviz-dropdown 

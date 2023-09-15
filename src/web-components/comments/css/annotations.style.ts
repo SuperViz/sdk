@@ -6,7 +6,6 @@ export const annotationsStyle = css`
     flex-direction: column;
     background-color: rgb(var(--sv-gray-400));
     min-height: 10px;
-    width: 100%;
     padding: 8px;
   }
 
