@@ -15,6 +15,11 @@ export const iconButtonStyle = css`
     display: flex !important;
   }
 
+  .icon-button--xsmall {
+    width: 18px;
+    height: 18px;
+  }
+
   .icon-button--small {
     width: 24px;
     height: 24px;

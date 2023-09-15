@@ -1,6 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
@@ -109,8 +108,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       if (this.editable) return;
 
       return html`
-        <button class="comment-input--send-btn" disabled @click=${this.send}>
-          <superviz-icon name="send" size="md"></superviz-icon>
+        <button class="comment-input--send-btn align-send-btn" disabled @click=${this.send}>
+          <superviz-icon name="send" size="sm"></superviz-icon>
         </button>
       `;
     };
@@ -123,7 +122,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="sv-hr"></div>
         <div class="comment-input--options">
           <div>
-            <button class="icon-button">
+            <button class="icon-button mention">
               <superviz-icon name="mention" size="sm"></superviz-icon>
             </button>
           </div>

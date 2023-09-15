@@ -35,7 +35,7 @@ export const modalStyle = css`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px;
+    padding: 8px 16px;
     background: rgb(var(--sv-gray-200));
     border-radius: 6px 6px 0 0;
   }
@@ -43,13 +43,12 @@ export const modalStyle = css`
   .modal--container > .modal > .modal--header > .text {
     display: flex;
     align-items: center;
-    padding: 8px;
   }
 
   .modal--container > .modal > .modal--header > .close {
     display: flex;
     align-items: center;
-    padding: 8px;
+    justify-content: center;
     font-size: 24px;
     color: rgb(var(--sv-gray-600));
     cursor: pointer;
@@ -63,7 +62,7 @@ export const modalStyle = css`
   }
 
   .modal--container > .modal > .modal--body > .modal--body-content {
-    padding: 8px;
+    padding: 8px 0;
     text-align: center;
   }
 

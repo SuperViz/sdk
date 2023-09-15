@@ -8,7 +8,7 @@ export const typography = css`
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: 18px;
+    line-height: 20px;
   }
 
   .text-bold {

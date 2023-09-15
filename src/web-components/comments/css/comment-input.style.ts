@@ -7,7 +7,15 @@ export const commentInputStyle = css`
     width: 100%;
     background: rgb(var(--sv-white));
     border-radius: 4px;
-    border: 1px solid rgb(var(--sv-gray-200));
+    border: 1px solid rgb(var(--sv-gray-300));
+  }
+
+  .comment-input:focus-within {
+    border: 1px solid rgb(var(--sv-gray-500));
+  }
+
+  .comment-input:focus-within > .sv-hr {
+    background: rgb(var(--sv-gray-500))
   }
 
   #comment-input--textarea {
@@ -15,7 +23,7 @@ export const commentInputStyle = css`
     border: 0px;
     border-radius: 4px;
     outline: none;
-    height: 14px;
+    height: 13px;
     font-size: 14px;
     color: rgb(var(--sv-gray-700));
     padding: 12px 11px !important;
@@ -36,7 +44,11 @@ export const commentInputStyle = css`
   .comment-input--options {
     display: flex;
     justify-content: space-between;
-    padding: 8px;
+    padding: 4px 8px;
+  }
+
+  .mention {
+    display: none;
   }
 
   .comment-input--send-btn {
@@ -50,6 +62,11 @@ export const commentInputStyle = css`
     color: rgba(var(--sv-white), 1);
     border: 0px;
     cursor: pointer;
+  }
+
+  .align-send-btn > superviz-icon {
+    margin-right: 2px;
+    margin-top: 4px;
   }
 
   .comment-input--send-btn:disabled {

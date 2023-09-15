@@ -1,6 +1,10 @@
 import { css } from 'lit';
 
 export const commentItemStyle = css`
+  .reply {
+    padding-left: 24px !important;
+  }
+
   .comment-item {
     display: flex;
     flex-direction: column;
@@ -41,6 +45,14 @@ export const commentItemStyle = css`
 
   .comment-item__content {
     width: 100%;
+    
+  }
+
+  .line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
   }
 
   .comment-item__content__body {

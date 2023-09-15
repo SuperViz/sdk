@@ -48,7 +48,7 @@ export class DeleteCommentModal extends WebComponentsBaseElement {
     window.document.body.dispatchEvent(new CustomEvent('superviz-modal--open', {
       detail: {
         title: 'DELETE COMMENT',
-        body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+        body: html`<span class="text text-big sv-gray-600">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
         confirmLabel: 'DELETE',
         confirm: true,
         cancel: true,
