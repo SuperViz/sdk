@@ -19,7 +19,6 @@ export interface VideoManagerOptions {
     videoInput: boolean;
   };
   skipMeetingSettings: boolean;
-  disableCameraOverlay: boolean;
   browserService: BrowserService;
   offset?: Offset;
   locales?: Locale[];
@@ -64,7 +63,6 @@ export interface FrameConfig {
   devices: DevicesConfig;
   waterMark: WaterMark;
   skipMeetingSettings: boolean;
-  disableCameraOverlay: boolean;
   layoutPosition: LayoutPosition;
 }
 

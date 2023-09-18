@@ -107,7 +107,6 @@ export class VideoComponent extends BaseComponent {
       camerasPosition: this.params?.camerasPosition,
       devices: this.params?.devices,
       skipMeetingSettings: this.params?.skipMeetingSettings,
-      disableCameraOverlay: this.params?.disableCameraOverlay,
       browserService: this.browserService,
       offset: this.params?.offset,
       locales: this.params?.locales ?? [],
