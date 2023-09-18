@@ -12,7 +12,7 @@ import { BaseComponent } from '.';
 
 class DummyComponent extends BaseComponent {
   protected logger: Logger;
-  protected name: string;
+  public name: string;
 
   constructor() {
     super();
@@ -33,6 +33,7 @@ class DummyComponent extends BaseComponent {
 const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
 
 jest.useFakeTimers();
+global.fetch = jest.fn();
 
 describe('BaseComponent', () => {
   let DummyComponentInstance: DummyComponent;

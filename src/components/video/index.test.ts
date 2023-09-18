@@ -62,10 +62,6 @@ jest.mock('../../services/event-bus', () => {
   return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
 });
 
-jest.useFakeTimers();
-
-const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
-
 describe('VideoComponent', () => {
   let VideoComponentInstance: VideoComponent;
 
@@ -73,9 +69,8 @@ describe('VideoComponent', () => {
     jest.clearAllMocks();
 
     VideoComponentInstance = new VideoComponent();
-
     VideoComponentInstance.attach({
-      realtime: REALTIME_MOCK,
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
@@ -95,7 +90,7 @@ describe('VideoComponent', () => {
     });
 
     VideoComponentInstance.attach({
-      realtime: REALTIME_MOCK,
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: {
         ...MOCK_LOCAL_PARTICIPANT,
         avatar: MOCK_AVATAR,

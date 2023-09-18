@@ -33,6 +33,12 @@ jest.mock('../../common/utils', () => {
         });
       }
 
+      if (url.includes('/activity')) {
+        return Promise.resolve({
+          message: 'any message',
+        });
+      }
+
       if (url.includes('/annotations') && method === 'POST') {
         return Promise.resolve({});
       }
@@ -96,33 +102,25 @@ describe('ApiService', () => {
   });
 
   describe('Annotations and comments', () => {
-    test('should create an annotation', async () => {
+    test('should create a comment', async () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
-      const response = await ApiService.createAnnotations(
-        baseUrl,
-        VALID_API_KEY,
-        {
-          roomId: 'any_room_id',
-          url: 'any_url',
-          position: 'any_position',
-          userId: 'any_user_id',
-        },
-      );
+      const response = await ApiService.createComment(baseUrl, VALID_API_KEY, {
+        annotationId: 'any_annotation_id',
+        userId: 'any_user_id',
+        text: 'any_text',
+      });
 
       expect(response).toEqual({});
     });
 
-    test('should create a comment', async () => {
+    test('should create an annotation', async () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
-      const response = await ApiService.createComment(
-        baseUrl,
-        VALID_API_KEY,
-        {
-          annotationId: 'any_annotation_id',
-          userId: 'any_user_id',
-          text: 'any_text',
-        },
-      );
+      const response = await ApiService.createAnnotations(baseUrl, VALID_API_KEY, {
+        roomId: 'any_room_id',
+        url: 'any_url',
+        position: 'any_position',
+        userId: 'any_user_id',
+      });
 
       expect(response).toEqual({});
     });
@@ -141,14 +139,10 @@ describe('ApiService', () => {
 
     test('should fetch annotations', async () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
-      const response = await ApiService.fetchAnnotation(
-        baseUrl,
-        VALID_API_KEY,
-        {
-          roomId: 'any_room_id',
-          url: 'any_url',
-        },
-      );
+      const response = await ApiService.fetchAnnotation(baseUrl, VALID_API_KEY, {
+        roomId: 'any_room_id',
+        url: 'any_url',
+      });
 
       expect(response).toEqual([]);
     });
@@ -166,13 +160,21 @@ describe('ApiService', () => {
 
     test('should delete a comment', async () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
-      const response = await ApiService.deleteComment(
-        baseUrl,
-        VALID_API_KEY,
-        'any_comment_id',
-      );
+      const response = await ApiService.deleteComment(baseUrl, VALID_API_KEY, 'any_comment_id');
 
       expect(response).toEqual({});
+    });
+  });
+
+  describe('sendActivity', () => {
+    test('should return any message', async () => {
+      const userId = 'user-id';
+      const groupId = 'group-id';
+      const groupName = 'group-name';
+      const product = 'video-component';
+      const response = await ApiService.sendActivity(userId, groupId, groupName, product);
+
+      expect(response).toEqual({ message: 'any message' });
     });
   });
 });

@@ -18,6 +18,8 @@ jest.mock('../../services/event-bus', () => ({
   EventBus: jest.fn().mockImplementation(() => EVENT_BUS_MOCK),
 }));
 
+jest.mock('../../services/api');
+
 const MOCK_COMPONENT = {
   attach: jest.fn(),
   detach: jest.fn(),
