@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
-import { AnnotationOptions, CommentMode, CommentDropdownOptions } from './types';
+import { CommentMode, CommentDropdownOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
@@ -27,7 +27,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare text: string;
   declare resolved: boolean;
   declare createdAt: string;
-  declare options: AnnotationOptions;
+  declare resolvable: boolean;
   declare mode: CommentMode;
   declare deleteCommentModalOpen: boolean;
   declare primaryComment: boolean;
@@ -40,18 +40,12 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     username: { type: String },
     text: { type: String },
     resolved: { type: Boolean },
+    resolvable: { type: Boolean },
     createdAt: { type: String },
-    options: { type: Object },
     mode: { type: String },
     deleteCommentModalOpen: { type: Boolean },
     primaryComment: { type: Boolean },
     expandElipsis: { type: Boolean },
-  };
-
-  updated = (changedProperties: PropertyValueMap<any>) => {
-    if (changedProperties.has('options')) {
-      this.resolved = this.options?.resolved;
-    }
   };
 
   private updateComment = ({ detail }: CustomEvent) => {
@@ -96,9 +90,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       return DateTime.fromISO(date).toFormat('yyyy-dd-MM');
     };
 
-    const isResolvable = this.options?.resolvable ? 'comment-item__resolve' : 'hidden';
-
-    const iconResolve = this.resolved ? '1' : '0';
+    const isResolvable = this.resolvable ? 'comment-item__resolve' : 'hidden';
 
     const options = [
       {
@@ -120,6 +112,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     };
 
     const expandElipsis = () => {
+      if (this.text.length < 120) return;
+
       this.expandElipsis = true;
     };
 
@@ -141,7 +135,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       if (this.mode === CommentMode.EDITABLE) return;
 
       return html`
-        <span @click=${expandElipsis} class="text text-big sv-gray-700 ${shouldUseElipsis}">${this.text}</span>
+        <span id="comment-text" @click=${expandElipsis} class="text text-big sv-gray-700 ${shouldUseElipsis}">${this.text}</span>
       `;
     };
 

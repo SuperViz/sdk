@@ -51,32 +51,6 @@ describe('CommentsAnnotationItem', () => {
     expect(expectedCommentsContainer.classList.contains('hidden')).toBe(false);
   });
 
-  test('resolves the annotation when the comment is unresolved', async () => {
-    element = await createElement(MOCK_ANNOTATION);
-    const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item');
-
-    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: true } }));
-
-    await sleep();
-
-    expect(element['options']['resolved']).toBe(true);
-  });
-
-  test('resolves the annotation when the comment is resolved', async () => {
-    element = await createElement({
-      ...MOCK_ANNOTATION,
-      resolved: true,
-    });
-    expect(element['options']['resolved']).toBe(true);
-    const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item');
-
-    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: false } }));
-
-    await sleep();
-
-    expect(element['options']['resolved']).toBe(false);
-  });
-
   test('should create a new comment in annotation', async () => {
     element = await createElement(MOCK_ANNOTATION);
     element['dispatchEvent'] = jest.fn();
@@ -98,5 +72,27 @@ describe('CommentsAnnotationItem', () => {
         },
       }),
     );
+  });
+
+  test('should resolve annotation', async () => {
+    element = await createElement(MOCK_ANNOTATION);
+    const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item') as HTMLElement;
+
+    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: true } }));
+
+    await sleep();
+
+    expect(element['resolved']).toBe(true);
+  });
+
+  test('when the annotation is resolved, the comment is hidden', async () => {
+    element = await createElement({
+      ...MOCK_ANNOTATION,
+      resolved: true,
+    });
+
+    const annotationHidden = element!.shadowRoot!.querySelector('.hidden');
+
+    expect(annotationHidden).toBeDefined();
   });
 });

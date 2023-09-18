@@ -1,11 +1,10 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { Annotation, Comment } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationItemStyle } from '../css';
-
-import { AnnotationOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationItemStyle];
@@ -15,7 +14,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare annotation: Annotation;
   declare expandComments: boolean;
   declare selected: string;
-  declare options: AnnotationOptions;
+  declare resolved: boolean;
+  declare isLastAnnotation: boolean;
 
   static styles = styles;
 
@@ -23,14 +23,12 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     annotation: { type: Object },
     expandComments: { type: Boolean },
     selected: { type: String, reflect: true },
-    options: { type: Object },
+    resolved: { type: Boolean },
+    isLastAnnotation: { type: Boolean },
   };
 
   protected firstUpdated(): void {
-    this.options = {
-      resolvable: true,
-      resolved: this.annotation.resolved,
-    };
+    this.resolved = this.annotation.resolved;
   }
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -55,14 +53,15 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   }
 
   protected render() {
-    const replies = this.annotation.comments.length;
+    const replies = this.annotation.comments?.length;
 
     const isSelected = this.selected === this.annotation.uuid;
 
-    const annotationClasses: string = [
-      'annotation-item',
-      isSelected ? 'annotation-item--selected' : '',
-    ].join(' ');
+    const annotationClasses = {
+      'annotation-item': true,
+      'annotation-item--selected': isSelected,
+      hidden: this.resolved,
+    };
 
     const shouldExpandAvatarComments = !this.expandComments && replies > 1 ? 'comment-avatar--expand' : 'hidden';
 
@@ -103,40 +102,59 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         resolved,
       });
 
-      this.options.resolved = resolved;
+      this.resolved = resolved;
+    };
+
+    const hideHr = this.isLastAnnotation || this.resolved ? 'hidden' : '';
+
+    const annotationResolvedTemplate = () => {
+      if (!this.annotation.resolved) {
+        return html`
+        <superviz-comments-annotation-resolved
+          ?resolved=${this.resolved}
+          @undo-resolve=${resolveAnnotation}
+        >
+        </superviz-comments-annotation-resolved>
+      `;
+      }
     };
 
     return html`
-      <div class=${annotationClasses} @click=${() => this.selectAnnotation()}>
+      ${annotationResolvedTemplate()}
+
+      <div class=${classMap(annotationClasses)} @click=${() => this.selectAnnotation()}>
         <div>
           <superviz-comments-comment-item
-            uuid=${this.annotation.comments[0].uuid}
+            uuid=${this.annotation.comments?.[0].uuid}
             annotationId=${this.annotation.uuid}
             avatar="https://picsum.photos/200/300"
             username="username"
-            text=${this.annotation.comments[0].text}
-            createdAt=${this.annotation.comments[0].createdAt}
-            options=${JSON.stringify(this.options)}
+            text=${this.annotation.comments?.[0].text}
+            createdAt=${this.annotation.comments?.[0].createdAt}
             primaryComment
+            resolvable
+            ?resolved=${this.resolved}
             @resolve-annotation=${resolveAnnotation}
           ></superviz-comments-comment-item>
 
           <div class="avatars-comments ${shouldExpandAvatarComments}">  
             <div class="avatar-container">
-              ${this.annotation.comments.map(avatarComments)}
+              ${this.annotation.comments?.map(avatarComments)}
               <div class="avatar-divs-${replies} replies text text-big sv-gray-500">${replies - 1} replies</div>
             </div>
           </div>
         </div>
 
         <div class="comments-container ${shouldExpandComments}">
-          ${this.annotation.comments.map(expandedComments)}
+          ${this.annotation.comments?.map(expandedComments)}
           <superviz-comments-comment-input
             @create-comment=${this.createComment}
             eventType="create-comment"
           ></superviz-comments-comment-input>
         </div>
       </div>
+
+      <div class="sv-hr ${hideHr}"></div>
     `;
   }
 }

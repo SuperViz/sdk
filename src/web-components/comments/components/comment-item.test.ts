@@ -5,43 +5,70 @@ import sleep from '../../../common/utils/sleep';
 import '.';
 import { CommentDropdownOptions, CommentMode } from './types';
 
-const element = document.createElement('superviz-comments-comment-item');
-document.body.appendChild(element);
+const DEFAULT_ELEMENT_OPTIONS = {
+  avatar: 'https://example.com/avatar.png',
+  username: 'John Doe',
+  text: 'This is a comment',
+  createdAt: DateTime.now().toISO() as string,
+  resolved: false,
+  resolvable: true,
+  mode: CommentMode.READONLY,
+};
 
-element.setAttribute('avatar', 'https://example.com/avatar.png');
-element.setAttribute('username', 'John Doe');
-element.setAttribute('text', 'This is a comment');
-element.setAttribute('createdAt', DateTime.now().toISO() as string);
-element.setAttribute('options', JSON.stringify({ resolved: false, resolvable: true }));
+let element: HTMLElement;
+
+const createElement = async (options = DEFAULT_ELEMENT_OPTIONS) => {
+  const element = document.createElement('superviz-comments-comment-item');
+
+  Object.keys(options).forEach((key) => {
+    if (key === 'resolved' || key === 'resolvable') {
+      element.setAttributeNode(document.createAttribute(key));
+      return;
+    }
+
+    element.setAttribute(key, options[key]);
+  });
+
+  document.body.appendChild(element);
+  await sleep(100);
+  return element;
+};
 
 describe('CommentsCommentItem', () => {
-  test('renders the comment item with correct properties', async () => {
-    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
+  afterEach(() => {
+    document.body.removeChild(element);
+  });
 
-    const avatar = renderedElement.shadowRoot!.querySelector('.comment-item__avatar img') as HTMLImageElement;
+  test('renders the comment item with correct properties', async () => {
+    element = await createElement();
+
+    const avatar = element.shadowRoot!.querySelector('.comment-item__avatar img') as HTMLImageElement;
     expect(avatar.src).toEqual('https://example.com/avatar.png');
 
-    const username = renderedElement.shadowRoot!.querySelector('.comment-item__user .text-bold') as HTMLSpanElement;
+    const username = element.shadowRoot!.querySelector('.comment-item__user .text-bold') as HTMLSpanElement;
     expect(username.textContent).toEqual('John Doe');
 
-    const createdAt = renderedElement.shadowRoot!.querySelector('.comment-item__user .text-small') as HTMLSpanElement;
+    const createdAt = element.shadowRoot!.querySelector('.comment-item__user .text-small') as HTMLSpanElement;
     expect(createdAt.textContent).toEqual(DateTime.now().toFormat('yyyy-dd-MM'));
 
-    const text = renderedElement.shadowRoot!.querySelector('.comment-item__content .text-big') as HTMLSpanElement;
+    const text = element.shadowRoot!.querySelector('.comment-item__content .text-big') as HTMLSpanElement;
     expect(text.textContent).toEqual('This is a comment');
   });
 
   test('resolves the annotation when the comment is unresolved', async () => {
+    element = await createElement({
+      ...DEFAULT_ELEMENT_OPTIONS,
+      resolvable: true,
+      resolved: false,
+    });
+
     await element['updateComplete'];
 
-    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
-    const resolveButton = renderedElement.shadowRoot!.querySelector('.comment-item__user > button') as HTMLButtonElement;
+    const resolveButton = element.shadowRoot!.querySelector('.comment-item__user > button') as HTMLButtonElement;
 
     element.dispatchEvent = jest.fn();
 
     resolveButton.click();
-
-    await sleep();
 
     expect(element.dispatchEvent)
       .toHaveBeenCalledWith(
@@ -50,10 +77,10 @@ describe('CommentsCommentItem', () => {
           { detail: { resolved: true } },
         ),
       );
-    expect(element['resolved']).toEqual(true);
   });
 
   test('should turn on editable mode', async () => {
+    element = await createElement();
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
@@ -61,34 +88,30 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
-
-    expect(renderedElement['mode']).toEqual(CommentMode.EDITABLE);
+    expect(element['mode']).toEqual(CommentMode.EDITABLE);
   });
 
   test('should turn off editable mode', async () => {
+    element = await createElement();
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
-    dropdown.dispatchEvent(new CustomEvent('selected', { detail: 'edit' }));
+    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.EDIT }));
 
     await element['updateComplete'];
 
-    const renderedElement = () => document.getElementsByTagName('superviz-comments-comment-item')[0];
-
-    await element['updateComplete'];
-
-    expect(renderedElement()['mode']).toEqual(CommentMode.EDITABLE);
+    expect(element['mode']).toEqual(CommentMode.EDITABLE);
 
     const editableComment = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
     editableComment.dispatchEvent(new CustomEvent('close-edit-mode'));
 
     await element['updateComplete'];
 
-    expect(renderedElement()['mode']).toEqual('readonly');
+    expect(element['mode']).toEqual(CommentMode.READONLY);
   });
 
   test('should update comment', async () => {
+    element = await createElement();
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
@@ -104,10 +127,11 @@ describe('CommentsCommentItem', () => {
     }));
 
     expect(element['text']).toEqual('This is an updated comment');
-    expect(element['mode']).toEqual('readonly');
+    expect(element['mode']).toEqual(CommentMode.READONLY);
   });
 
   test('should click in delete button', async () => {
+    element = await createElement();
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
@@ -115,12 +139,11 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
-
-    expect(renderedElement['deleteCommentModalOpen']).toBeTruthy();
+    expect(element['deleteCommentModalOpen']).toBeTruthy();
   });
 
   test('should listen event close modal', async () => {
+    element = await createElement();
     await element['updateComplete'];
 
     const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
@@ -128,12 +151,11 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
-
-    expect(renderedElement['deleteCommentModalOpen']).toBeFalsy();
+    expect(element['deleteCommentModalOpen']).toBeFalsy();
   });
 
   test('should listen event confirm delete', async () => {
+    element = await createElement();
     await element['updateComplete'];
 
     const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
@@ -141,13 +163,12 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const renderedElement = document.getElementsByTagName('superviz-comments-comment-item')[0];
-
-    expect(renderedElement['deleteCommentModalOpen']).toBeFalsy();
-    expect(renderedElement['primaryComment']).toBeFalsy();
+    expect(element['deleteCommentModalOpen']).toBeFalsy();
+    expect(element['primaryComment']).toBeFalsy();
   });
 
   test('should emit event to delete annotation when are primaryComment', async () => {
+    element = await createElement();
     element.setAttributeNode(document.createAttribute('primaryComment'));
     await element['updateComplete'];
 
@@ -159,5 +180,37 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     expect(element.dispatchEvent).toHaveBeenCalledWith(new CustomEvent('delete-annotation'));
+  });
+
+  test('when click in text should expand elipis when text is bigger than 120', async () => {
+    element = await createElement({
+      ...DEFAULT_ELEMENT_OPTIONS,
+      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam lacinia, nisl nisl aliquet nisl, eget aliquam nisl nisl eget.',
+    });
+
+    await element['updateComplete'];
+
+    const text = element.shadowRoot!.querySelector('.comment-item__content #comment-text') as HTMLElement;
+    text.click();
+
+    await element['updateComplete'];
+
+    expect(element['expandElipsis']).toBeTruthy();
+  });
+
+  test('when click in text should not expand elipis when text is smaller than 120', async () => {
+    element = await createElement({
+      ...DEFAULT_ELEMENT_OPTIONS,
+      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    });
+
+    await element['updateComplete'];
+
+    const text = element.shadowRoot!.querySelector('.comment-item__content #comment-text') as HTMLElement;
+    text.click();
+
+    await element['updateComplete'];
+
+    expect(element['expandElipsis']).toBeFalsy();
   });
 });

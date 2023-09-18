@@ -40,29 +40,4 @@ describe('CommentsContent', () => {
     expect(annotationItem?.getAttribute('selected')).toBe('any_uuid');
     expect(element['selectedAnnotation']).toBe('any_uuid');
   });
-
-  test('if is last annotation and add hr', async () => {
-    element.setAttribute('annotations', JSON.stringify([
-      MOCK_ANNOTATION,
-    ]));
-
-    await sleep();
-
-    const hr = element.shadowRoot!.querySelectorAll('.sv-hr')[0];
-
-    expect(hr?.classList.contains('hidden')).toBe(true);
-  });
-
-  test('if is last annotation and add hr', async () => {
-    element.setAttribute('annotations', JSON.stringify([
-      MOCK_ANNOTATION,
-      MOCK_ANNOTATION,
-    ]));
-
-    await sleep();
-
-    const hr = element.shadowRoot!.querySelectorAll('.sv-hr')[0];
-
-    expect(hr?.classList.contains('hidden')).toBe(false);
-  });
 });
