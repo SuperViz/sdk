@@ -22,7 +22,6 @@ export declare enum MeetingEvent {
 }
 export declare enum FrameEvent {
     FRAME_LOAD = "frame.load",
-    FRAME_SIZE_UPDATE = "frame.size-update",
     FRAME_DIMENSIONS_UPDATE = "frame.dimensions-update",
     FRAME_PARENT_SIZE_UPDATE = "frame.parent-window-size-update",
     FRAME_LOCALE_UPDATE = "frame.locales-update",

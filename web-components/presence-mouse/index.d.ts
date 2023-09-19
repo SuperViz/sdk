@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { MouseOptions } from '../../components/presence-mouse/types';
+import { ParticipantMouse } from '../../components/presence-mouse/types';
 export declare class PresenceMouse extends LitElement {
     textColorValues: number[];
     static styles: import("lit").CSSResult[];
@@ -7,10 +7,10 @@ export declare class PresenceMouse extends LitElement {
     /**
      * @function updatePresenceMouseParticipant
      * @description handler for update presence mouse change event
-     * @param {MouseOptions} externalParticipant - presence mouse change data
+     * @param {ParticipantMouse} externalParticipant - presence mouse change data
      * @returns {void}
      * */
-    updatePresenceMouseParticipant: (externalParticipant: MouseOptions) => void;
+    updatePresenceMouseParticipant: (externalParticipant: ParticipantMouse) => void;
     /**
      * @function removePresenceMouseParticipant
      * @description handler remove external participant mouse

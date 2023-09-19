@@ -1,4 +1,4 @@
-import { VideoComponent } from '../../components';
+import { PresenceMouseComponent, VideoComponent } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
 import { DeviceEvent, MeetingEvent, RealtimeEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent } from './events.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
@@ -12,4 +12,5 @@ export interface SuperVizCdn {
     MeetingControlsEvent: typeof MeetingControlsEvent;
     ParticipantEvent: typeof ParticipantEvent;
     VideoComponent: typeof VideoComponent;
+    PresenceMouseComponent: typeof PresenceMouseComponent;
 }

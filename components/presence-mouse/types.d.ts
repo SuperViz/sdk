@@ -1,4 +1,4 @@
-export interface MouseOptions {
+export interface ParticipantMouse {
     containerId?: string;
     originalHeight: number;
     originalWidth: number;
