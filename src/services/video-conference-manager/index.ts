@@ -1,4 +1,3 @@
-import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
 import {
   DeviceEvent,
   MeetingConnectionStatus,
@@ -82,25 +81,15 @@ export default class VideoConfereceManager {
       avatars,
       customColors,
       waterMark,
-      disableCameraOverlay,
       layoutPosition,
       camerasPosition,
+      skipMeetingSettings,
+      devices,
     } = options;
-
-    let { skipMeetingSettings, devices } = options;
 
     this.browserService = browserService;
 
     const positions = this.layoutModalsAndCamerasConfig(layoutPosition, camerasPosition);
-
-    if (disableCameraOverlay) {
-      skipMeetingSettings = true;
-      devices = {
-        audioInput: false,
-        audioOutput: false,
-        videoInput: false,
-      };
-    }
 
     const wrapper = document.createElement('div');
 
@@ -126,7 +115,6 @@ export default class VideoConfereceManager {
       },
       waterMark,
       skipMeetingSettings,
-      disableCameraOverlay,
       layoutPosition: positions.layoutPosition,
     };
 
@@ -318,21 +306,15 @@ export default class VideoConfereceManager {
     const { bottom, left, right, top } = this.frameOffset;
 
     style.innerHTML = `
-    :root {
-      --superviz-offset-top: ${top}px;
-      --superviz-offset-right: ${right}px;
-      --superviz-offset-left: ${left}px;
-      --superviz-offset-bottom: ${bottom}px;
-    } 
-    ${videoConferenceStyle}    
+      :root {
+        --superviz-offset-top: ${top}px;
+        --superviz-offset-right: ${right}px;
+        --superviz-offset-left: ${left}px;
+        --superviz-offset-bottom: ${bottom}px;
+      }     
     `;
 
     document.head.appendChild(style);
-
-    if (this.frameConfig.disableCameraOverlay) {
-      this.bricklayer.element.classList.add('sv-video-frame--no-overlay');
-      return;
-    }
 
     if (this.browserService.isMobileDevice) {
       this.bricklayer.element.classList.add('sv-video-frame--bottom');

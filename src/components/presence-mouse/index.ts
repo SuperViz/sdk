@@ -3,7 +3,7 @@ import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { BaseComponent } from '../base';
 
-import { MouseOptions } from './types';
+import { ParticipantMouse } from './types';
 
 export class PresenceMouseComponent extends BaseComponent {
   public name: string;
@@ -41,8 +41,7 @@ export class PresenceMouseComponent extends BaseComponent {
 
     this.unsubscribeFromRealtimeEvents();
 
-    const presenceContainerId = this.containerId ?
-      document.getElementById(this.containerId) : null;
+    const presenceContainerId = this.containerId ? document.getElementById(this.containerId) : null;
 
     if (presenceContainerId) {
       presenceContainerId.removeEventListener('mousemove', this.onMyParticipantMouseMove);
@@ -80,15 +79,16 @@ export class PresenceMouseComponent extends BaseComponent {
    * @description event to update my participant mouse position to others participants
    * @returns {void}
    */
-  private onMyParticipantMouseMove = (e): void => {
-    const presenceContainerId = this.containerId ?
-      document.getElementById(this.containerId) : document?.body;
+  private onMyParticipantMouseMove = (event: MouseEvent): void => {
+    const presenceContainerId = this.containerId
+      ? document.getElementById(this.containerId)
+      : document?.body;
 
     const rect = presenceContainerId.getBoundingClientRect();
 
     this.realtime.updateMyProperties({
-      mousePositionX: this.containerId ? e.x - rect.x : e.x,
-      mousePositionY: this.containerId ? e.y - rect.y : e.y,
+      mousePositionX: this.containerId ? event.x - rect.x : event.x,
+      mousePositionY: this.containerId ? event.y - rect.y : event.y,
       originalWidth: this.containerId ? rect.width : 1,
       originalHeight: this.containerId ? rect.height : 1,
       containerId: this.containerId,
@@ -105,9 +105,9 @@ export class PresenceMouseComponent extends BaseComponent {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
     Object.values(participants).forEach((participant: AblyParticipant) => {
-      const externalParticipantData: MouseOptions = participant.data;
-      const hasPresenceMouseElement = externalParticipantData?.mousePositionX
-          && this.presenceMouseElement;
+      const externalParticipantData: ParticipantMouse = participant.data;
+      const hasPresenceMouseElement =
+        externalParticipantData?.mousePositionX && this.presenceMouseElement;
       const myParticipant = externalParticipantData?.id === this.localParticipant?.id;
 
       externalParticipantData.color = this.realtime.getSlotColor(participant.data.slotIndex).color;
@@ -129,8 +129,9 @@ export class PresenceMouseComponent extends BaseComponent {
     this.logger.log('presence-mouse component @ on participant joined on realtime', participant);
 
     if (participant?.data?.id === this.localParticipant?.id) {
-      const presenceContainerId = this.containerId ?
-        document.getElementById(this.containerId) : document?.body;
+      const presenceContainerId = this.containerId
+        ? document.getElementById(this.containerId)
+        : document?.body;
 
       this.presenceMouseElement = document.createElement('superviz-presence-mouse');
 

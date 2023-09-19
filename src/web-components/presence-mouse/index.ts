@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { MouseOptions } from '../../components/presence-mouse/types';
+import { ParticipantMouse } from '../../components/presence-mouse/types';
 
 import { styles as customMouseStyles } from './styles';
 
@@ -19,10 +19,10 @@ export class PresenceMouse extends LitElement {
   /**
    * @function updatePresenceMouseParticipant
    * @description handler for update presence mouse change event
-   * @param {MouseOptions} externalParticipant - presence mouse change data
+   * @param {ParticipantMouse} externalParticipant - presence mouse change data
    * @returns {void}
    * */
-  public updatePresenceMouseParticipant = (externalParticipant: MouseOptions): void => {
+  public updatePresenceMouseParticipant = (externalParticipant: ParticipantMouse): void => {
     const userMouseIdExist = this.shadowRoot.getElementById(`mouse-${externalParticipant.id}`);
     if (!userMouseIdExist) {
       const mouseSync = this.shadowRoot.getElementById('mouse-sync');
@@ -50,26 +50,24 @@ export class PresenceMouse extends LitElement {
     const divMouseUser = this.shadowRoot.getElementById(`mouse-${externalParticipant.id}`);
     const divPointer = this.shadowRoot.getElementById(`mouse-${externalParticipant.id}`);
     if (divMouseUser && divPointer) {
-      const mouseUser = divMouseUser.getElementsByClassName(
-        'mouse-user-name',
-      )[0] as HTMLDivElement;
-      const pointerUser = divPointer.getElementsByClassName(
-        'pointer-mouse',
-      )[0] as HTMLDivElement;
+      const mouseUser = divMouseUser.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
+      const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
       if (pointerUser) {
         pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${externalParticipant.slotIndex}.svg)`;
       }
       if (mouseUser) {
-        mouseUser.style.color = this.textColorValues.includes(externalParticipant.slotIndex) ? '#FFFFFF' : '#000000';
+        mouseUser.style.color = this.textColorValues.includes(externalParticipant.slotIndex)
+          ? '#FFFFFF'
+          : '#000000';
         mouseUser.style.backgroundColor = externalParticipant.color;
         mouseUser.innerHTML = externalParticipant.name;
       }
 
       const { containerId } = externalParticipant;
 
-      const presenceContainerId = containerId ?
-        document.getElementById(containerId) :
-        document?.body;
+      const presenceContainerId = containerId
+        ? document.getElementById(containerId)
+        : document?.body;
 
       let adjustedX = externalParticipant.mousePositionX;
       let adjustedY = externalParticipant.mousePositionY;
@@ -77,10 +75,10 @@ export class PresenceMouse extends LitElement {
       if (containerId) {
         const windowWidth = presenceContainerId?.clientWidth || 1;
         const windowHeight = presenceContainerId?.clientHeight || 1;
-        adjustedX = (externalParticipant.mousePositionX /
-            externalParticipant.originalWidth) * windowWidth;
-        adjustedY = (externalParticipant.mousePositionY /
-            externalParticipant.originalHeight) * windowHeight;
+        adjustedX =
+          (externalParticipant.mousePositionX / externalParticipant.originalWidth) * windowWidth;
+        adjustedY =
+          (externalParticipant.mousePositionY / externalParticipant.originalHeight) * windowHeight;
       }
 
       divMouseFollower.style.left = `${adjustedX}px`;
@@ -104,8 +102,7 @@ export class PresenceMouse extends LitElement {
   protected render() {
     return html`
       <div id="mouse-container" class="mouse-board">
-        <div id="mouse-sync">
-        </div>
+        <div id="mouse-sync"></div>
       </div>
     `;
   }

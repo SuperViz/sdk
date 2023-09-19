@@ -21,7 +21,8 @@ describe('PresenceMouseComponent', () => {
       eventBus: EVENT_BUS_MOCK,
     });
 
-    presenceMouseComponent['presenceMouseElement'] = document.createElement('superviz-presence-mouse');
+    presenceMouseComponent['presenceMouseElement'] =
+      document.createElement('superviz-presence-mouse');
     presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'] = jest.fn();
     presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'] = jest.fn();
   });
@@ -65,48 +66,84 @@ describe('PresenceMouseComponent', () => {
 
       presenceMouseComponent['destroy']();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', presenceMouseComponent['onMyParticipantMouseMove']);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'mousemove',
+        presenceMouseComponent['onMyParticipantMouseMove'],
+      );
       expect(removeChildSpy).toHaveBeenCalledWith(presenceMouseComponent['presenceMouseElement']);
     });
   });
 
   describe('subscribeToRealtimeEvents', () => {
     it('should subscribe to realtime events', () => {
-      const participantJoinedObserverSubscribeSpy = jest.spyOn(presenceMouseComponent['realtime'].participantJoinedObserver, 'subscribe');
-      const participantLeaveObserverSubscribeSpy = jest.spyOn(presenceMouseComponent['realtime'].participantLeaveObserver, 'subscribe');
-      const participantsObserverSubscribeSpy = jest.spyOn(presenceMouseComponent['realtime'].participantsObserver, 'subscribe');
+      const participantJoinedObserverSubscribeSpy = jest.spyOn(
+        presenceMouseComponent['realtime'].participantJoinedObserver,
+        'subscribe',
+      );
+      const participantLeaveObserverSubscribeSpy = jest.spyOn(
+        presenceMouseComponent['realtime'].participantLeaveObserver,
+        'subscribe',
+      );
+      const participantsObserverSubscribeSpy = jest.spyOn(
+        presenceMouseComponent['realtime'].participantsObserver,
+        'subscribe',
+      );
 
       presenceMouseComponent['subscribeToRealtimeEvents']();
 
-      expect(participantJoinedObserverSubscribeSpy).toHaveBeenCalledWith(presenceMouseComponent['onParticipantJoinedOnRealtime']);
-      expect(participantLeaveObserverSubscribeSpy).toHaveBeenCalledWith(presenceMouseComponent['onParticipantLeftOnRealtime']);
-      expect(participantsObserverSubscribeSpy).toHaveBeenCalledWith(presenceMouseComponent['onParticipantsDidChange']);
+      expect(participantJoinedObserverSubscribeSpy).toHaveBeenCalledWith(
+        presenceMouseComponent['onParticipantJoinedOnRealtime'],
+      );
+      expect(participantLeaveObserverSubscribeSpy).toHaveBeenCalledWith(
+        presenceMouseComponent['onParticipantLeftOnRealtime'],
+      );
+      expect(participantsObserverSubscribeSpy).toHaveBeenCalledWith(
+        presenceMouseComponent['onParticipantsDidChange'],
+      );
     });
   });
 
   describe('unsubscribeFromRealtimeEvents', () => {
     it('should unsubscribe from realtime events', () => {
-      const participantJoinedObserverUnsubscribeSpy = jest.spyOn(presenceMouseComponent['realtime'].participantJoinedObserver, 'unsubscribe');
-      const participantLeaveObserverUnsubscribeSpy = jest.spyOn(presenceMouseComponent['realtime'].participantLeaveObserver, 'unsubscribe');
-      const participantsObserverUnsubscribeSpy = jest.spyOn(presenceMouseComponent['realtime'].participantsObserver, 'unsubscribe');
+      const participantJoinedObserverUnsubscribeSpy = jest.spyOn(
+        presenceMouseComponent['realtime'].participantJoinedObserver,
+        'unsubscribe',
+      );
+      const participantLeaveObserverUnsubscribeSpy = jest.spyOn(
+        presenceMouseComponent['realtime'].participantLeaveObserver,
+        'unsubscribe',
+      );
+      const participantsObserverUnsubscribeSpy = jest.spyOn(
+        presenceMouseComponent['realtime'].participantsObserver,
+        'unsubscribe',
+      );
 
       presenceMouseComponent['unsubscribeFromRealtimeEvents']();
 
-      expect(participantJoinedObserverUnsubscribeSpy).toHaveBeenCalledWith(presenceMouseComponent['onParticipantJoinedOnRealtime']);
-      expect(participantLeaveObserverUnsubscribeSpy).toHaveBeenCalledWith(presenceMouseComponent['onParticipantLeftOnRealtime']);
-      expect(participantsObserverUnsubscribeSpy).toHaveBeenCalledWith(presenceMouseComponent['onParticipantsDidChange']);
+      expect(participantJoinedObserverUnsubscribeSpy).toHaveBeenCalledWith(
+        presenceMouseComponent['onParticipantJoinedOnRealtime'],
+      );
+      expect(participantLeaveObserverUnsubscribeSpy).toHaveBeenCalledWith(
+        presenceMouseComponent['onParticipantLeftOnRealtime'],
+      );
+      expect(participantsObserverUnsubscribeSpy).toHaveBeenCalledWith(
+        presenceMouseComponent['onParticipantsDidChange'],
+      );
     });
   });
 
   describe('onMyParticipantMouseMove', () => {
     it('should update my participant mouse position', () => {
-      const updateMyPropertiesSpy = jest.spyOn(presenceMouseComponent['realtime'], 'updateMyProperties');
+      const updateMyPropertiesSpy = jest.spyOn(
+        presenceMouseComponent['realtime'],
+        'updateMyProperties',
+      );
       const presenceContainerId = document.createElement('div');
       presenceMouseComponent['containerId'] = 'container';
       document.getElementById = jest.fn().mockReturnValue(presenceContainerId);
 
       const event = { x: 10, y: 20 };
-      presenceMouseComponent['onMyParticipantMouseMove'](event);
+      presenceMouseComponent['onMyParticipantMouseMove'](event as unknown as MouseEvent);
 
       expect(updateMyPropertiesSpy).toHaveBeenCalledWith({
         mousePositionX: event.x,
@@ -148,7 +185,9 @@ describe('PresenceMouseComponent', () => {
 
       presenceMouseComponent['onParticipantsDidChange'](participants);
 
-      expect(presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant']).toHaveBeenCalledWith(participant2.data);
+      expect(
+        presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'],
+      ).toHaveBeenCalledWith(participant2.data);
     });
   });
 
@@ -180,7 +219,10 @@ describe('PresenceMouseComponent', () => {
       presenceMouseComponent['onParticipantJoinedOnRealtime'](MOCK_ABLY_PARTICIPANT);
 
       expect(appendChildSpy).toHaveBeenCalledWith(presenceMouseComponent['presenceMouseElement']);
-      expect(addEventListenerSpy).toHaveBeenCalledWith('mousemove', presenceMouseComponent['onMyParticipantMouseMove']);
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'mousemove',
+        presenceMouseComponent['onMyParticipantMouseMove'],
+      );
     });
   });
 
@@ -202,8 +244,9 @@ describe('PresenceMouseComponent', () => {
 
       presenceMouseComponent['onParticipantLeftOnRealtime'](MOCK_ABLY_PARTICIPANT);
 
-      expect(presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'])
-        .toHaveBeenCalledWith(MOCK_ABLY_PARTICIPANT.clientId);
+      expect(
+        presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'],
+      ).toHaveBeenCalledWith(MOCK_ABLY_PARTICIPANT.clientId);
     });
   });
 });
