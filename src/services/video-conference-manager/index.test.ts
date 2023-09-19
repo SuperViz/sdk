@@ -32,7 +32,6 @@ const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
       audioOutput: true,
       videoInput: true,
     },
-    disableCameraOverlay: false,
     skipMeetingSettings: false,
     locales: [],
     avatars: [],

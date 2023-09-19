@@ -19,15 +19,12 @@ export interface VideoComponentOptions {
   enableGoTo?: boolean;
   enableGather?: boolean;
   defaultToolbar?: boolean;
-  isMouseEnabled?: boolean;
-  isLaserEnabled?: boolean;
   devices?: DevicesOptions;
   language?: string;
   locales?: Locale[];
   avatars?: Avatar[];
   customColors?: ColorsVariables;
   skipMeetingSettings?: boolean;
-  disableCameraOverlay?: boolean;
   layoutPosition?: LayoutPosition;
 }
 
