@@ -27,7 +27,7 @@ export class CommentsContent extends WebComponentsBaseElement {
 
   protected render() {
     const isLastAnnotation = (index: number) => {
-      return this.annotations.length === index + 1 ? 'hidden' : '';
+      return this.annotations.length === index + 1;
     };
 
     const selectAnnotation = ({ detail }: CustomEvent) => {
@@ -47,10 +47,9 @@ export class CommentsContent extends WebComponentsBaseElement {
             annotation=${JSON.stringify(annotation)}
             selected="${this.selectedAnnotation}"
             @select-annotation=${selectAnnotation}
+            ?isLastAnnotation=${isLastAnnotation(index)}
           >
           </superviz-comments-annotation-item>
-
-          <div class="sv-hr ${isLastAnnotation(index)}"></div>
         `;
       });
   }
