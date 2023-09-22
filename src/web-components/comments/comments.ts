@@ -4,6 +4,7 @@ import { customElement } from 'lit/decorators.js';
 import { Annotation, Comment } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
+import { AnnotationFilter } from './components/types';
 import { commentsStyle } from './css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -15,15 +16,18 @@ export class Comments extends WebComponentsBaseElement {
 
   declare open: boolean;
   declare annotations: Annotation[];
+  declare annotationFilter: AnnotationFilter;
 
   static properties = {
     open: { type: Boolean },
     annotations: { type: Object },
+    annotationFilter: { type: String },
   };
 
   constructor() {
     super();
     this.annotations = [];
+    this.annotationFilter = AnnotationFilter.ALL;
   }
 
   updateAnnotations(data: Annotation[]) {
@@ -32,6 +36,11 @@ export class Comments extends WebComponentsBaseElement {
 
   toggle() {
     this.open = !this.open;
+  }
+
+  setFilter({ detail }) {
+    const { filter } = detail;
+    this.annotationFilter = filter;
   }
 
   protected render() {
@@ -44,8 +53,14 @@ export class Comments extends WebComponentsBaseElement {
           <superviz-comments-annotations id="annotations" open=${this.open}>
           </superviz-comments-annotations>
         </div>
+        <superviz-comments-annotation-filter
+          filter=${this.annotationFilter}
+          @select=${this.setFilter}
+        >
+        </superviz-comments-annotation-filter>
         <superviz-comments-content
           annotations=${JSON.stringify(this.annotations)}
+          annotationFilter=${this.annotationFilter}
           class="content"
         ></superviz-comments-content>
       </div>

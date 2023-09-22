@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
-import { CommentMode, CommentDropdownOptions } from './types';
+import { CommentMode, CommentDropdownOptions, AnnotationFilter } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
@@ -32,6 +32,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare deleteCommentModalOpen: boolean;
   declare primaryComment: boolean;
   declare expandElipsis: boolean;
+  declare annotationFilter: string;
 
   static properties = {
     uuid: { type: String },
@@ -46,6 +47,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     deleteCommentModalOpen: { type: Boolean },
     primaryComment: { type: Boolean },
     expandElipsis: { type: Boolean },
+    annotationFilter: { type: String },
   };
 
   private updateComment = ({ detail }: CustomEvent) => {
@@ -60,10 +62,9 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   };
 
   private resolveAnnotation = () => {
-    this.resolved = !this.resolved;
-
     this.emitEvent('resolve-annotation', {
-      resolved: this.resolved,
+      type: 'resolve-annotation',
+      resolved: !this.resolved,
     }, { composed: false, bubbles: false });
   };
 
@@ -86,6 +87,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   };
 
   protected render() {
+    const resolveIcon = this.annotationFilter === AnnotationFilter.ALL ? 'resolve' : 'undo';
+
     const humanizeDate = (date: string) => {
       return DateTime.fromISO(date).toFormat('yyyy-dd-MM');
     };
@@ -160,8 +163,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             <span class="text text-bold sv-gray-600">${this.username}</span>
             <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
           </div>
-          <button @click=${() => this.resolveAnnotation()} class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}">
-            <superviz-icon name="resolve" size="md"></superviz-icon>
+          <button @click=${this.resolveAnnotation} class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}">
+            <superviz-icon name=${resolveIcon} size="md"></superviz-icon>
           </button>
           <superviz-dropdown 
             options=${JSON.stringify(options)}

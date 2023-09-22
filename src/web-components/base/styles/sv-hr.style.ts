@@ -7,5 +7,6 @@ export const svHr = css`
     background: rgb(var(--sv-gray-200));
     padding: 0px;
     margin: 0px;
+    position: relative;
   }
 `;

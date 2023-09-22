@@ -21,34 +21,45 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
 
   private timeout;
 
-  declare resolved: boolean;
   declare timeToHide: number;
   declare isCanceled: boolean;
 
   static properties = {
-    resolved: { type: Boolean },
     timeToHide: { type: Number },
     isCanceled: { type: Boolean },
   };
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('resolved')) {
-      clearTimeout(this.timeout);
+  protected firstUpdated(): void {
+    this.setTimer();
+  }
+
+  private setTimer = () => {
+    clearTimeout(this.timeout);
+    this.isCanceled = false;
+
+    this.timeout = setTimeout(() => {
+      if (this.isCanceled) return;
+
+      this.timeToHide = 0;
       this.isCanceled = false;
+      this.hide();
+    }, this.timeToHide);
+  };
 
-      this.timeout = setTimeout(() => {
-        if (this.isCanceled) return;
-
-        this.timeToHide = 0;
-        this.isCanceled = false;
-      }, this.timeToHide);
-    }
+  private hide() {
+    this.emitEvent(
+      'hide',
+      {},
+      { bubbles: false, composed: false },
+    );
   }
 
   private undone() {
     this.isCanceled = true;
+    this.hide();
 
     this.emitEvent('undo-resolve', {
+      type: 'undo-resolve',
       resolved: false,
     }, { bubbles: false, composed: false });
 
@@ -56,8 +67,8 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
   }
 
   protected render() {
-    if (!this.resolved) return html``;
     if (this.timeToHide === 0) return html``;
+    if (this.isCanceled) return html``;
 
     return html`
       <div class="annotation-resolved">

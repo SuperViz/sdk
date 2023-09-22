@@ -12,3 +12,8 @@ export enum CommentMode {
   EDITABLE = 'editable',
   READONLY = 'readonly',
 }
+
+export enum AnnotationFilter {
+  ALL = 'all',
+  RESOLVED = 'resolved',
+}

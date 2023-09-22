@@ -38,6 +38,8 @@ export const dropdownStyle = css`
   .menu--bottom-left {
     min-width: 103px;
     position: absolute;
+    left: 100%;
+    transform: translateX(-100%);
   }
 
   .menu--bottom-center {
@@ -56,10 +58,15 @@ export const dropdownStyle = css`
 
   .menu li {
     color: rgb(var(--sv-gray-600));
+    text-transform: uppercase;
     padding: 10px;
     cursor: pointer;
     min-width: 103px;
     min-height: 32px;
+  }
+
+  .active {
+    background: rgb(var(--sv-gray-200));
   }
 
   .menu li:hover {

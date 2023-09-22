@@ -1,13 +1,15 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import sleep from '../../../common/utils/sleep';
-import { Annotation } from '../../../components/comments/types';
+
 import '.';
+import { AnnotationFilter } from './types';
 
 let element: HTMLElement;
 
-const createElement = async (annotation: Annotation) => {
+const createElement = async (annotation = MOCK_ANNOTATION, filter = AnnotationFilter.ALL) => {
   const element = document.createElement('superviz-comments-annotation-item');
   element.setAttribute('annotation', JSON.stringify(annotation));
+  element.setAttribute('annotationFilter', filter);
   document.body.appendChild(element);
   await sleep();
   return element;
@@ -78,11 +80,15 @@ describe('CommentsAnnotationItem', () => {
     element = await createElement(MOCK_ANNOTATION);
     const commentItem = element.shadowRoot!.querySelector('superviz-comments-comment-item') as HTMLElement;
 
-    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: { resolved: true } }));
+    commentItem!.dispatchEvent(new CustomEvent('resolve-annotation', { detail: {
+      type: 'resolve-annotation',
+      resolved: true,
+    } }));
 
     await sleep();
 
     expect(element['resolved']).toBe(true);
+    expect(element['shouldShowUndoResolved']).toBe(true);
   });
 
   test('when the annotation is resolved, the comment is hidden', async () => {
@@ -94,5 +100,20 @@ describe('CommentsAnnotationItem', () => {
     const annotationHidden = element!.shadowRoot!.querySelector('.hidden');
 
     expect(annotationHidden).toBeDefined();
+  });
+
+  test('when annotation resolved emit event hide, shouldShowUndoResolved should be false', async () => {
+    element = await createElement(MOCK_ANNOTATION);
+
+    element.setAttributeNode(document.createAttribute('shouldShowUndoResolved'));
+
+    await sleep();
+
+    const annotationItem = element.shadowRoot!.querySelector('superviz-comments-annotation-resolved') as HTMLElement;
+    annotationItem!.dispatchEvent(new CustomEvent('hide', {}));
+
+    await sleep();
+
+    expect(element['shouldShowUndoResolved']).toBe(false);
   });
 });
