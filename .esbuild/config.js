@@ -8,7 +8,7 @@ module.exports = {
   bundle: true,
   target: 'es6',
   format: 'esm',
-  outdir: 'dist',
+  outdir: 'lib',
   define: {
     'process.env': JSON.stringify(env),
   },
