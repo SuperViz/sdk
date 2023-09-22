@@ -4,10 +4,7 @@
   "description": "SuperViz SDK",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "src",
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prepare": "husky install",
     "build": "node ./.esbuild/build.js",
