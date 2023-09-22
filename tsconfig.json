@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ES2020",
-    "outDir": "./dist",
+    "outDir": "./lib",
     "preserveWatchOutput": true,
     "emitDeclarationOnly": true,
     "declaration": true,
