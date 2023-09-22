@@ -8,7 +8,7 @@ module.exports = {
   bundle: true,
   target: 'es6',
   format: 'esm',
-  outfile: './dist/index.js',
+  outdir: 'dist',
   define: {
     'process.env': JSON.stringify(env),
   },
