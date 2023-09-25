@@ -5,6 +5,8 @@ import { Annotation } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
+import { PinMode } from './types';
+
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle];
 
@@ -35,22 +37,24 @@ export class CommentsContent extends WebComponentsBaseElement {
       this.selectedAnnotation = uuid;
     };
 
-    return this.annotations
-      .map((annotation: Annotation, index: number) => {
-        return html`
-          <superviz-comments-annotation-pin
-            id=${annotation.uuid}
-            pos=${annotation.position}>
-          </superviz-comments-annotation-pin>
+    return this.annotations.map((annotation: Annotation, index: number) => {
+      return html`
+        <superviz-comments-annotation-pin
+          id=${annotation.uuid}
+          position=${annotation.position}
+          annotation=${JSON.stringify(annotation)}
+          type=${PinMode.SHOW}
+        >
+        </superviz-comments-annotation-pin>
 
-          <superviz-comments-annotation-item
-            annotation=${JSON.stringify(annotation)}
-            selected="${this.selectedAnnotation}"
-            @select-annotation=${selectAnnotation}
-            ?isLastAnnotation=${isLastAnnotation(index)}
-          >
-          </superviz-comments-annotation-item>
-        `;
-      });
+        <superviz-comments-annotation-item
+          annotation=${JSON.stringify(annotation)}
+          selected="${this.selectedAnnotation}"
+          @select-annotation=${selectAnnotation}
+          ?isLastAnnotation=${isLastAnnotation(index)}
+        >
+        </superviz-comments-annotation-item>
+      `;
+    });
   }
 }
