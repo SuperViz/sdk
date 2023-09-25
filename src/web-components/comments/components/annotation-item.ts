@@ -6,6 +6,8 @@ import { Annotation, Comment } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationItemStyle } from '../css';
 
+import { AnnotationFilter } from './types';
+
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationItemStyle];
 
@@ -15,7 +17,9 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare expandComments: boolean;
   declare selected: string;
   declare resolved: boolean;
+  declare shouldShowUndoResolved: boolean;
   declare isLastAnnotation: boolean;
+  declare annotationFilter: string;
 
   static styles = styles;
 
@@ -24,7 +28,9 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     expandComments: { type: Boolean },
     selected: { type: String, reflect: true },
     resolved: { type: Boolean },
+    shouldShowUndoResolved: { type: Boolean },
     isLastAnnotation: { type: Boolean },
+    annotationFilter: { type: String },
   };
 
   protected firstUpdated(): void {
@@ -53,21 +59,59 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   }
 
   protected render() {
+    const filterIsAll = this.annotationFilter === AnnotationFilter.ALL;
+    const filterIsResolved = this.annotationFilter === AnnotationFilter.RESOLVED;
     const replies = this.annotation.comments?.length;
-
     const isSelected = this.selected === this.annotation.uuid;
 
     const annotationClasses = {
       'annotation-item': true,
       'annotation-item--selected': isSelected,
-      hidden: this.resolved,
     };
 
-    const shouldExpandAvatarComments = !this.expandComments && replies > 1 ? 'comment-avatar--expand' : 'hidden';
+    const shouldHiddenAnnotation = {
+      hidden: (this.resolved && filterIsAll) || (!this.resolved && filterIsResolved),
+    };
 
-    const shouldExpandComments = isSelected && this.expandComments ? 'comment-item--expand' : 'hidden';
+    const HrClasses = {
+      'sv-hr': true,
+      hidden: this.isLastAnnotation,
+    };
 
-    const avatarComments = (comment: Comment, index: number) => {
+    const avatarCommentsClasses = {
+      'avatars-comments': true,
+      'comment-avatar--expand': !this.expandComments && replies > 1,
+      hidden: !(!this.expandComments && replies > 1),
+    };
+
+    const commentsClasses = {
+      'comments-container': true,
+      'comment-item--expand': isSelected && this.expandComments,
+      hidden: !(isSelected && this.expandComments),
+    };
+
+    const resolveAnnotation = ({ detail }: CustomEvent) => {
+      const { uuid } = this.annotation;
+      const { resolved, type } = detail;
+      const isResolveAnnotation = type === 'resolve-annotation' && this.annotationFilter === AnnotationFilter.ALL;
+
+      this.resolved = resolved;
+
+      this.emitEvent('resolve-annotation', {
+        uuid,
+        resolved,
+      });
+
+      if (isResolveAnnotation) {
+        this.shouldShowUndoResolved = true;
+      }
+    };
+
+    const hideUndoResolved = () => {
+      this.shouldShowUndoResolved = false;
+    };
+
+    const avatarCommentsTemplate = (comment: Comment, index: number) => {
       if (index === 1) return html``;
 
       const avatarNumber = index;
@@ -79,7 +123,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       `;
     };
 
-    const expandedComments = (comment: Comment, index: number) => {
+    const expandedCommentsTemplate = (comment: Comment, index: number) => {
       if (index === 0) return html``;
 
       return html`
@@ -93,68 +137,57 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       `;
     };
 
-    const resolveAnnotation = ({ detail }: CustomEvent) => {
-      const { uuid } = this.annotation;
-      const { resolved } = detail;
-
-      this.emitEvent('resolve-annotation', {
-        uuid,
-        resolved,
-      });
-
-      this.resolved = resolved;
-    };
-
-    const hideHr = this.isLastAnnotation || this.resolved ? 'hidden' : '';
-
     const annotationResolvedTemplate = () => {
-      if (!this.annotation.resolved) {
-        return html`
+      if (!this.shouldShowUndoResolved) return html``;
+
+      return html`
         <superviz-comments-annotation-resolved
-          ?resolved=${this.resolved}
           @undo-resolve=${resolveAnnotation}
+          @hide=${hideUndoResolved}
+          class=${classMap({ hidden: filterIsResolved })}
         >
         </superviz-comments-annotation-resolved>
       `;
-      }
     };
 
     return html`
       ${annotationResolvedTemplate()}
 
-      <div class=${classMap(annotationClasses)} @click=${() => this.selectAnnotation()}>
-        <div>
-          <superviz-comments-comment-item
-            uuid=${this.annotation.comments?.[0].uuid}
-            annotationId=${this.annotation.uuid}
-            avatar="https://picsum.photos/200/300"
-            username="username"
-            text=${this.annotation.comments?.[0].text}
-            createdAt=${this.annotation.comments?.[0].createdAt}
-            primaryComment
-            resolvable
-            ?resolved=${this.resolved}
-            @resolve-annotation=${resolveAnnotation}
-          ></superviz-comments-comment-item>
+      <div class=${classMap(shouldHiddenAnnotation)}>
+        <div class=${classMap(annotationClasses)} @click=${this.selectAnnotation}>
+          <div>
+            <superviz-comments-comment-item
+              uuid=${this.annotation.comments?.[0].uuid}
+              annotationId=${this.annotation.uuid}
+              avatar="https://picsum.photos/200/300"
+              username="username"
+              text=${this.annotation.comments?.[0].text}
+              createdAt=${this.annotation.comments?.[0].createdAt}
+              primaryComment
+              resolvable
+              ?resolved=${this.resolved}
+              annotationFilter=${this.annotationFilter}
+              @resolve-annotation=${resolveAnnotation}
+            ></superviz-comments-comment-item>
 
-          <div class="avatars-comments ${shouldExpandAvatarComments}">  
-            <div class="avatar-container">
-              ${this.annotation.comments?.map(avatarComments)}
-              <div class="avatar-divs-${replies} replies text text-big sv-gray-500">${replies - 1} replies</div>
+            <div class=${classMap(avatarCommentsClasses)}>  
+              <div class="avatar-container">
+                ${this.annotation.comments?.map(avatarCommentsTemplate)}
+                <div class="avatar-divs-${replies} replies text text-big sv-gray-500">${replies - 1} replies</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="comments-container ${shouldExpandComments}">
-          ${this.annotation.comments?.map(expandedComments)}
-          <superviz-comments-comment-input
-            @create-comment=${this.createComment}
-            eventType="create-comment"
-          ></superviz-comments-comment-input>
+          <div class=${classMap(commentsClasses)}>
+            ${this.annotation.comments?.map(expandedCommentsTemplate)}
+            <superviz-comments-comment-input
+              @create-comment=${this.createComment}
+              eventType="create-comment"
+            ></superviz-comments-comment-input>
+          </div>
         </div>
+        <div class=${classMap(HrClasses)}></div>
       </div>
-
-      <div class="sv-hr ${hideHr}"></div>
     `;
   }
 }

@@ -61,4 +61,15 @@ describe('comments', () => {
 
     expect(element['annotations']).toEqual(annotations);
   });
+
+  test('should set filter', async () => {
+    const filter = 'test';
+    const detail = { filter };
+
+    element['setFilter']({ detail });
+
+    await sleep();
+
+    expect(element['annotationFilter']).toEqual(filter);
+  });
 });

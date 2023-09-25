@@ -3,12 +3,8 @@ import '.';
 
 let element: HTMLElement;
 
-const createElement = async (resolved: boolean, timeToHide = 1000) => {
+const createElement = async (timeToHide = 1000) => {
   const element = document.createElement('superviz-comments-annotation-resolved');
-
-  if (resolved) {
-    element.setAttributeNode(document.createAttribute('resolved'));
-  }
 
   element.setAttribute('timeToHide', timeToHide.toString());
 
@@ -22,28 +18,14 @@ describe('AnnotationResolved', () => {
     document.body.removeChild(element);
   });
 
-  test('when resolved is true, should render', async () => {
-    element = await createElement(true);
-
-    expect(element['resolved']).toBe(true);
-
-    await sleep(1);
+  test('should render', async () => {
+    element = await createElement();
 
     expect(element!.shadowRoot!.querySelector('annotation-resolved')).toBeDefined();
   });
 
-  test('when resolved is false, should not render', async () => {
-    element = await createElement(false);
-
-    expect(element['resolved']).toBeUndefined();
-    expect(element!.shadowRoot!.querySelector('annotation-resolved')).toBeNull();
-  });
-
-  test('when resolved is true and timeToHide is 0, should not render', async () => {
-    element = await createElement(true);
-
-    expect(element['resolved']).toBe(true);
-
+  test('when timeToHide is 0, should not render', async () => {
+    element = await createElement();
     element['timeToHide'] = 0;
 
     await sleep(1);
@@ -51,15 +33,8 @@ describe('AnnotationResolved', () => {
     expect(element!.shadowRoot!.querySelector('annotation-resolved')).toBeNull();
   });
 
-  test('when resolved is true and timeToHide is 10, should render', async () => {
-    element = await createElement(true, 1000);
-    expect(element['resolved']).toBe(true);
-    expect(element!.shadowRoot?.querySelector('div.annotation-resolved')).not.toBeNull();
-  });
-
   test('when elapsed time is 10 seconds, should not render', async () => {
-    element = await createElement(true, 1000);
-    expect(element['resolved']).toBe(true);
+    element = await createElement(1000);
 
     await sleep(1001);
 
@@ -67,8 +42,7 @@ describe('AnnotationResolved', () => {
   });
 
   test('when click undone, cancel should be true and dispatch event undo-resolve', async () => {
-    element = await createElement(true, 1000);
-    expect(element['resolved']).toBe(true);
+    element = await createElement(1000);
     expect(element!.shadowRoot?.querySelector('div.annotation-resolved')).not.toBeNull();
     element['emitEvent'] = jest.fn();
 
@@ -76,10 +50,16 @@ describe('AnnotationResolved', () => {
     undoneBtn.click();
 
     expect(element['isCanceled']).toBe(true);
-    expect(element['emitEvent']).toHaveBeenCalledWith(
-      'undo-resolve',
-      { resolved: false },
-      { bubbles: false, composed: false },
-    );
+
+    const [eventName1, eventData1, eventOptions1] = element['emitEvent'].mock.calls[0];
+    const [eventName2, eventData2, eventOptions2] = element['emitEvent'].mock.calls[1];
+
+    expect(eventName1).toBe('hide');
+    expect(eventData1).toEqual({});
+    expect(eventOptions1).toEqual({ bubbles: false, composed: false });
+
+    expect(eventName2).toBe('undo-resolve');
+    expect(eventData2).toEqual({ type: 'undo-resolve', resolved: false });
+    expect(eventOptions2).toEqual({ bubbles: false, composed: false });
   });
 });
