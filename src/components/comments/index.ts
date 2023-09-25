@@ -295,6 +295,16 @@ export class CommentsComponent extends BaseComponent {
     try {
       const { uuid } = detail;
       await ApiService.resolveAnnotation(config.get('apiUrl'), config.get('apiKey'), uuid);
+
+      const annotations = this.annotations.map((annotation) => {
+        if (annotation.uuid === uuid) {
+          return Object.assign({}, annotation, { resolved: true });
+        }
+
+        return annotation;
+      });
+
+      this.updateAnnotationList(annotations);
     } catch (error) {
       this.logger.log('error when resolve annotation', error);
     }

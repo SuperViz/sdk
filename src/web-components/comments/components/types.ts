@@ -17,3 +17,8 @@ export enum PinMode {
   ADD = 'add',
   SHOW = 'SHOW',
 }
+
+export enum AnnotationFilter {
+  ALL = 'all',
+  RESOLVED = 'resolved',
+}

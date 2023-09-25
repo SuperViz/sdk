@@ -5,7 +5,7 @@ import { Annotation } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
-import { PinMode } from './types';
+import { AnnotationFilter, PinMode } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle];
@@ -15,21 +15,47 @@ export class CommentsContent extends WebComponentsBaseElement {
   constructor() {
     super();
     this.annotations = [];
+    this.annotationsFiltered = [];
   }
 
   static styles = styles;
 
   declare annotations: Annotation[];
   declare selectedAnnotation: string;
+  declare annotationFilter: AnnotationFilter;
+  declare annotationsFiltered: Annotation[];
 
   static properties = {
     annotations: { type: Object },
     selectedAnnotation: { type: String },
+    annotationFilter: { type: String },
+    annotationsFiltered: { type: Object },
   };
+
+  firstUpdated = () => {
+    this.annotationsFiltered = this.updateFilteredAnnotations();
+  };
+
+  updated(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('annotationFilter') || changedProperties.has('annotations')) {
+      this.selectedAnnotation = '';
+      this.annotationsFiltered = this.updateFilteredAnnotations(this.annotationFilter);
+    }
+  }
+
+  private updateFilteredAnnotations(filter = AnnotationFilter.ALL) {
+    if (filter === AnnotationFilter.RESOLVED) {
+      return this.annotations.filter((annotation: Annotation) => {
+        return annotation.resolved === true;
+      });
+    }
+
+    return this.annotations;
+  }
 
   protected render() {
     const isLastAnnotation = (index: number) => {
-      return this.annotations.length === index + 1;
+      return this.annotationsFiltered.length === index + 1;
     };
 
     const selectAnnotation = ({ detail }: CustomEvent) => {
