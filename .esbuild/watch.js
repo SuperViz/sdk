@@ -2,6 +2,7 @@ const baseConfig = require('./config');
 
 const config = Object.assign({}, baseConfig, {
   watch: true,
+  outdir: 'dist',
 });
 
 require('esbuild')
