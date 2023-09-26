@@ -63,6 +63,10 @@ export const annotationItemStyle = css`
     padding-left: 8px;
   }
 
+  .last-reply {
+    padding-left: 14px;
+  }
+
   .avatar img {
     width: 100%;
     height: 100%;
