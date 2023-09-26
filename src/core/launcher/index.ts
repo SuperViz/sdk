@@ -155,6 +155,7 @@ export class Launcher implements DefaultLauncher {
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
     this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
+    this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityChange);
   };
 
   /** Realtime Listeners */
@@ -259,6 +260,22 @@ export class Launcher implements DefaultLauncher {
     if (this.realtime.isLocalParticipantHost) {
       this.publishToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
     }
+  };
+
+  /**
+   * @function onHostAvailabilityChange
+   * @description Callback function that is called when the availability of the host changes.
+   * @param {boolean} isHostAvailable - A boolean indicating whether the host is available or not.
+   * @returns {void}
+   */
+  private onHostAvailabilityChange = (isHostAvailable: boolean): void => {
+    this.logger.log('launcher service @ onHostAvailabilityChange');
+
+    if (isHostAvailable) {
+      this.pubsub.publishEventToClient(RealtimeEvent.REALTIME_HOST_AVAILABLE);
+      return;
+    }
+    this.pubsub.publishEventToClient(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
   };
 }
 
