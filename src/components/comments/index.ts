@@ -12,15 +12,16 @@ export class CommentsComponent extends BaseComponent {
   protected logger: Logger;
   protected element: CommentElement;
   private annotations: Annotation[];
-  private canvasId: string;
   private url: string;
+  private pinAdapter: any;
 
-  constructor(canvasId: string) {
+  constructor(pinAdapter: any) {
     super();
     this.name = 'comments-component';
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
-    this.canvasId = canvasId;
+
+    this.pinAdapter = pinAdapter;
   }
 
   /**
@@ -38,7 +39,6 @@ export class CommentsComponent extends BaseComponent {
 
     this.fetchAnnotations();
     this.addListeners();
-    this.canvasMarkup();
   }
 
   /**
@@ -69,8 +69,20 @@ export class CommentsComponent extends BaseComponent {
     this.element.addEventListener('delete-comment', this.deleteComment);
 
     // Realtime observers
-
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
+
+    // pin adapter observers
+
+    this.pinAdapter.createAnnotationObserver.subscribe((event) => {
+      this.createAnnotation(
+        new CustomEvent('create-annotation', {
+          detail: {
+            text: '',
+            position: event,
+          },
+        }),
+      );
+    });
   }
 
   /**
@@ -354,59 +366,4 @@ export class CommentsComponent extends BaseComponent {
     this.annotations = annotations;
     this.element.updateAnnotations(this.annotations);
   };
-
-  // temporary
-  private canvasMarkup(): void {
-    const canvas = document.getElementById(this.canvasId) as HTMLCanvasElement;
-    document.body.style.position = 'relative';
-    canvas.style.position = 'relative';
-    canvas.style.backgroundColor = 'orange';
-
-    const createMouseElement = () => {
-      const mouseElement = document.createElement('superviz-comments-annotation-pin');
-      mouseElement.setAttribute('type', PinMode.ADD);
-      mouseElement.setAttribute('annotation', JSON.stringify({ x: 0, y: 0 }));
-      document.body.appendChild(mouseElement);
-
-      canvas.style.cursor = 'none';
-
-      return mouseElement;
-    };
-
-    let mouseElement = createMouseElement();
-
-    if (!canvas) return;
-
-    canvas.addEventListener('mousemove', (event: MouseEvent) => {
-      const { x, y } = event;
-
-      if (!mouseElement) {
-        mouseElement = createMouseElement();
-      }
-
-      mouseElement.setAttribute('position', JSON.stringify({ x, y }));
-    });
-
-    canvas.addEventListener('click', (event: MouseEvent) => {
-      const { x, y } = event;
-      const rect = canvas.getBoundingClientRect();
-
-      const xToSave = x - rect.x;
-      const yToSave = y - rect.y;
-
-      console.log('Cordinates to save: ', { x: xToSave, y: yToSave });
-    });
-
-    canvas.addEventListener('mouseout', () => {
-      mouseElement?.remove();
-      mouseElement = null;
-      canvas.style.cursor = 'default';
-    });
-
-    canvas.addEventListener('mouseenter', () => {
-      if (mouseElement) return;
-
-      mouseElement = createMouseElement();
-    });
-  }
 }

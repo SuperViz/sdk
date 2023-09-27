@@ -1,6 +1,7 @@
 import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
+import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import sleep from '../../common/utils/sleep';
@@ -18,12 +19,18 @@ jest.mock('../../services/api', () => ({
   deleteAnnotation: jest.fn().mockImplementation(() => []),
 }));
 
+const DummiePinAdapter = {
+  destroy: jest.fn(),
+  createAnnotationObserver: MOCK_OBSERVER_HELPER,
+};
+
 describe('CommentsComponent', () => {
   let commentsComponent: CommentsComponent;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    commentsComponent = new CommentsComponent();
+
+    commentsComponent = new CommentsComponent(DummiePinAdapter);
 
     commentsComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
@@ -141,7 +148,7 @@ describe('CommentsComponent', () => {
     (ApiService.fetchAnnotation as jest.Mock).mockRejectedValueOnce('internal server error');
 
     commentsComponent.detach();
-    commentsComponent = new CommentsComponent();
+    commentsComponent = new CommentsComponent(DummiePinAdapter);
 
     const spy = jest.spyOn(commentsComponent['logger'], 'log');
 
@@ -161,7 +168,7 @@ describe('CommentsComponent', () => {
 
   test('should update annotation list when fetch annotation is successful', async () => {
     commentsComponent.detach();
-    commentsComponent = new CommentsComponent();
+    commentsComponent = new CommentsComponent(DummiePinAdapter);
     (ApiService.fetchAnnotation as jest.Mock).mockReturnValueOnce([MOCK_ANNOTATION]);
 
     commentsComponent.attach({
