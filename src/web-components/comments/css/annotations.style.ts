@@ -20,4 +20,8 @@ export const annotationsStyle = css`
     width: 288px;
     padding: 8px;
   }
+
+  .hidden {
+    display: none;
+  }
 `;

@@ -1,7 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { Annotation, Comment } from '../../components/comments/types';
+import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
 import { AnnotationFilter } from './components/types';

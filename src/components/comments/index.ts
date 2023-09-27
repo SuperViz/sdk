@@ -120,10 +120,10 @@ export class CommentsComponent extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { text, position } = detail;
+      const { position } = detail;
       const { url } = this;
 
-      const annotation: Annotation = await ApiService.createAnnotations(
+      const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         {
@@ -134,12 +134,18 @@ export class CommentsComponent extends BaseComponent {
         },
       );
 
-      const comment = await this.createComment(annotation.uuid, text);
+      window.document.body.dispatchEvent(new CustomEvent('annotation-created', {
+        detail: {
+          annotation,
+        },
+        composed: true,
+        bubbles: true,
+      }));
 
       this.addAnnotation([
         {
           ...annotation,
-          comments: [comment],
+          comments: [],
         },
       ]);
     } catch (error) {
