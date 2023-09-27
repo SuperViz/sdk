@@ -35,7 +35,7 @@ export class Comments extends WebComponentsBaseElement {
   }
 
   toggle() {
-    this.open = !this.open;
+    this.emitEvent('toggle', {});
   }
 
   setFilter({ detail }) {
@@ -47,6 +47,7 @@ export class Comments extends WebComponentsBaseElement {
     const containerClass = [this.open ? 'container' : 'container-close'].join(' ');
 
     return html`
+      <div class="toggle" @click=${this.toggle}>open / close</div>
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>

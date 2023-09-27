@@ -80,6 +80,13 @@ describe('CommentsComponent', () => {
     expect(document.body.contains(commentsComponent['element'])).toBe(false);
   });
 
+  test('should toggle component', () => {
+    commentsComponent['toggle']();
+    expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
+    commentsComponent['toggle']();
+    expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
+  });
+
   test('should call apiService when fetch annotation', async () => {
     const spy = jest.spyOn(ApiService, 'fetchAnnotation');
 
