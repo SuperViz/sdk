@@ -46,7 +46,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     }
 
     return html`
-      <div class="annotation-pin" style=${`top: ${this.position.y}px; left: ${this.position.x}px;`}>
+      <div class="annotation-pin" style=${`top: ${this.position?.y}px; left: ${this.position?.x}px;`}>
         <div class="annotation-pin__avatar">
           <p class="text text-bold text-big">U</p>
           <!-- <img src="https://picsum.photos/200/300" alt="" /> -->

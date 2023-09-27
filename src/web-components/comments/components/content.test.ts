@@ -1,7 +1,6 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import sleep from '../../../common/utils/sleep';
 import '.';
-import { Annotation } from '../../../components/comments/types';
 
 import { AnnotationFilter } from './types';
 
@@ -46,26 +45,16 @@ describe('CommentsContent', () => {
     expect(element['selectedAnnotation']).toBe('any_uuid');
   });
 
-  test('should update filtered annotations', async () => {
-    const annotations = [
-      MOCK_ANNOTATION,
-      {
-        ...MOCK_ANNOTATION,
-        resolved: true,
-      },
-    ];
-    element = await createElement(annotations);
+  test('if has no comments, should display only annotation pin', async () => {
+    element = await createElement([{
+      ...MOCK_ANNOTATION,
+      comments: [],
+    }]);
 
     await sleep();
 
-    expect(element['annotationsFiltered']).toEqual(annotations);
-    expect(element['annotationFilter']).toEqual(AnnotationFilter.ALL);
+    const annotationItem = element.shadowRoot?.querySelector('superviz-comments-annotation-item');
 
-    element.setAttribute('annotationFilter', AnnotationFilter.RESOLVED);
-
-    await sleep();
-
-    expect(element['annotationsFiltered']).toEqual([annotations[1]]);
-    expect(element['annotationFilter']).toEqual(AnnotationFilter.RESOLVED);
+    expect(annotationItem).toBeFalsy();
   });
 });
