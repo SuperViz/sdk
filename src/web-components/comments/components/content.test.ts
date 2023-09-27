@@ -44,4 +44,17 @@ describe('CommentsContent', () => {
     expect(annotationItem?.getAttribute('selected')).toBe('any_uuid');
     expect(element['selectedAnnotation']).toBe('any_uuid');
   });
+
+  test('if has no comments, should display only annotation pin', async () => {
+    element = await createElement([{
+      ...MOCK_ANNOTATION,
+      comments: [],
+    }]);
+
+    await sleep();
+
+    const annotationItem = element.shadowRoot?.querySelector('superviz-comments-annotation-item');
+
+    expect(annotationItem).toBeFalsy();
+  });
 });

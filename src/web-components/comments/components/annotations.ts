@@ -22,7 +22,7 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
     const { text } = detail;
 
     this.emitEvent('create-comment', {
-      uuid: this.annotation.uuid,
+      uuid: this.annotation?.uuid,
       text,
     });
 
