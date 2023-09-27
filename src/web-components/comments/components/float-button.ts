@@ -11,9 +11,15 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, floatButtonSt
 export class CommentsFloatButton extends WebComponentsBaseElement {
   static styles = styles;
 
+  private toggle() {
+    this.emitEvent('toggle', {});
+  }
+
   protected render() {
-    return html`<button class="float-button">
+    return html` <button @click=${this.toggle} class="float-button">
       <superviz-icon name="comment"></superviz-icon>
+
+      <p class="text text-big text-bold">Comments</p>
     </button>`;
   }
 }

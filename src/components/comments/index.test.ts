@@ -81,9 +81,9 @@ describe('CommentsComponent', () => {
   });
 
   test('should toggle component', () => {
-    commentsComponent['toggle']();
+    commentsComponent['toggleAnnotationSidebar']();
     expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
-    commentsComponent['toggle']();
+    commentsComponent['toggleAnnotationSidebar']();
     expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
   });
 

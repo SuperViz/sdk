@@ -7,13 +7,32 @@ export const floatButtonStyle = css`
     left: 20px;
 
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 38px;
+    height: 38px;
 
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 4px;
+    border: none;
 
-    background-color: orange;
+    background-color: white;
+    box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.2);
+    color: rgb(var(--sv-gray-600));
+    transition: all 300ms;
+    cursor: pointer;
+  }
+
+  button.float-button p {
+    display: none;
+  }
+
+  button.float-button:hover {
+    width: 110px;
+    border-radius: 30px;
+  }
+
+  button.float-button:hover p {
+    display: block;
   }
 `;

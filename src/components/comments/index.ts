@@ -64,7 +64,7 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
-    this.element.addEventListener('toggle', this.toggle);
+    this.button.addEventListener('toggle', this.toggleAnnotationSidebar);
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -97,7 +97,7 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private destroyListeners(): void {
-    this.element.removeEventListener('toggle', this.toggle);
+    this.button.removeEventListener('toggle', this.toggleAnnotationSidebar);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.createAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
@@ -109,7 +109,12 @@ export class CommentsComponent extends BaseComponent {
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
   }
 
-  toggle = (): void => {
+  /**
+   * @function toggleAnnotationSidebar
+   * @description Toggles the annotation sidebar
+   * @returns {void}
+   */
+  private toggleAnnotationSidebar = (): void => {
     if (this.element.hasAttribute('open')) {
       this.element.removeAttribute('open');
       return;
@@ -140,13 +145,15 @@ export class CommentsComponent extends BaseComponent {
         },
       );
 
-      window.document.body.dispatchEvent(new CustomEvent('annotation-created', {
-        detail: {
-          annotation,
-        },
-        composed: true,
-        bubbles: true,
-      }));
+      window.document.body.dispatchEvent(
+        new CustomEvent('annotation-created', {
+          detail: {
+            annotation,
+          },
+          composed: true,
+          bubbles: true,
+        }),
+      );
 
       this.addAnnotation([
         {

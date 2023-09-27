@@ -30,15 +30,15 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = AnnotationFilter.ALL;
   }
 
-  updateAnnotations(data: Annotation[]) {
+  public updateAnnotations(data: Annotation[]) {
     this.annotations = data;
   }
 
-  toggle() {
+  private toggle() {
     this.emitEvent('toggle', {});
   }
 
-  setFilter({ detail }) {
+  private setFilter({ detail }) {
     const { filter } = detail;
     this.annotationFilter = filter;
   }
@@ -47,7 +47,6 @@ export class Comments extends WebComponentsBaseElement {
     const containerClass = [this.open ? 'container' : 'container-close'].join(' ');
 
     return html`
-      <div class="toggle" @click=${this.toggle}>open / close</div>
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
