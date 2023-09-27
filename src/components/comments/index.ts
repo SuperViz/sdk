@@ -2,6 +2,7 @@ import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import type { Comments as CommentElement } from '../../web-components';
+import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
 import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 
@@ -10,7 +11,9 @@ import { Annotation, Comment } from './types';
 export class CommentsComponent extends BaseComponent {
   public name: string;
   protected logger: Logger;
-  protected element: CommentElement;
+  private element: CommentElement;
+  private button: CommentsFloatButton;
+
   private annotations: Annotation[];
   private url: string;
   private pinAdapter: any;
@@ -36,6 +39,9 @@ export class CommentsComponent extends BaseComponent {
     this.element.setAttributeNode(document.createAttribute('open'));
     this.element.setAttribute('comments', JSON.stringify([]));
     document.body.appendChild(this.element);
+
+    this.button = document.createElement('superviz-comments-button') as CommentsFloatButton;
+    document.body.appendChild(this.button);
 
     this.fetchAnnotations();
     this.addListeners();

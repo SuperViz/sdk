@@ -8,3 +8,4 @@ export { annotationItemStyle } from './annotation-item.style';
 export { annotationResolvedStyle } from './annotation-resolved.style';
 export { annotationPinStyles } from './annotation-pin.style';
 export { annotationFilterStyle } from './annotation-filter.style';
+export { floatButtonStyle } from './float-button.style';
