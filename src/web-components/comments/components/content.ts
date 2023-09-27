@@ -15,7 +15,6 @@ export class CommentsContent extends WebComponentsBaseElement {
   constructor() {
     super();
     this.annotations = [];
-    this.annotationsFiltered = [];
   }
 
   static styles = styles;
@@ -23,48 +22,36 @@ export class CommentsContent extends WebComponentsBaseElement {
   declare annotations: Annotation[];
   declare selectedAnnotation: string;
   declare annotationFilter: AnnotationFilter;
-  declare annotationsFiltered: Annotation[];
 
   static properties = {
     annotations: { type: Object },
     selectedAnnotation: { type: String },
     annotationFilter: { type: String },
-    annotationsFiltered: { type: Object },
   };
-
-  firstUpdated = () => {
-    this.annotationsFiltered = this.updateFilteredAnnotations();
-  };
-
-  updated(changedProperties: Map<string | number | symbol, unknown>) {
-    if (changedProperties.has('annotationFilter') || changedProperties.has('annotations')) {
-      this.selectedAnnotation = '';
-      this.annotationsFiltered = this.updateFilteredAnnotations(this.annotationFilter);
-    }
-  }
-
-  private updateFilteredAnnotations(filter = AnnotationFilter.ALL) {
-    if (filter === AnnotationFilter.RESOLVED) {
-      return this.annotations.filter((annotation: Annotation) => {
-        return annotation.resolved === true;
-      });
-    }
-
-    return this.annotations;
-  }
 
   protected render() {
-    const isLastAnnotation = (index: number) => {
-      return this.annotationsFiltered.length === index + 1;
-    };
+    const annotationsUnresolved = this.annotations?.filter((annotation: Annotation) => {
+      return annotation.resolved === false;
+    });
+
+    const annotationsResolved = this.annotations?.filter((annotation: Annotation) => {
+      return annotation.resolved === true;
+    });
 
     const selectAnnotation = ({ detail }: CustomEvent) => {
       const { uuid } = detail;
       this.selectedAnnotation = uuid;
     };
 
-    return this.annotations.map((annotation: Annotation, index: number) => {
-      return html`
+    const isLastAnnotation = (index: number, resolved: boolean) => {
+      if (resolved) return annotationsResolved?.length === index + 1;
+      return annotationsUnresolved?.length === index + 1;
+    };
+
+    const annotationTemplate = (annotation: Annotation, index: number, resolved: boolean) => {
+      const hasComments = annotation.comments.length > 0;
+
+      const annotationPin = html`
         <superviz-comments-annotation-pin
           id=${annotation.uuid}
           position=${annotation.position}
@@ -72,15 +59,35 @@ export class CommentsContent extends WebComponentsBaseElement {
           type=${PinMode.SHOW}
         >
         </superviz-comments-annotation-pin>
-
-        <superviz-comments-annotation-item
-          annotation=${JSON.stringify(annotation)}
-          selected="${this.selectedAnnotation}"
-          @select-annotation=${selectAnnotation}
-          ?isLastAnnotation=${isLastAnnotation(index)}
-        >
-        </superviz-comments-annotation-item>
       `;
-    });
+
+      const annotationComments = hasComments
+        ? html`
+          <superviz-comments-annotation-item
+            annotation=${JSON.stringify(annotation)}
+            selected="${this.selectedAnnotation}"
+            @select-annotation=${selectAnnotation}
+            ?isLastAnnotation=${isLastAnnotation(index, resolved)}
+            annotationFilter=${this.annotationFilter}
+          >
+          </superviz-comments-annotation-item>
+      ` : html``;
+
+      return html`
+        ${annotationPin}
+        ${annotationComments}
+      `;
+    };
+
+    const annotationsUnresolvedTemplate = annotationsUnresolved
+      ?.map((annotation, index) => annotationTemplate(annotation, index, false));
+
+    const annotationsResolvedTemplate = annotationsResolved
+      ?.map((annotation, index) => annotationTemplate(annotation, index, true));
+
+    return html`
+      ${annotationsUnresolvedTemplate}
+      ${annotationsResolvedTemplate}
+    `;
   }
 }

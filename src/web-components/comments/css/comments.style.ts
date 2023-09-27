@@ -25,4 +25,15 @@ export const commentsStyle = css`
     overflow-y: auto;
     overflow-x: hidden;
   }
+
+  .toggle {
+    display: flex;
+    position: fixed;
+    width: 100px;
+    color: rgb(var(--sv-gray-700));
+    background: rgb(var(--sv-white));
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
 `;

@@ -35,6 +35,20 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private getCommentInputContainer = () => this.shadowRoot!.getElementById('comment-input--container') as HTMLDivElement;
   private getSendBtn = () => this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
 
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    if (this.eventType !== 'create-annotation') return;
+    window.document.body.addEventListener('comment-input-focus', () => this.getCommentInput().focus());
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    if (this.eventType !== 'create-annotation') return;
+    window.document.body.removeEventListener('comment-input-focus', () => this.getCommentInput().focus());
+  }
+
   updated(changedProperties: Map<string, any>) {
     if (changedProperties.has('text') && this.text.length > 0) {
       const commentsInput = this.getCommentInput();

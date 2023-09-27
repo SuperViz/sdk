@@ -36,7 +36,6 @@ export class CommentsComponent extends BaseComponent {
     this.url = window.location.href;
 
     this.element = document.createElement('superviz-comments') as CommentElement;
-    this.element.setAttributeNode(document.createAttribute('open'));
     this.element.setAttribute('comments', JSON.stringify([]));
     document.body.appendChild(this.element);
 
@@ -65,6 +64,7 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
+    this.element.addEventListener('toggle', this.toggle);
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -97,6 +97,7 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private destroyListeners(): void {
+    this.element.removeEventListener('toggle', this.toggle);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.createAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
@@ -108,6 +109,15 @@ export class CommentsComponent extends BaseComponent {
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
   }
 
+  toggle = (): void => {
+    if (this.element.hasAttribute('open')) {
+      this.element.removeAttribute('open');
+      return;
+    }
+
+    this.element.setAttribute('open', '');
+  };
+
   /**
    * @function createAnnotation
    * @description Creates a new annotation and comment and adds them to the Comments component
@@ -116,10 +126,10 @@ export class CommentsComponent extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { text, position } = detail;
+      const { position } = detail;
       const { url } = this;
 
-      const annotation: Annotation = await ApiService.createAnnotations(
+      const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         {
@@ -130,12 +140,18 @@ export class CommentsComponent extends BaseComponent {
         },
       );
 
-      const comment = await this.createComment(annotation.uuid, text);
+      window.document.body.dispatchEvent(new CustomEvent('annotation-created', {
+        detail: {
+          annotation,
+        },
+        composed: true,
+        bubbles: true,
+      }));
 
       this.addAnnotation([
         {
           ...annotation,
-          comments: [comment],
+          comments: [],
         },
       ]);
     } catch (error) {
