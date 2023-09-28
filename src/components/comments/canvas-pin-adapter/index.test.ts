@@ -1,3 +1,5 @@
+import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+
 import { CanvasPinAdapter } from '.';
 
 describe('CanvasPinAdapter', () => {
@@ -68,5 +70,40 @@ describe('CanvasPinAdapter', () => {
 
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
     canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+  });
+
+  test('should remove annotation pin', () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['pins'].size).toEqual(1);
+
+    canvasPinAdapter.removeAnnotationPin(MOCK_ANNOTATION.uuid);
+
+    expect(canvasPinAdapter['pins'].size).toEqual(0);
+  });
+
+  test('should not remove annotation pin if it does not exist', () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['pins'].size).toEqual(1);
+
+    canvasPinAdapter.removeAnnotationPin('not_found_uuid');
+
+    expect(canvasPinAdapter['pins'].size).toEqual(1);
+  });
+
+  test('should not render annotations if the adapter is not active', () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(false);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['pins'].size).toEqual(0);
   });
 });

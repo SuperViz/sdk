@@ -25,6 +25,7 @@ const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
   setActive: jest.fn(),
   updateAnnotations: jest.fn(),
+  removeAnnotationPin: jest.fn(),
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
 };
 
@@ -435,6 +436,9 @@ describe('CommentsComponent', () => {
     expect(commentsComponent['annotations'].length).toBe(0);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
+    );
+    expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
+      MOCK_ANNOTATION.uuid,
     );
   });
 

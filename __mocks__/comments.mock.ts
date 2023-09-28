@@ -1,6 +1,10 @@
 export const MOCK_ANNOTATION = {
   uuid: 'any_uuid',
-  position: 'any_position',
+  position: JSON.stringify({
+    x: 100,
+    y: 100,
+    type: 'canvas',
+  }),
   resolved: false,
   comments: [
     {

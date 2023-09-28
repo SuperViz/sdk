@@ -22,6 +22,7 @@ export interface PinAdapter {
   setActive(isOpen: boolean): void;
   destroy(): void;
   updateAnnotations(annotations: Annotation[]): void;
+  removeAnnotationPin(uuid: string): void;
   onPinFixedObserver: Observer;
 }
 

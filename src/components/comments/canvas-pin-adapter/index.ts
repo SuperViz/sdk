@@ -6,16 +6,20 @@ export class CanvasPinAdapter implements PinAdapter {
   private logger: Logger;
   private canvasId: string;
   private canvas: HTMLCanvasElement;
+  private divWrapper: HTMLElement;
   private mouseElement: HTMLElement;
-  public onPinFixedObserver: Observer;
   private isActive: boolean;
   private annotations: Annotation[];
+  private pins: Map<string, HTMLElement>;
+
+  public onPinFixedObserver: Observer;
 
   constructor(canvasId: string) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.isActive = false;
+    this.pins = new Map();
 
     if (!this.canvas) {
       const message = `Canvas with id ${canvasId} not found`;
@@ -25,6 +29,8 @@ export class CanvasPinAdapter implements PinAdapter {
 
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
+    this.divWrapper = this.createDivWrapper();
+    this.annotations = [];
   }
 
   /**
@@ -48,7 +54,8 @@ export class CanvasPinAdapter implements PinAdapter {
 
     if (this.isActive) {
       this.addListeners();
-    } else this.removeListeners();
+      this.renderAnnotationsPins();
+    }
   }
 
   /**
@@ -61,7 +68,25 @@ export class CanvasPinAdapter implements PinAdapter {
     this.logger.log('updateAnnotations', annotations);
 
     this.annotations = annotations;
-    this.renderAnnotations();
+
+    if (!this.isActive) return;
+
+    this.renderAnnotationsPins();
+  }
+
+  /**
+   * @function removeAnnotationPin
+   * @description Removes an annotation pin from the canvas.
+   * @param {string} uuid - The uuid of the annotation to be removed.
+   * @returns {void}
+   * */
+  public removeAnnotationPin(uuid: string): void {
+    const pinElement = this.pins.get(uuid);
+
+    if (!pinElement) return;
+
+    pinElement.remove();
+    this.pins.delete(uuid);
   }
 
   /**
@@ -106,25 +131,51 @@ export class CanvasPinAdapter implements PinAdapter {
   }
 
   /**
-   * @function renderAnnotations
+   * @function createDivWrapper
+   * @description Creates a div wrapper for the pins.
+   * @returns {HTMLElement} The newly created div wrapper.
+   * */
+  private createDivWrapper(): HTMLElement {
+    const canvasRect = this.canvas.getBoundingClientRect();
+    const divWrapper = document.createElement('div');
+
+    this.canvas.parentElement.style.position = 'relative';
+
+    divWrapper.style.position = 'absolute';
+    divWrapper.style.top = `${canvasRect.top}px`;
+    divWrapper.style.left = `${canvasRect.left}px`;
+    divWrapper.style.width = `${canvasRect.width}px`;
+    divWrapper.style.height = `${canvasRect.height}px`;
+    divWrapper.style.pointerEvents = 'none';
+
+    this.canvas.parentElement.appendChild(divWrapper);
+
+    return divWrapper;
+  }
+
+  /**
+   * @function renderAnnotationsPins
    * @description Renders the annotations on the canvas.
    * @returns {void}
    */
-  private renderAnnotations(): void {
+  private renderAnnotationsPins(): void {
     this.annotations.forEach((annotation) => {
       const position = JSON.parse(annotation.position) as PinCordinates;
 
-      if (position.type !== 'canvas' || annotation.resolved) return;
+      if (position.type !== 'canvas' || annotation.resolved || this.pins.has(annotation.uuid)) {
+        return;
+      }
 
       const { x, y } = position;
 
-      const rect = this.canvas.getBoundingClientRect();
-      const mouseElement = document.createElement('superviz-comments-annotation-pin');
-      mouseElement.setAttribute('type', PinMode.SHOW);
-      mouseElement.setAttribute('annotation', JSON.stringify(annotation));
-      mouseElement.setAttribute('position', JSON.stringify({ x: x + rect.x, y: y + rect.y }));
+      const pinElement = document.createElement('superviz-comments-annotation-pin');
+      pinElement.setAttribute('type', PinMode.SHOW);
+      pinElement.setAttribute('annotation', JSON.stringify(annotation));
+      pinElement.setAttribute('position', JSON.stringify({ x, y }));
+      pinElement.style.pointerEvents = 'auto';
 
-      document.body.appendChild(mouseElement);
+      this.divWrapper.appendChild(pinElement);
+      this.pins.set(annotation.uuid, pinElement);
     });
   }
 
