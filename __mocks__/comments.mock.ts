@@ -2,6 +2,9 @@ export const MOCK_ANNOTATION = {
   uuid: 'any_uuid',
   position: 'any_position',
   resolved: false,
+  waterMark: {
+    ALL: 'all',
+  },
   comments: [
     {
       uuid: 'any_uuid',

@@ -1,6 +1,7 @@
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
+import { WaterMark } from '../../services/video-conference-manager/types';
 import type { Comments as CommentElement } from '../../web-components';
 import { BaseComponent } from '../base';
 
@@ -34,6 +35,7 @@ export class CommentsComponent extends BaseComponent {
     document.body.appendChild(this.element);
 
     this.fetchAnnotations();
+    this.waterMarkState();
     this.addListeners();
   }
 
@@ -282,6 +284,26 @@ export class CommentsComponent extends BaseComponent {
       this.element.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
+    }
+  }
+
+  /**
+   * @function waterMarkState
+   * @description Fetch waterMarkState from the API if must be shown
+   * @returns {Promise<void>}
+   */
+  private async waterMarkState(): Promise<void> {
+    try {
+      const dataWaterMark: WaterMark = await ApiService.fetchWaterMark(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+      );
+      const waterMark = [WaterMark.ALL, WaterMark.POWERED_BY, WaterMark.POWERED_BY]
+        .includes(dataWaterMark);
+
+      this.element.waterMarkStatus(waterMark);
+    } catch (error) {
+      this.logger.log('error when fetching waterMark', error);
     }
   }
 

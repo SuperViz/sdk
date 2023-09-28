@@ -7,3 +7,4 @@ export { commentInputStyle } from './comment-input.style';
 export { annotationItemStyle } from './annotation-item.style';
 export { annotationResolvedStyle } from './annotation-resolved.style';
 export { annotationFilterStyle } from './annotation-filter.style';
+export { poweredByStyle } from './powered-by.style';

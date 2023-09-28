@@ -10,6 +10,7 @@ import { CommentsComponent } from './index';
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
+  fetchWaterMark: jest.fn().mockImplementation((): any => MOCK_ANNOTATION.waterMark),
   createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
   createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
@@ -102,6 +103,23 @@ describe('CommentsComponent', () => {
       url: expect.any(String),
       userId: expect.any(String),
       position: expect.any(String),
+    });
+  });
+
+  describe('waterMarkState', () => {
+    test('should call apiServiceapiService fetchWaterMark and send to element the waterMark status to commentsComponent', async () => {
+      const spy = jest.spyOn(ApiService, 'fetchWaterMark');
+      const waterMark = { ALL: 'all' };
+
+      expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey);
+
+      const response = await ApiService.fetchWaterMark(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey);
+      expect(response).toEqual(waterMark);
+
+      commentsComponent['element'].waterMarkStatus = jest.fn();
+      await commentsComponent['element'].waterMarkStatus(!!waterMark);
+
+      expect(commentsComponent['element'].waterMarkStatus).toHaveBeenCalledWith(true);
     });
   });
 

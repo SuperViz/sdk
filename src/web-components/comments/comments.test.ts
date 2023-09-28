@@ -72,4 +72,13 @@ describe('comments', () => {
 
     expect(element['annotationFilter']).toEqual(filter);
   });
+  test('should shown or not water mark', async () => {
+    const waterMark = true;
+
+    element['waterMarkStatus'](waterMark);
+
+    await sleep();
+
+    expect(element['waterMarkStatus']).toBe(true);
+  });
 });

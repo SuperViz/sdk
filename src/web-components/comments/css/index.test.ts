@@ -4,6 +4,7 @@ import { annotationsStyle } from './annotations.style';
 import { commentInputStyle } from './comment-input.style';
 import { commentItemStyle } from './comment-item.style';
 import { contentStyle } from './content.style';
+import { poweredByStyle } from './powered-by.style';
 import { topbarStyle } from './topbar.style';
 
 import * as cssStyles from '.';
@@ -17,6 +18,8 @@ describe('css', () => {
   test('should be export CommentsContent', () => {
     expect(cssStyles.contentStyle).toBeDefined();
     expect(cssStyles.contentStyle).toBe(contentStyle);
+    expect(cssStyles.poweredByStyle).toBeDefined();
+    expect(cssStyles.poweredByStyle).toBe(poweredByStyle);
   });
 
   test('should be export CommentsCommentItem', () => {
