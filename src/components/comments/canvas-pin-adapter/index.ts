@@ -1,6 +1,6 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, PinAdapter, PinCordinates } from '../types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
 export class CanvasPinAdapter implements PinAdapter {
   private logger: Logger;
@@ -55,7 +55,11 @@ export class CanvasPinAdapter implements PinAdapter {
     if (this.isActive) {
       this.addListeners();
       this.renderAnnotationsPins();
+      return;
     }
+
+    this.removeAnnotationsPins();
+    this.removeListeners();
   }
 
   /**
@@ -185,7 +189,7 @@ export class CanvasPinAdapter implements PinAdapter {
    */
   private renderAnnotationsPins(): void {
     this.annotations.forEach((annotation) => {
-      const position = JSON.parse(annotation.position) as PinCordinates;
+      const position = JSON.parse(annotation.position) as PinCoordinates;
 
       if (position.type !== 'canvas' || annotation.resolved || this.pins.has(annotation.uuid)) {
         return;
@@ -202,6 +206,14 @@ export class CanvasPinAdapter implements PinAdapter {
       this.divWrapper.appendChild(pinElement);
       this.pins.set(annotation.uuid, pinElement);
     });
+  }
+
+  private removeAnnotationsPins(): void {
+    this.pins.forEach((pinElement) => {
+      pinElement.remove();
+    });
+
+    this.pins.clear();
   }
 
   /** Callbacks  */
