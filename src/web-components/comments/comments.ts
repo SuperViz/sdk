@@ -6,6 +6,7 @@ import { WebComponentsBase } from '../base';
 
 import { AnnotationFilter } from './components/types';
 import { commentsStyle, poweredByStyle } from './css/index';
+import { waterMarkElementObserver } from './utils/watermark';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentsStyle, poweredByStyle];
@@ -56,71 +57,9 @@ export class Comments extends WebComponentsBaseElement {
       const supervizCommentsDiv = this.shadowRoot.querySelector('#superviz-comments');
 
       if (supervizCommentsDiv && this.waterMarkState) {
-        this.waterMarkElementObserver();
+        waterMarkElementObserver(this.shadowRoot);
       }
     });
-  }
-
-  waterMarkElementObserver() {
-    const superVizCommentsId = this.shadowRoot.querySelector('#superviz-comments');
-    if (superVizCommentsId) {
-      const options = {
-        childList: true,
-        attributes: true,
-        characterData: true,
-        subtree: true,
-      };
-
-      const superVizCommentsIdobserver = new MutationObserver((mutationsList, observer) => {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const mutation of mutationsList) {
-          const supervizCommentsDiv = this.shadowRoot.querySelector('#superviz-comments');
-
-          if (supervizCommentsDiv && supervizCommentsDiv.contains(mutation.target)) {
-            observer.disconnect();
-            this.reloadWaterMarkContent();
-          }
-        }
-      });
-
-      superVizCommentsIdobserver.observe(superVizCommentsId, options);
-    }
-  }
-
-  reloadWaterMarkContent() {
-    const poweredByFooterId = this.shadowRoot.querySelector('#poweredby-footer');
-    if (poweredByFooterId) {
-      poweredByFooterId.remove();
-    }
-    const divPoweredByFooter = document.createElement('div');
-    divPoweredByFooter.id = 'poweredby-footer';
-    divPoweredByFooter.className = 'footer';
-
-    const divPoweredBy = document.createElement('div');
-    divPoweredBy.className = 'powered-by powered-by--horizontal';
-
-    const link = document.createElement('a');
-    link.href = 'https://superviz.com/';
-    link.target = '_blank';
-    link.className = 'link';
-
-    const divText = document.createElement('div');
-    divText.textContent = 'Powered by';
-
-    const img = document.createElement('img');
-    img.width = 48;
-    img.height = 8.86;
-    img.src = 'https://production.cdn.superviz.com/static/superviz-gray-logo.svg';
-
-    divPoweredBy.appendChild(link);
-    link.appendChild(divText);
-    divText.appendChild(img);
-    divPoweredByFooter.appendChild(divPoweredBy);
-
-    const supervizCommentsDiv = this.shadowRoot.getElementById('superviz-comments');
-    supervizCommentsDiv.appendChild(divPoweredByFooter);
-
-    this.waterMarkElementObserver();
   }
 
   protected render() {
