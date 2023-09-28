@@ -13,6 +13,7 @@ describe('CanvasPinAdapter', () => {
 
   test('should create a new instance of CanvasPinAdapter', () => {
     const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
     expect(canvasPinAdapter).toBeInstanceOf(CanvasPinAdapter);
   });
 
@@ -24,6 +25,7 @@ describe('CanvasPinAdapter', () => {
 
   test('should add event listeners to the canvas element', () => {
     const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
     const addEventListenerSpy = jest.spyOn(canvasPinAdapter['canvas'], 'addEventListener');
     canvasPinAdapter['addListeners']();
     expect(addEventListenerSpy).toHaveBeenCalledTimes(4);
@@ -41,6 +43,7 @@ describe('CanvasPinAdapter', () => {
 
   test('when mouse enters canvas, should create a new mouse element', () => {
     const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
     const mock = jest.fn().mockImplementation(() => document.createElement('div'));
     canvasPinAdapter['createMouseElement'] = mock;
 
@@ -51,6 +54,7 @@ describe('CanvasPinAdapter', () => {
 
   test('when mouse leaves canvas, should remove the mouse element', () => {
     const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
 
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseout'));
@@ -60,24 +64,9 @@ describe('CanvasPinAdapter', () => {
 
   test('when mouse clicks canvas', () => {
     const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
 
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
     canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
-  });
-
-  test('when mouse moves on canvas, should move the mouse element', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
-
-    canvasPinAdapter['createMouseElement'] = jest.fn().mockImplementation(() => {
-      const element = document.createElement('div');
-      element.setAttribute('position', JSON.stringify({ x: 0, y: 0 }));
-
-      return element;
-    });
-
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    canvasPinAdapter['onMouseMove']({ x: 100, y: 100 } as unknown as MouseEvent);
-
-    console.log(canvasPinAdapter['mouseElement'].attributes);
   });
 });

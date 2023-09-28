@@ -7,6 +7,8 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 
+import { PinAdapter } from './types';
+
 import { CommentsComponent } from './index';
 
 jest.mock('../../services/api', () => ({
@@ -19,8 +21,9 @@ jest.mock('../../services/api', () => ({
   deleteAnnotation: jest.fn().mockImplementation(() => []),
 }));
 
-const DummiePinAdapter = {
+const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
+  setActive: jest.fn(),
   createAnnotationObserver: MOCK_OBSERVER_HELPER,
 };
 

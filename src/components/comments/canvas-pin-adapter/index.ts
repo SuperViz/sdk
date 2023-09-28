@@ -1,17 +1,20 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
+import { PinAdapter } from '../types';
 
-export class CanvasPinAdapter {
+export class CanvasPinAdapter implements PinAdapter {
   private logger: Logger;
   private canvasId: string;
   private canvas: HTMLCanvasElement;
   private mouseElement: HTMLElement;
-  private createAnnotationObserver: Observer;
+  public createAnnotationObserver: Observer;
+  private isActive: boolean;
 
   constructor(canvasId: string) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    this.isActive = false;
 
     if (!this.canvas) {
       const message = `Canvas with id ${canvasId} not found`;
@@ -20,7 +23,6 @@ export class CanvasPinAdapter {
     }
 
     document.body.style.position = 'relative';
-    this.addListeners();
     this.createAnnotationObserver = new Observer({ logger: this.logger });
   }
 
@@ -32,6 +34,15 @@ export class CanvasPinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.mouseElement = null;
+  }
+
+  public setActive(isOpen: boolean): void {
+    this.isActive = isOpen;
+    this.canvas.style.cursor = isOpen ? 'none' : 'default';
+
+    if (this.isActive) {
+      this.addListeners();
+    } else this.removeListeners();
   }
 
   /**

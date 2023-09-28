@@ -6,19 +6,19 @@ import { CommentsFloatButton } from '../../web-components/comments/components/fl
 import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 
-import { Annotation, Comment } from './types';
+import { Annotation, Comment, PinAdapter } from './types';
 
 export class CommentsComponent extends BaseComponent {
   public name: string;
   protected logger: Logger;
   private element: CommentElement;
   private button: CommentsFloatButton;
-
+  private sidebarOpen: boolean = false;
   private annotations: Annotation[];
   private url: string;
-  private pinAdapter: any;
+  private pinAdapter: PinAdapter;
 
-  constructor(pinAdapter: any) {
+  constructor(pinAdapter: PinAdapter) {
     super();
     this.name = 'comments-component';
     this.logger = new Logger('@superviz/sdk/comments-component');
@@ -56,6 +56,7 @@ export class CommentsComponent extends BaseComponent {
 
     document.body.removeChild(this.element);
     this.element = undefined;
+    this.pinAdapter.destroy();
   }
 
   /**
@@ -115,12 +116,9 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private toggleAnnotationSidebar = (): void => {
-    if (this.element.hasAttribute('open')) {
-      this.element.removeAttribute('open');
-      return;
-    }
-
-    this.element.setAttribute('open', '');
+    this.element.toggleAttribute('open');
+    this.sidebarOpen = this.element.hasAttribute('open');
+    this.pinAdapter.setActive(this.sidebarOpen);
   };
 
   /**
