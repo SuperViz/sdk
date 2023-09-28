@@ -21,6 +21,7 @@ export type Comment = {
 export interface PinAdapter {
   setActive(isOpen: boolean): void;
   destroy(): void;
+  updateAnnotations(annotations: Annotation[]): void;
   onPinFixedObserver: Observer;
 }
 

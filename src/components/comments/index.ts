@@ -326,6 +326,7 @@ export class CommentsComponent extends BaseComponent {
 
       this.annotations = annotations;
       this.element.updateAnnotations(this.annotations);
+      this.pinAdapter.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
     }
@@ -395,5 +396,6 @@ export class CommentsComponent extends BaseComponent {
   private onAnnotationListUpdate = (annotations: Annotation[]): void => {
     this.annotations = annotations;
     this.element.updateAnnotations(this.annotations);
+    this.pinAdapter.updateAnnotations(this.annotations);
   };
 }

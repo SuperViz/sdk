@@ -24,6 +24,7 @@ jest.mock('../../services/api', () => ({
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
   setActive: jest.fn(),
+  updateAnnotations: jest.fn(),
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
 };
 
@@ -458,6 +459,10 @@ describe('CommentsComponent', () => {
   test('should update annotations list on component when annotations are updated on realtime', async () => {
     commentsComponent['onAnnotationListUpdate']([MOCK_ANNOTATION]);
 
+    expect(commentsComponent['annotations']).toEqual([MOCK_ANNOTATION]);
     expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalledWith([MOCK_ANNOTATION]);
+    expect(commentsComponent['pinAdapter'].updateAnnotations).toHaveBeenCalledWith([
+      MOCK_ANNOTATION,
+    ]);
   });
 });
