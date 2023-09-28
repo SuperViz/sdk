@@ -26,7 +26,7 @@ export interface PinAdapter {
   onPinFixedObserver: Observer;
 }
 
-export interface PinCordinates {
+export interface PinCoordinates {
   x: number;
   y: number;
   type: 'canvas';
