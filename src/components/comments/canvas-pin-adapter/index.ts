@@ -215,7 +215,7 @@ export class CanvasPinAdapter implements PinAdapter {
    */
   private onClick = (event: MouseEvent): void => {
     const { x, y } = event;
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this.divWrapper.getBoundingClientRect();
 
     const xToSave = x - rect.x;
     const yToSave = y - rect.y;
