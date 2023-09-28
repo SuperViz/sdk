@@ -7,7 +7,7 @@ export class CanvasPinAdapter implements PinAdapter {
   private canvasId: string;
   private canvas: HTMLCanvasElement;
   private mouseElement: HTMLElement;
-  public createAnnotationObserver: Observer;
+  public onPinFixedObserver: Observer;
   private isActive: boolean;
 
   constructor(canvasId: string) {
@@ -23,7 +23,7 @@ export class CanvasPinAdapter implements PinAdapter {
     }
 
     document.body.style.position = 'relative';
-    this.createAnnotationObserver = new Observer({ logger: this.logger });
+    this.onPinFixedObserver = new Observer({ logger: this.logger });
   }
 
   /**
@@ -102,7 +102,7 @@ export class CanvasPinAdapter implements PinAdapter {
     const xToSave = x - rect.x;
     const yToSave = y - rect.y;
 
-    this.createAnnotationObserver.publish({
+    this.onPinFixedObserver.publish({
       x: xToSave,
       y: yToSave,
       type: 'canvas',

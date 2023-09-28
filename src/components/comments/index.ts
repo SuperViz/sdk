@@ -3,10 +3,9 @@ import ApiService from '../../services/api';
 import config from '../../services/config';
 import type { Comments as CommentElement } from '../../web-components';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
-import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 
-import { Annotation, Comment, PinAdapter } from './types';
+import { Annotation, Comment, PinAdapter, PinCordinates } from './types';
 
 export class CommentsComponent extends BaseComponent {
   public name: string;
@@ -65,7 +64,11 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
+    // Button observers
     this.button.addEventListener('toggle', this.toggleAnnotationSidebar);
+
+    // Comments component observers
+    this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -79,17 +82,7 @@ export class CommentsComponent extends BaseComponent {
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
 
     // pin adapter observers
-
-    this.pinAdapter.createAnnotationObserver.subscribe((event) => {
-      this.createAnnotation(
-        new CustomEvent('create-annotation', {
-          detail: {
-            text: '',
-            position: event,
-          },
-        }),
-      );
-    });
+    this.pinAdapter.onPinFixedObserver.subscribe(this.onFixedPin);
   }
 
   /**
@@ -98,17 +91,35 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private destroyListeners(): void {
+    // Button observers
     this.button.removeEventListener('toggle', this.toggleAnnotationSidebar);
+
+    // Comments component observers
+    this.element.removeEventListener('toggle', this.toggleAnnotationSidebar);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
-    this.element.removeEventListener('resolve-annotation', this.createAnnotation);
+    this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
       this.createComment(detail.uuid, detail.text, true);
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
 
+    // Realtime observers
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
+
+    // pin adapter observers
+    this.pinAdapter.onPinFixedObserver.unsubscribe(this.onFixedPin);
   }
+
+  private onFixedPin = (event: PinCordinates): void => {
+    document.body.dispatchEvent(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: event,
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
 
   /**
    * @function toggleAnnotationSidebar
@@ -129,7 +140,7 @@ export class CommentsComponent extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { position } = detail;
+      const { position, text } = detail;
       const { url } = this;
 
       const annotation = await ApiService.createAnnotations(
@@ -143,20 +154,12 @@ export class CommentsComponent extends BaseComponent {
         },
       );
 
-      window.document.body.dispatchEvent(
-        new CustomEvent('annotation-created', {
-          detail: {
-            annotation,
-          },
-          composed: true,
-          bubbles: true,
-        }),
-      );
+      const comment = await this.createComment(annotation.uuid, text);
 
       this.addAnnotation([
         {
           ...annotation,
-          comments: [],
+          comments: [comment],
         },
       ]);
     } catch (error) {

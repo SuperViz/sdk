@@ -19,32 +19,31 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
   declare annotation: Annotation;
 
   private createComment({ detail }: CustomEvent) {
-    const { text } = detail;
-
-    this.emitEvent('create-comment', {
-      uuid: this.annotation?.uuid,
-      text,
-    });
-
-    this.annotation = undefined;
+    this.emitEvent('create-annotation', detail);
   }
 
-  private setAnnotation = async ({ detail }: CustomEvent) => {
-    this.annotation = detail.annotation;
+  private prepareToCreateAnnotation = async ({ detail }: CustomEvent) => {
+    this.annotation = { ...detail };
 
     await this.updateComplete;
 
-    this.emitEvent('comment-input-focus', {});
+    this.emitEvent('comment-input-focus', detail);
   };
 
   connectedCallback(): void {
     super.connectedCallback();
-    window.document.body.addEventListener('annotation-created', this.setAnnotation);
+    window.document.body.addEventListener(
+      'prepare-to-create-annotation',
+      this.prepareToCreateAnnotation,
+    );
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    window.document.body.removeEventListener('annotation-created', this.setAnnotation);
+    window.document.body.removeEventListener(
+      'prepare-to-create-annotation',
+      this.prepareToCreateAnnotation,
+    );
   }
 
   protected render() {
@@ -55,9 +54,11 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
 
     return html`
       <div class="annotations">
-        <span class="text text-big text-bold annotations--add-comment-btn">Click anywhere to add a comment</span>
+        <span class="text text-big text-bold annotations--add-comment-btn"
+          >Click anywhere to add a comment</span
+        >
         <div class=${classMap(commentInputClasses)}>
-          <superviz-comments-comment-input 
+          <superviz-comments-comment-input
             @create-annotation=${this.createComment}
             eventType="create-annotation"
           >

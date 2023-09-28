@@ -1,6 +1,7 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { PinCordinates } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 
@@ -9,18 +10,19 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputS
 
 @customElement('superviz-comments-comment-input')
 export class CommentsCommentInput extends WebComponentsBaseElement {
+  declare eventType: string;
+  declare text: string;
+  declare btnActive: boolean;
+  declare editable: boolean;
+  declare commentsInput: HTMLTextAreaElement;
+
+  private pinCordinates: PinCordinates | null = null;
+
   constructor() {
     super();
     this.btnActive = false;
     this.text = '';
   }
-
-  declare eventType: string;
-  declare text: string;
-  declare btnActive: boolean;
-  declare editable: boolean;
-
-  declare commentsInput: HTMLTextAreaElement;
 
   static styles = styles;
 
@@ -31,22 +33,36 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     editable: { type: Boolean },
   };
 
-  private getCommentInput = () => this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
-  private getCommentInputContainer = () => this.shadowRoot!.getElementById('comment-input--container') as HTMLDivElement;
-  private getSendBtn = () => this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+  private getCommentInput = () => {
+    return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+  };
+
+  private getCommentInputContainer = () => {
+    return this.shadowRoot!.getElementById('comment-input--container') as HTMLDivElement;
+  };
+
+  private getSendBtn = () => {
+    return this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+  };
+
+  private commentInputFocus = ({ detail }: CustomEvent) => {
+    this.pinCordinates = detail;
+    this.getCommentInput().focus();
+  };
 
   connectedCallback(): void {
     super.connectedCallback();
 
     if (this.eventType !== 'create-annotation') return;
-    window.document.body.addEventListener('comment-input-focus', () => this.getCommentInput().focus());
+
+    window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-
     if (this.eventType !== 'create-annotation') return;
-    window.document.body.removeEventListener('comment-input-focus', () => this.getCommentInput().focus());
+
+    window.document.body.removeEventListener('comment-input-focus', this.commentInputFocus);
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -88,13 +104,21 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     this.emitEvent(
       this.eventType,
-      { text },
+      {
+        text,
+        position: {
+          x: this.pinCordinates?.x ?? null,
+          y: this.pinCordinates?.y ?? null,
+          type: this.pinCordinates?.type ?? null,
+        },
+      },
       {
         composed: false,
         bubbles: false,
       },
     );
 
+    this.pinCordinates = null;
     input.value = '';
     sendBtn.disabled = true;
     this.updateHeight();
@@ -109,7 +133,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       if (!this.editable) return;
 
       return html`
-        <button id="close" @click=${() => this.closeEditMode()} class="icon-button icon-button--medium icon-button--clickable" @click=${this.send}>
+        <button
+          id="close"
+          @click=${() => this.closeEditMode()}
+          class="icon-button icon-button--medium icon-button--clickable"
+          @click=${this.send}
+        >
           <superviz-icon name="close" size="md"></superviz-icon>
         </button>
         <button id="confirm" class="comment-input--send-btn" disabled @click=${this.send}>
@@ -131,7 +160,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return html`
       <div class="comment-input">
         <div id="comment-input--container">
-          <textarea id="comment-input--textarea" placeholder="Add comment..." @input=${this.updateHeight} wrap></textarea>
+          <textarea
+            id="comment-input--textarea"
+            placeholder="Add comment..."
+            @input=${this.updateHeight}
+          ></textarea>
         </div>
         <div class="sv-hr"></div>
         <div class="comment-input--options">
@@ -141,11 +174,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             </button>
           </div>
           <div class="comment-input-options">
-            ${commentInputOptions()}
-            ${commentInputEditableOptions()}
+            ${commentInputOptions()} ${commentInputEditableOptions()}
           </div>
         </div>
-      </div> 
+      </div>
     `;
   }
 }

@@ -21,5 +21,11 @@ export type Comment = {
 export interface PinAdapter {
   setActive(isOpen: boolean): void;
   destroy(): void;
-  createAnnotationObserver: Observer;
+  onPinFixedObserver: Observer;
+}
+
+export interface PinCordinates {
+  x: number;
+  y: number;
+  type: 'canvas';
 }

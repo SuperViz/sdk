@@ -15,54 +15,67 @@ describe('CommentsAnnotations', () => {
   });
 
   test('renders the add comment button', async () => {
-    element['annotation'] = { uuid: 'test' };
-    const button = element.shadowRoot!.querySelector('.annotations--add-comment-btn') as HTMLSpanElement;
+    const button = element.shadowRoot!.querySelector(
+      '.annotations--add-comment-btn',
+    ) as HTMLSpanElement;
+
     expect(button).toBeDefined();
     expect(button.textContent).toEqual('Click anywhere to add a comment');
   });
 
   test('renders the comment input', async () => {
-    const commentInput = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
+    const commentInput = element.shadowRoot!.querySelector(
+      'superviz-comments-comment-input',
+    ) as HTMLElement;
     expect(commentInput).toBeDefined();
   });
 
   test('emits an event when the comment input is submitted', async () => {
-    element['annotation'] = { uuid: 'test' };
-    const commentInput = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
+    const commentInput = element.shadowRoot!.querySelector(
+      'superviz-comments-comment-input',
+    ) as HTMLElement;
 
     const spy = jest.fn();
-    element.addEventListener('create-comment', spy);
-    commentInput.dispatchEvent(new CustomEvent('create-annotation', {
-      detail: {
-        text: 'test',
-      },
-    }));
+    element.addEventListener('create-annotation', spy);
+
+    commentInput.dispatchEvent(
+      new CustomEvent('create-annotation', {
+        detail: {
+          text: 'test',
+        },
+      }),
+    );
 
     expect(spy).toHaveBeenCalledTimes(1);
 
-    element.removeEventListener('create-annotation', spy);
+    element.removeEventListener('create-comment', spy);
   });
 
-  test('should listen event annotation-created', async () => {
+  test('should listen event prepare-to-create-annotation', async () => {
     const spy = jest.fn();
-    window.document.body.addEventListener('annotation-created', spy);
+    window.document.body.addEventListener('prepare-to-create-annotation', spy);
     element['emitEvent'] = jest.fn();
 
-    window.document.body.dispatchEvent(new CustomEvent('annotation-created', {
-      detail: {
-        annotation: {
-          uuid: 'annotation creation test',
+    window.document.body.dispatchEvent(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: {
+          x: 100,
+          y: 100,
+          type: 'canvas',
         },
-      },
-      composed: true,
-      bubbles: true,
-    }));
+        composed: true,
+        bubbles: true,
+      }),
+    );
 
     await sleep(1000);
 
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(element['annotation']).toEqual({ uuid: 'annotation creation test' });
     expect(element['emitEvent']).toHaveBeenCalledTimes(1);
-    expect(element['emitEvent']).toHaveBeenCalledWith('comment-input-focus', {});
+    expect(element['emitEvent']).toHaveBeenCalledWith('comment-input-focus', {
+      x: 100,
+      y: 100,
+      type: 'canvas',
+    });
   });
 });

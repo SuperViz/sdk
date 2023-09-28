@@ -51,43 +51,30 @@ export class CommentsContent extends WebComponentsBaseElement {
     const annotationTemplate = (annotation: Annotation, index: number, resolved: boolean) => {
       const hasComments = annotation.comments.length > 0;
 
-      const annotationPin = html`
-        <superviz-comments-annotation-pin
-          id=${annotation.uuid}
-          position=${annotation.position}
-          annotation=${JSON.stringify(annotation)}
-          type=${PinMode.SHOW}
-        >
-        </superviz-comments-annotation-pin>
-      `;
-
       const annotationComments = hasComments
         ? html`
-          <superviz-comments-annotation-item
-            annotation=${JSON.stringify(annotation)}
-            selected="${this.selectedAnnotation}"
-            @select-annotation=${selectAnnotation}
-            ?isLastAnnotation=${isLastAnnotation(index, resolved)}
-            annotationFilter=${this.annotationFilter}
-          >
-          </superviz-comments-annotation-item>
-      ` : html``;
+            <superviz-comments-annotation-item
+              annotation=${JSON.stringify(annotation)}
+              selected="${this.selectedAnnotation}"
+              @select-annotation=${selectAnnotation}
+              ?isLastAnnotation=${isLastAnnotation(index, resolved)}
+              annotationFilter=${this.annotationFilter}
+            >
+            </superviz-comments-annotation-item>
+          `
+        : html``;
 
-      return html`
-        ${annotationPin}
-        ${annotationComments}
-      `;
+      return html` ${annotationComments} `;
     };
 
-    const annotationsUnresolvedTemplate = annotationsUnresolved
-      ?.map((annotation, index) => annotationTemplate(annotation, index, false));
+    const annotationsUnresolvedTemplate = annotationsUnresolved?.map((annotation, index) => {
+      return annotationTemplate(annotation, index, false);
+    });
 
-    const annotationsResolvedTemplate = annotationsResolved
-      ?.map((annotation, index) => annotationTemplate(annotation, index, true));
+    const annotationsResolvedTemplate = annotationsResolved?.map((annotation, index) => {
+      return annotationTemplate(annotation, index, true);
+    });
 
-    return html`
-      ${annotationsUnresolvedTemplate}
-      ${annotationsResolvedTemplate}
-    `;
+    return html` ${annotationsUnresolvedTemplate} ${annotationsResolvedTemplate} `;
   }
 }

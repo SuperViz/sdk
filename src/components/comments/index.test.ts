@@ -24,7 +24,7 @@ jest.mock('../../services/api', () => ({
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
   setActive: jest.fn(),
-  createAnnotationObserver: MOCK_OBSERVER_HELPER,
+  onPinFixedObserver: MOCK_OBSERVER_HELPER,
 };
 
 describe('CommentsComponent', () => {
