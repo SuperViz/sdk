@@ -469,4 +469,24 @@ describe('CommentsComponent', () => {
       MOCK_ANNOTATION,
     ]);
   });
+
+  test('should dispatch an event to body when new annotation pin is fixed', () => {
+    const spy = jest.spyOn(window.document.body, 'dispatchEvent');
+
+    commentsComponent['onFixedPin']({
+      x: 100,
+      y: 0,
+      type: 'canvas',
+    });
+
+    expect(spy).toHaveBeenCalledWith(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: {
+          x: 100,
+          y: 0,
+          type: 'canvas',
+        },
+      }),
+    );
+  });
 });

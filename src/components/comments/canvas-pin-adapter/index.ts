@@ -90,6 +90,31 @@ export class CanvasPinAdapter implements PinAdapter {
   }
 
   /**
+   * @function createTemporaryPin
+   * @description
+          creates a temporary pin with the id
+          temporary-pin to mark where the annotation is being created
+   * @param {PinCoordinates} coordinates  - The coordinates of the pin to be created.
+   */
+  public createTemporaryPin(coordinates: PinCoordinates): void {
+    let temporaryPin = document.getElementById('superviz-temporary-pin');
+
+    if (!temporaryPin) {
+      temporaryPin = document.createElement('superviz-comments-annotation-pin');
+      temporaryPin.id = 'superviz-temporary-pin';
+      temporaryPin.setAttribute('type', PinMode.ADD);
+      temporaryPin.setAttribute('annotation', JSON.stringify({}));
+      temporaryPin.setAttributeNode(document.createAttribute('active'));
+      temporaryPin.style.pointerEvents = 'auto';
+    }
+
+    temporaryPin.setAttribute('position', JSON.stringify(coordinates));
+
+    this.divWrapper.appendChild(temporaryPin);
+    this.pins.set('temporary-pin', temporaryPin);
+  }
+
+  /**
    * @function addListeners
    * @description adds event listeners to the canvas element.
    * @returns {void}
@@ -200,6 +225,8 @@ export class CanvasPinAdapter implements PinAdapter {
       y: yToSave,
       type: 'canvas',
     });
+
+    this.createTemporaryPin({ x: xToSave, y: yToSave, type: 'canvas' });
   };
 
   /**

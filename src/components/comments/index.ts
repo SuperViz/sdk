@@ -3,9 +3,10 @@ import ApiService from '../../services/api';
 import config from '../../services/config';
 import type { Comments as CommentElement } from '../../web-components';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
+import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 
-import { Annotation, Comment, PinAdapter, PinCordinates } from './types';
+import { Annotation, Comment, PinAdapter, PinCoordinates } from './types';
 
 export class CommentsComponent extends BaseComponent {
   public name: string;
@@ -111,10 +112,16 @@ export class CommentsComponent extends BaseComponent {
     this.pinAdapter.onPinFixedObserver.unsubscribe(this.onFixedPin);
   }
 
-  private onFixedPin = (event: PinCordinates): void => {
+  /**
+   *
+   * @param {PinCoordinates} coordinates
+   */
+  private onFixedPin = (coordinates: PinCoordinates): void => {
     document.body.dispatchEvent(
       new CustomEvent('prepare-to-create-annotation', {
-        detail: event,
+        detail: {
+          ...coordinates,
+        },
         composed: true,
         bubbles: true,
       }),
@@ -130,6 +137,15 @@ export class CommentsComponent extends BaseComponent {
     this.element.toggleAttribute('open');
     this.sidebarOpen = this.element.hasAttribute('open');
     this.pinAdapter.setActive(this.sidebarOpen);
+
+    // removes the annotation being created
+    document.body.dispatchEvent(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: undefined,
+        composed: true,
+        bubbles: true,
+      }),
+    );
   };
 
   /**
@@ -162,6 +178,9 @@ export class CommentsComponent extends BaseComponent {
           comments: [comment],
         },
       ]);
+
+      // remove the temporary pin
+      this.pinAdapter.removeAnnotationPin('temporary-pin');
     } catch (error) {
       this.logger.log('error when creating annotation', error);
     }
