@@ -106,4 +106,36 @@ describe('CanvasPinAdapter', () => {
 
     expect(canvasPinAdapter['pins'].size).toEqual(0);
   });
+
+  test('should remove pins when isActive is turned to false', () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['pins'].size).toEqual(1);
+
+    canvasPinAdapter.setActive(false);
+
+    expect(canvasPinAdapter['pins'].size).toEqual(0);
+  });
+
+  test('should not render annotation if the coordinate type is not canvas', () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([
+      {
+        ...MOCK_ANNOTATION,
+        uuid: 'not-canvas',
+        position: JSON.stringify({
+          x: 100,
+          y: 100,
+          type: 'not-canvas',
+        }),
+      },
+    ]);
+
+    expect(canvasPinAdapter['pins'].has('not-canvas')).toBeFalsy();
+  });
 });
