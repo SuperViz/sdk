@@ -23,7 +23,7 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
   }
 
   private prepareToCreateAnnotation = async ({ detail }: CustomEvent) => {
-    this.annotation = { ...detail };
+    this.annotation = detail;
 
     await this.updateComplete;
 
