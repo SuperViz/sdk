@@ -1,6 +1,6 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { PinAdapter } from '../types';
+import { Annotation, PinAdapter, PinCordinates } from '../types';
 
 export class CanvasPinAdapter implements PinAdapter {
   private logger: Logger;
@@ -9,6 +9,7 @@ export class CanvasPinAdapter implements PinAdapter {
   private mouseElement: HTMLElement;
   public onPinFixedObserver: Observer;
   private isActive: boolean;
+  private annotations: Annotation[];
 
   constructor(canvasId: string) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
@@ -36,6 +37,11 @@ export class CanvasPinAdapter implements PinAdapter {
     this.mouseElement = null;
   }
 
+  /**
+   * @function setActive
+   * @param {boolean} isOpen - Whether the canvas pin adapter is active or not.
+   * @returns {void}
+   */
   public setActive(isOpen: boolean): void {
     this.isActive = isOpen;
     this.canvas.style.cursor = isOpen ? 'none' : 'default';
@@ -43,6 +49,19 @@ export class CanvasPinAdapter implements PinAdapter {
     if (this.isActive) {
       this.addListeners();
     } else this.removeListeners();
+  }
+
+  /**
+   * @function updateAnnotations
+   * @description updates the annotations of the canvas.
+   * @param {Annotation[]} annotations - New annotation to be added to the canvas.
+   * @returns {void}
+   */
+  public updateAnnotations(annotations: Annotation[]): void {
+    this.logger.log('updateAnnotations', annotations);
+
+    this.annotations = annotations;
+    this.renderAnnotations();
   }
 
   /**
@@ -84,6 +103,29 @@ export class CanvasPinAdapter implements PinAdapter {
     this.canvas.style.cursor = 'none';
 
     return mouseElement;
+  }
+
+  /**
+   * @function renderAnnotations
+   * @description Renders the annotations on the canvas.
+   * @returns {void}
+   */
+  private renderAnnotations(): void {
+    this.annotations.forEach((annotation) => {
+      const position = JSON.parse(annotation.position) as PinCordinates;
+
+      if (position.type !== 'canvas' || annotation.resolved) return;
+
+      const { x, y } = position;
+
+      const rect = this.canvas.getBoundingClientRect();
+      const mouseElement = document.createElement('superviz-comments-annotation-pin');
+      mouseElement.setAttribute('type', PinMode.SHOW);
+      mouseElement.setAttribute('annotation', JSON.stringify(annotation));
+      mouseElement.setAttribute('position', JSON.stringify({ x: x + rect.x, y: y + rect.y }));
+
+      document.body.appendChild(mouseElement);
+    });
   }
 
   /** Callbacks  */
