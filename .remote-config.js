@@ -1,4 +1,4 @@
 export const remoteConfig = {
-  apiUrl: 'dev-url',
-  conferenceLayerUrl: 'frame-url',
+  apiUrl: 'http://localhost:4000',
+  conferenceLayerUrl: 'http://localhost:8080',
 };

@@ -3,6 +3,7 @@ import { Logger, Observer } from '../../common/utils';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
+import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
 
@@ -13,7 +14,7 @@ export abstract class BaseComponent {
   protected group: Group;
   protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
-  public abstract name: string;
+  public abstract name: ComponentNames;
   protected abstract logger: Logger;
 
   protected isAttached = false;
