@@ -128,6 +128,7 @@ export class CanvasPinAdapter implements PinAdapter {
     this.canvas.addEventListener('mousemove', this.onMouseMove);
     this.canvas.addEventListener('mouseout', this.onMouseLeave);
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
+    document.body.addEventListener('select-annotation', this.annotationSelected);
   }
 
   /**
@@ -140,6 +141,7 @@ export class CanvasPinAdapter implements PinAdapter {
     this.canvas.removeEventListener('mousemove', this.onMouseMove);
     this.canvas.removeEventListener('mouseout', this.onMouseLeave);
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
   }
 
   /**
@@ -217,6 +219,24 @@ export class CanvasPinAdapter implements PinAdapter {
   }
 
   /** Callbacks  */
+
+  private annotationSelected = ({ detail }: CustomEvent): void => {
+    const { uuid } = detail;
+
+    if (!uuid) return;
+
+    this.pins.forEach((pinElement) => {
+      if (pinElement.id === 'superviz-temporary-pin') return;
+
+      pinElement.removeAttribute('active');
+    });
+
+    const pinElement = this.pins.get(uuid);
+
+    if (!pinElement) return;
+
+    pinElement.setAttribute('active', '');
+  };
 
   /**
    * @function onClick

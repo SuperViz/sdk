@@ -29,6 +29,23 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotationFilter: { type: String },
   };
 
+  private selectAnnotation = ({ detail }: CustomEvent) => {
+    const { uuid } = detail;
+    this.selectedAnnotation = uuid;
+  };
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    window.document.body.addEventListener('select-annotation', this.selectAnnotation);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    window.document.body.removeEventListener('select-annotation', this.selectAnnotation);
+  }
+
   protected render() {
     const annotationsUnresolved = this.annotations?.filter((annotation: Annotation) => {
       return annotation.resolved === false;
@@ -37,11 +54,6 @@ export class CommentsContent extends WebComponentsBaseElement {
     const annotationsResolved = this.annotations?.filter((annotation: Annotation) => {
       return annotation.resolved === true;
     });
-
-    const selectAnnotation = ({ detail }: CustomEvent) => {
-      const { uuid } = detail;
-      this.selectedAnnotation = uuid;
-    };
 
     const isLastAnnotation = (index: number, resolved: boolean) => {
       if (resolved) return annotationsResolved?.length === index + 1;
@@ -56,7 +68,6 @@ export class CommentsContent extends WebComponentsBaseElement {
             <superviz-comments-annotation-item
               annotation=${JSON.stringify(annotation)}
               selected="${this.selectedAnnotation}"
-              @select-annotation=${selectAnnotation}
               ?isLastAnnotation=${isLastAnnotation(index, resolved)}
               annotationFilter=${this.annotationFilter}
             >

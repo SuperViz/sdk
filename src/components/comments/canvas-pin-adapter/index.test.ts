@@ -1,4 +1,5 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import sleep from '../../../common/utils/sleep';
 
 import { CanvasPinAdapter } from '.';
 
@@ -137,5 +138,68 @@ describe('CanvasPinAdapter', () => {
     ]);
 
     expect(canvasPinAdapter['pins'].has('not-canvas')).toBeFalsy();
+  });
+
+  test('should select annotation pin', async () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['selectedPin']).not.toBeDefined();
+
+    canvasPinAdapter['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    expect(
+      [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
+    ).toBeTruthy();
+  });
+
+  test('should not select annotation pin if uuid is not defined', async () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['selectedPin']).not.toBeDefined();
+
+    canvasPinAdapter['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: undefined,
+        },
+      }),
+    );
+
+    expect(
+      [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
+    ).toBeFalsy();
+  });
+
+  test('should not select annotation pin if it does not exist', async () => {
+    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(canvasPinAdapter['selectedPin']).not.toBeDefined();
+
+    canvasPinAdapter['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: 'not-found',
+        },
+      }),
+    );
+
+    expect(
+      [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
+    ).toBeFalsy();
   });
 });

@@ -12,7 +12,6 @@ export const annotationsStyle = css`
   .annotations--add-comment-btn {
     color: rgb(var(--sv-white));
     text-align: center;
-    cursor: pointer;
     padding: 8px;
   }
 

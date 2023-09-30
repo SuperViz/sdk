@@ -31,6 +31,14 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     this.position = { x: 0, y: 0 };
   }
 
+  private emitClick(): void {
+    document.body.dispatchEvent(
+      new CustomEvent('select-annotation', {
+        detail: { uuid: this.annotation.uuid },
+      }),
+    );
+  }
+
   protected render() {
     const classes = {
       'annotation-pin': true,
@@ -52,6 +60,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
     return html`
       <div
+        @click=${this.emitClick}
         class=${classMap(classes)}
         style=${`top: ${this.position?.y}px; left: ${this.position?.x}px;`}
       >

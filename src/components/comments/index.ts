@@ -181,6 +181,14 @@ export class CommentsComponent extends BaseComponent {
 
       // remove the temporary pin
       this.pinAdapter.removeAnnotationPin('temporary-pin');
+
+      document.body.dispatchEvent(
+        new CustomEvent('select-annotation', {
+          detail: { uuid: annotation.uuid },
+          composed: true,
+          bubbles: true,
+        }),
+      );
     } catch (error) {
       this.logger.log('error when creating annotation', error);
     }

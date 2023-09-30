@@ -21,6 +21,7 @@ export const annotationPinStyles = css`
     border: 2px solid white;
     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.25);
     transition: border-color 0.2s ease-in-out;
+    padding: 2px;
     cursor: pointer;
   }
 
@@ -31,8 +32,8 @@ export const annotationPinStyles = css`
   }
 
   .annotation-pin__avatar {
-    width: 28px;
-    height: 28px;
+    width: 100%;
+    height: 100%;
 
     background-color: rgb(var(--sv-gray-400));
     border-radius: 50%;
@@ -41,7 +42,7 @@ export const annotationPinStyles = css`
   }
 
   .annotation-pin__avatar--add {
-    font-size: 28px;
+    font-size: 24px;
     color: rgb(var(--sv-gray-700));
     background-color: white;
   }

@@ -91,4 +91,24 @@ describe('annotation-pin', () => {
     expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
     expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar--add')).toBeTruthy();
   });
+
+  test('should emit an event when the pin is clicked', async () => {
+    const spy = jest.fn();
+    const element = createAnnotationPin();
+    document.body.appendChild(element);
+
+    await sleep();
+
+    document.body.addEventListener('select-annotation', spy);
+
+    const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
+    renderedElement?.shadowRoot?.querySelector('div')?.click();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      new CustomEvent('select-annotation', {
+        detail: { uuid: MOCK_ANNOTATION.uuid },
+      }),
+    );
+  });
 });
