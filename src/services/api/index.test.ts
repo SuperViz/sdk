@@ -44,8 +44,8 @@ jest.mock('../../common/utils', () => {
         });
       }
 
-      if (url.includes('/user/check_limit')) {
-        return Promise.resolve({ CHECK_LIMITS_MOCK });
+      if (url.includes('/user/check_limits')) {
+        return Promise.resolve(CHECK_LIMITS_MOCK);
       }
     }),
   };
@@ -103,7 +103,7 @@ describe('ApiService', () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
       const response = await ApiService.fetchLimits(baseUrl, VALID_API_KEY);
 
-      expect(response).toEqual({ CHECK_LIMITS_MOCK });
+      expect(response).toEqual(CHECK_LIMITS_MOCK.usage);
     });
   });
 });

@@ -7,17 +7,18 @@ import { Logger } from '../../common/utils';
 import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
+import { ComponentNames } from '../types';
 
 import { BaseComponent } from '.';
 
 class DummyComponent extends BaseComponent {
   protected logger: Logger;
-  public name: string;
+  public name: ComponentNames;
 
   constructor() {
     super();
 
-    this.name = 'DummyComponent';
+    this.name = ComponentNames.VIDEO_CONFERENCE;
     this.logger = new Logger('@superviz/sdk/dummy-component');
   }
 
