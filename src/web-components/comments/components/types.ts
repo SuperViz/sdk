@@ -15,7 +15,7 @@ export enum CommentMode {
 
 export enum PinMode {
   ADD = 'add',
-  SHOW = 'SHOW',
+  SHOW = 'show',
 }
 
 export enum AnnotationFilter {
