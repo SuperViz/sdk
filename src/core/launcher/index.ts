@@ -7,6 +7,7 @@ import { BaseComponent } from '../../components/base';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
+import LimitsService from '../../services/limits';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
@@ -55,6 +56,13 @@ export class Launcher implements DefaultLauncher {
    * @returns {void}
    */
   public addComponent = (component: BaseComponent): void => {
+    const canAddComponent = LimitsService.checkComponentLimit(component.name);
+    if (!canAddComponent) {
+      const message = `You reached the limit usage of ${component.name}`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
     component.attach({
       localParticipant: this.participant,
       realtime: this.realtime,
@@ -155,6 +163,7 @@ export class Launcher implements DefaultLauncher {
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
     this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
+    this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityChange);
   };
 
   /** Realtime Listeners */
@@ -259,6 +268,22 @@ export class Launcher implements DefaultLauncher {
     if (this.realtime.isLocalParticipantHost) {
       this.publishToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
     }
+  };
+
+  /**
+   * @function onHostAvailabilityChange
+   * @description Callback function that is called when the availability of the host changes.
+   * @param {boolean} isHostAvailable - A boolean indicating whether the host is available or not.
+   * @returns {void}
+   */
+  private onHostAvailabilityChange = (isHostAvailable: boolean): void => {
+    this.logger.log('launcher service @ onHostAvailabilityChange');
+
+    if (isHostAvailable) {
+      this.pubsub.publishEventToClient(RealtimeEvent.REALTIME_HOST_AVAILABLE);
+      return;
+    }
+    this.pubsub.publishEventToClient(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
   };
 }
 

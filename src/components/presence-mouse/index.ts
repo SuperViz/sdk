@@ -2,19 +2,20 @@ import { MeetingEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { BaseComponent } from '../base';
+import { ComponentNames } from '../types';
 
 import { ParticipantMouse } from './types';
 
 export class PresenceMouseComponent extends BaseComponent {
-  public name: string;
+  public name: ComponentNames;
   protected logger: Logger;
   private presenceMouseElement: HTMLElement;
   private containerId: string | null;
 
   constructor(container?: string | null) {
     super();
-    this.name = 'presence-mouse-component';
-    this.logger = new Logger('@superviz/sdk/presence-mouse-component');
+    this.name = ComponentNames.PRESENCE;
+    this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
     this.containerId = container ?? null;
   }
 

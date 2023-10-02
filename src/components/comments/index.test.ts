@@ -5,6 +5,7 @@ import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participa
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
+import { ComponentNames } from '../types';
 
 import { CommentsComponent } from './index';
 
@@ -45,7 +46,7 @@ describe('CommentsComponent', () => {
   });
 
   test('should have a name property', () => {
-    expect(commentsComponent['name']).toBe('comments-component');
+    expect(commentsComponent['name']).toBe(ComponentNames.COMMENTS);
   });
 
   test('should have a logger property', () => {
@@ -155,7 +156,7 @@ describe('CommentsComponent', () => {
 
     await sleep(1);
 
-    expect(spy).toHaveBeenCalledWith('comments-component @ attached');
+    expect(spy).toHaveBeenCalledWith(`${ComponentNames.COMMENTS} @ attached`);
     expect(spy).toHaveBeenCalledWith('error when fetching annotations', 'internal server error');
   });
 

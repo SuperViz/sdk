@@ -3,11 +3,12 @@ import ApiService from '../../services/api';
 import config from '../../services/config';
 import type { Comments as CommentElement } from '../../web-components';
 import { BaseComponent } from '../base';
+import { ComponentNames } from '../types';
 
 import { Annotation, Comment } from './types';
 
 export class CommentsComponent extends BaseComponent {
-  public name: string;
+  public name: ComponentNames;
   protected logger: Logger;
   protected element: CommentElement;
   private annotations: Annotation[];
@@ -15,7 +16,7 @@ export class CommentsComponent extends BaseComponent {
 
   constructor() {
     super();
-    this.name = 'comments-component';
+    this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
   }

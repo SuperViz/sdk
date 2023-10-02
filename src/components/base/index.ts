@@ -3,19 +3,20 @@ import { Logger, Observer } from '../../common/utils';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
+import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
 
 export abstract class BaseComponent {
-  public abstract name: string;
-  protected abstract logger: Logger;
-
   private observers: Record<string, Observer> = {};
 
+  public abstract name: ComponentNames;
+  protected abstract logger: Logger;
   protected localParticipant: Participant;
   protected group: Group;
   protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
+
   protected isAttached = false;
 
   /**
