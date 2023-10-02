@@ -2,6 +2,7 @@ import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
+import { ComponentNames } from '../types';
 import { DefaultAttachComponentOptions } from './types';
 export declare abstract class BaseComponent {
     private observers;
@@ -9,7 +10,7 @@ export declare abstract class BaseComponent {
     protected group: Group;
     protected realtime: AblyRealtimeService;
     protected eventBus: EventBus;
-    abstract name: string;
+    abstract name: ComponentNames;
     protected abstract logger: Logger;
     protected isAttached: boolean;
     /**

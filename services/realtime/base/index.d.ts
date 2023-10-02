@@ -10,6 +10,7 @@ export declare class RealtimeService implements DefaultRealtimeService {
     roomInfoUpdatedObserver: Observer;
     roomListUpdatedObserver: Observer;
     hostObserver: Observer;
+    hostAvailabilityObserver: Observer;
     realtimeStateObserver: Observer;
     syncPropertiesObserver: Observer;
     kickAllParticipantsObserver: Observer;
@@ -33,7 +34,7 @@ export declare class RealtimeService implements DefaultRealtimeService {
      */
     unsubscribeFromParticipantUpdate(participantId: string, callback: Function): void;
     /**
-     * @function getParticipantColor
+     * @function getSlotColor
      * @description get slot color string
      * @returns {string}
      * @param slotIndex

@@ -1,8 +1,9 @@
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
+import { ComponentNames } from '../types';
 import { VideoComponentOptions } from './types';
 export declare class VideoComponent extends BaseComponent {
-    name: string;
+    name: ComponentNames;
     protected logger: Logger;
     private participantToFrameList;
     private participantsOnMeeting;

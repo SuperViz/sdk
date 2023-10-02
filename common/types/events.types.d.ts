@@ -39,6 +39,8 @@ export declare enum MeetingControlsEvent {
 export declare enum RealtimeEvent {
     REALTIME_PARTICIPANT_LIST_UPDATE = "realtime.participant-list-update",
     REALTIME_HOST_CHANGE = "realtime.host-change",
+    REALTIME_HOST_AVAILABLE = "realtime.host-available",
+    REALTIME_NO_HOST_AVAILABLE = "realtime.no-host-available",
     REALTIME_GRID_MODE_CHANGE = "realtime.grid-mode-change",
     REALTIME_WAIT_FOR_HOST = "realtime.wait-for-host",
     REALTIME_AUTHENTICATION_FAILED = "realtime.authentication-failed",

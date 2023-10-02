@@ -97,6 +97,13 @@ export declare class Launcher implements DefaultLauncher {
      * @returns {void}
      * */
     private onHostParticipantDidChange;
+    /**
+     * @function onHostAvailabilityChange
+     * @description Callback function that is called when the availability of the host changes.
+     * @param {boolean} isHostAvailable - A boolean indicating whether the host is available or not.
+     * @returns {void}
+     */
+    private onHostAvailabilityChange;
 }
 /**
  * @function Launcher
