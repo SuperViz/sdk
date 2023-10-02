@@ -1,4 +1,3 @@
-import { Participant } from '../../common/types/participant.types';
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { BaseComponent } from '../../components/base';
 import { PubSub } from '../../services/pubsub';
