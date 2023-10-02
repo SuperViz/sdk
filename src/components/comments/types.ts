@@ -1,3 +1,5 @@
+import { Observer } from '../../common/utils';
+
 export type Annotation = {
   uuid: string;
   position: string;
@@ -15,3 +17,17 @@ export type Comment = {
   resolvable?: boolean;
   resolved?: boolean;
 };
+
+export interface PinAdapter {
+  setActive(isOpen: boolean): void;
+  destroy(): void;
+  updateAnnotations(annotations: Annotation[]): void;
+  removeAnnotationPin(uuid: string): void;
+  onPinFixedObserver: Observer;
+}
+
+export interface PinCoordinates {
+  x: number;
+  y: number;
+  type: 'canvas';
+}

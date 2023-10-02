@@ -1,7 +1,7 @@
 export type AnnotationOptions = {
   resolvable?: boolean;
   resolved?: boolean;
-}
+};
 
 export enum CommentDropdownOptions {
   EDIT = 'EDIT',
@@ -11,6 +11,11 @@ export enum CommentDropdownOptions {
 export enum CommentMode {
   EDITABLE = 'editable',
   READONLY = 'readonly',
+}
+
+export enum PinMode {
+  ADD = 'add',
+  SHOW = 'show',
 }
 
 export enum AnnotationFilter {

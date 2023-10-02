@@ -6,6 +6,7 @@ let element: HTMLElement;
 describe('CommentsCommentInput', () => {
   beforeEach(async () => {
     element = document.createElement('superviz-comments-comment-input');
+    element.setAttribute('eventType', 'create-annotation');
     document.body.appendChild(element);
     await sleep();
   });
@@ -16,21 +17,29 @@ describe('CommentsCommentInput', () => {
 
   test('renders a textarea and a send button', async () => {
     const textarea = element.querySelector('#comment-input--textarea') as HTMLTextAreaElement;
-    const sendButton = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const sendButton = element.shadowRoot!.querySelector(
+      '.comment-input--send-btn',
+    ) as HTMLButtonElement;
 
     expect(textarea).toBeDefined();
     expect(sendButton).toBeDefined();
   });
 
   test('disables the send button when the textarea is empty', async () => {
-    const sendButton = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const sendButton = element.shadowRoot!.querySelector(
+      '.comment-input--send-btn',
+    ) as HTMLButtonElement;
 
     expect(sendButton.disabled).toBe(true);
   });
 
   test('enables the send button when the textarea has text', async () => {
-    const textarea = element.shadowRoot!.querySelector('#comment-input--textarea') as HTMLTextAreaElement;
-    const sendButton = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const textarea = element.shadowRoot!.querySelector(
+      '#comment-input--textarea',
+    ) as HTMLTextAreaElement;
+    const sendButton = element.shadowRoot!.querySelector(
+      '.comment-input--send-btn',
+    ) as HTMLButtonElement;
 
     textarea.value = 'test';
     textarea.dispatchEvent(new Event('input'));
@@ -39,8 +48,12 @@ describe('CommentsCommentInput', () => {
   });
 
   test('emits an event when the send button is clicked', async () => {
-    const textarea = element.shadowRoot!.querySelector('#comment-input--textarea') as HTMLTextAreaElement;
-    const sendButton = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const textarea = element.shadowRoot!.querySelector(
+      '#comment-input--textarea',
+    ) as HTMLTextAreaElement;
+    const sendButton = element.shadowRoot!.querySelector(
+      '.comment-input--send-btn',
+    ) as HTMLButtonElement;
 
     const spy = jest.fn();
 
@@ -60,8 +73,12 @@ describe('CommentsCommentInput', () => {
 
     await sleep();
 
-    const textarea = element.shadowRoot!.querySelector('#comment-input--textarea') as HTMLTextAreaElement;
-    const btnSend = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const textarea = element.shadowRoot!.querySelector(
+      '#comment-input--textarea',
+    ) as HTMLTextAreaElement;
+    const btnSend = element.shadowRoot!.querySelector(
+      '.comment-input--send-btn',
+    ) as HTMLButtonElement;
 
     expect(textarea.value).toBe('test');
     expect(btnSend.disabled).toBe(false);
@@ -72,8 +89,12 @@ describe('CommentsCommentInput', () => {
 
     await sleep();
 
-    const textarea = element.shadowRoot!.querySelector('#comment-input--textarea') as HTMLTextAreaElement;
-    const btnSend = element.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    const textarea = element.shadowRoot!.querySelector(
+      '#comment-input--textarea',
+    ) as HTMLTextAreaElement;
+    const btnSend = element.shadowRoot!.querySelector(
+      '.comment-input--send-btn',
+    ) as HTMLButtonElement;
 
     expect(textarea.value).toBe('');
     expect(btnSend.disabled).toBe(false);
@@ -92,5 +113,17 @@ describe('CommentsCommentInput', () => {
     button.click();
 
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test('should set pin cordinates when comment-input-focus event happend', async () => {
+    window.document.body.dispatchEvent(
+      new CustomEvent('comment-input-focus', {
+        detail: { x: 0, y: 0, type: 'canvas' },
+      }),
+    );
+
+    await sleep();
+
+    expect(element['pinCordinates']).toStrictEqual({ x: 0, y: 0, type: 'canvas' });
   });
 });

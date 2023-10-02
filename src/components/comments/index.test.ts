@@ -1,11 +1,14 @@
 import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
+import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { ComponentNames } from '../types';
+
+import { PinAdapter } from './types';
 
 import { CommentsComponent } from './index';
 
@@ -19,12 +22,21 @@ jest.mock('../../services/api', () => ({
   deleteAnnotation: jest.fn().mockImplementation(() => []),
 }));
 
+const DummiePinAdapter: PinAdapter = {
+  destroy: jest.fn(),
+  setActive: jest.fn(),
+  updateAnnotations: jest.fn(),
+  removeAnnotationPin: jest.fn(),
+  onPinFixedObserver: MOCK_OBSERVER_HELPER,
+};
+
 describe('CommentsComponent', () => {
   let commentsComponent: CommentsComponent;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    commentsComponent = new CommentsComponent();
+
+    commentsComponent = new CommentsComponent(DummiePinAdapter);
 
     commentsComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
@@ -72,6 +84,13 @@ describe('CommentsComponent', () => {
     commentsComponent.detach();
 
     expect(document.body.contains(commentsComponent['element'])).toBe(false);
+  });
+
+  test('should toggle component', () => {
+    commentsComponent['toggleAnnotationSidebar']();
+    expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
+    commentsComponent['toggleAnnotationSidebar']();
+    expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
   });
 
   test('should call apiService when fetch annotation', async () => {
@@ -142,7 +161,7 @@ describe('CommentsComponent', () => {
     (ApiService.fetchAnnotation as jest.Mock).mockRejectedValueOnce('internal server error');
 
     commentsComponent.detach();
-    commentsComponent = new CommentsComponent();
+    commentsComponent = new CommentsComponent(DummiePinAdapter);
 
     const spy = jest.spyOn(commentsComponent['logger'], 'log');
 
@@ -162,7 +181,7 @@ describe('CommentsComponent', () => {
 
   test('should update annotation list when fetch annotation is successful', async () => {
     commentsComponent.detach();
-    commentsComponent = new CommentsComponent();
+    commentsComponent = new CommentsComponent(DummiePinAdapter);
     (ApiService.fetchAnnotation as jest.Mock).mockReturnValueOnce([MOCK_ANNOTATION]);
 
     commentsComponent.attach({
@@ -419,6 +438,9 @@ describe('CommentsComponent', () => {
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
+    expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
+      MOCK_ANNOTATION.uuid,
+    );
   });
 
   test('should throw an error when delete annotation fails', async () => {
@@ -442,6 +464,30 @@ describe('CommentsComponent', () => {
   test('should update annotations list on component when annotations are updated on realtime', async () => {
     commentsComponent['onAnnotationListUpdate']([MOCK_ANNOTATION]);
 
+    expect(commentsComponent['annotations']).toEqual([MOCK_ANNOTATION]);
     expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalledWith([MOCK_ANNOTATION]);
+    expect(commentsComponent['pinAdapter'].updateAnnotations).toHaveBeenCalledWith([
+      MOCK_ANNOTATION,
+    ]);
+  });
+
+  test('should dispatch an event to body when new annotation pin is fixed', () => {
+    const spy = jest.spyOn(window.document.body, 'dispatchEvent');
+
+    commentsComponent['onFixedPin']({
+      x: 100,
+      y: 0,
+      type: 'canvas',
+    });
+
+    expect(spy).toHaveBeenCalledWith(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: {
+          x: 100,
+          y: 0,
+          type: 'canvas',
+        },
+      }),
+    );
   });
 });

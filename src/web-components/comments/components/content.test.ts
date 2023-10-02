@@ -31,17 +31,36 @@ describe('CommentsContent', () => {
 
     await sleep();
 
-    const annotationItem = element.shadowRoot!.querySelectorAll('superviz-comments-annotation-item')[0];
+    const annotationItem = element.shadowRoot!.querySelectorAll(
+      'superviz-comments-annotation-item',
+    )[0];
 
-    annotationItem?.dispatchEvent(new CustomEvent('select-annotation', {
-      detail: {
-        uuid: 'any_uuid',
-      },
-    }));
+    document.body?.dispatchEvent(
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: 'any_uuid',
+        },
+      }),
+    );
 
     await sleep();
 
     expect(annotationItem?.getAttribute('selected')).toBe('any_uuid');
     expect(element['selectedAnnotation']).toBe('any_uuid');
+  });
+
+  test('if has no comments, should display only annotation pin', async () => {
+    element = await createElement([
+      {
+        ...MOCK_ANNOTATION,
+        comments: [],
+      },
+    ]);
+
+    await sleep();
+
+    const annotationItem = element.shadowRoot?.querySelector('superviz-comments-annotation-item');
+
+    expect(annotationItem).toBeFalsy();
   });
 });

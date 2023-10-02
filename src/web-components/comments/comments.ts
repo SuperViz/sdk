@@ -1,7 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { Annotation, Comment } from '../../components/comments/types';
+import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
 import { AnnotationFilter } from './components/types';
@@ -30,15 +30,15 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = AnnotationFilter.ALL;
   }
 
-  updateAnnotations(data: Annotation[]) {
+  public updateAnnotations(data: Annotation[]) {
     this.annotations = data;
   }
 
-  toggle() {
-    this.open = !this.open;
+  private toggle() {
+    this.emitEvent('toggle', {});
   }
 
-  setFilter({ detail }) {
+  private setFilter({ detail }) {
     const { filter } = detail;
     this.annotationFilter = filter;
   }

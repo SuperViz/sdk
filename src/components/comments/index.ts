@@ -2,23 +2,30 @@ import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import type { Comments as CommentElement } from '../../web-components';
+import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
+import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { Annotation, Comment } from './types';
+import { Annotation, Comment, PinAdapter, PinCoordinates } from './types';
 
 export class CommentsComponent extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
-  protected element: CommentElement;
+  private element: CommentElement;
+  private button: CommentsFloatButton;
+  private sidebarOpen: boolean = false;
   private annotations: Annotation[];
   private url: string;
+  private pinAdapter: PinAdapter;
 
-  constructor() {
+  constructor(pinAdapter: PinAdapter) {
     super();
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
+
+    this.pinAdapter = pinAdapter;
   }
 
   /**
@@ -30,9 +37,11 @@ export class CommentsComponent extends BaseComponent {
     this.url = window.location.href;
 
     this.element = document.createElement('superviz-comments') as CommentElement;
-    this.element.setAttributeNode(document.createAttribute('open'));
     this.element.setAttribute('comments', JSON.stringify([]));
     document.body.appendChild(this.element);
+
+    this.button = document.createElement('superviz-comments-button') as CommentsFloatButton;
+    document.body.appendChild(this.button);
 
     this.fetchAnnotations();
     this.addListeners();
@@ -48,6 +57,7 @@ export class CommentsComponent extends BaseComponent {
 
     document.body.removeChild(this.element);
     this.element = undefined;
+    this.pinAdapter.destroy();
   }
 
   /**
@@ -56,6 +66,11 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
+    // Button observers
+    this.button.addEventListener('toggle', this.toggleAnnotationSidebar);
+
+    // Comments component observers
+    this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
     this.element.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -66,8 +81,10 @@ export class CommentsComponent extends BaseComponent {
     this.element.addEventListener('delete-comment', this.deleteComment);
 
     // Realtime observers
-
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
+
+    // pin adapter observers
+    this.pinAdapter.onPinFixedObserver.subscribe(this.onFixedPin);
   }
 
   /**
@@ -76,16 +93,61 @@ export class CommentsComponent extends BaseComponent {
    * @returns {void}
    */
   private destroyListeners(): void {
+    // Button observers
+    this.button.removeEventListener('toggle', this.toggleAnnotationSidebar);
+
+    // Comments component observers
+    this.element.removeEventListener('toggle', this.toggleAnnotationSidebar);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
-    this.element.removeEventListener('resolve-annotation', this.createAnnotation);
+    this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
       this.createComment(detail.uuid, detail.text, true);
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
 
+    // Realtime observers
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
+
+    // pin adapter observers
+    this.pinAdapter.onPinFixedObserver.unsubscribe(this.onFixedPin);
   }
+
+  /**
+   *
+   * @param {PinCoordinates} coordinates
+   */
+  private onFixedPin = (coordinates: PinCoordinates): void => {
+    document.body.dispatchEvent(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: {
+          ...coordinates,
+        },
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
+
+  /**
+   * @function toggleAnnotationSidebar
+   * @description Toggles the annotation sidebar
+   * @returns {void}
+   */
+  private toggleAnnotationSidebar = (): void => {
+    this.element.toggleAttribute('open');
+    this.sidebarOpen = this.element.hasAttribute('open');
+    this.pinAdapter.setActive(this.sidebarOpen);
+
+    // removes the annotation being created
+    document.body.dispatchEvent(
+      new CustomEvent('prepare-to-create-annotation', {
+        detail: undefined,
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
 
   /**
    * @function createAnnotation
@@ -95,10 +157,10 @@ export class CommentsComponent extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { text, position } = detail;
+      const { position, text } = detail;
       const { url } = this;
 
-      const annotation: Annotation = await ApiService.createAnnotations(
+      const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         {
@@ -117,6 +179,17 @@ export class CommentsComponent extends BaseComponent {
           comments: [comment],
         },
       ]);
+
+      // remove the temporary pin
+      this.pinAdapter.removeAnnotationPin('temporary-pin');
+
+      document.body.dispatchEvent(
+        new CustomEvent('select-annotation', {
+          detail: { uuid: annotation.uuid },
+          composed: true,
+          bubbles: true,
+        }),
+      );
     } catch (error) {
       this.logger.log('error when creating annotation', error);
     }
@@ -139,6 +212,7 @@ export class CommentsComponent extends BaseComponent {
 
       const annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
       this.updateAnnotationList(annotations);
+      this.pinAdapter.removeAnnotationPin(uuid);
     } catch (error) {
       this.logger.log('error when deleting annotation', error);
     }
@@ -281,6 +355,7 @@ export class CommentsComponent extends BaseComponent {
 
       this.annotations = annotations;
       this.element.updateAnnotations(this.annotations);
+      this.pinAdapter.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when fetching annotations', error);
     }
@@ -350,5 +425,6 @@ export class CommentsComponent extends BaseComponent {
   private onAnnotationListUpdate = (annotations: Annotation[]): void => {
     this.annotations = annotations;
     this.element.updateAnnotations(this.annotations);
+    this.pinAdapter.updateAnnotations(this.annotations);
   };
 }

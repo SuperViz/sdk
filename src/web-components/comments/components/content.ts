@@ -5,7 +5,7 @@ import { Annotation } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
-import { AnnotationFilter } from './types';
+import { AnnotationFilter, PinMode } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle];
@@ -29,6 +29,23 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotationFilter: { type: String },
   };
 
+  private selectAnnotation = ({ detail }: CustomEvent) => {
+    const { uuid } = detail;
+    this.selectedAnnotation = uuid;
+  };
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    window.document.body.addEventListener('select-annotation', this.selectAnnotation);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    window.document.body.removeEventListener('select-annotation', this.selectAnnotation);
+  }
+
   protected render() {
     const annotationsUnresolved = this.annotations?.filter((annotation: Annotation) => {
       return annotation.resolved === false;
@@ -38,43 +55,37 @@ export class CommentsContent extends WebComponentsBaseElement {
       return annotation.resolved === true;
     });
 
-    const selectAnnotation = ({ detail }: CustomEvent) => {
-      const { uuid } = detail;
-      this.selectedAnnotation = uuid;
-    };
-
     const isLastAnnotation = (index: number, resolved: boolean) => {
       if (resolved) return annotationsResolved?.length === index + 1;
       return annotationsUnresolved?.length === index + 1;
     };
 
     const annotationTemplate = (annotation: Annotation, index: number, resolved: boolean) => {
-      return html`
-          <superviz-comments-annotation-pin
-            id=${annotation.uuid}
-            pos=${annotation.position}>
-          </superviz-comments-annotation-pin>
+      const hasComments = annotation.comments.length > 0;
 
-          <superviz-comments-annotation-item
-            annotation=${JSON.stringify(annotation)}
-            selected="${this.selectedAnnotation}"
-            @select-annotation=${selectAnnotation}
-            ?isLastAnnotation=${isLastAnnotation(index, resolved)}
-            annotationFilter=${this.annotationFilter}
-          >
-          </superviz-comments-annotation-item>
-        `;
+      const annotationComments = hasComments
+        ? html`
+            <superviz-comments-annotation-item
+              annotation=${JSON.stringify(annotation)}
+              selected="${this.selectedAnnotation}"
+              ?isLastAnnotation=${isLastAnnotation(index, resolved)}
+              annotationFilter=${this.annotationFilter}
+            >
+            </superviz-comments-annotation-item>
+          `
+        : html``;
+
+      return html` ${annotationComments} `;
     };
 
-    const annotationsUnresolvedTemplate = annotationsUnresolved
-      ?.map((annotation, index) => annotationTemplate(annotation, index, false));
+    const annotationsUnresolvedTemplate = annotationsUnresolved?.map((annotation, index) => {
+      return annotationTemplate(annotation, index, false);
+    });
 
-    const annotationsResolvedTemplate = annotationsResolved
-      ?.map((annotation, index) => annotationTemplate(annotation, index, true));
+    const annotationsResolvedTemplate = annotationsResolved?.map((annotation, index) => {
+      return annotationTemplate(annotation, index, true);
+    });
 
-    return html`
-      ${annotationsUnresolvedTemplate}
-      ${annotationsResolvedTemplate}
-    `;
+    return html` ${annotationsUnresolvedTemplate} ${annotationsResolvedTemplate} `;
   }
 }

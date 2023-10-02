@@ -92,5 +92,6 @@ export const annotationItemStyle = css`
 
   .annotation-item {
     padding: 8px;
+    cursor: pointer;
   }
 `;

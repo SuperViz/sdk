@@ -46,7 +46,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
   selectAnnotation = () => {
     const { uuid } = this.annotation;
-    this.emitEvent('select-annotation', { uuid });
+    document.body.dispatchEvent(new CustomEvent('select-annotation', { detail: { uuid } }));
   };
 
   private createComment({ detail }: CustomEvent) {
@@ -93,7 +93,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const resolveAnnotation = ({ detail }: CustomEvent) => {
       const { uuid } = this.annotation;
       const { resolved, type } = detail;
-      const isResolveAnnotation = type === 'resolve-annotation' && this.annotationFilter === AnnotationFilter.ALL;
+      const isResolveAnnotation =
+        type === 'resolve-annotation' && this.annotationFilter === AnnotationFilter.ALL;
 
       this.resolved = resolved;
 
@@ -114,7 +115,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const avatarCommentsTemplate = () => {
       const repliesSize = replies >= 5 ? 5 : replies;
       const isLastReply = replies - 1 > 5 ? 'last-reply' : '';
-      const replyText = (replies - 1) > 1 ? 'replies' : 'reply';
+      const replyText = replies - 1 > 1 ? 'replies' : 'reply';
       const avatarDivs = [];
 
       for (let index = 0; index < repliesSize; index++) {
@@ -127,7 +128,9 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
       return html`
         ${avatarDivs}
-        <div class="avatar-divs-${repliesSize} replies ${isLastReply} text text-big sv-gray-500">${replies - 1} ${replyText}</div>
+        <div class="avatar-divs-${repliesSize} replies ${isLastReply} text text-big sv-gray-500">
+          ${replies - 1} ${replyText}
+        </div>
       `;
     };
 
@@ -178,10 +181,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               @resolve-annotation=${resolveAnnotation}
             ></superviz-comments-comment-item>
 
-            <div class=${classMap(avatarCommentsClasses)}>  
-              <div class="avatar-container">
-                ${avatarCommentsTemplate()}
-              </div>
+            <div class=${classMap(avatarCommentsClasses)}>
+              <div class="avatar-container">${avatarCommentsTemplate()}</div>
             </div>
           </div>
 

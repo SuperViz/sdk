@@ -1,4 +1,5 @@
 import { annotationItemStyle } from './annotation-item.style';
+import { annotationPinStyles } from './annotation-pin.style';
 import { annotationResolvedStyle } from './annotation-resolved.style';
 import { annotationsStyle } from './annotations.style';
 import { commentInputStyle } from './comment-input.style';
@@ -42,5 +43,10 @@ describe('css', () => {
   test('should be export CommentsAnnotationResolved', () => {
     expect(cssStyles.annotationResolvedStyle).toBeDefined();
     expect(cssStyles.annotationResolvedStyle).toBe(annotationResolvedStyle);
+  });
+
+  test('should be export AnnotationPinStyle', () => {
+    expect(cssStyles.annotationPinStyles).toBeDefined();
+    expect(cssStyles.annotationPinStyles).toBe(annotationPinStyles);
   });
 });
