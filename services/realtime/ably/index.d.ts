@@ -35,11 +35,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private connectionState;
     constructor(apiUrl: string, ablyKey: string);
     get roomProperties(): AblyRealtimeData;
-    get getMyParticipant(): AblyParticipant;
     get hostClientId(): string;
     get isLocalParticipantHost(): boolean;
     get getParticipants(): Record<string, AblyParticipant>;
-    get participant(): unknown;
+    get participant(): AblyParticipant;
     get localParticipantId(): string | null;
     get isBroadcast(): boolean;
     start({ participant, roomId, apiKey, shouldKickParticipantsOnHostLeave, }: StartRealtimeType): void;
