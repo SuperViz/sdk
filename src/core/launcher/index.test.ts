@@ -4,6 +4,7 @@ import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participa
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { BaseComponent } from '../../components/base';
+import LimitsService from '../../services/limits';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 import { LauncherFacade, LauncherOptions } from './types';
@@ -91,6 +92,8 @@ describe('Launcher', () => {
 
   describe('Components', () => {
     test('should be add component', () => {
+      jest.spyOn(LimitsService, 'checkComponentLimit').mockReturnValue(true);
+
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
@@ -100,6 +103,14 @@ describe('Launcher', () => {
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
       });
+    });
+
+    test('should show a console message if limit reached and not add component', () => {
+      jest.spyOn(LimitsService, 'checkComponentLimit').mockReturnValue(false);
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.attach).not.toBeCalled();
     });
 
     test('should be remove component', () => {

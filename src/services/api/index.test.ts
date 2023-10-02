@@ -1,3 +1,4 @@
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 import { WaterMark } from '../video-conference-manager/types';
 
 import ApiService from './index';
@@ -5,6 +6,10 @@ import ApiService from './index';
 const VALID_API_KEY = 'unit-test-valid-api-key';
 const INVALID_API_KEY = 'unit-test-invalid-api-key';
 const MOCK_ABLY_KEY = 'unit-test-ably-key';
+
+const CHECK_LIMITS_MOCK = {
+  usage: LIMITS_MOCK,
+};
 
 jest.mock('../../common/utils', () => {
   return {
@@ -37,6 +42,10 @@ jest.mock('../../common/utils', () => {
         return Promise.resolve({
           message: 'any message',
         });
+      }
+
+      if (url.includes('/user/check_limits')) {
+        return Promise.resolve(CHECK_LIMITS_MOCK);
       }
     }),
   };
@@ -86,6 +95,15 @@ describe('ApiService', () => {
       const response = await ApiService.sendActivity(userId, groupId, groupName, product);
 
       expect(response).toEqual({ message: 'any message' });
+    });
+  });
+
+  describe('fetchLimits', () => {
+    test('should return the usage object with limits', async () => {
+      const baseUrl = 'https://dev.nodeapi.superviz.com';
+      const response = await ApiService.fetchLimits(baseUrl, VALID_API_KEY);
+
+      expect(response).toEqual(CHECK_LIMITS_MOCK.usage);
     });
   });
 });

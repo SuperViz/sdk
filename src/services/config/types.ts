@@ -1,4 +1,5 @@
 import { EnvironmentTypes } from '../../common/types/sdk-options.types';
+import { ComponentLimits } from '../limits/types';
 
 export interface Configuration {
   roomId: string;
@@ -8,4 +9,5 @@ export interface Configuration {
   apiUrl: string;
   conferenceLayerUrl: string;
   debug: boolean;
+  limits: ComponentLimits
 }

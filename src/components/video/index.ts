@@ -25,11 +25,12 @@ import {
   VideoManagerOptions,
 } from '../../services/video-conference-manager/types';
 import { BaseComponent } from '../base';
+import { ComponentNames } from '../types';
 
 import { ParticipandToFrame, VideoComponentOptions } from './types';
 
 export class VideoComponent extends BaseComponent {
-  public name: string;
+  public name: ComponentNames;
   protected logger: Logger;
   private participantToFrameList: ParticipandToFrame[] = [];
   private participantsOnMeeting: Partial<Participant>[] = [];
@@ -46,8 +47,8 @@ export class VideoComponent extends BaseComponent {
 
     this.params = params;
 
-    this.name = 'video-component';
-    this.logger = new Logger('@superviz/sdk/video-component');
+    this.name = ComponentNames.VIDEO_CONFERENCE;
+    this.logger = new Logger(`@superviz/sdk/${ComponentNames.VIDEO_CONFERENCE}`);
 
     this.browserService = new BrowserService();
     this.connectionService = new ConnectionService();
