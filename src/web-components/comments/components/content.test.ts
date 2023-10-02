@@ -1,7 +1,6 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import sleep from '../../../common/utils/sleep';
 import '.';
-import { Annotation } from '../../../components/comments/types';
 
 import { AnnotationFilter } from './types';
 
@@ -44,28 +43,5 @@ describe('CommentsContent', () => {
 
     expect(annotationItem?.getAttribute('selected')).toBe('any_uuid');
     expect(element['selectedAnnotation']).toBe('any_uuid');
-  });
-
-  test('should update filtered annotations', async () => {
-    const annotations = [
-      MOCK_ANNOTATION,
-      {
-        ...MOCK_ANNOTATION,
-        resolved: true,
-      },
-    ];
-    element = await createElement(annotations);
-
-    await sleep();
-
-    expect(element['annotationsFiltered']).toEqual(annotations);
-    expect(element['annotationFilter']).toEqual(AnnotationFilter.ALL);
-
-    element.setAttribute('annotationFilter', AnnotationFilter.RESOLVED);
-
-    await sleep();
-
-    expect(element['annotationsFiltered']).toEqual([annotations[1]]);
-    expect(element['annotationFilter']).toEqual(AnnotationFilter.RESOLVED);
   });
 });

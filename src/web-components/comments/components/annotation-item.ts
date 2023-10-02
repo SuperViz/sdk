@@ -111,15 +111,23 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       this.shouldShowUndoResolved = false;
     };
 
-    const avatarCommentsTemplate = (comment: Comment, index: number) => {
-      if (index === 1) return html``;
+    const avatarCommentsTemplate = () => {
+      const repliesSize = replies >= 5 ? 5 : replies;
+      const isLastReply = replies - 1 > 5 ? 'last-reply' : '';
+      const replyText = (replies - 1) > 1 ? 'replies' : 'reply';
+      const avatarDivs = [];
 
-      const avatarNumber = index;
+      for (let index = 0; index < repliesSize; index++) {
+        avatarDivs.push(html`
+          <div class="avatar avatar-divs-${index}">
+            <img src="https://picsum.photos/200/300" />
+          </div>
+        `);
+      }
 
       return html`
-        <div class="avatar avatar-divs-${avatarNumber}">
-          <img src="https://picsum.photos/200/300" />
-        </div>
+        ${avatarDivs}
+        <div class="avatar-divs-${repliesSize} replies ${isLastReply} text text-big sv-gray-500">${replies - 1} ${replyText}</div>
       `;
     };
 
@@ -172,8 +180,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
             <div class=${classMap(avatarCommentsClasses)}>  
               <div class="avatar-container">
-                ${this.annotation.comments?.map(avatarCommentsTemplate)}
-                <div class="avatar-divs-${replies} replies text text-big sv-gray-500">${replies - 1} replies</div>
+                ${avatarCommentsTemplate()}
               </div>
             </div>
           </div>
