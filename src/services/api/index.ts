@@ -23,6 +23,13 @@ export default class ApiService {
     return doRequest(url, 'POST', { apiKey });
   }
 
+  static async fetchLimits(baseUrl: string, apikey: string) {
+    const path: string = '/user/check_limits';
+    const url: string = this.createUrl(baseUrl, path);
+    const result = await doRequest(url, 'GET', '', { apikey });
+    return result.usage;
+  }
+
   static async fetchWaterMark(baseUrl: string, apiKey: string) {
     const path = '/user/watermark';
     const url = this.createUrl(baseUrl, path);

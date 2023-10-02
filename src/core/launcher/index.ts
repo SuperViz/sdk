@@ -7,6 +7,7 @@ import { BaseComponent } from '../../components/base';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
+import LimitsService from '../../services/limits';
 import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
@@ -55,6 +56,13 @@ export class Launcher implements DefaultLauncher {
    * @returns {void}
    */
   public addComponent = (component: BaseComponent): void => {
+    const canAddComponent = LimitsService.checkComponentLimit(component.name);
+    if (!canAddComponent) {
+      const message = `You reached the limit usage of ${component.name}`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
     component.attach({
       localParticipant: this.participant,
       realtime: this.realtime,
