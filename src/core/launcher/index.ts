@@ -30,7 +30,7 @@ export class Launcher implements DefaultLauncher {
 
   constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions) {
     this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave ?? true;
-    this.participant = participant;
+    this.participant = participant as Participant;
     this.group = group;
 
     this.logger = new Logger('@superviz/sdk/launcher');
