@@ -29,5 +29,5 @@ export interface PinAdapter {
 export interface PinCoordinates {
   x: number;
   y: number;
-  type: 'canvas';
+  type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
 }
