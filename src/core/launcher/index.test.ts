@@ -56,7 +56,7 @@ describe('Launcher', () => {
     expect(Launcher).toBeDefined();
   });
 
-  test('should be initialize realtime service', () => {
+  test('should be inicialize realtime service', () => {
     expect(ABLY_REALTIME_MOCK.start).toHaveBeenCalled();
   });
 

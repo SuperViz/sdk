@@ -53,9 +53,11 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
   kickParticipantObserver: MOCK_OBSERVER_HELPER,
   authenticationObserver: MOCK_OBSERVER_HELPER,
+  commentsObserver: MOCK_OBSERVER_HELPER,
   hostAvailabilityObserver: MOCK_OBSERVER_HELPER,
   subscribeToParticipantUpdate: jest.fn(),
   unsubscribeFromParticipantUpdate: jest.fn(),
   updateMyProperties: jest.fn(),
   getParticipantSlot: jest.fn(),
+  updateComments: jest.fn(),
 } as unknown as AblyRealtimeService;

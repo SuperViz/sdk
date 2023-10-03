@@ -70,7 +70,7 @@ describe('VideoComponent', () => {
 
     VideoComponentInstance = new VideoComponent();
     VideoComponentInstance.attach({
-      realtime: ABLY_REALTIME_MOCK,
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
@@ -90,7 +90,7 @@ describe('VideoComponent', () => {
     });
 
     VideoComponentInstance.attach({
-      realtime: ABLY_REALTIME_MOCK,
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: {
         ...MOCK_LOCAL_PARTICIPANT,
         avatar: MOCK_AVATAR,

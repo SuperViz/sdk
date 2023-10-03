@@ -4,6 +4,7 @@ import throttle from 'lodash/throttle';
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
+import { Annotation } from '../../../components/comments/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -29,6 +30,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
 
+  private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
@@ -192,6 +194,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.supervizChannel = this.client.channels.get(this.roomId);
     this.supervizChannel.on(this.onAblyChannelStateChange);
     this.supervizChannel.subscribe('update', this.onAblyRoomUpdate);
+
+    // join the comments channel
+    this.commentsChannel = this.client.channels.get(`${this.roomId}:comments`);
+    this.commentsChannel.subscribe('update', this.onCommentsChannelUpdate);
 
     // presence only in the main channel
     this.supervizChannel.presence.subscribe('enter', this.onAblyPresenceEnter);
@@ -1154,5 +1160,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return true;
     }
     return false;
+  };
+
+  /** Comments */
+  private onCommentsChannelUpdate = (message: Ably.Types.Message): void => {
+    this.logger.log('REALTIME', 'Comments channel update', message);
+    this.commentsObserver.publish(message.data);
+  };
+
+  public updateComments = (annotations: Annotation[]) => {
+    this.commentsChannel.publish('update', annotations);
   };
 }

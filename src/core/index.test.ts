@@ -93,7 +93,7 @@ describe('initialization errors', () => {
     ).rejects.toThrow('Group fields is required');
   });
 
-  test('should throw an error if environment is invalid', async () => {
+  test('should throw an error if envoriment is invalid', async () => {
     ApiService.fetchConfig = jest.fn().mockResolvedValue(undefined);
 
     expect(sdk(UNIT_TEST_API_KEY, SIMPLE_INITIALIZATION_MOCK)).rejects.toThrow(

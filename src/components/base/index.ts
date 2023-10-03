@@ -10,12 +10,12 @@ import { DefaultAttachComponentOptions } from './types';
 export abstract class BaseComponent {
   private observers: Record<string, Observer> = {};
 
+  public abstract name: ComponentNames;
+  protected abstract logger: Logger;
   protected localParticipant: Participant;
   protected group: Group;
   protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
-  public abstract name: ComponentNames;
-  protected abstract logger: Logger;
 
   protected isAttached = false;
 
@@ -42,7 +42,18 @@ export abstract class BaseComponent {
     this.eventBus = eventBus;
     this.isAttached = true;
 
-    this.logger.log('attached');
+    if (!this.realtime.isJoinedRoom) {
+      this.logger.log(`${this.name} @ attach - not joined yet`);
+
+      setTimeout(() => {
+        this.logger.log(`${this.name} @ attach - retrying`);
+        this.attach(params);
+      }, 1000);
+
+      return;
+    }
+
+    this.logger.log(`${this.name} @ attached`);
 
     this.start();
   };
