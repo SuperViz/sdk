@@ -16,6 +16,7 @@ export declare class RealtimeService implements DefaultRealtimeService {
     kickAllParticipantsObserver: Observer;
     kickParticipantObserver: Observer;
     authenticationObserver: Observer;
+    commentsObserver: Observer;
     constructor();
     /**
      * @function subscribeToParticipantUpdate

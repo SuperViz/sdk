@@ -6,12 +6,12 @@ import { ComponentNames } from '../types';
 import { DefaultAttachComponentOptions } from './types';
 export declare abstract class BaseComponent {
     private observers;
+    abstract name: ComponentNames;
+    protected abstract logger: Logger;
     protected localParticipant: Participant;
     protected group: Group;
     protected realtime: AblyRealtimeService;
     protected eventBus: EventBus;
-    abstract name: ComponentNames;
-    protected abstract logger: Logger;
     protected isAttached: boolean;
     /**
      * @function attach

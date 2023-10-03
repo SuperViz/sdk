@@ -2,6 +2,7 @@
 import Ably from 'ably';
 import { TranscriptState } from '../../../common/types/events.types';
 import { Participant } from '../../../common/types/participant.types';
+import { Annotation } from '../../../components/comments/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -11,6 +12,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private participants;
     private hostParticipantId;
     private myParticipant;
+    private commentsChannel;
     private supervizChannel;
     private clientSyncChannel;
     private clientRoomStateChannel;
@@ -365,4 +367,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {boolean}
      */
     private isMessageTooBig;
+    /** Comments */
+    private onCommentsChannelUpdate;
+    updateComments: (annotations: Annotation[]) => void;
 }

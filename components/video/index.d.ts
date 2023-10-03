@@ -28,6 +28,7 @@ export declare class VideoComponent extends BaseComponent {
     /**
      * @function startVideo
      * @description start video manager
+     * @param {VideoManagerOptions} options - video manager params
      * @returns {void}
      */
     private startVideo;
@@ -56,9 +57,9 @@ export declare class VideoComponent extends BaseComponent {
      */
     private unsubscribeFromRealtimeEvents;
     /**
-     * @function createParticipantFromAblyPresence
+     * @function createParticipantListFromAblyList
      * @description update participant list from ably participant list
-     * @param {AblyParticipant} participant - ably participant list
+     * @param {Record<string, AblyParticipant>} participants - ably participant list
      * @returns {Participant[]} participant list
      * */
     private createParticipantFromAblyPresence;
@@ -78,7 +79,7 @@ export declare class VideoComponent extends BaseComponent {
      */
     private onWaitingForHost;
     /**
-     * @function onConnectionStatusChange
+     * @function onCOnnectionStatusChange
      * @description handler for connection status change event
      * @param {MeetingConnectionStatus} newStatus - new connection status
      * @returns {void}
@@ -145,6 +146,7 @@ export declare class VideoComponent extends BaseComponent {
     /**
      * @function onKickLocalParticipant
      * @description handler for kick local participant event
+     * @param {string} participantId - participant id
      * @returns {void}
      */
     private onKickLocalParticipant;
