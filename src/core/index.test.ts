@@ -28,11 +28,7 @@ jest.mock('../services/api');
 jest.mock('../services/auth-service', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation((_, apiKey: string) => {
-    if (apiKey === UNIT_TEST_API_KEY) {
-      return true;
-    }
-
-    return false;
+    return apiKey === UNIT_TEST_API_KEY;
   }),
 }));
 jest.mock('../services/remote-config-service');
@@ -76,14 +72,14 @@ describe('initialization errors', () => {
     await expect(
       sdk(UNIT_TEST_API_KEY, {
         ...SIMPLE_INITIALIZATION_MOCK,
-        participant: { name: 'unit-test-participant-name' } as Participant,
+        participant: { name: 'unit-test-participant-name' } as SuperVizSdkOptions['participant'],
       }),
     ).rejects.toThrow('Participants fields is required');
 
     await expect(
       sdk(UNIT_TEST_API_KEY, {
         ...SIMPLE_INITIALIZATION_MOCK,
-        participant: undefined as unknown as Participant,
+        participant: undefined as unknown as SuperVizSdkOptions['participant'],
       }),
     ).rejects.toThrow('Participants fields is required');
   });

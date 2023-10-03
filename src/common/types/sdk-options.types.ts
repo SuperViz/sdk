@@ -1,4 +1,4 @@
-import type { Participant, Group } from './participant.types';
+import type { Group, Avatar, ParticipantType } from './participant.types';
 
 export enum EnvironmentTypes {
   LOCAL = 'local',
@@ -8,7 +8,12 @@ export enum EnvironmentTypes {
 
 export interface SuperVizSdkOptions {
   roomId: string;
-  participant: Participant;
+  participant: {
+    id: string;
+    name: string;
+    type?: ParticipantType | 'host' | 'guest' | 'audience';
+    avatar?: Avatar;
+  };
   group: Group;
   shouldKickParticipantsOnHostLeave?: boolean;
 

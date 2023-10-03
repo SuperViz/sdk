@@ -27,7 +27,7 @@ const MOCK_COMPONENT = {
 } as unknown as BaseComponent;
 
 const DEFAULT_INITIALIZATION_MOCK: LauncherOptions = {
-  participant: MOCK_LOCAL_PARTICIPANT,
+  participant: MOCK_LOCAL_PARTICIPANT as unknown as LauncherOptions['participant'],
   group: MOCK_GROUP,
 };
 

@@ -1,9 +1,9 @@
 import { debug } from 'debug';
 
+import { ParticipantType } from '../common/types/participant.types';
 import { SuperVizSdkOptions } from '../common/types/sdk-options.types';
 import ApiService from '../services/api';
 import AuthService from '../services/auth-service';
-import { BrowserService } from '../services/browser';
 import config from '../services/config';
 import RemoteConfigService from '../services/remote-config-service';
 
@@ -83,7 +83,12 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   });
 
   return LauncherFacade(
-    Object.assign({}, options, { apiKey, ablyKey, conferenceLayerUrl, apiUrl }),
+    Object.assign({}, options, {
+      participant: {
+        ...options.participant,
+        type: options.participant.type || ParticipantType.GUEST,
+      },
+    }),
   );
 };
 
