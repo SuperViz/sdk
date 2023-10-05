@@ -6,6 +6,9 @@ export const MOCK_ANNOTATION = {
     type: 'canvas',
   }),
   resolved: false,
+  waterMark: {
+    ALL: 'all',
+  },
   comments: [
     {
       uuid: 'any_uuid',
