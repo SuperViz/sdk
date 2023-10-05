@@ -11,6 +11,7 @@ import {
   DeviceEvent,
   FrameEvent,
   MeetingConnectionStatus,
+  MeetingControlsEvent,
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
@@ -562,6 +563,62 @@ describe('VideoComponent', () => {
       );
 
       expect(VideoComponentInstance['detach']).toBeCalled();
+    });
+  });
+
+  describe('toolbar controls', () => {
+    test('should toggle chat', () => {
+      VideoComponentInstance['toggleChat']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
+        MeetingControlsEvent.TOGGLE_MEETING_CHAT,
+      );
+    });
+
+    test('should toggle meeting setup', () => {
+      VideoComponentInstance['toggleMeetingSetup']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
+        MeetingControlsEvent.TOGGLE_MEETING_SETUP,
+      );
+    });
+
+    test('should toggle user`s cam', () => {
+      VideoComponentInstance['toggleCam']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
+        MeetingControlsEvent.TOGGLE_CAM,
+      );
+    });
+
+    test('should toggle user`s mic', () => {
+      VideoComponentInstance['toggleMicrophone']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
+        MeetingControlsEvent.TOGGLE_MICROPHONE,
+      );
+    });
+
+    test('should toggle screenshare', () => {
+      VideoComponentInstance['toggleScreenShare']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
+        MeetingControlsEvent.TOGGLE_SCREENSHARE,
+      );
+    });
+
+    test('should toggle transcript', () => {
+      VideoComponentInstance['toggleTranscript']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
+        MeetingControlsEvent.TOGGLE_TRANSCRIPT,
+      );
+    });
+
+    test('should hang up', () => {
+      VideoComponentInstance['hangUp']();
+
+      expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(MeetingControlsEvent.HANG_UP);
     });
   });
 });

@@ -5,6 +5,7 @@ import {
   Dimensions,
   FrameEvent,
   MeetingConnectionStatus,
+  MeetingControlsEvent,
   MeetingEvent,
   MeetingState,
   RealtimeEvent,
@@ -56,6 +57,69 @@ export class VideoComponent extends BaseComponent {
 
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
+  }
+
+  /**
+   * @function toggleMeetingSetup
+   * @description open/close meeting setup
+   * @returns {void}
+   */
+  public toggleMeetingSetup(): void {
+    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MEETING_SETUP);
+  }
+
+  /**
+   * @function toggleMicrophone
+   * @description mute/unmute user's microphone
+   * @returns {void}
+   */
+  public toggleMicrophone(): void {
+    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MICROPHONE);
+  }
+
+  /**
+   * @function toggleCam
+   * @description enable/disable user's camera
+   * @returns {void}
+   */
+  public toggleCam(): void {
+    this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_CAM);
+  }
+
+  /**
+   * @function toggleScreenShare
+   * @description enable/disable user's screen share
+   * @returns {void}
+   */
+  public toggleScreenShare(): void {
+    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_SCREENSHARE);
+  }
+
+  /**
+   * @function toggleChat
+   * @description open/close meeting chat
+   * @returns {void}
+   */
+  public toggleChat(): void {
+    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
+  }
+
+  /**
+   * @function toggleTranscript
+   * @description open/close meeting transcript
+   * @returns {void}
+   */
+  public toggleTranscript(): void {
+    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_TRANSCRIPT);
+  }
+
+  /**
+   * @function hangUp
+   * @description hang up user's call
+   * @returns {void}
+   * */
+  public hangUp(): void {
+    this.videoManager.publishMessageToFrame(MeetingControlsEvent.HANG_UP);
   }
 
   /**
