@@ -107,6 +107,12 @@ export declare class CommentsComponent extends BaseComponent {
      */
     private fetchAnnotations;
     /**
+     * @function waterMarkState
+     * @description Fetch waterMarkState from the API if must be shown
+     * @returns {Promise<void>}
+     */
+    private waterMarkState;
+    /**
      * @function resolveAnnotation
      * @description Resolves an annotation by UUID using the API
      * @param {CustomEvent} event - The custom event containing the UUID of the annotation to resolve

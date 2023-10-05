@@ -7,6 +7,7 @@ export declare class Comments extends WebComponentsBaseElement {
     open: boolean;
     annotations: Annotation[];
     annotationFilter: AnnotationFilter;
+    waterMarkState: boolean;
     static properties: {
         open: {
             type: BooleanConstructor;
@@ -17,11 +18,16 @@ export declare class Comments extends WebComponentsBaseElement {
         annotationFilter: {
             type: StringConstructor;
         };
+        waterMarkState: {
+            type: BooleanConstructor;
+        };
     };
     constructor();
     updateAnnotations(data: Annotation[]): void;
     private toggle;
+    waterMarkStatus(waterMark: boolean): void;
     private setFilter;
+    updated(changedProperties: any): void;
     protected render(): import("lit-html").TemplateResult<1>;
 }
 export {};
