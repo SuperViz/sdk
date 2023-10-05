@@ -4,7 +4,7 @@ export const LIMITS_MOCK: ComponentLimits = {
   videoConference: true,
   presence: true,
   presence3d: true,
-  comments: false,
+  comments: true,
   comments3d: true,
   transcript: true,
 };
