@@ -14,6 +14,48 @@ export declare class VideoComponent extends BaseComponent {
     private params?;
     constructor(params?: VideoComponentOptions);
     /**
+     * @function toggleMeetingSetup
+     * @description open/close meeting setup
+     * @returns {void}
+     */
+    toggleMeetingSetup(): void;
+    /**
+     * @function toggleMicrophone
+     * @description mute/unmute user's microphone
+     * @returns {void}
+     */
+    toggleMicrophone(): void;
+    /**
+     * @function toggleCam
+     * @description enable/disable user's camera
+     * @returns {void}
+     */
+    toggleCam(): void;
+    /**
+     * @function toggleScreenShare
+     * @description enable/disable user's screen share
+     * @returns {void}
+     */
+    toggleScreenShare(): void;
+    /**
+     * @function toggleChat
+     * @description open/close meeting chat
+     * @returns {void}
+     */
+    toggleChat(): void;
+    /**
+     * @function toggleTranscript
+     * @description open/close meeting transcript
+     * @returns {void}
+     */
+    toggleTranscript(): void;
+    /**
+     * @function hangUp
+     * @description hang up user's call
+     * @returns {void}
+     * */
+    hangUp(): void;
+    /**
      * @function start
      * @description start video component
      * @returns {void}
