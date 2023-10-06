@@ -36,6 +36,7 @@ export enum MeetingControlsEvent {
   TOGGLE_MICROPHONE = 'meeting-controls.toggle-microphone',
   TOGGLE_CAM = 'meeting-controls.toggle-cam',
   TOGGLE_SCREENSHARE = 'meeting-controls.toggle-screenshare',
+  TOGGLE_TRANSCRIPT = 'meeting-controls.toggle-transcript',
   HANG_UP = 'hang-up',
 }
 
