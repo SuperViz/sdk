@@ -115,7 +115,7 @@ describe('CommentsCommentInput', () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  test('should set pin cordinates when comment-input-focus event happend', async () => {
+  test('should set pin coordinates when comment-input-focus event happend', async () => {
     window.document.body.dispatchEvent(
       new CustomEvent('comment-input-focus', {
         detail: { x: 0, y: 0, type: 'canvas' },
@@ -124,6 +124,6 @@ describe('CommentsCommentInput', () => {
 
     await sleep();
 
-    expect(element['pinCordinates']).toStrictEqual({ x: 0, y: 0, type: 'canvas' });
+    expect(element['pinCoordinates']).toStrictEqual({ x: 0, y: 0, type: 'canvas' });
   });
 });
