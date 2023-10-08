@@ -1,3 +1,4 @@
+import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import {
   ABLY_REALTIME_MOCK,
   createRealtimeHistory,
@@ -92,5 +93,12 @@ describe('PubSub', () => {
     expect(PubSubInstance.fetchHistory).toBeCalled();
     expect(ABLY_REALTIME_MOCK.fetchSyncClientProperty).toBeCalled();
     expect(history).toEqual(createRealtimeHistory());
+  });
+
+  test('should destroy service', () => {
+    PubSubInstance.destroy();
+
+    expect(PubSubInstance['observers']).toEqual(new Map());
+    expect(ABLY_REALTIME_MOCK.syncPropertiesObserver.unsubscribe).toHaveBeenCalled();
   });
 });
