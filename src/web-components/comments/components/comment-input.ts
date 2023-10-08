@@ -16,7 +16,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
 
-  private pinCordinates: PinCoordinates | null = null;
+  private pinCoordinates: PinCoordinates | null = null;
 
   constructor() {
     super();
@@ -46,7 +46,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private commentInputFocus = ({ detail }: CustomEvent) => {
-    this.pinCordinates = detail;
+    this.pinCoordinates = detail;
     this.getCommentInput().focus();
   };
 
@@ -107,9 +107,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       {
         text,
         position: {
-          x: this.pinCordinates?.x ?? null,
-          y: this.pinCordinates?.y ?? null,
-          type: this.pinCordinates?.type ?? null,
+          x: this.pinCoordinates?.x ?? null,
+          y: this.pinCoordinates?.y ?? null,
+          z: this.pinCoordinates?.z ?? null,
+          type: this.pinCoordinates?.type ?? null,
         },
       },
       {
@@ -118,7 +119,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       },
     );
 
-    this.pinCordinates = null;
+    this.pinCoordinates = null;
     input.value = '';
     sendBtn.disabled = true;
     this.updateHeight();
