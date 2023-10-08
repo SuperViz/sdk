@@ -7,7 +7,7 @@ import {
   MeetingControlsEvent,
   ParticipantEvent,
 } from './common/types/events.types';
-import { VideoComponent, PresenceMouseComponent } from './components';
+import { VideoComponent, PresenceMouseComponent, Realtime, CommentsComponent } from './components';
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
@@ -36,6 +36,8 @@ if (window) {
     ParticipantEvent,
     VideoComponent,
     PresenceMouseComponent,
+    Realtime,
+    CommentsComponent,
   };
 }
 
