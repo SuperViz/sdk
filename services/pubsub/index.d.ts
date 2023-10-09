@@ -43,6 +43,7 @@ export declare class PubSub {
      * @returns {void}
      */
     publishEventToClient: (event: string, data?: unknown) => void;
+    destroy: () => void;
     /**
      * @function onSyncPropertiesChange
      * @description - sync properties change handler

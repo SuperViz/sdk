@@ -1,13 +1,13 @@
+import { Observable } from '../../common/utils';
+import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
-import { RealtimeMessage } from '../../services/realtime/ably/types';
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
-export declare class Launcher implements DefaultLauncher {
+export declare class Launcher extends Observable implements DefaultLauncher {
     private readonly shouldKickParticipantsOnHostLeave;
-    private readonly logger;
+    protected readonly logger: Logger;
     private participant;
     private group;
     private readonly realtime;
-    private readonly pubsub;
     private readonly eventBus;
     private participants;
     constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions);
@@ -25,37 +25,6 @@ export declare class Launcher implements DefaultLauncher {
      * @returns {void}
      */
     removeComponent: (component: BaseComponent) => void;
-    /**
-     * @function subscribeToPubSubEvent
-     * @description subscribe to pubsub event
-     * @param event - event name
-     * @param callback - callback function
-     * @returns {void}
-     */
-    subscribeToPubSubEvent: (event: string, callback: (data: unknown) => void) => void;
-    /**
-     * @function unsubscribeFromPubSubEvent
-     * @description unsubscribe from pubsub event
-     * @param event - event name
-     * @param callback - callback function
-     * @returns {void}
-     */
-    unsubscribeFromPubSubEvent: (event: string, callback: (data: unknown) => void) => void;
-    /**
-     * @function publishToPubSubEvent
-     * @description publish to pubsub event
-     * @param event - event name
-     * @param data - data to publish
-     * @returns {void}
-     */
-    publishToPubSubEvent: (event: string, data: unknown) => void;
-    /**
-     * @function fetchPubSubHistory
-     * @description fetch pubsub history
-     * @param eventName - event name
-     * @returns realtime message or realtime history
-     */
-    fetchPubSubHistory: (eventName?: string) => Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
     /**
      * @function startRealtime
      * @description start realtime service and join to room

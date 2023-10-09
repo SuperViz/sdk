@@ -1,4 +1,5 @@
 export declare enum ComponentNames {
+    REALTIME = "realtime",
     PRESENCE = "presence",
     VIDEO_CONFERENCE = "videoConference",
     COMMENTS = "comments",
