@@ -2,8 +2,8 @@ import { Avatar, Group, Participant, ParticipantType } from '../src';
 import { AblyParticipant } from '../src/services/realtime/ably/types';
 
 export const MOCK_AVATAR: Avatar = {
-  model: 'unit-test-avatar-model.glb',
-  thumbnail: 'unit-test-avatar-thumbnail.png',
+  imageUrl: 'unit-test-avatar-thumbnail.png',
+  model3DUrl: 'unit-test-avatar-model.glb',
 };
 
 export const MOCK_LOCAL_PARTICIPANT: Participant = {

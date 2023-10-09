@@ -164,7 +164,8 @@ export class VideoComponent extends BaseComponent {
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
-      canUseDefaultAvatars: !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model,
+      canUseDefaultAvatars:
+        !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
       canUseGather: !!this.params?.enableGather,
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
