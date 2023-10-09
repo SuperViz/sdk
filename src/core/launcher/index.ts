@@ -9,9 +9,8 @@ import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import LimitsService from '../../services/limits';
-import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
-import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
+import { AblyParticipant } from '../../services/realtime/ably/types';
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';

@@ -1,5 +1,5 @@
 import { Group, Participant } from '../../common/types/participant.types';
-import { Logger, Observer, Observable } from '../../common/utils';
+import { Logger, Observable } from '../../common/utils';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
