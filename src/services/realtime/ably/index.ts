@@ -488,11 +488,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {RealtimeMessage[]} data - The data to save as the latest state of the room.
    * @returns {void}
    */
-  private saveClientRoomState = (name: string, data: RealtimeMessage[]): void => {
-    this.clientRoomState[name] = data[data.length - 1];
+  private saveClientRoomState = async (name: string, data: RealtimeMessage[]): Promise<void> => {
+    const previusHistory = await this.fetchSyncClientProperty();
+
+    this.clientRoomState = Object.assign({}, previusHistory, {
+      [name]: data[data.length - 1],
+    });
     this.clientRoomStateChannel.publish('update', this.clientRoomState);
 
-    logger.log('REALTIME', 'setting new room state backup');
+    logger.log('REALTIME', 'setting new room state backup', this.clientRoomState);
   };
 
   /**
