@@ -21,6 +21,6 @@ export interface Group {
 }
 
 export interface Avatar {
-  model: string;
-  thumbnail: string;
+  model3DUrl: string;
+  imageUrl: string;
 }
