@@ -1,4 +1,9 @@
-import { PresenceMouseComponent, VideoComponent } from '../../components';
+import {
+  CommentsComponent,
+  PresenceMouseComponent,
+  Realtime,
+  VideoComponent,
+} from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
 
 import {
@@ -23,4 +28,6 @@ export interface SuperVizCdn {
   ParticipantEvent: typeof ParticipantEvent;
   VideoComponent: typeof VideoComponent;
   PresenceMouseComponent: typeof PresenceMouseComponent;
+  Realtime: typeof Realtime;
+  CommentsComponent: typeof CommentsComponent;
 }

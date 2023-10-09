@@ -2,33 +2,34 @@ import { isEqual } from 'lodash';
 
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { Group, Participant } from '../../common/types/participant.types';
+import { Observable } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import LimitsService from '../../services/limits';
-import { PubSub } from '../../services/pubsub';
 import { AblyRealtimeService } from '../../services/realtime';
-import { AblyParticipant, RealtimeMessage } from '../../services/realtime/ably/types';
+import { AblyParticipant } from '../../services/realtime/ably/types';
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 
-export class Launcher implements DefaultLauncher {
+export class Launcher extends Observable implements DefaultLauncher {
   private readonly shouldKickParticipantsOnHostLeave: boolean;
-  private readonly logger: Logger;
+  protected readonly logger: Logger;
 
   private participant: Participant;
   private group: Group;
 
   private readonly realtime: AblyRealtimeService;
-  private readonly pubsub: PubSub;
   private readonly eventBus: EventBus = new EventBus();
 
   private participants: Participant[] = [];
 
   constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions) {
+    super();
+
     this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave ?? true;
     this.participant = participant as Participant;
     this.group = group;
@@ -39,8 +40,6 @@ export class Launcher implements DefaultLauncher {
       config.get<string>('ablyKey'),
     );
 
-    // events with realtime
-    this.pubsub = new PubSub(this.realtime);
     // internal events without realtime
     this.eventBus = new EventBus();
 
@@ -82,54 +81,6 @@ export class Launcher implements DefaultLauncher {
    */
   public removeComponent = (component: BaseComponent): void => {
     component.detach();
-  };
-
-  /**
-   * @function subscribeToPubSubEvent
-   * @description subscribe to pubsub event
-   * @param event - event name
-   * @param callback - callback function
-   * @returns {void}
-   */
-  public subscribeToPubSubEvent = (event: string, callback: (data: unknown) => void): void => {
-    this.logger.log('launcher service @ subscribeToPubSubEvent');
-    this.pubsub.subscribe(event, callback);
-  };
-
-  /**
-   * @function unsubscribeFromPubSubEvent
-   * @description unsubscribe from pubsub event
-   * @param event - event name
-   * @param callback - callback function
-   * @returns {void}
-   */
-  public unsubscribeFromPubSubEvent = (event: string, callback: (data: unknown) => void): void => {
-    this.logger.log('launcher service @ unsubscribeFromPubSubEvent');
-    this.pubsub.unsubscribe(event, callback);
-  };
-
-  /**
-   * @function publishToPubSubEvent
-   * @description publish to pubsub event
-   * @param event - event name
-   * @param data - data to publish
-   * @returns {void}
-   */
-  public publishToPubSubEvent = (event: string, data: unknown): void => {
-    this.logger.log('launcher service @ publishToPubSubEvent');
-    this.pubsub.publish(event, data);
-  };
-
-  /**
-   * @function fetchPubSubHistory
-   * @description fetch pubsub history
-   * @param eventName - event name
-   * @returns realtime message or realtime history
-   */
-  public fetchPubSubHistory = (
-    eventName?: string,
-  ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> => {
-    return this.pubsub.fetchHistory(eventName);
   };
 
   /**
@@ -193,14 +144,14 @@ export class Launcher implements DefaultLauncher {
 
     if (!isEqual(this.participants, participantList)) {
       this.participants = participantList;
-      this.pubsub.publishEventToClient(ParticipantEvent.LIST_UPDATED, participantList);
+      this.publish(ParticipantEvent.LIST_UPDATED, participantList);
 
       this.logger.log('Publishing ParticipantEvent.LIST_UPDATED', participantList);
     }
 
     if (localParticipant && !isEqual(this.participant, localParticipant)) {
       this.participant = localParticipant;
-      this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_UPDATED, localParticipant);
+      this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
       this.logger.log('Publishing ParticipantEvent.UPDATED', localParticipant);
     }
@@ -223,11 +174,11 @@ export class Launcher implements DefaultLauncher {
 
     if (participant.id === this.participant.id) {
       this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-      this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_JOINED, participant);
+      this.publish(ParticipantEvent.LOCAL_JOINED, participant);
     }
 
     this.logger.log('launcher service @ onParticipantJoined - participant joined', participant);
-    this.pubsub.publishEventToClient(ParticipantEvent.JOINED, participant);
+    this.publish(ParticipantEvent.JOINED, participant);
   };
 
   /**
@@ -247,11 +198,11 @@ export class Launcher implements DefaultLauncher {
 
     if (participant.id === this.participant.id) {
       this.logger.log('launcher service @ onParticipantLeave - local participant left');
-      this.pubsub.publishEventToClient(ParticipantEvent.LOCAL_LEFT, participant);
+      this.publish(ParticipantEvent.LOCAL_LEFT, participant);
     }
 
     this.logger.log('launcher service @ onParticipantLeave - participant left', participant);
-    this.pubsub.publishEventToClient(ParticipantEvent.LEFT, participant);
+    this.publish(ParticipantEvent.LEFT, participant);
   };
 
   /**
@@ -266,7 +217,8 @@ export class Launcher implements DefaultLauncher {
     });
 
     if (this.realtime.isLocalParticipantHost) {
-      this.publishToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
+      this.realtime.setSyncProperty(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
+      this.publish(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
     }
   };
 
@@ -280,10 +232,10 @@ export class Launcher implements DefaultLauncher {
     this.logger.log('launcher service @ onHostAvailabilityChange');
 
     if (isHostAvailable) {
-      this.pubsub.publishEventToClient(RealtimeEvent.REALTIME_HOST_AVAILABLE);
+      this.publish(RealtimeEvent.REALTIME_HOST_AVAILABLE);
       return;
     }
-    this.pubsub.publishEventToClient(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
+    this.publish(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
   };
 }
 
@@ -297,10 +249,8 @@ export default (options: LauncherOptions): LauncherFacade => {
   const launcher = new Launcher(options);
 
   return {
-    subscribe: launcher.subscribeToPubSubEvent,
-    unsubscribe: launcher.unsubscribeFromPubSubEvent,
-    publish: launcher.publishToPubSubEvent,
-    fetchHistory: launcher.fetchPubSubHistory,
+    subscribe: launcher.subscribe,
+    unsubscribe: launcher.unsubscribe,
     addComponent: launcher.addComponent,
     removeComponent: launcher.removeComponent,
   };

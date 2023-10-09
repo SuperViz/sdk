@@ -2,11 +2,15 @@
 
 ```ts
 import { SuperViz } from '@superviz/sdk';
-import { VideoComponent } from '@superviz/sdk/components/video.ts';
-import { CommentsComponent, CanvasAdapter } from '@superviz/sdk/components/comments.ts';
+import {
+  VideoComponent,
+  Realtime,
+  PresenceComponent,
+  CommentsComponent,
+  CanvasAdapter,
+} from '@superviz/sdk/components';
 import { Presence3D, CommentsAdapter } from '@superviz/matterport';
 import { Presence3D, CommentsAdapter } from '@superviz/three';
-import { PresenceComponent } from '@superviz/sdk/components/presence.ts';
 
 const SuperViz = await Manager(DEVELOPER_KEY, {
   roomId: this.roomId,
@@ -21,6 +25,10 @@ const SuperViz = await Manager(DEVELOPER_KEY, {
 });
 
 const video = new VideoComponent();
+SuperViz.addComponent(video);
+
+const realtime = new Realtime();
+SuperViz.addComponent(realtime);
 
 const mpPresence = new Presence3D(mpInstance);
 SuperViz.addComponent(mpPresence);
@@ -31,20 +39,15 @@ const comments = new CommentsComponent(canvasAdapter);
 SuperViz.addComponent(comments);
 
 // Initialize coments with matterport 3d component
-const canvasAdapter = new CommentsAdapter(mpInstance);
-const comments = new CommentsComponent(canvasAdapter);
+const mpCommentsAdapter = new CommentsAdapter(mpInstance);
+const comments = new CommentsComponent(mpCommentsAdapter);
 SuperViz.addComponent(comments);
-
-// const mpCommentsAdapter = new CommentsAdapter(mpInstance);
-
-// add configs
-SuperViz.addComponent(video);
 SuperViz.addComponent(mpPresence);
 
 // PubSub
-SuperViz.unsubscribe('presence-updated', () => {});
-SuperViz.subscribe('presence-updated', () => {});
-SuperViz.publish('presence-updated', {});
+realtime.unsubscribe('presence-updated', () => {});
+realtime.subscribe('presence-updated', () => {});
+realtime.publish('presence-updated', {});
 
 // removing component
 SuperViz.removeComponent(mpPresence);

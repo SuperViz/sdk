@@ -89,6 +89,14 @@ export class PubSub {
     this.observers.get(event).publish(data);
   };
 
+  public destroy = (): void => {
+    this.logger.log('pubsub service @ destroy');
+
+    this.realtime.syncPropertiesObserver.unsubscribe(this.onSyncPropertiesChange);
+    this.observers.forEach((observer) => observer.destroy());
+    this.observers.clear();
+  };
+
   /**
    * @function onSyncPropertiesChange
    * @description - sync properties change handler

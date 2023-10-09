@@ -22,6 +22,7 @@ jest.mock('../../services/event-bus', () => ({
 jest.mock('../../services/api');
 
 const MOCK_COMPONENT = {
+  name: 'mock-component',
   attach: jest.fn(),
   detach: jest.fn(),
 } as unknown as BaseComponent;
@@ -30,18 +31,6 @@ const DEFAULT_INITIALIZATION_MOCK: LauncherOptions = {
   participant: MOCK_LOCAL_PARTICIPANT as unknown as LauncherOptions['participant'],
   group: MOCK_GROUP,
 };
-
-const PUB_SUB_MOCK = {
-  subscribe: jest.fn(),
-  unsubscribe: jest.fn(),
-  publish: jest.fn(),
-  fetchHistory: jest.fn(),
-  publishEventToClient: jest.fn(),
-};
-
-jest.mock('../../services/pubsub', () => ({
-  PubSub: jest.fn().mockImplementation(() => PUB_SUB_MOCK),
-}));
 
 describe('Launcher', () => {
   let LauncherInstance: Launcher;
@@ -58,36 +47,6 @@ describe('Launcher', () => {
 
   test('should be inicialize realtime service', () => {
     expect(ABLY_REALTIME_MOCK.start).toHaveBeenCalled();
-  });
-
-  describe('PubSub', () => {
-    test('should be subscribe to event', () => {
-      const callback = jest.fn();
-
-      LauncherInstance.subscribeToPubSubEvent('test', callback);
-
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith('test', callback);
-    });
-
-    test('should be unsubscribe from event', () => {
-      const callback = jest.fn();
-
-      LauncherInstance.unsubscribeFromPubSubEvent('test', callback);
-
-      expect(PUB_SUB_MOCK.unsubscribe).toHaveBeenCalledWith('test', callback);
-    });
-
-    test('should be publish event to realtime', () => {
-      LauncherInstance.publishToPubSubEvent('test', 'test');
-
-      expect(PUB_SUB_MOCK.publish).toHaveBeenCalledWith('test', 'test');
-    });
-
-    test('should be fetch history', async () => {
-      LauncherInstance.fetchPubSubHistory('test');
-
-      expect(PUB_SUB_MOCK.fetchHistory).toHaveBeenCalledWith('test');
-    });
   });
 
   describe('Components', () => {
@@ -123,7 +82,10 @@ describe('Launcher', () => {
   describe('Participant Events', () => {
     test('should publish ParticipantEvent.JOINED event', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.LIST_UPDATED, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+
+      LauncherInstance.subscribe(ParticipantEvent.LIST_UPDATED, callback);
 
       LauncherInstance['onParticipantListUpdate']({
         participant1: {
@@ -139,13 +101,16 @@ describe('Launcher', () => {
         },
       });
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LIST_UPDATED, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.LIST_UPDATED, callback);
+      expect(LauncherInstance['publish']).toHaveBeenCalled();
     });
 
     test('should publish ParticipantEvent.LOCAL_UPDATED event', () => {
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.JOINED, callback);
+      LauncherInstance.subscribe(ParticipantEvent.JOINED, callback);
 
       LauncherInstance['onParticipantListUpdate']({
         [MOCK_LOCAL_PARTICIPANT.id]: {
@@ -161,13 +126,15 @@ describe('Launcher', () => {
         },
       });
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
+      expect(LauncherInstance['publish']).toHaveBeenCalledTimes(2);
     });
 
     test('should publish ParticipantEvent.LEFT event', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.LEFT, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(ParticipantEvent.LEFT, callback);
 
       const participant = {
         clientId: 'client1',
@@ -186,13 +153,15 @@ describe('Launcher', () => {
       });
       LauncherInstance['onParticipantLeave'](participant as AblyParticipant);
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
+      expect(LauncherInstance['publish']).toHaveBeenCalled();
     });
 
     test('should skip and not publish ParticipantEvent.LEFT event', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.LEFT, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(ParticipantEvent.LEFT, callback);
 
       const participant = {
         clientId: 'client1',
@@ -208,13 +177,15 @@ describe('Launcher', () => {
 
       LauncherInstance['onParticipantLeave'](participant as AblyParticipant);
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
+      expect(LauncherInstance['publish']).not.toHaveBeenCalled();
     });
 
     test('should publish ParticipantEvent.LOCAL_LEFT event', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.LEFT, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(ParticipantEvent.LEFT, callback);
 
       const participant = {
         clientId: 'client1',
@@ -234,13 +205,15 @@ describe('Launcher', () => {
       });
       LauncherInstance['onParticipantLeave'](participant as AblyParticipant);
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
+      expect(LauncherInstance['publish']).toHaveBeenCalled();
     });
 
     test('should publish ParticipantEvent.JOINED event', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.JOINED, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(ParticipantEvent.JOINED, callback);
 
       const participant = {
         clientId: 'client1',
@@ -260,13 +233,15 @@ describe('Launcher', () => {
       });
       LauncherInstance['onParticipantJoined'](participant as AblyParticipant);
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
+      expect(LauncherInstance['publish']).toHaveBeenCalled();
     });
 
     test('should skip and publish ParticipantEvent.JOINED event', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(ParticipantEvent.JOINED, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(ParticipantEvent.JOINED, callback);
 
       const participant = {
         clientId: 'client1',
@@ -283,29 +258,36 @@ describe('Launcher', () => {
 
       LauncherInstance['onParticipantJoined'](participant as AblyParticipant);
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
-      expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
+      expect(LauncherInstance['publish']).not.toHaveBeenCalled();
     });
 
     test("should not publish RealtimeEvent.REALTIME_HOST_CHANGE if my participant isn't host", () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      // @ts-ignore
+      ABLY_REALTIME_MOCK.isLocalParticipantHost = false;
+
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
 
       LauncherInstance['onHostParticipantDidChange']({
         newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
         oldHostParticipantId: 'test',
       });
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(
-        RealtimeEvent.REALTIME_HOST_CHANGE,
-        callback,
-      );
-      expect(PUB_SUB_MOCK.publishEventToClient).not.toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
+      expect(ABLY_REALTIME_MOCK.setSyncProperty).not.toHaveBeenCalled();
     });
 
     test('should publish RealtimeEvent.REALTIME_HOST_CHANGE', () => {
       const callback = jest.fn();
-      LauncherInstance.subscribeToPubSubEvent(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
+      const spy = jest.spyOn(LauncherInstance, 'subscribe');
+      // @ts-ignore
+      ABLY_REALTIME_MOCK.isLocalParticipantHost = true;
+
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance.subscribe(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
       LauncherInstance['participants'] = [MOCK_LOCAL_PARTICIPANT];
 
       LauncherInstance['onHostParticipantDidChange']({
@@ -313,12 +295,27 @@ describe('Launcher', () => {
         oldHostParticipantId: 'test',
       });
 
-      expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith(
-        RealtimeEvent.REALTIME_HOST_CHANGE,
-        callback,
-      );
+      expect(spy).toHaveBeenCalledWith(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
 
-      expect(PUB_SUB_MOCK.publish).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.setSyncProperty).toHaveBeenCalled();
+    });
+
+    test('should publish REALTIME_HOST_AVAILABLE when host is available', () => {
+      LauncherInstance['publish'] = jest.fn();
+
+      LauncherInstance['onHostAvailabilityChange'](true);
+      expect(LauncherInstance['publish']).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_HOST_AVAILABLE,
+      );
+    });
+
+    test('should publish REALTIME_NO_HOST_AVAILABLE when host is not available', () => {
+      LauncherInstance['publish'] = jest.fn();
+
+      LauncherInstance['onHostAvailabilityChange'](false);
+      expect(LauncherInstance['publish']).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_NO_HOST_AVAILABLE,
+      );
     });
   });
 });
@@ -338,8 +335,6 @@ describe('Launcher Facade', () => {
   test('should be return a facade with the correct methods', () => {
     expect(LauncherFacadeInstance).toHaveProperty('subscribe');
     expect(LauncherFacadeInstance).toHaveProperty('unsubscribe');
-    expect(LauncherFacadeInstance).toHaveProperty('publish');
-    expect(LauncherFacadeInstance).toHaveProperty('fetchHistory');
     expect(LauncherFacadeInstance).toHaveProperty('addComponent');
     expect(LauncherFacadeInstance).toHaveProperty('removeComponent');
   });
