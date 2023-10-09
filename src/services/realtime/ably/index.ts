@@ -82,10 +82,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.localRoomProperties;
   }
 
-  public get getMyParticipant() {
-    return this.myParticipant;
-  }
-
   public get hostClientId() {
     return this.roomProperties?.hostClientId;
   }
@@ -98,7 +94,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.participants;
   }
 
-  public get participant(): unknown {
+  public get participant() {
     return this.myParticipant;
   }
 
@@ -492,11 +488,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {RealtimeMessage[]} data - The data to save as the latest state of the room.
    * @returns {void}
    */
-  private saveClientRoomState = (name: string, data: RealtimeMessage[]): void => {
-    this.clientRoomState[name] = data[data.length - 1];
+  private saveClientRoomState = async (name: string, data: RealtimeMessage[]): Promise<void> => {
+    const previusHistory = await this.fetchSyncClientProperty();
+
+    this.clientRoomState = Object.assign({}, previusHistory, {
+      [name]: data[data.length - 1],
+    });
     this.clientRoomStateChannel.publish('update', this.clientRoomState);
 
-    logger.log('REALTIME', 'setting new room state backup');
+    logger.log('REALTIME', 'setting new room state backup', this.clientRoomState);
   };
 
   /**
@@ -1003,7 +1003,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     if (isConnectedToAblyService && this.isReconnecting) {
-      this.onJoinRoom(this.getMyParticipant);
+      this.onJoinRoom(this.participant);
     }
 
     if (newState === RealtimeStateTypes.RETRYING || newState === RealtimeStateTypes.FAILED) {
@@ -1049,7 +1049,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} myPresence
    * @returns {void}
    */
-  private async onJoinRoom(myPresence: Ably.Types.PresenceMessage): Promise<void> {
+  private async onJoinRoom(
+    myPresence: AblyParticipant | Ably.Types.PresenceMessage,
+  ): Promise<void> {
     this.isJoinedRoom = true;
     this.localRoomProperties = await this.fetchRoomProperties();
 
