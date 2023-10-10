@@ -1,6 +1,6 @@
 import { CommentsComponent, PresenceMouseComponent, Realtime, VideoComponent } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
-import { DeviceEvent, MeetingEvent, RealtimeEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent } from './events.types';
+import { DeviceEvent, MeetingEvent, RealtimeEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent, FrameEvent } from './events.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
 export interface SuperVizCdn {
     init: (apiKey: string, options: SuperVizSdkOptions) => Promise<LauncherFacade>;
@@ -11,6 +11,7 @@ export interface SuperVizCdn {
     MeetingConnectionStatus: typeof MeetingConnectionStatus;
     MeetingControlsEvent: typeof MeetingControlsEvent;
     ParticipantEvent: typeof ParticipantEvent;
+    FrameEvent: typeof FrameEvent;
     VideoComponent: typeof VideoComponent;
     PresenceMouseComponent: typeof PresenceMouseComponent;
     Realtime: typeof Realtime;
