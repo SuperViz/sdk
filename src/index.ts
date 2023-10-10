@@ -6,6 +6,7 @@ import {
   MeetingConnectionStatus,
   MeetingControlsEvent,
   ParticipantEvent,
+  FrameEvent,
 } from './common/types/events.types';
 import { VideoComponent, PresenceMouseComponent, Realtime, CommentsComponent } from './components';
 import init from './core';
@@ -34,6 +35,7 @@ if (window) {
     MeetingConnectionStatus,
     MeetingControlsEvent,
     ParticipantEvent,
+    FrameEvent,
     VideoComponent,
     PresenceMouseComponent,
     Realtime,
@@ -49,6 +51,7 @@ export {
   MeetingConnectionStatus,
   MeetingControlsEvent,
   ParticipantEvent,
+  FrameEvent,
 };
 
 export default init;

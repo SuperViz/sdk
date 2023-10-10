@@ -355,7 +355,7 @@ export default class VideoConfereceManager {
     frame.style.width = frameWidth;
     frame.style.height = frameHeight;
 
-    this.frameSizeObserver.publish({ width: frameWidth, height: frameHeight });
+    this.frameSizeObserver.publish({ width: frame.offsetWidth, height: frame.offsetHeight });
   };
 
   /**
