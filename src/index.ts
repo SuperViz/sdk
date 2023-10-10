@@ -12,6 +12,7 @@ import { VideoComponent, PresenceMouseComponent, Realtime, CommentsComponent } f
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
+import { LayoutMode } from './services/video-conference-manager/types';
 
 export { PinMode } from './web-components/comments/components/types';
 
@@ -36,6 +37,7 @@ if (window) {
     MeetingControlsEvent,
     ParticipantEvent,
     FrameEvent,
+    LayoutMode,
     VideoComponent,
     PresenceMouseComponent,
     Realtime,
@@ -52,6 +54,7 @@ export {
   MeetingControlsEvent,
   ParticipantEvent,
   FrameEvent,
+  LayoutMode,
 };
 
 export default init;
