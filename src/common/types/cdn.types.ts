@@ -14,6 +14,7 @@ import {
   MeetingConnectionStatus,
   MeetingControlsEvent,
   ParticipantEvent,
+  FrameEvent,
 } from './events.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
 
@@ -26,6 +27,7 @@ export interface SuperVizCdn {
   MeetingConnectionStatus: typeof MeetingConnectionStatus;
   MeetingControlsEvent: typeof MeetingControlsEvent;
   ParticipantEvent: typeof ParticipantEvent;
+  FrameEvent: typeof FrameEvent;
   VideoComponent: typeof VideoComponent;
   PresenceMouseComponent: typeof PresenceMouseComponent;
   Realtime: typeof Realtime;
