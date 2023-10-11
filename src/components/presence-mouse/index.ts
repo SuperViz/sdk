@@ -11,12 +11,14 @@ export class PresenceMouseComponent extends BaseComponent {
   protected logger: Logger;
   private presenceMouseElement: HTMLElement;
   private containerId: string | null;
+  private divWrapper: HTMLElement;
 
   constructor(container?: string | null) {
     super();
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
     this.containerId = container ?? null;
+    this.divWrapper = this.createDivWrapper();
   }
 
   /**
@@ -26,6 +28,15 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
+    console.log('vinicius 2 divWrapper ', this.divWrapper);
+
+    const presenceContainerId = document.getElementById(this.containerId);
+    console.log('vinicius 2 presenceContainerId', presenceContainerId);
+
+    this.presenceMouseElement = document.createElement('superviz-presence-mouse');
+
+    this.divWrapper.appendChild(this.presenceMouseElement);
+    presenceContainerId.addEventListener('mousemove', this.onMyParticipantMouseMove);
 
     this.subscribeToRealtimeEvents();
   }
@@ -81,11 +92,7 @@ export class PresenceMouseComponent extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
-    const presenceContainerId = this.containerId
-      ? document.getElementById(this.containerId)
-      : document?.body;
-
-    const rect = presenceContainerId.getBoundingClientRect();
+    const rect = this.divWrapper.getBoundingClientRect();
 
     this.realtime.updateMyProperties({
       mousePositionX: this.containerId ? event.x - rect.x : event.x,
@@ -128,17 +135,6 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private onParticipantJoinedOnRealtime = (participant: AblyParticipant): void => {
     this.logger.log('presence-mouse component @ on participant joined on realtime', participant);
-
-    if (participant?.data?.id === this.localParticipant?.id) {
-      const presenceContainerId = this.containerId
-        ? document.getElementById(this.containerId)
-        : document?.body;
-
-      this.presenceMouseElement = document.createElement('superviz-presence-mouse');
-
-      presenceContainerId.appendChild(this.presenceMouseElement);
-      presenceContainerId.addEventListener('mousemove', this.onMyParticipantMouseMove);
-    }
   };
 
   /**
@@ -151,4 +147,30 @@ export class PresenceMouseComponent extends BaseComponent {
     this.logger.log('presence-mouse component @ on participant left on realtime', participant);
     this.presenceMouseElement['removePresenceMouseParticipant'](participant.clientId);
   };
+
+  /**
+   * @function createDivWrapper
+   * @description Creates a div wrapper for the pins.
+   * @returns {HTMLElement} The newly created div wrapper.
+   * */
+  private createDivWrapper(): HTMLElement {
+    const element = document.getElementById(this.containerId);
+    if (!element) return;
+
+    const elementRect = element.getBoundingClientRect();
+    const divWrapper = document.createElement('div');
+
+    element.parentElement.style.position = 'relative';
+
+    divWrapper.style.position = 'absolute';
+    divWrapper.style.top = `${elementRect.top}px`;
+    divWrapper.style.left = `${elementRect.left}px`;
+    divWrapper.style.width = `${elementRect.width}px`;
+    divWrapper.style.height = `${elementRect.height}px`;
+    divWrapper.style.pointerEvents = 'none';
+
+    element.parentElement.appendChild(divWrapper);
+
+    return divWrapper;
+  }
 }

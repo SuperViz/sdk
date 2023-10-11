@@ -65,9 +65,7 @@ export class PresenceMouse extends LitElement {
 
       const { containerId } = externalParticipant;
 
-      const presenceContainerId = containerId
-        ? document.getElementById(containerId)
-        : document?.body;
+      const presenceContainerId = document.getElementById(containerId);
 
       let adjustedX = externalParticipant.mousePositionX;
       let adjustedY = externalParticipant.mousePositionY;
