@@ -6,7 +6,6 @@ export declare class CommentsCommentItem extends WebComponentsBaseElement {
     static styles: CSSResultGroup[];
     uuid: string;
     annotationId?: string;
-    avatar: string;
     username: string;
     text: string;
     resolved: boolean;

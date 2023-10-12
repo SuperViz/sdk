@@ -12,5 +12,9 @@ export default class ApiService {
     static resolveAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<any>;
     static deleteComment(baseUrl: string, apiKey: string, commentId: string): Promise<any>;
     static deleteAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<any>;
+    static createOrUpdateParticipant(apiKey: string, participant: {
+        name: string;
+        participantId: string;
+    }): Promise<void>;
     static sendActivity(userId: string, groupId: string, groupName: string, product: string): Promise<any>;
 }

@@ -23,6 +23,7 @@ export declare class CommentsAnnotationPin extends WebComponentsBaseElement {
         };
     };
     constructor();
+    get userInitial(): string;
     private emitClick;
     protected render(): import("lit-html").TemplateResult<1>;
 }

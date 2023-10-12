@@ -1,3 +1,4 @@
+import { ParticipantApi } from '../../common/types/participant.types';
 import { Observer } from '../../common/utils';
 export declare type Annotation = {
     uuid: string;
@@ -7,12 +8,12 @@ export declare type Annotation = {
 };
 export declare type Comment = {
     uuid: string;
-    username: string;
     avatar: string;
     text: string;
     createdAt: string;
     resolvable?: boolean;
     resolved?: boolean;
+    participant: ParticipantApi;
 };
 export interface PinAdapter {
     setActive(isOpen: boolean): void;
