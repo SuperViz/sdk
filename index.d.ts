@@ -2,6 +2,7 @@ import { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnecti
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
+import { LayoutMode } from './services/video-conference-manager/types';
 export { PinMode } from './web-components/comments/components/types';
 export { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
 export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
@@ -11,5 +12,5 @@ export { RealtimeMessage } from './services/realtime/ably/types';
 export { LauncherFacade } from './core/launcher/types';
 export { Observer } from './common/utils/observer';
 export { Annotation, Comment, PinAdapter, PinCoordinates } from './components/comments/types';
-export { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent, FrameEvent, };
+export { MeetingEvent, RealtimeEvent, DeviceEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent, FrameEvent, LayoutMode, };
 export default init;

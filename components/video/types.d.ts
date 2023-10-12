@@ -1,6 +1,6 @@
 import { Avatar, ParticipantType } from '../../common/types/participant.types';
 import { DevicesOptions } from '../../common/types/sdk-options.types';
-import { CamerasPosition, ColorsVariables, LayoutPosition, Locale, Offset } from '../../services/video-conference-manager/types';
+import { CamerasPosition, ColorsVariables, LayoutMode, LayoutPosition, Locale, Offset } from '../../services/video-conference-manager/types';
 export interface VideoComponentOptions {
     camsOff?: boolean;
     screenshareOff?: boolean;
@@ -19,6 +19,7 @@ export interface VideoComponentOptions {
     customColors?: ColorsVariables;
     skipMeetingSettings?: boolean;
     layoutPosition?: LayoutPosition;
+    layoutMode?: LayoutMode;
 }
 export declare type ParticipandToFrame = {
     timestamp: number;
