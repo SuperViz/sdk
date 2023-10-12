@@ -71,6 +71,10 @@ export class Launcher extends Observable implements DefaultLauncher {
     });
 
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
+    ApiService.createOrUpdateParticipant(config.get<string>('apiKey'), {
+      name: this.participant?.name ?? 'Anonymous',
+      participantId: this.participant?.id,
+    });
   };
 
   /**

@@ -22,7 +22,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
   declare uuid: string;
   declare annotationId?: string;
-  declare avatar: string;
   declare username: string;
   declare text: string;
   declare resolved: boolean;
@@ -62,10 +61,14 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   };
 
   private resolveAnnotation = () => {
-    this.emitEvent('resolve-annotation', {
-      type: 'resolve-annotation',
-      resolved: !this.resolved,
-    }, { composed: false, bubbles: false });
+    this.emitEvent(
+      'resolve-annotation',
+      {
+        type: 'resolve-annotation',
+        resolved: !this.resolved,
+      },
+      { composed: false, bubbles: false },
+    );
   };
 
   private confirmDelete = () => {
@@ -128,7 +131,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           class="comment-item--editable"
           editable
           text=${this.text}
-          eventType="update-comment" @update-comment=${this.updateComment}
+          eventType="update-comment"
+          @update-comment=${this.updateComment}
           @close-edit-mode=${this.closeEditMode}
         ></superviz-comments-comment-input>
       `;
@@ -138,7 +142,12 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       if (this.mode === CommentMode.EDITABLE) return;
 
       return html`
-        <span id="comment-text" @click=${expandElipsis} class="text text-big sv-gray-700 ${shouldUseElipsis}">${this.text}</span>
+        <span
+          id="comment-text"
+          @click=${expandElipsis}
+          class="text text-big sv-gray-700 ${shouldUseElipsis}"
+          >${this.text}</span
+        >
       `;
     };
 
@@ -158,15 +167,18 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         <div class="comment-item__user">
           <div class="comment-item__user-details">
             <div class="comment-item__avatar">
-              <img src=${this.avatar} />
+              <p class="text text-bold">${this.username[0]?.toUpperCase() || 'A'}</p>
             </div>
             <span class="text text-bold sv-gray-600">${this.username}</span>
             <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
           </div>
-          <button @click=${this.resolveAnnotation} class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}">
+          <button
+            @click=${this.resolveAnnotation}
+            class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
+          >
             <superviz-icon name=${resolveIcon} size="md"></superviz-icon>
           </button>
-          <superviz-dropdown 
+          <superviz-dropdown
             options=${JSON.stringify(options)}
             label="label"
             returnTo="label"
@@ -180,13 +192,14 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         </div>
 
         <div class="comment-item__content">
-          <div class="comment-item__content__body">
-            ${textareaHtml()}
-            ${commentText()}
-          </div>
+          <div class="comment-item__content__body">${textareaHtml()} ${commentText()}</div>
         </div>
       </div>
-      <superviz-comments-delete-comments-modal ?open=${this.deleteCommentModalOpen} @close=${closeModal} @confirm=${this.confirmDelete}>
+      <superviz-comments-delete-comments-modal
+        ?open=${this.deleteCommentModalOpen}
+        @close=${closeModal}
+        @confirm=${this.confirmDelete}
+      >
       </superviz-comments-delete-comments-modal>
     `;
   }

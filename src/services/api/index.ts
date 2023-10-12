@@ -92,6 +92,16 @@ export default class ApiService {
     return doRequest(url, 'DELETE', {}, { apikey: apiKey });
   }
 
+  static async createOrUpdateParticipant(
+    apiKey: string,
+    participant: { name: string; participantId: string },
+  ): Promise<void> {
+    const baseUrl = config.get<string>('apiUrl');
+    const path = '/participants';
+    const url = this.createUrl(baseUrl, path);
+    return doRequest(url, 'POST', { ...participant }, { apikey: apiKey });
+  }
+
   static async sendActivity(userId: string, groupId: string, groupName: string, product: string) {
     const path = '/activity';
     const baseUrl = config.get<string>('apiUrl');

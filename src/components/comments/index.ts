@@ -374,8 +374,9 @@ export class CommentsComponent extends BaseComponent {
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
       );
-      const waterMark = [WaterMark.ALL, WaterMark.POWERED_BY, WaterMark.POWERED_BY]
-        .includes(dataWaterMark);
+      const waterMark = [WaterMark.ALL, WaterMark.POWERED_BY, WaterMark.POWERED_BY].includes(
+        dataWaterMark,
+      );
 
       this.element.waterMarkStatus(waterMark);
     } catch (error) {

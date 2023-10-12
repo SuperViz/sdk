@@ -42,16 +42,19 @@ describe('CommentsCommentItem', () => {
   test('renders the comment item with correct properties', async () => {
     element = await createElement();
 
-    const avatar = element.shadowRoot!.querySelector('.comment-item__avatar img') as HTMLImageElement;
-    expect(avatar.src).toEqual('https://example.com/avatar.png');
+    const username = element.shadowRoot!.querySelector(
+      '.comment-item__user .text-bold',
+    ) as HTMLSpanElement;
+    expect(username.textContent).toEqual('J');
 
-    const username = element.shadowRoot!.querySelector('.comment-item__user .text-bold') as HTMLSpanElement;
-    expect(username.textContent).toEqual('John Doe');
-
-    const createdAt = element.shadowRoot!.querySelector('.comment-item__user .text-small') as HTMLSpanElement;
+    const createdAt = element.shadowRoot!.querySelector(
+      '.comment-item__user .text-small',
+    ) as HTMLSpanElement;
     expect(createdAt.textContent).toEqual(DateTime.now().toFormat('yyyy-dd-MM'));
 
-    const text = element.shadowRoot!.querySelector('.comment-item__content .text-big') as HTMLSpanElement;
+    const text = element.shadowRoot!.querySelector(
+      '.comment-item__content .text-big',
+    ) as HTMLSpanElement;
     expect(text.textContent).toEqual('This is a comment');
   });
 
@@ -64,19 +67,17 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const resolveButton = element.shadowRoot!.querySelector('.comment-item__user > button') as HTMLButtonElement;
+    const resolveButton = element.shadowRoot!.querySelector(
+      '.comment-item__user > button',
+    ) as HTMLButtonElement;
 
     element.dispatchEvent = jest.fn();
 
     resolveButton.click();
 
-    expect(element.dispatchEvent)
-      .toHaveBeenCalledWith(
-        new CustomEvent(
-          'resolve-annotation',
-          { detail: { resolved: true } },
-        ),
-      );
+    expect(element.dispatchEvent).toHaveBeenCalledWith(
+      new CustomEvent('resolve-annotation', { detail: { resolved: true } }),
+    );
   });
 
   test('should turn on editable mode', async () => {
@@ -102,7 +103,9 @@ describe('CommentsCommentItem', () => {
 
     expect(element['mode']).toEqual(CommentMode.EDITABLE);
 
-    const editableComment = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
+    const editableComment = element.shadowRoot!.querySelector(
+      'superviz-comments-comment-input',
+    ) as HTMLElement;
     editableComment.dispatchEvent(new CustomEvent('close-edit-mode'));
 
     await element['updateComplete'];
@@ -119,12 +122,17 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const editableComment = element.shadowRoot!.querySelector('superviz-comments-comment-input') as HTMLElement;
-    editableComment['dispatchEvent'](new CustomEvent('update-comment', { detail: {
-      uuid: 'any_uuid',
-      text: 'This is an updated comment',
-    },
-    }));
+    const editableComment = element.shadowRoot!.querySelector(
+      'superviz-comments-comment-input',
+    ) as HTMLElement;
+    editableComment['dispatchEvent'](
+      new CustomEvent('update-comment', {
+        detail: {
+          uuid: 'any_uuid',
+          text: 'This is an updated comment',
+        },
+      }),
+    );
 
     expect(element['text']).toEqual('This is an updated comment');
     expect(element['mode']).toEqual(CommentMode.READONLY);
@@ -146,7 +154,9 @@ describe('CommentsCommentItem', () => {
     element = await createElement();
     await element['updateComplete'];
 
-    const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
+    const modal = element.shadowRoot!.querySelector(
+      'superviz-comments-delete-comments-modal',
+    ) as HTMLElement;
     modal.dispatchEvent(new CustomEvent('close'));
 
     await element['updateComplete'];
@@ -158,7 +168,9 @@ describe('CommentsCommentItem', () => {
     element = await createElement();
     await element['updateComplete'];
 
-    const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
+    const modal = element.shadowRoot!.querySelector(
+      'superviz-comments-delete-comments-modal',
+    ) as HTMLElement;
     modal.dispatchEvent(new CustomEvent('confirm'));
 
     await element['updateComplete'];
@@ -174,7 +186,9 @@ describe('CommentsCommentItem', () => {
 
     element.dispatchEvent = jest.fn();
 
-    const modal = element.shadowRoot!.querySelector('superviz-comments-delete-comments-modal') as HTMLElement;
+    const modal = element.shadowRoot!.querySelector(
+      'superviz-comments-delete-comments-modal',
+    ) as HTMLElement;
     modal.dispatchEvent(new CustomEvent('confirm'));
 
     await element['updateComplete'];
@@ -190,7 +204,9 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const text = element.shadowRoot!.querySelector('.comment-item__content #comment-text') as HTMLElement;
+    const text = element.shadowRoot!.querySelector(
+      '.comment-item__content #comment-text',
+    ) as HTMLElement;
     text.click();
 
     await element['updateComplete'];
@@ -206,7 +222,9 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const text = element.shadowRoot!.querySelector('.comment-item__content #comment-text') as HTMLElement;
+    const text = element.shadowRoot!.querySelector(
+      '.comment-item__content #comment-text',
+    ) as HTMLElement;
     text.click();
 
     await element['updateComplete'];
