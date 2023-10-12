@@ -21,8 +21,8 @@ const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions): vo
     throw new Error('Group fields is required');
   }
 
-  if (!participant || !participant.id) {
-    throw new Error('Participants fields is required');
+  if (!participant || !participant.id || !participant.name) {
+    throw new Error('Participant name and id is required');
   }
 
   if (!roomId) {
