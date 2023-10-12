@@ -6,7 +6,9 @@ export declare class PresenceMouseComponent extends BaseComponent {
     protected logger: Logger;
     private presenceMouseElement;
     private containerId;
-    constructor(container?: string | null);
+    private container;
+    private divWrapper;
+    constructor(containerId?: string);
     /**
      * @function start
      * @description start presence-mouse component
@@ -46,17 +48,16 @@ export declare class PresenceMouseComponent extends BaseComponent {
      */
     private onParticipantsDidChange;
     /**
-     * @function onParticipantJoinedOnRealtime
-     * @description handler for participant joined event
-     * @param {AblyParticipant} participant - participant
-     * @returns {void}
-     */
-    private onParticipantJoinedOnRealtime;
-    /**
      * @function onParticipantLeftOnRealtime
      * @description handler for participant left event
      * @param {AblyParticipant} participant
      * @returns {void}
      */
     private onParticipantLeftOnRealtime;
+    /**
+     * @function createDivWrapper
+     * @description Creates a div wrapper for the pins.
+     * @returns {HTMLElement} The newly created div wrapper.
+     * */
+    private createDivWrapper;
 }
