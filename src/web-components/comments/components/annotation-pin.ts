@@ -31,6 +31,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     this.position = { x: 0, y: 0 };
   }
 
+  get userInitial(): string {
+    const name = this.annotation?.comments[0]?.participant?.name || 'Anonymous';
+
+    return name[0].toUpperCase();
+  }
+
   private emitClick(): void {
     document.body.dispatchEvent(
       new CustomEvent('select-annotation', {
@@ -65,7 +71,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
         style=${`top: ${this.position?.y}px; left: ${this.position?.x}px;`}
       >
         <div class="annotation-pin__avatar">
-          <p class="text text-bold text-big">U</p>
+          <p class="text text-bold text-big">${this.userInitial}</p>
           <!-- <img src="https://picsum.photos/200/300" alt="" /> -->
         </div>
       </div>

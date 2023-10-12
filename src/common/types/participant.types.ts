@@ -24,3 +24,10 @@ export interface Avatar {
   model3DUrl: string;
   imageUrl: string;
 }
+
+export type ParticipantApi = {
+  uuid: string;
+  participantId: string;
+  name: string;
+  createdAt: string;
+};

@@ -35,23 +35,23 @@ export const commentItemStyle = css`
     height: 24px;
     border-radius: 50%;
     overflow: hidden;
+    background-color: rgb(var(--sv-gray-300));
+    border: 1px solid rgb(var(--sv-gray-500));
+    color: #fff;
 
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .comment-item__content {
     width: 100%;
-    
   }
 
   .line-clamp {
     display: -webkit-box;
     -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;  
+    -webkit-box-orient: vertical;
     overflow: hidden;
   }
 

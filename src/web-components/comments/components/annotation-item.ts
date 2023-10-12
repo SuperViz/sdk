@@ -141,7 +141,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         <superviz-comments-comment-item
           uuid=${comment.uuid}
           avatar="https://picsum.photos/200/300"
-          username="username"
+          username=${comment.participant.name || 'Anonymous'}
           text=${comment.text}
           createdAt=${comment.createdAt}
         ></superviz-comments-comment-item>
@@ -170,8 +170,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
             <superviz-comments-comment-item
               uuid=${this.annotation.comments?.[0].uuid}
               annotationId=${this.annotation.uuid}
-              avatar="https://picsum.photos/200/300"
-              username="username"
+              username=${this.annotation.comments?.[0].participant?.name || 'Anonymous'}
               text=${this.annotation.comments?.[0].text}
               createdAt=${this.annotation.comments?.[0].createdAt}
               primaryComment
