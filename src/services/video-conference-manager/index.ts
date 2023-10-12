@@ -85,6 +85,7 @@ export default class VideoConfereceManager {
       camerasPosition,
       skipMeetingSettings,
       devices,
+      layoutMode,
     } = options;
 
     this.browserService = browserService;
@@ -114,6 +115,7 @@ export default class VideoConfereceManager {
         videoInput: devices?.videoInput ?? true,
       },
       waterMark,
+      layoutMode,
       skipMeetingSettings,
       layoutPosition: positions.layoutPosition,
     };

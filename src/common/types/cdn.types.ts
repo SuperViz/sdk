@@ -5,6 +5,7 @@ import {
   VideoComponent,
 } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
+import { LayoutMode } from '../../services/video-conference-manager/types';
 
 import {
   DeviceEvent,
@@ -28,6 +29,7 @@ export interface SuperVizCdn {
   MeetingControlsEvent: typeof MeetingControlsEvent;
   ParticipantEvent: typeof ParticipantEvent;
   FrameEvent: typeof FrameEvent;
+  LayoutMode: typeof LayoutMode;
   VideoComponent: typeof VideoComponent;
   PresenceMouseComponent: typeof PresenceMouseComponent;
   Realtime: typeof Realtime;

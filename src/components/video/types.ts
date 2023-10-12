@@ -3,6 +3,7 @@ import { DevicesOptions } from '../../common/types/sdk-options.types';
 import {
   CamerasPosition,
   ColorsVariables,
+  LayoutMode,
   LayoutPosition,
   Locale,
   Offset,
@@ -26,6 +27,7 @@ export interface VideoComponentOptions {
   customColors?: ColorsVariables;
   skipMeetingSettings?: boolean;
   layoutPosition?: LayoutPosition;
+  layoutMode?: LayoutMode;
 }
 
 export type ParticipandToFrame = {

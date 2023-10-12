@@ -21,6 +21,7 @@ import { HostObserverCallbackResponse } from '../../services/realtime/base/types
 import VideoConfereceManager from '../../services/video-conference-manager';
 import {
   DrawingData,
+  LayoutMode,
   RealtimeObserverPayload,
   VideoFrameState,
   VideoManagerOptions,
@@ -179,6 +180,7 @@ export class VideoComponent extends BaseComponent {
       avatars: this.params?.avatars ?? [],
       customColors: this.params?.customColors,
       layoutPosition: this.params?.layoutPosition,
+      layoutMode: this.params?.layoutMode ?? LayoutMode.LIST,
     };
 
     this.logger.log('video component @ start video', this.videoConfig);

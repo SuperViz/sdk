@@ -26,6 +26,7 @@ export interface VideoManagerOptions {
   customColors?: ColorsVariables;
   waterMark?: WaterMark;
   layoutPosition?: LayoutPosition;
+  layoutMode?: LayoutMode;
 }
 
 export interface WindowSize {
@@ -64,6 +65,7 @@ export interface FrameConfig {
   waterMark: WaterMark;
   skipMeetingSettings: boolean;
   layoutPosition: LayoutPosition;
+  layoutMode?: LayoutMode;
 }
 
 export enum ColorsVariablesNames {
@@ -152,6 +154,11 @@ export enum LayoutPosition {
   RIGHT = 'right',
   CENTER = 'center',
   LEFT = 'left',
+}
+
+export enum LayoutMode {
+  GRID = 'grid',
+  LIST = 'list',
 }
 
 export enum CamerasPosition {
