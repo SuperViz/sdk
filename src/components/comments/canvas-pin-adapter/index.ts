@@ -11,6 +11,7 @@ export class CanvasPinAdapter implements PinAdapter {
   private isActive: boolean;
   private annotations: Annotation[];
   private pins: Map<string, HTMLElement>;
+  private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
 
   public onPinFixedObserver: Observer;
 
@@ -41,6 +42,11 @@ export class CanvasPinAdapter implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.mouseElement = null;
+
+    if (this.divWrapperReplacementInterval) {
+      clearInterval(this.divWrapperReplacementInterval);
+      this.divWrapperReplacementInterval = null;
+    }
   }
 
   /**
@@ -128,6 +134,7 @@ export class CanvasPinAdapter implements PinAdapter {
     this.canvas.addEventListener('mousemove', this.onMouseMove);
     this.canvas.addEventListener('mouseout', this.onMouseLeave);
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
+
     document.body.addEventListener('select-annotation', this.annotationSelected);
   }
 
@@ -141,6 +148,7 @@ export class CanvasPinAdapter implements PinAdapter {
     this.canvas.removeEventListener('mousemove', this.onMouseMove);
     this.canvas.removeEventListener('mouseout', this.onMouseLeave);
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
+
     document.body.removeEventListener('select-annotation', this.annotationSelected);
   }
 
@@ -172,12 +180,23 @@ export class CanvasPinAdapter implements PinAdapter {
 
     this.canvas.parentElement.style.position = 'relative';
 
-    divWrapper.style.position = 'absolute';
+    divWrapper.style.position = 'fixed';
     divWrapper.style.top = `${canvasRect.top}px`;
     divWrapper.style.left = `${canvasRect.left}px`;
     divWrapper.style.width = `${canvasRect.width}px`;
     divWrapper.style.height = `${canvasRect.height}px`;
     divWrapper.style.pointerEvents = 'none';
+    divWrapper.style.overflow = 'hidden';
+
+    if (!this.divWrapperReplacementInterval) {
+      this.divWrapperReplacementInterval = setInterval(() => {
+        const elementRect = this.canvas.getBoundingClientRect();
+        divWrapper.style.top = `${elementRect.top}px`;
+        divWrapper.style.left = `${elementRect.left}px`;
+        divWrapper.style.width = `${elementRect.width}px`;
+        divWrapper.style.height = `${elementRect.height}px`;
+      }, 1);
+    }
 
     this.canvas.parentElement.appendChild(divWrapper);
 

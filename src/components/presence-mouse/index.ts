@@ -14,6 +14,7 @@ export class PresenceMouseComponent extends BaseComponent {
   private containerId: string | null;
   private container: HTMLElement;
   private divWrapper: HTMLElement;
+  private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(containerId?: string) {
     super();
@@ -58,6 +59,11 @@ export class PresenceMouseComponent extends BaseComponent {
 
     this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
     this.divWrapper.removeChild(this.presenceMouseElement);
+
+    if (this.divWrapperReplacementInterval) {
+      clearInterval(this.divWrapperReplacementInterval);
+      this.divWrapperReplacementInterval = null;
+    }
   }
 
   /**
@@ -114,11 +120,11 @@ export class PresenceMouseComponent extends BaseComponent {
       const hasPresenceMouseElement = participantData?.mousePositionX && this.presenceMouseElement;
       const myParticipant = participantData?.id === this.localParticipant?.id;
 
-      participantData.color = this.realtime.getSlotColor(participant.data.slotIndex).color;
-      participantData.slotIndex = participant.data.slotIndex;
-
       if (!myParticipant && hasPresenceMouseElement) {
-        this.presenceMouseElement.updatePresenceMouseParticipant(participantData);
+        this.presenceMouseElement.updatePresenceMouseParticipant({
+          ...participantData,
+          color: this.realtime.getSlotColor(participant.data.slotIndex).color,
+        });
       }
     });
   };
@@ -144,7 +150,7 @@ export class PresenceMouseComponent extends BaseComponent {
 
     this.container.parentElement.style.position = 'relative';
 
-    divWrapper.style.position = 'absolute';
+    divWrapper.style.position = 'fixed';
     divWrapper.style.top = `${elementRect.top}px`;
     divWrapper.style.left = `${elementRect.left}px`;
     divWrapper.style.width = `${elementRect.width}px`;
@@ -152,6 +158,16 @@ export class PresenceMouseComponent extends BaseComponent {
     divWrapper.style.pointerEvents = 'none';
 
     this.container.parentElement.appendChild(divWrapper);
+
+    if (!this.divWrapperReplacementInterval) {
+      this.divWrapperReplacementInterval = setInterval(() => {
+        const elementRect = this.container.getBoundingClientRect();
+        divWrapper.style.top = `${elementRect.top}px`;
+        divWrapper.style.left = `${elementRect.left}px`;
+        divWrapper.style.width = `${elementRect.width}px`;
+        divWrapper.style.height = `${elementRect.height}px`;
+      }, 1);
+    }
 
     return divWrapper;
   }
