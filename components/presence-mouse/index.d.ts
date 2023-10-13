@@ -48,6 +48,7 @@ export declare class PresenceMouseComponent extends BaseComponent {
      * @returns {void}
      */
     private onParticipantsDidChange;
+    private onMyParticipantMouseOut;
     /**
      * @function onParticipantLeftOnRealtime
      * @description handler for participant left event
