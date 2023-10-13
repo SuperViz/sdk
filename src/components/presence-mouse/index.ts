@@ -43,6 +43,7 @@ export class PresenceMouseComponent extends BaseComponent {
     this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
     this.divWrapper.appendChild(this.presenceMouseElement);
     this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
+    this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
 
     this.subscribeToRealtimeEvents();
   }
@@ -58,6 +59,7 @@ export class PresenceMouseComponent extends BaseComponent {
     this.unsubscribeFromRealtimeEvents();
 
     this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
+    this.container.removeEventListener('mouseout', this.onMyParticipantMouseOut);
     this.divWrapper.removeChild(this.presenceMouseElement);
 
     if (this.divWrapperReplacementInterval) {
@@ -89,6 +91,7 @@ export class PresenceMouseComponent extends BaseComponent {
   };
 
   /** Presence Mouse Events */
+
   /**
    * @function onMyParticipantMouseMove
    * @description event to update my participant mouse position to others participants
@@ -103,6 +106,7 @@ export class PresenceMouseComponent extends BaseComponent {
       originalWidth: rect.width,
       originalHeight: rect.height,
       containerId: this.containerId,
+      visible: true,
     });
   };
 
@@ -120,6 +124,11 @@ export class PresenceMouseComponent extends BaseComponent {
       const hasPresenceMouseElement = participantData?.mousePositionX && this.presenceMouseElement;
       const myParticipant = participantData?.id === this.localParticipant?.id;
 
+      if (!participantData?.visible) {
+        this.presenceMouseElement.removePresenceMouseParticipant(participant.clientId);
+        return;
+      }
+
       if (!myParticipant && hasPresenceMouseElement) {
         this.presenceMouseElement.updatePresenceMouseParticipant({
           ...participantData,
@@ -127,6 +136,10 @@ export class PresenceMouseComponent extends BaseComponent {
         });
       }
     });
+  };
+
+  private onMyParticipantMouseOut = (): void => {
+    this.realtime.updateMyProperties({ visible: false });
   };
 
   /**
