@@ -131,6 +131,7 @@ describe('PresenceMouseComponent', () => {
           participantId: 'MOCK_LOCAL_PARTICIPANT.id',
           mousePositionX: 1,
           slotIndex: 0,
+          color: '#FFEF33',
         },
       };
 
