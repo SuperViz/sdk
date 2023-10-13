@@ -8,4 +8,5 @@ export interface ParticipantMouse {
   slotIndex: number;
   mousePositionX: number;
   mousePositionY: number;
+  visible: boolean;
 }

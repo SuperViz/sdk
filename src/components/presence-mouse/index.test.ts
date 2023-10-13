@@ -34,6 +34,8 @@ describe('PresenceMouseComponent', () => {
   let presenceMouseComponent: PresenceMouseComponent;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
     document.body.innerHTML = `
       <div>
         <canvas id="canvas"></canvas>
@@ -113,6 +115,7 @@ describe('PresenceMouseComponent', () => {
         originalWidth: 0,
         originalHeight: 0,
         containerId: 'container',
+        visible: true,
       });
     });
   });
@@ -121,17 +124,18 @@ describe('PresenceMouseComponent', () => {
     test('should update presence mouse element for external participants', () => {
       presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'] = jest.fn();
       const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
-        clientId: 'MOCK_LOCAL_PARTICIPANT.id',
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
         action: 'present',
         connectionId: 'connection1',
         encoding: 'h264',
         id: 'unit-test-participant1-ably-id',
         timestamp: new Date().getTime(),
         data: {
-          participantId: 'MOCK_LOCAL_PARTICIPANT.id',
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
           mousePositionX: 1,
           slotIndex: 0,
           color: '#FFEF33',
+          visible: true,
         },
       };
 
@@ -158,14 +162,14 @@ describe('PresenceMouseComponent', () => {
     test('should remove presence mouse participant', () => {
       presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'] = jest.fn();
       const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
-        clientId: 'MOCK_LOCAL_PARTICIPANT.id',
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
         action: 'present',
         connectionId: 'connection1',
         encoding: 'h264',
         id: 'unit-test-participant1-ably-id',
         timestamp: new Date().getTime(),
         data: {
-          participantId: 'MOCK_LOCAL_PARTICIPANT.id',
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
           slotIndex: 0,
         },
       };
