@@ -8,6 +8,7 @@ export declare class PresenceMouseComponent extends BaseComponent {
     private containerId;
     private container;
     private divWrapper;
+    private divWrapperReplacementInterval;
     constructor(containerId?: string);
     /**
      * @function start

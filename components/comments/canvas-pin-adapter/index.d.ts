@@ -9,6 +9,7 @@ export declare class CanvasPinAdapter implements PinAdapter {
     private isActive;
     private annotations;
     private pins;
+    private divWrapperReplacementInterval;
     onPinFixedObserver: Observer;
     constructor(canvasId: string);
     /**
