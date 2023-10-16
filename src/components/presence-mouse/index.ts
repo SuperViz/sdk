@@ -46,6 +46,7 @@ export class PresenceMouseComponent extends BaseComponent {
     this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
 
     this.subscribeToRealtimeEvents();
+    this.realtime.enterPresenceMouseChannel(this.localParticipant);
   }
 
   /**
@@ -56,6 +57,7 @@ export class PresenceMouseComponent extends BaseComponent {
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
 
+    this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
 
     this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
@@ -75,8 +77,9 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private subscribeToRealtimeEvents = (): void => {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
-    this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
-    this.realtime.participantsObserver.subscribe(this.onParticipantsDidChange);
+    this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
+
+    this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
   };
 
   /**
@@ -86,8 +89,10 @@ export class PresenceMouseComponent extends BaseComponent {
    */
   private unsubscribeFromRealtimeEvents = (): void => {
     this.logger.log('presence-mouse component @ unsubscribe from realtime events');
-    this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeftOnRealtime);
-    this.realtime.participantsObserver.unsubscribe(this.onParticipantsDidChange);
+    this.realtime.presenceMouseParticipantLeaveObserver.unsubscribe(
+      this.onParticipantLeftOnRealtime,
+    );
+    this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
   };
 
   /** Presence Mouse Events */
@@ -100,7 +105,8 @@ export class PresenceMouseComponent extends BaseComponent {
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
     const rect = this.divWrapper.getBoundingClientRect();
 
-    this.realtime.updateMyProperties({
+    this.realtime.updatePresenceMouse({
+      ...this.localParticipant,
       mousePositionX: event.x - rect.x,
       mousePositionY: event.y - rect.y,
       originalWidth: rect.width,
@@ -116,30 +122,26 @@ export class PresenceMouseComponent extends BaseComponent {
    * @param {Record<string, AblyParticipant>} participants - participants
    * @returns {void}
    */
-  private onParticipantsDidChange = (participants: Record<string, AblyParticipant>): void => {
+  private onParticipantsDidChange = (participants: Record<string, ParticipantMouse>): void => {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
-    Object.values(participants).forEach((participant: AblyParticipant) => {
-      const participantData: ParticipantMouse = participant.data;
-      const hasPresenceMouseElement = participantData?.mousePositionX && this.presenceMouseElement;
-      const myParticipant = participantData?.id === this.localParticipant?.id;
+    Object.values(participants).forEach((participant: ParticipantMouse) => {
+      const hasPresenceMouseElement = participant?.mousePositionX && this.presenceMouseElement;
+      const myParticipant = participant?.id === this.localParticipant?.id;
 
-      if (!participantData?.visible) {
-        this.presenceMouseElement.removePresenceMouseParticipant(participant.clientId);
+      if (!participant?.visible) {
+        this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
         return;
       }
 
       if (!myParticipant && hasPresenceMouseElement) {
-        this.presenceMouseElement.updatePresenceMouseParticipant({
-          ...participantData,
-          color: this.realtime.getSlotColor(participant.data.slotIndex).color,
-        });
+        this.presenceMouseElement.updatePresenceMouseParticipant(participant);
       }
     });
   };
 
   private onMyParticipantMouseOut = (): void => {
-    this.realtime.updateMyProperties({ visible: false });
+    this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant });
   };
 
   /**
@@ -148,8 +150,8 @@ export class PresenceMouseComponent extends BaseComponent {
    * @param {AblyParticipant} participant
    * @returns {void}
    */
-  private onParticipantLeftOnRealtime = (participant: AblyParticipant): void => {
-    this.presenceMouseElement.removePresenceMouseParticipant(participant.clientId);
+  private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
+    this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
   };
 
   /**

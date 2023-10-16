@@ -21,6 +21,9 @@ export class RealtimeService implements DefaultRealtimeService {
   public kickParticipantObserver: Observer;
   public authenticationObserver: Observer;
   public commentsObserver: Observer;
+  public presenceMouseObserver: Observer;
+  public presenceMouseParticipantLeaveObserver: Observer;
+  public presenceMouseParticipantJoinedObserver: Observer;
 
   constructor() {
     this.participantObservers = [];
@@ -45,6 +48,11 @@ export class RealtimeService implements DefaultRealtimeService {
 
     // Comments observer
     this.commentsObserver = new Observer({ logger: this.logger });
+
+    // presence mouse
+    this.presenceMouseObserver = new Observer({ logger: this.logger });
+    this.presenceMouseParticipantLeaveObserver = new Observer({ logger: this.logger });
+    this.presenceMouseParticipantJoinedObserver = new Observer({ logger: this.logger });
   }
 
   /**
