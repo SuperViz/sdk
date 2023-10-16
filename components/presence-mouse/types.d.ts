@@ -1,10 +1,8 @@
-export interface ParticipantMouse {
+import { Participant } from '../../common/types/participant.types';
+export interface ParticipantMouse extends Participant {
     containerId?: string;
     originalHeight: number;
     originalWidth: number;
-    name: string;
-    id: string;
-    color: string;
     slotIndex: number;
     mousePositionX: number;
     mousePositionY: number;

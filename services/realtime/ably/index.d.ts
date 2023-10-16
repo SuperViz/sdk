@@ -3,6 +3,7 @@ import Ably from 'ably';
 import { TranscriptState } from '../../../common/types/events.types';
 import { Participant } from '../../../common/types/participant.types';
 import { Annotation } from '../../../components/comments/types';
+import { ParticipantMouse } from '../../../components/presence-mouse/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -10,6 +11,7 @@ import { AblyParticipant, AblyRealtime, AblyRealtimeData, ParticipantDataInput, 
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
     private client;
     private participants;
+    private participantsMouse;
     private hostParticipantId;
     private myParticipant;
     private commentsChannel;
@@ -17,6 +19,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private clientSyncChannel;
     private clientRoomStateChannel;
     private broadcastChannel;
+    private presenceMouseChannel;
     private clientRoomState;
     private clientSyncPropertiesQueue;
     private clientSyncPropertiesTimeOut;
@@ -370,4 +373,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     /** Comments */
     private onCommentsChannelUpdate;
     updateComments: (annotations: Annotation[]) => void;
+    /** Presence Mouse */
+    enterPresenceMouseChannel: (participant: Participant) => void;
+    leavePresenceMouseChannel: () => void;
+    updatePresenceMouse: import("lodash").DebouncedFunc<(data: Partial<ParticipantMouse>) => void>;
+    private onPresenceMouseChannelEnter;
+    private onPresenceMouseChannelLeave;
+    /**
+     * @function publishPresenceMouseUpdate
+     * @param {AblyParticipant} participant
+     * @description publish a participant's changes to observer
+     * @returns {void}
+     */
+    private publishPresenceMouseUpdate;
 }
