@@ -11,7 +11,7 @@ import { ComponentNames } from '../types';
 
 import { PinAdapter } from './types';
 
-import { CommentsComponent } from './index';
+import { Comments } from './index';
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
@@ -32,13 +32,13 @@ const DummiePinAdapter: PinAdapter = {
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
 };
 
-describe('CommentsComponent', () => {
-  let commentsComponent: CommentsComponent;
+describe('Comments', () => {
+  let commentsComponent: Comments;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    commentsComponent = new CommentsComponent(DummiePinAdapter);
+    commentsComponent = new Comments(DummiePinAdapter);
 
     commentsComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
@@ -55,8 +55,8 @@ describe('CommentsComponent', () => {
     commentsComponent.detach();
   });
 
-  test('should create a new instance of CommentsComponent', () => {
-    expect(commentsComponent).toBeInstanceOf(CommentsComponent);
+  test('should create a new instance of Comments', () => {
+    expect(commentsComponent).toBeInstanceOf(Comments);
   });
 
   test('should have a name property', () => {
@@ -179,7 +179,7 @@ describe('CommentsComponent', () => {
     (ApiService.fetchAnnotation as jest.Mock).mockRejectedValueOnce('internal server error');
 
     commentsComponent.detach();
-    commentsComponent = new CommentsComponent(DummiePinAdapter);
+    commentsComponent = new Comments(DummiePinAdapter);
 
     const spy = jest.spyOn(commentsComponent['logger'], 'log');
 
@@ -199,7 +199,7 @@ describe('CommentsComponent', () => {
 
   test('should update annotation list when fetch annotation is successful', async () => {
     commentsComponent.detach();
-    commentsComponent = new CommentsComponent(DummiePinAdapter);
+    commentsComponent = new Comments(DummiePinAdapter);
     (ApiService.fetchAnnotation as jest.Mock).mockReturnValueOnce([MOCK_ANNOTATION]);
 
     commentsComponent.attach({
