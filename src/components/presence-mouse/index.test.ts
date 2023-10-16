@@ -7,6 +7,8 @@ import { sleep } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import type { PresenceMouse } from '../../web-components';
 
+import { ParticipantMouse } from './types';
+
 import { PresenceMouseComponent } from './index';
 
 const createPresenceMouseComponent = (containerId?: string): PresenceMouseComponent => {
@@ -109,7 +111,8 @@ describe('PresenceMouseComponent', () => {
       const event = { x: 10, y: 20 };
       presenceMouseComponent['onMyParticipantMouseMove'](event as unknown as MouseEvent);
 
-      expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
+      expect(ABLY_REALTIME_MOCK.updatePresenceMouse).toHaveBeenCalledWith({
+        ...MOCK_LOCAL_PARTICIPANT,
         mousePositionX: event.x,
         mousePositionY: event.y,
         originalWidth: 0,
@@ -123,28 +126,22 @@ describe('PresenceMouseComponent', () => {
   describe('onParticipantsDidChange', () => {
     test('should update presence mouse element for external participants', () => {
       presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'] = jest.fn();
-      const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
-        clientId: MOCK_LOCAL_PARTICIPANT.id,
-        action: 'present',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant1-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          participantId: MOCK_LOCAL_PARTICIPANT.id,
-          mousePositionX: 1,
-          slotIndex: 0,
-          color: '#FFEF33',
-          visible: true,
-        },
+      const MOCK_MOUSE: ParticipantMouse = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        mousePositionX: 1000,
+        mousePositionY: 1000,
+        originalWidth: 1000,
+        originalHeight: 1000,
+        slotIndex: 0,
+        containerId: presenceMouseComponent['containerId'] as string,
+        visible: true,
       };
 
-      const participant2 = MOCK_ABLY_PARTICIPANT;
+      const participant2 = MOCK_MOUSE;
       participant2.id = 'unit-test-participant2-ably-id';
-      participant2.data.participantId = 'participant2-id';
 
-      const participants: Record<string, AblyParticipant> = {
-        participant: MOCK_ABLY_PARTICIPANT,
+      const participants: Record<string, ParticipantMouse> = {
+        participant: MOCK_MOUSE,
         participant2,
       };
 
@@ -154,31 +151,29 @@ describe('PresenceMouseComponent', () => {
 
       expect(
         presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'],
-      ).toHaveBeenCalledWith(participant2.data);
+      ).toHaveBeenCalledWith(participant2);
     });
   });
 
   describe('onParticipantLeftOnRealtime', () => {
     test('should remove presence mouse participant', () => {
       presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'] = jest.fn();
-      const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
-        clientId: MOCK_LOCAL_PARTICIPANT.id,
-        action: 'present',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant1-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          participantId: MOCK_LOCAL_PARTICIPANT.id,
-          slotIndex: 0,
-        },
+      const MOCK_MOUSE: ParticipantMouse = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        mousePositionX: 1000,
+        mousePositionY: 1000,
+        originalWidth: 1000,
+        originalHeight: 1000,
+        slotIndex: 0,
+        containerId: presenceMouseComponent['containerId'] as string,
+        visible: true,
       };
 
-      presenceMouseComponent['onParticipantLeftOnRealtime'](MOCK_ABLY_PARTICIPANT);
+      presenceMouseComponent['onParticipantLeftOnRealtime'](MOCK_MOUSE);
 
       expect(
         presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'],
-      ).toHaveBeenCalledWith(MOCK_ABLY_PARTICIPANT.clientId);
+      ).toHaveBeenCalledWith(MOCK_MOUSE.id);
     });
   });
 });
