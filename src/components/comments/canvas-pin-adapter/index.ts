@@ -2,7 +2,7 @@ import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
-export class CanvasPinAdapter implements PinAdapter {
+export class CanvasPin implements PinAdapter {
   private logger: Logger;
   private canvasId: string;
   private canvas: HTMLCanvasElement;

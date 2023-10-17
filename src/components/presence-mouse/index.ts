@@ -1,13 +1,11 @@
-import { MeetingEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
-import { AblyParticipant } from '../../services/realtime/ably/types';
 import { PresenceMouse } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { ParticipantMouse } from './types';
 
-export class PresenceMouseComponent extends BaseComponent {
+export class MousePointers extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private presenceMouseElement: PresenceMouse;

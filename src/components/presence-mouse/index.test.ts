@@ -9,10 +9,10 @@ import type { PresenceMouse } from '../../web-components';
 
 import { ParticipantMouse } from './types';
 
-import { PresenceMouseComponent } from './index';
+import { MousePointers } from './index';
 
-const createPresenceMouseComponent = (containerId?: string): PresenceMouseComponent => {
-  const presenceMouseComponent = new PresenceMouseComponent('canvas');
+const createMousePointers = (containerId?: string): MousePointers => {
+  const presenceMouseComponent = new MousePointers('canvas');
 
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
@@ -32,8 +32,8 @@ const createPresenceMouseComponent = (containerId?: string): PresenceMouseCompon
   return presenceMouseComponent;
 };
 
-describe('PresenceMouseComponent', () => {
-  let presenceMouseComponent: PresenceMouseComponent;
+describe('MousePointers', () => {
+  let presenceMouseComponent: MousePointers;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -46,14 +46,14 @@ describe('PresenceMouseComponent', () => {
   });
 
   test('should throw an error if no container is found', () => {
-    expect(() => new PresenceMouseComponent('not-found-container')).toThrowError(
+    expect(() => new MousePointers('not-found-container')).toThrowError(
       'Container with id not-found-container not found',
     );
   });
 
   describe('start', () => {
     test('should subscribe to realtime events', () => {
-      presenceMouseComponent = createPresenceMouseComponent();
+      presenceMouseComponent = createMousePointers();
       presenceMouseComponent['subscribeToRealtimeEvents'] = jest.fn();
 
       presenceMouseComponent['start']();
@@ -64,7 +64,7 @@ describe('PresenceMouseComponent', () => {
 
   describe('destroy', () => {
     test('should unsubscribe from realtime events', () => {
-      presenceMouseComponent = createPresenceMouseComponent();
+      presenceMouseComponent = createMousePointers();
       presenceMouseComponent['container'].removeEventListener = jest.fn();
 
       presenceMouseComponent['destroy']();

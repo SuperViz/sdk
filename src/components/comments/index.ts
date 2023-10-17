@@ -10,7 +10,7 @@ import { ComponentNames } from '../types';
 
 import { Annotation, Comment, PinAdapter, PinCoordinates } from './types';
 
-export class CommentsComponent extends BaseComponent {
+export class Comments extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private element: CommentElement;

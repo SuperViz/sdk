@@ -8,7 +8,7 @@ import {
   ParticipantEvent,
   FrameEvent,
 } from './common/types/events.types';
-import { VideoComponent, PresenceMouseComponent, Realtime, CommentsComponent } from './components';
+import { VideoComponent, MousePointers, Realtime, Comments, CanvasPin } from './components';
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
@@ -39,9 +39,10 @@ if (window) {
     FrameEvent,
     LayoutMode,
     VideoComponent,
-    PresenceMouseComponent,
+    MousePointers,
     Realtime,
-    CommentsComponent,
+    Comments,
+    CanvasPin,
   };
 }
 

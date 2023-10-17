@@ -1,6 +1,6 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 
-import { CanvasPinAdapter } from '.';
+import { CanvasPin } from '.';
 
 describe('CanvasPinAdapter', () => {
   beforeEach(() => {
@@ -14,19 +14,19 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should create a new instance of CanvasPinAdapter', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
-    expect(canvasPinAdapter).toBeInstanceOf(CanvasPinAdapter);
+    expect(canvasPinAdapter).toBeInstanceOf(CanvasPin);
   });
 
   test('should throw an error if no canvas element is found', () => {
-    expect(() => new CanvasPinAdapter('not-found-canvas')).toThrowError(
+    expect(() => new CanvasPin('not-found-canvas')).toThrowError(
       'Canvas with id not-found-canvas not found',
     );
   });
 
   test('should add event listeners to the canvas element', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
     const addEventListenerSpy = jest.spyOn(canvasPinAdapter['canvas'], 'addEventListener');
     canvasPinAdapter['addListeners']();
@@ -34,7 +34,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should destroy the canvas pin adapter', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     const removeEventListenerSpy = jest.spyOn(canvasPinAdapter['canvas'], 'removeEventListener');
 
     canvasPinAdapter.destroy();
@@ -44,7 +44,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('when mouse enters canvas, should create a new mouse element', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
     const mock = jest.fn().mockImplementation(() => document.createElement('div'));
     canvasPinAdapter['createMouseElement'] = mock;
@@ -55,7 +55,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('when mouse leaves canvas, should remove the mouse element', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
@@ -65,7 +65,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('when mouse clicks canvas', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
@@ -73,7 +73,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should remove annotation pin', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
@@ -86,7 +86,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should not remove annotation pin if it does not exist', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
@@ -99,7 +99,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should not render annotations if the adapter is not active', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(false);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
@@ -108,7 +108,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should remove pins when isActive is turned to false', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
@@ -121,7 +121,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should not render annotation if the coordinate type is not canvas', () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([
@@ -140,7 +140,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should select annotation pin', async () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
@@ -161,7 +161,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should not select annotation pin if uuid is not defined', async () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
@@ -182,7 +182,7 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should not select annotation pin if it does not exist', async () => {
-    const canvasPinAdapter = new CanvasPinAdapter('canvas');
+    const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
