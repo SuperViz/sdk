@@ -1,6 +1,6 @@
 import { Observer } from '../../../common/utils';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
-export declare class CanvasPinAdapter implements PinAdapter {
+export declare class CanvasPin implements PinAdapter {
     private logger;
     private canvasId;
     private canvas;

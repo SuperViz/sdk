@@ -1,4 +1,4 @@
-import { CommentsComponent, PresenceMouseComponent, Realtime, VideoComponent } from '../../components';
+import { CanvasPin, Comments, MousePointers, Realtime, VideoComponent } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
 import { LayoutMode } from '../../services/video-conference-manager/types';
 import { DeviceEvent, MeetingEvent, RealtimeEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent, FrameEvent } from './events.types';
@@ -15,7 +15,8 @@ export interface SuperVizCdn {
     FrameEvent: typeof FrameEvent;
     LayoutMode: typeof LayoutMode;
     VideoComponent: typeof VideoComponent;
-    PresenceMouseComponent: typeof PresenceMouseComponent;
+    MousePointers: typeof MousePointers;
     Realtime: typeof Realtime;
-    CommentsComponent: typeof CommentsComponent;
+    Comments: typeof Comments;
+    CanvasPin: typeof CanvasPin;
 }

@@ -2,7 +2,7 @@ import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 import { PinAdapter } from './types';
-export declare class CommentsComponent extends BaseComponent {
+export declare class Comments extends BaseComponent {
     name: ComponentNames;
     protected logger: Logger;
     private element;

@@ -1,7 +1,7 @@
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
-export declare class PresenceMouseComponent extends BaseComponent {
+export declare class MousePointers extends BaseComponent {
     name: ComponentNames;
     protected logger: Logger;
     private presenceMouseElement;
