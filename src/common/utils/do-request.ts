@@ -12,5 +12,11 @@ export default async (url: string, method: string, body: any, customHeaders = {}
     throw response;
   }
 
-  return response.json();
+  try {
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    return response.ok;
+  }
 };
