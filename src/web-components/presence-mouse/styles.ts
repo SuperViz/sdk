@@ -39,7 +39,7 @@ export const styles = css`
   padding: 2px 8px;
   font-weight: 700;
   font-size: 14px;
-  font-family: 'Open Sans, sans-serif';
+  font-family: Roboto, sans-serif;
   line-height: 22px;
   margin-left: 10px;
   margin-top: -6px;
