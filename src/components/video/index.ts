@@ -354,7 +354,7 @@ export class VideoComponent extends BaseComponent {
    * */
   private onSameAccountError = (error: string): void => {
     this.publish(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, error);
-    this.detach();
+    this.internalRemoveComponent();
   };
 
   /**
@@ -456,7 +456,7 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ on participant left', this.localParticipant);
 
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
-    this.detach();
+    this.internalRemoveComponent();
   };
 
   private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
@@ -485,7 +485,7 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ on kick all participants did change', kick);
 
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANTS, kick);
-    this.detach();
+    this.internalRemoveComponent();
   };
 
   /**
@@ -499,7 +499,7 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ on kick local participant');
 
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANT, this.localParticipant);
-    this.detach();
+    this.internalRemoveComponent();
   };
 
   /**
@@ -608,4 +608,24 @@ export class VideoComponent extends BaseComponent {
       this.createParticipantFromAblyPresence(participant),
     );
   };
+
+  /**
+   * @function internalRemoveComponent
+   * @description remove component from participant and detach
+   * @returns {void}
+   */
+  private internalRemoveComponent(): void {
+    this.logger.log('video component @ internal remove component');
+
+    const { data } = this.realtime.participant;
+    const activeComponents = data.activeComponents.filter((componentName: string) => {
+      return componentName !== ComponentNames.VIDEO_CONFERENCE;
+    });
+
+    this.realtime.updateMyProperties({
+      activeComponents,
+    });
+
+    this.detach();
+  }
 }

@@ -20,6 +20,7 @@ import {
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
+import { ComponentNames } from '../types';
 
 import { VideoComponent } from '.';
 
@@ -71,7 +72,22 @@ describe('VideoComponent', () => {
 
     VideoComponentInstance = new VideoComponent();
     VideoComponentInstance.attach({
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, {
+        isJoinedRoom: true,
+        participant: {
+          clientId: 'client1',
+          action: 'absent',
+          connectionId: 'connection1',
+          encoding: 'h264',
+          id: 'unit-test-participant-ably-id',
+          timestamp: new Date().getTime(),
+          data: {
+            id: MOCK_LOCAL_PARTICIPANT.id,
+            participantId: MOCK_LOCAL_PARTICIPANT.id,
+            activeComponents: [ComponentNames.VIDEO_CONFERENCE],
+          },
+        },
+      }),
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
@@ -309,6 +325,9 @@ describe('VideoComponent', () => {
         MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR,
         'same-account-error',
       );
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
+        activeComponents: [],
+      });
       expect(VideoComponentInstance['detach']).toBeCalled();
     });
 
@@ -547,7 +566,9 @@ describe('VideoComponent', () => {
         MeetingEvent.MEETING_KICK_PARTICIPANTS,
         true,
       );
-
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
+        activeComponents: [],
+      });
       expect(VideoComponentInstance['detach']).toBeCalled();
     });
 
@@ -562,6 +583,9 @@ describe('VideoComponent', () => {
         VideoComponentInstance['localParticipant'],
       );
 
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
+        activeComponents: [],
+      });
       expect(VideoComponentInstance['detach']).toBeCalled();
     });
   });

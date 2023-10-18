@@ -5,6 +5,7 @@ import { Group, Participant } from '../../common/types/participant.types';
 import { Observable } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
+import { ComponentNames } from '../../components/types';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
@@ -19,6 +20,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private readonly shouldKickParticipantsOnHostLeave: boolean;
   protected readonly logger: Logger;
 
+  private activeComponents: ComponentNames[] = [];
   private participant: Participant;
   private group: Group;
 
@@ -55,13 +57,23 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   public addComponent = (component: BaseComponent): void => {
-    const canAddComponent = LimitsService.checkComponentLimit(component.name);
-    if (!canAddComponent) {
+    const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
+    const isComponentActive = this.activeComponents.includes(component.name);
+
+    if (isComponentActive) {
+      const message = `Component ${component.name} is already active. Please remove it first`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
+
+    if (!hasComponentLimit) {
       const message = `You reached the limit usage of ${component.name}`;
       this.logger.log(message);
       console.error(message);
       return;
     }
+
     component.attach({
       localParticipant: this.participant,
       realtime: this.realtime,
@@ -70,9 +82,12 @@ export class Launcher extends Observable implements DefaultLauncher {
       eventBus: this.eventBus,
     });
 
+    this.activeComponents.push(component.name);
+    this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
+
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
     ApiService.createOrUpdateParticipant(config.get<string>('apiKey'), {
-      name: this.participant?.name ?? 'Anonymous',
+      name: this.participant?.name,
       participantId: this.participant?.id,
     });
   };
@@ -84,7 +99,17 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   public removeComponent = (component: BaseComponent): void => {
+    if (!this.activeComponents.includes(component.name)) {
+      const message = `Component ${component.name} is not initialized yet.`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
+
     component.detach();
+
+    this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
+    this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
   };
 
   /**
