@@ -15,7 +15,6 @@ export interface SuperVizSdkOptions {
     avatar?: Avatar;
   };
   group: Group;
-  shouldKickParticipantsOnHostLeave?: boolean;
 
   // internal
   debug?: boolean;

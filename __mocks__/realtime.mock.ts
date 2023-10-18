@@ -66,4 +66,5 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   updatePresenceMouse: jest.fn(),
   leavePresenceMouseChannel: jest.fn(),
   enterPresenceMouseChannel: jest.fn(),
+  setKickParticipantsOnHostLeave: jest.fn(),
 } as unknown as AblyRealtimeService;

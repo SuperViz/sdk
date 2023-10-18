@@ -132,6 +132,7 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ start');
     this.publish(MeetingEvent.MEETING_START);
 
+    this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
     this.startVideo();
   }

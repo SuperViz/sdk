@@ -17,7 +17,6 @@ import { HostObserverCallbackResponse } from '../../services/realtime/base/types
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 
 export class Launcher extends Observable implements DefaultLauncher {
-  private readonly shouldKickParticipantsOnHostLeave: boolean;
   protected readonly logger: Logger;
 
   private activeComponents: ComponentNames[] = [];
@@ -29,10 +28,9 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private participants: Participant[] = [];
 
-  constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions) {
+  constructor({ participant, group }: LauncherOptions) {
     super();
 
-    this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave ?? true;
     this.participant = participant as Participant;
     this.group = group;
 
@@ -124,7 +122,6 @@ export class Launcher extends Observable implements DefaultLauncher {
       participant: this.participant,
       apiKey: config.get<string>('apiKey'),
       roomId: config.get<string>('roomId'),
-      shouldKickParticipantsOnHostLeave: this.shouldKickParticipantsOnHostLeave,
     });
 
     this.realtime.join();

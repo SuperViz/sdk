@@ -1,7 +1,6 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Observable } from '../../common/utils';
 import { BaseComponent } from '../../components/base';
-import { PubSub } from '../../services/pubsub';
 
 export interface DefaultLauncher {}
 

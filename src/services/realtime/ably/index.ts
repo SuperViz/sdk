@@ -50,7 +50,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private enableSync: boolean = true;
   private isSyncFrozen: boolean = false;
   private roomId: string;
-  private shouldKickParticipantsOnHostLeave: boolean;
+  private shouldKickParticipantsOnHostLeave: boolean = false;
   private readonly ablyKey: string;
   private apiKey: string;
   private readonly apiUrl: string;
@@ -109,12 +109,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     );
   }
 
-  public start({
-    participant,
-    roomId,
-    apiKey,
-    shouldKickParticipantsOnHostLeave,
-  }: StartRealtimeType): void {
+  public start({ participant, roomId, apiKey }: StartRealtimeType): void {
     this.myParticipant = {
       data: {
         ...participant,
@@ -130,7 +125,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.enableSync = participant.type !== ParticipantType.AUDIENCE;
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
 
-    this.shouldKickParticipantsOnHostLeave = shouldKickParticipantsOnHostLeave;
     this.apiKey = apiKey;
 
     if (!this.client) {
@@ -415,6 +409,16 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
+   * @function setKickParticipantsOnHostLeave
+   * @param {boolean} shouldKick
+   * @description set if the participants should be kicked when the host leaves
+   * @param shouldKick
+   */
+  public setKickParticipantsOnHostLeave = (shouldKick: boolean): void => {
+    this.shouldKickParticipantsOnHostLeave = shouldKick;
+  };
+
+  /**
    * @function publishClientSyncProperties
    * @description publish client sync props
    * @returns {void}
@@ -596,7 +600,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     if (!this.isJoinedRoom) return;
 
-    return this.supervizChannel.presence.update(this.myParticipant.data);
+    this.supervizChannel.presence.update(this.myParticipant.data);
+    this.logger.log('REALTIME', 'updating my properties', this.myParticipant.data);
   }, SYNC_PROPERTY_INTERVAL);
 
   /**
@@ -877,8 +882,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         })
         .map((member) => member.clientId);
 
-      // no proper host candidate, kick everyone
-      if (this.shouldKickParticipantsOnHostLeave && hostCandidates.length === 0) {
+      if (this.shouldKickParticipantsOnHostLeave && !hostCandidates.length) {
         this.hostAvailabilityObserver.publish(false);
         KICK_PARTICIPANTS_TIMEOUT = setTimeout(() => {
           this.kickAllParticipantsObserver.publish(true);
