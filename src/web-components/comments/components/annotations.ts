@@ -31,11 +31,19 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
     this.emitEvent('comment-input-focus', detail);
   };
 
+  private cancelTemporaryAnnotation = () => {
+    this.annotation = null;
+  };
+
   connectedCallback(): void {
     super.connectedCallback();
     window.document.body.addEventListener(
       'prepare-to-create-annotation',
       this.prepareToCreateAnnotation,
+    );
+    window.document.body.addEventListener(
+      'close-temporary-annotation',
+      this.cancelTemporaryAnnotation,
     );
   }
 
@@ -44,6 +52,10 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
     window.document.body.removeEventListener(
       'prepare-to-create-annotation',
       this.prepareToCreateAnnotation,
+    );
+    window.document.body.removeEventListener(
+      'close-temporary-annotation',
+      this.cancelTemporaryAnnotation,
     );
   }
 
