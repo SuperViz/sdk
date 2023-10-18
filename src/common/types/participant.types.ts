@@ -1,3 +1,5 @@
+import { ComponentNames } from '../../components/types';
+
 export enum ParticipantType {
   HOST = 'host',
   GUEST = 'guest',
@@ -13,6 +15,7 @@ export interface Participant {
   isHost?: boolean;
   // @NOTE - this is a hack to make the participant info work with the 3D avatar
   avatarConfig?: unknown;
+  activeComponents?: ComponentNames[];
 }
 
 export interface Group {

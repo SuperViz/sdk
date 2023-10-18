@@ -152,7 +152,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private onParticipantListUpdate = (participants: Record<string, AblyParticipant>): void => {
-    this.logger.log('launcher service @ onParticipantListUpdate');
+    this.logger.log('launcher service @ onParticipantListUpdate', participants);
 
     const participantList = Object.values(participants).map((participant) => ({
       id: participant.data.id,
@@ -162,6 +162,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       avatarConfig: participant.data?.avatarConfig,
       isHost: this.realtime.hostClientId === participant.clientId,
       color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
+      activeComponents: participant.data?.activeComponents,
     }));
 
     const localParticipant = participantList.find((participant) => {
@@ -176,6 +177,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     if (localParticipant && !isEqual(this.participant, localParticipant)) {
+      this.activeComponents = localParticipant.activeComponents;
       this.participant = localParticipant;
       this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
