@@ -404,6 +404,7 @@ export class Comments extends BaseComponent {
       });
 
       this.updateAnnotationList(annotations);
+      this.pinAdapter.removeAnnotationPin(uuid);
     } catch (error) {
       this.logger.log('error when resolve annotation', error);
     }
