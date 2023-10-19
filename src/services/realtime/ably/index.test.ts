@@ -120,7 +120,6 @@ describe('AblyRealtimeService', () => {
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
     expect(AblyRealtimeMock.connection.on).toHaveBeenCalledTimes(1);
@@ -133,7 +132,6 @@ describe('AblyRealtimeService', () => {
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
     expect(() => {
@@ -148,7 +146,6 @@ describe('AblyRealtimeService', () => {
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
     AblyRealtimeServiceInstance.join();
@@ -179,7 +176,6 @@ describe('AblyRealtimeService', () => {
       apiKey: 'unit-test-api-key',
       participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
     AblyRealtimeServiceInstance.join();
@@ -402,7 +398,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -497,7 +492,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -804,7 +798,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -1090,7 +1083,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -1405,7 +1397,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -1578,7 +1569,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -1608,7 +1598,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();
@@ -1644,7 +1633,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
     });
 
@@ -1683,7 +1671,6 @@ describe('AblyRealtimeService', () => {
         apiKey: 'unit-test-api-key',
         participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
       AblyRealtimeServiceInstance.join();

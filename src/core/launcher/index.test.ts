@@ -4,12 +4,15 @@ import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participa
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { BaseComponent } from '../../components/base';
+import { ComponentNames } from '../../components/types';
 import LimitsService from '../../services/limits';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 import { LauncherFacade, LauncherOptions } from './types';
 
 import Facade, { Launcher } from '.';
+
+jest.mock('../../services/limits');
 
 jest.mock('../../services/realtime', () => ({
   AblyRealtimeService: jest.fn().mockImplementation(() => ABLY_REALTIME_MOCK),
@@ -22,7 +25,7 @@ jest.mock('../../services/event-bus', () => ({
 jest.mock('../../services/api');
 
 const MOCK_COMPONENT = {
-  name: 'mock-component',
+  name: ComponentNames.VIDEO_CONFERENCE,
   attach: jest.fn(),
   detach: jest.fn(),
 } as unknown as BaseComponent;
@@ -51,7 +54,7 @@ describe('Launcher', () => {
 
   describe('Components', () => {
     test('should be add component', () => {
-      jest.spyOn(LimitsService, 'checkComponentLimit').mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -62,10 +65,13 @@ describe('Launcher', () => {
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
       });
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
+        activeComponents: [MOCK_COMPONENT.name],
+      });
     });
 
     test('should show a console message if limit reached and not add component', () => {
-      jest.spyOn(LimitsService, 'checkComponentLimit').mockReturnValue(false);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(false);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -73,9 +79,30 @@ describe('Launcher', () => {
     });
 
     test('should be remove component', () => {
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
       LauncherInstance.removeComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
+        activeComponents: [],
+      });
+    });
+
+    test('should show a console message if component is not initialized yet', () => {
+      LauncherInstance.removeComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.detach).not.toBeCalled();
+    });
+
+    test('should show a console message if component is already active', () => {
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
     });
   });
 

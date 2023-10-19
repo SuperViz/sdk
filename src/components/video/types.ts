@@ -28,6 +28,7 @@ export interface VideoComponentOptions {
   skipMeetingSettings?: boolean;
   layoutPosition?: LayoutPosition;
   layoutMode?: LayoutMode;
+  allowGuests?: boolean;
 }
 
 export type ParticipandToFrame = {
