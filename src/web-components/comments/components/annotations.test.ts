@@ -2,7 +2,6 @@ import sleep from '../../../common/utils/sleep';
 import '.';
 
 let element: HTMLElement;
-
 describe('CommentsAnnotations', () => {
   beforeEach(async () => {
     element = document.createElement('superviz-comments-annotations');
@@ -77,5 +76,15 @@ describe('CommentsAnnotations', () => {
       y: 100,
       type: 'canvas',
     });
+  });
+
+  test('should listen event close-temporary-annotation', async () => {
+    const spy = jest.fn();
+    window.document.body.addEventListener('close-temporary-annotation', spy);
+    window.document.body.dispatchEvent(new CustomEvent('close-temporary-annotation'));
+
+    await sleep(1000);
+
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

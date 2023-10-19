@@ -64,12 +64,14 @@ describe('CanvasPinAdapter', () => {
     expect(canvasPinAdapter['mouseElement']).toBeNull();
   });
 
-  test('when mouse clicks canvas', () => {
+  test('should create temporary pin when mouse clicks canvas', () => {
     const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
 
     canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
     canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+
+    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
   });
 
   test('should remove annotation pin', () => {
@@ -200,5 +202,23 @@ describe('CanvasPinAdapter', () => {
     expect(
       [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
     ).toBeFalsy();
+  });
+
+  test('should remove temporary pin when selecting another pin', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+
+    canvasPinAdapter['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeFalsy();
   });
 });
