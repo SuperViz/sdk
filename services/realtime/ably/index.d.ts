@@ -46,7 +46,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     get participant(): AblyParticipant;
     get localParticipantId(): string | null;
     get isBroadcast(): boolean;
-    start({ participant, roomId, apiKey, shouldKickParticipantsOnHostLeave, }: StartRealtimeType): void;
+    start({ participant, roomId, apiKey }: StartRealtimeType): void;
     /**
      * @function auth
      * @description authenticates to the realtime service
@@ -144,6 +144,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     setParticipantData: (data: ParticipantDataInput) => void;
+    /**
+     * @function setKickParticipantsOnHostLeave
+     * @param {boolean} shouldKick
+     * @description set if the participants should be kicked when the host leaves
+     * @param shouldKick
+     */
+    setKickParticipantsOnHostLeave: (shouldKick: boolean) => void;
     /**
      * @function publishClientSyncProperties
      * @description publish client sync props

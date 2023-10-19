@@ -13,7 +13,6 @@ export interface SuperVizSdkOptions {
         avatar?: Avatar;
     };
     group: Group;
-    shouldKickParticipantsOnHostLeave?: boolean;
     debug?: boolean;
     environment?: EnvironmentTypes;
 }

@@ -1,3 +1,4 @@
+import { ComponentNames } from '../../components/types';
 export declare enum ParticipantType {
     HOST = "host",
     GUEST = "guest",
@@ -11,6 +12,7 @@ export interface Participant {
     avatar?: Avatar;
     isHost?: boolean;
     avatarConfig?: unknown;
+    activeComponents?: ComponentNames[];
 }
 export interface Group {
     id: string;

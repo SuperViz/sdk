@@ -20,6 +20,7 @@ export interface VideoComponentOptions {
     skipMeetingSettings?: boolean;
     layoutPosition?: LayoutPosition;
     layoutMode?: LayoutMode;
+    allowGuests?: boolean;
 }
 export declare type ParticipandToFrame = {
     timestamp: number;

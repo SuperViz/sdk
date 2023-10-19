@@ -3,14 +3,14 @@ import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 export declare class Launcher extends Observable implements DefaultLauncher {
-    private readonly shouldKickParticipantsOnHostLeave;
     protected readonly logger: Logger;
+    private activeComponents;
     private participant;
     private group;
     private readonly realtime;
     private readonly eventBus;
     private participants;
-    constructor({ participant, group, shouldKickParticipantsOnHostLeave }: LauncherOptions);
+    constructor({ participant, group }: LauncherOptions);
     /**
      * @function addComponent
      * @description add component to launcher

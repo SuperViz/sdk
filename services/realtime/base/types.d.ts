@@ -1,5 +1,6 @@
 import { Participant } from '../../../common/types/participant.types';
 import { Observer } from '../../../common/utils';
+import { ComponentNames } from '../../../components/types';
 import { DrawingData } from '../../video-conference-manager/types';
 export interface DefaultRealtimeService {
     participantObservers: Observer[];
@@ -32,13 +33,13 @@ export interface RealtimeJoinOptions {
 export interface ParticipantInfo extends Partial<Participant> {
     participantId?: string;
     slotIndex?: number;
+    activeComponents?: ComponentNames[];
     [key: string]: unknown;
 }
 export interface StartRealtimeType {
     participant: Participant;
     roomId: string;
     apiKey: string;
-    shouldKickParticipantsOnHostLeave: boolean;
 }
 export interface SyncProperty {
     [key: string]: unknown;

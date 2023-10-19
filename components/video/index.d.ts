@@ -227,4 +227,10 @@ export declare class VideoComponent extends BaseComponent {
      * @returns {void}
      */
     private onParticipantLeftOnRealtime;
+    /**
+     * @function internalRemoveComponent
+     * @description remove component from participant and detach
+     * @returns {void}
+     */
+    private internalRemoveComponent;
 }
