@@ -64,21 +64,20 @@ export class Comments extends WebComponentsBaseElement {
 
   protected render() {
     const containerClass = [this.open ? 'container' : 'container-close'].join(' ');
-    const poweredByFooter = html`
-    <div id="poweredby-footer" class="footer">
-    <div class="powered-by powered-by--horizontal">
-      <a href="https://superviz.com/" target="_blank" class="link">
-        <div class="">
-          Powered by
-          <img
-            width="48px"
-            height="8.86px"
-            src="https://production.cdn.superviz.com/static/superviz-gray-logo.svg"
-          />
-        </div>
-      </a>
-    </div>
-  </div>`;
+    const poweredByFooter = html` <div id="poweredby-footer" class="footer">
+      <div class="powered-by powered-by--horizontal">
+        <a href="https://superviz.com/" target="_blank" class="link">
+          <div class="">
+            Powered by
+            <img
+              width="48px"
+              height="8.86px"
+              src="https://production.cdn.superviz.com/static/superviz-gray-logo.svg"
+            />
+          </div>
+        </a>
+      </div>
+    </div>`;
 
     const htmlPoweredByContent = this.waterMarkState ? poweredByFooter : '';
 
@@ -99,7 +98,7 @@ export class Comments extends WebComponentsBaseElement {
           annotationFilter=${this.annotationFilter}
           class="content"
         ></superviz-comments-content>
-      ${htmlPoweredByContent}
+        ${htmlPoweredByContent}
       </div>
     `;
   }

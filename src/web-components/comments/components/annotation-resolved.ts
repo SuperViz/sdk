@@ -47,21 +47,21 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
   };
 
   private hide() {
-    this.emitEvent(
-      'hide',
-      {},
-      { bubbles: false, composed: false },
-    );
+    this.emitEvent('hide', {}, { bubbles: false, composed: false });
   }
 
   private undone() {
     this.isCanceled = true;
     this.hide();
 
-    this.emitEvent('undo-resolve', {
-      type: 'undo-resolve',
-      resolved: false,
-    }, { bubbles: false, composed: false });
+    this.emitEvent(
+      'undo-resolve',
+      {
+        type: 'undo-resolve',
+        resolved: false,
+      },
+      { bubbles: false, composed: false },
+    );
 
     clearTimeout(this.timeout);
   }
@@ -73,7 +73,11 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
     return html`
       <div class="annotation-resolved">
         <span class="text text-big sv-gray-700">You resolve this comment</span>
-        <button id="undone" @click=${this.undone} class="icon-button icon-button--clickable icon-button--medium">
+        <button
+          id="undone"
+          @click=${this.undone}
+          class="icon-button icon-button--clickable icon-button--medium"
+        >
           <superviz-icon name="undo" size="md"></superviz-icon>
         </button>
       </div>

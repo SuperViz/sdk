@@ -22,6 +22,7 @@ export class CommentsContent extends WebComponentsBaseElement {
   declare annotations: Annotation[];
   declare selectedAnnotation: string;
   declare annotationFilter: AnnotationFilter;
+  private lastCommentId: string;
 
   static properties = {
     annotations: { type: Object },
@@ -33,6 +34,27 @@ export class CommentsContent extends WebComponentsBaseElement {
     const { uuid } = detail;
     this.selectedAnnotation = uuid;
   };
+
+  updated(changedProperties) {
+    super.updated(changedProperties);
+    this.updateComplete.then(() => {
+      const selectedAnnotation = this.shadowRoot.querySelector(
+        `[uuid='${this.selectedAnnotation}']`,
+      );
+
+      const isLastComment = this.lastCommentId === this.selectedAnnotation;
+      const offset = !isLastComment ? -150 : 0;
+      this.scrollBy(0, selectedAnnotation.getClientRects()[0].y + offset);
+
+      // "Add Comment" is not yet rendered in screen
+      // so we need an extra scroll to show it
+      if (isLastComment) {
+        setTimeout(() => {
+          this.scrollBy(0, selectedAnnotation.getClientRects()[0].y + offset);
+        }, 200);
+      }
+    });
+  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -57,19 +79,23 @@ export class CommentsContent extends WebComponentsBaseElement {
 
     const isLastAnnotation = (index: number, resolved: boolean) => {
       if (resolved) return annotationsResolved?.length === index + 1;
+      this.lastCommentId = annotationsUnresolved[index].uuid;
       return annotationsUnresolved?.length === index + 1;
     };
 
     const annotationTemplate = (annotation: Annotation, index: number, resolved: boolean) => {
       const hasComments = annotation.comments.length > 0;
 
+      const isLast = isLastAnnotation(index, resolved);
+
       const annotationComments = hasComments
         ? html`
             <superviz-comments-annotation-item
               annotation=${JSON.stringify(annotation)}
               selected="${this.selectedAnnotation}"
-              ?isLastAnnotation=${isLastAnnotation(index, resolved)}
+              ?isLastAnnotation=${isLast}
               annotationFilter=${this.annotationFilter}
+              uuid=${annotation.uuid}
             >
             </superviz-comments-annotation-item>
           `
