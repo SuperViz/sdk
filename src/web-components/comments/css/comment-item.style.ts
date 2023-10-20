@@ -23,6 +23,19 @@ export const commentItemStyle = css`
     color: rgb(var(--sv-gray-500));
   }
 
+  .comment-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .comment-item__actions superviz-dropdown,
+  .comment-item__actions button {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+  }
+
   .comment-item__user-details {
     display: flex;
     width: 100%;
