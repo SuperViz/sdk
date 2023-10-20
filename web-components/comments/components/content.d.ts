@@ -8,6 +8,7 @@ export declare class CommentsContent extends WebComponentsBaseElement {
     annotations: Annotation[];
     selectedAnnotation: string;
     annotationFilter: AnnotationFilter;
+    private lastCommentId;
     static properties: {
         annotations: {
             type: ObjectConstructor;
@@ -20,6 +21,7 @@ export declare class CommentsContent extends WebComponentsBaseElement {
         };
     };
     private selectAnnotation;
+    updated(changedProperties: any): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
     protected render(): import("lit-html").TemplateResult<1>;
