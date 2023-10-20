@@ -172,23 +172,25 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             <span class="text text-bold sv-gray-600">${this.username}</span>
             <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
           </div>
-          <button
-            @click=${this.resolveAnnotation}
-            class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
-          >
-            <superviz-icon name=${resolveIcon} size="md"></superviz-icon>
-          </button>
-          <superviz-dropdown
-            options=${JSON.stringify(options)}
-            label="label"
-            returnTo="label"
-            position="bottom-right"
-            @selected=${dropdownOptionsHandler}
-          >
-            <button slot="dropdown" class="icon-button icon-button--clickable icon-button--small">
-              <superviz-icon name="more" size="sm"></superviz-icon>
+          <div class="comment-item__actions">
+            <button
+              @click=${this.resolveAnnotation}
+              class="icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
+            >
+              <superviz-icon name=${resolveIcon} size="md"></superviz-icon>
             </button>
-          </superviz-dropdown>
+            <superviz-dropdown
+              options=${JSON.stringify(options)}
+              label="label"
+              returnTo="label"
+              position="bottom-right"
+              @selected=${dropdownOptionsHandler}
+            >
+              <button slot="dropdown" class="icon-button icon-button--clickable icon-button--small">
+                <superviz-icon name="more" size="sm"></superviz-icon>
+              </button>
+            </superviz-dropdown>
+          </div>
         </div>
 
         <div class="comment-item__content">
