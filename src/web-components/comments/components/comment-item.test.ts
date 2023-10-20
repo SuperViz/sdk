@@ -68,7 +68,7 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const resolveButton = element.shadowRoot!.querySelector(
-      '.comment-item__user > button',
+      '.comment-item__actions > button',
     ) as HTMLButtonElement;
 
     element.dispatchEvent = jest.fn();

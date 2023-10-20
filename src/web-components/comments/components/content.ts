@@ -41,16 +41,22 @@ export class CommentsContent extends WebComponentsBaseElement {
       const selectedAnnotation = this.shadowRoot.querySelector(
         `[uuid='${this.selectedAnnotation}']`,
       );
+      if (!selectedAnnotation) return;
 
       const isLastComment = this.lastCommentId === this.selectedAnnotation;
       const offset = !isLastComment ? -150 : 0;
-      this.scrollBy(0, selectedAnnotation.getClientRects()[0].y + offset);
+
+      const clientRects = selectedAnnotation.getClientRects()[0];
+
+      if (!clientRects) return;
+
+      this.scrollBy(0, clientRects.y + offset);
 
       // "Add Comment" is not yet rendered in screen
       // so we need an extra scroll to show it
       if (isLastComment) {
         setTimeout(() => {
-          this.scrollBy(0, selectedAnnotation.getClientRects()[0].y + offset);
+          this.scrollBy(0, clientRects.y + offset);
         }, 200);
       }
     });
