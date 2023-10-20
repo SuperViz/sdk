@@ -245,10 +245,15 @@ export class CanvasPin implements PinAdapter {
     if (!uuid) return;
 
     this.pins.forEach((pinElement) => {
-      if (pinElement.id === 'superviz-temporary-pin') return;
+      if (pinElement.id === 'superviz-temporary-pin') {
+        this.removeAnnotationPin('temporary-pin');
+        return;
+      }
 
       pinElement.removeAttribute('active');
     });
+
+    document.body.dispatchEvent(new CustomEvent('close-temporary-annotation'));
 
     const pinElement = this.pins.get(uuid);
 
