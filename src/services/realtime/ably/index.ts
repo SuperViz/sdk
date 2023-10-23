@@ -1272,7 +1272,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.presence3DChannel.presence.leave();
   };
 
-  public updatePresence3D = throttle((data: Partial<Participant>): void => {
+  public updatePresence3D = throttle((data: Partial<AblyParticipant>): void => {
     const participant = Object.assign({}, this.participantsOn3d[data.id] || {}, data);
 
     this.presence3DChannel.presence.update(participant);
