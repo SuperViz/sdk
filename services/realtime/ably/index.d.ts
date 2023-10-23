@@ -12,6 +12,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private client;
     private participants;
     private participantsMouse;
+    private participantsOn3d;
     private hostParticipantId;
     private myParticipant;
     private commentsChannel;
@@ -20,11 +21,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private clientRoomStateChannel;
     private broadcastChannel;
     private presenceMouseChannel;
+    private presence3DChannel;
     private clientRoomState;
     private clientSyncPropertiesQueue;
     private clientSyncPropertiesTimeOut;
     private isReconnecting;
     isJoinedRoom: boolean;
+    isJoinedPresence3D: boolean;
     private currentReconnectAttempt;
     private localRoomProperties?;
     private enableSync;
@@ -393,4 +396,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     private publishPresenceMouseUpdate;
+    /** Presence 3D */
+    enterPresence3DChannel: (participant: Participant) => void;
+    leavePresence3DChannel: () => void;
+    updatePresence3D: import("lodash").DebouncedFunc<(data: Partial<Participant>) => void>;
+    private onPresence3DChannelEnter;
+    private onPresence3DChannelLeave;
+    /**
+     * @function publish3DUpdate
+     * @param {AblyParticipant} participant
+     * @description publish a participant's changes to observer
+     * @returns {void}
+     */
+    private publish3DUpdate;
 }
