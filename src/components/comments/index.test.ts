@@ -9,7 +9,7 @@ import ApiService from '../../services/api';
 import { WaterMark } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
-import { PinAdapter } from './types';
+import { Annotation, PinAdapter } from './types';
 
 import { Comments } from './index';
 
@@ -479,8 +479,22 @@ describe('Comments', () => {
     expect(spy).toHaveBeenCalledWith('error when deleting annotation', 'internal server error');
   });
 
-  test('should update annotations list on component when annotations are updated on realtime', async () => {
-    commentsComponent['onAnnotationListUpdate']([MOCK_ANNOTATION]);
+  test('should not update annotations list on component when participant id is the same clientId', () => {
+    commentsComponent['onAnnotationListUpdate']({
+      clientId: MOCK_LOCAL_PARTICIPANT.id,
+      data: [MOCK_ANNOTATION],
+    });
+
+    expect(commentsComponent['annotations']).toEqual([]);
+    expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalledTimes(1);
+    expect(commentsComponent['pinAdapter'].updateAnnotations).toHaveBeenCalledTimes(1);
+  });
+
+  test('should update annotations list on component when annotations are updated on realtime', () => {
+    commentsComponent['onAnnotationListUpdate']({
+      clientId: 'unit-test-client-id',
+      data: [MOCK_ANNOTATION],
+    });
 
     expect(commentsComponent['annotations']).toEqual([MOCK_ANNOTATION]);
     expect(commentsComponent['element'].updateAnnotations).toHaveBeenCalledWith([MOCK_ANNOTATION]);
@@ -511,6 +525,12 @@ describe('Comments', () => {
 
   test('should remove pin from canvas when resolving', async () => {
     commentsComponent['annotations'] = [MOCK_ANNOTATION];
+    ApiService.resolveAnnotation = jest.fn().mockImplementation(() => {
+      return {
+        ...MOCK_ANNOTATION,
+        resolved: true,
+      };
+    });
 
     commentsComponent['element'].dispatchEvent(
       new CustomEvent('resolve-annotation', {
@@ -526,6 +546,45 @@ describe('Comments', () => {
     expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
       MOCK_ANNOTATION.uuid,
     );
+  });
 
+  test('should update annotation list when annotation is unresolved', () => {
+    commentsComponent['annotations'] = [MOCK_ANNOTATION];
+    ApiService.resolveAnnotation = jest.fn().mockImplementation(() => {
+      return {
+        ...MOCK_ANNOTATION,
+        resolved: false,
+      };
+    });
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('resolve-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    expect(commentsComponent['annotations'].length).toBe(1);
+    expect(commentsComponent['pinAdapter'].updateAnnotations).toHaveBeenCalled();
+  });
+
+  test('should not modify annotation if it`s not changed', () => {
+    const annotationList: Annotation[] = [
+      MOCK_ANNOTATION,
+      { ...MOCK_ANNOTATION, uuid: 'other-uuid' },
+    ];
+    commentsComponent['annotations'] = annotationList;
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('resolve-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    expect(commentsComponent['annotations'].length).toBe(2);
+    expect(commentsComponent['annotations'][1]).toStrictEqual(annotationList[1]);
   });
 });

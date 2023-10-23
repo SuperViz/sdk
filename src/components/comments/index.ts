@@ -4,7 +4,6 @@ import config from '../../services/config';
 import { WaterMark } from '../../services/video-conference-manager/types';
 import type { Comments as CommentElement } from '../../web-components';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
-import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
@@ -175,12 +174,10 @@ export class Comments extends BaseComponent {
 
       const comment = await this.createComment(annotation.uuid, text);
 
-      this.addAnnotation([
-        {
-          ...annotation,
-          comments: [comment],
-        },
-      ]);
+      this.addAnnotation({
+        ...annotation,
+        comments: [comment],
+      });
 
       // remove the temporary pin
       this.pinAdapter.removeAnnotationPin('temporary-pin');
@@ -295,8 +292,9 @@ export class Comments extends BaseComponent {
    * @param {Annotation[]} annotations - An array of annotation objects to add to the component
    * @returns {void}
    */
-  private addAnnotation(annotations: Annotation[]): void {
-    const list = [...this.annotations, ...annotations];
+  private addAnnotation(annotations: Annotation): void {
+    const list = [annotations, ...this.annotations];
+    this.element.updateAnnotations(list);
     this.updateAnnotationList(list);
   }
 
@@ -336,6 +334,7 @@ export class Comments extends BaseComponent {
     ];
 
     this.updateAnnotationList(list);
+    this.element.updateAnnotations(list);
   }
 
   /**
@@ -393,18 +392,29 @@ export class Comments extends BaseComponent {
   private resolveAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
       const { uuid } = detail;
-      await ApiService.resolveAnnotation(config.get('apiUrl'), config.get('apiKey'), uuid);
+
+      const { resolved } = await ApiService.resolveAnnotation(
+        config.get('apiUrl'),
+        config.get('apiKey'),
+        uuid,
+      );
 
       const annotations = this.annotations.map((annotation) => {
         if (annotation.uuid === uuid) {
-          return Object.assign({}, annotation, { resolved: true });
+          return Object.assign({}, annotation, { resolved });
         }
 
         return annotation;
       });
 
       this.updateAnnotationList(annotations);
-      this.pinAdapter.removeAnnotationPin(uuid);
+
+      if (resolved) {
+        this.pinAdapter.removeAnnotationPin(uuid);
+        return;
+      }
+
+      this.pinAdapter.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when resolve annotation', error);
     }
@@ -446,8 +456,12 @@ export class Comments extends BaseComponent {
 
   /** Realtime Callbacks */
 
-  private onAnnotationListUpdate = (annotations: Annotation[]): void => {
-    this.annotations = annotations;
+  private onAnnotationListUpdate = (message): void => {
+    const { data, clientId } = message;
+
+    if (this.localParticipant.id === clientId) return;
+
+    this.annotations = data;
     this.element.updateAnnotations(this.annotations);
     this.pinAdapter.updateAnnotations(this.annotations);
   };

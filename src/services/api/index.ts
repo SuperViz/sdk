@@ -1,4 +1,5 @@
 import { doRequest } from '../../common/utils';
+import { Annotation } from '../../components/comments/types';
 import config from '../config';
 
 import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
@@ -71,7 +72,11 @@ export default class ApiService {
     return doRequest(url, 'GET', undefined, { apikey: apiKey });
   }
 
-  static async resolveAnnotation(baseUrl: string, apiKey: string, annotationId: string) {
+  static async resolveAnnotation(
+    baseUrl: string,
+    apiKey: string,
+    annotationId: string,
+  ): Promise<Annotation> {
     const path = `/annotations/resolve/${annotationId}`;
     const url = this.createUrl(baseUrl, path);
 

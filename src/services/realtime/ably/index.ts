@@ -1185,7 +1185,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   /** Comments */
   private onCommentsChannelUpdate = (message: Ably.Types.Message): void => {
     this.logger.log('REALTIME', 'Comments channel update', message);
-    this.commentsObserver.publish(message.data);
+    this.commentsObserver.publish(message);
   };
 
   public updateComments = (annotations: Annotation[]) => {
