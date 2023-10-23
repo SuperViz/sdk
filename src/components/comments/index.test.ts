@@ -508,4 +508,24 @@ describe('Comments', () => {
       }),
     );
   });
+
+  test('should remove pin from canvas when resolving', async () => {
+    commentsComponent['annotations'] = [MOCK_ANNOTATION];
+
+    commentsComponent['element'].dispatchEvent(
+      new CustomEvent('resolve-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    await sleep(1);
+
+    expect(commentsComponent['annotations'].length).toBe(1);
+    expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
+      MOCK_ANNOTATION.uuid,
+    );
+
+  });
 });
