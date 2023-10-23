@@ -1,3 +1,4 @@
+import { Annotation } from '../../components/comments/types';
 import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
 export default class ApiService {
     static createUrl(baseUrl: string, path: string, query?: {}): string;
@@ -9,7 +10,7 @@ export default class ApiService {
     static updateComment(baseUrl: string, apiKey: string, commentId: string, text: string): Promise<any>;
     static createComment(baseUrl: string, apiKey: string, comment: CommentParams): Promise<any>;
     static fetchAnnotation(baseUrl: string, apiKey: string, query: FetchAnnotationsParams): Promise<any>;
-    static resolveAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<any>;
+    static resolveAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<Annotation>;
     static deleteComment(baseUrl: string, apiKey: string, commentId: string): Promise<any>;
     static deleteAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<any>;
     static createOrUpdateParticipant(apiKey: string, participant: {

@@ -26,6 +26,7 @@ export declare class CommentsAnnotationItem extends WebComponentsBaseElement {
         };
         shouldShowUndoResolved: {
             type: BooleanConstructor;
+            reflect: boolean;
         };
         isLastAnnotation: {
             type: BooleanConstructor;
@@ -38,6 +39,8 @@ export declare class CommentsAnnotationItem extends WebComponentsBaseElement {
     updated(changedProperties: Map<string | number | symbol, unknown>): void;
     selectAnnotation: () => void;
     private createComment;
+    private resolveAnnotation;
+    private hideUndoResolved;
     protected render(): import("lit-html").TemplateResult<1>;
 }
 export {};
