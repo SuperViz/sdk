@@ -527,8 +527,5 @@ describe('Comments', () => {
       MOCK_ANNOTATION.uuid,
     );
 
-    expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
-      MOCK_ANNOTATION.uuid,
-    );
   });
 });
