@@ -60,7 +60,6 @@ describe('CommentsContent', () => {
     await sleep();
 
     const annotationItem = element.shadowRoot?.querySelector('superviz-comments-annotation-item');
-    console.error(annotationItem);
     expect(annotationItem).toBeFalsy();
   });
 });
