@@ -20,7 +20,7 @@ export const annotationPinStyles = css`
 
     border: 2px solid white;
     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.25);
-    transition: border-color 0.2s ease-in-out;
+    transition: border-color 0.2s ease-in-out opacity 0.2s ease-in-out;
     padding: 2px;
     cursor: pointer;
   }
