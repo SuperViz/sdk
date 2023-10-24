@@ -22,7 +22,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     this.isHidden = true;
   }
 
-  private toggle(details) {
+  private toggle() {
     this.emitEvent('toggle', {});
   }
 
