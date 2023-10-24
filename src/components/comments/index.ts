@@ -149,6 +149,14 @@ export class Comments extends BaseComponent {
         bubbles: true,
       }),
     );
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
   };
 
   /**
