@@ -126,6 +126,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       connectionId: null,
       encoding: null,
       id: null,
+      extras: null,
     };
     this.enableSync = participant.type !== ParticipantType.AUDIENCE;
     this.roomId = `superviz:${roomId.toLowerCase()}-${apiKey}`;
@@ -914,7 +915,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} myPresenceParam - The presence message of the participant.
    * @returns {void}
    */
-  findSlotIndex = (myPresenceParam: Ably.Types.PresenceMessage) => {
+  findSlotIndex = (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
     let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
 
@@ -960,33 +961,36 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} participant
    * @returns {void}
    */
-  private confirmSlot = throttle(async (myPresenceParam: Ably.Types.PresenceMessage) => {
-    const usedSlots: Ably.Types.PresenceMessage[] = [];
-    let myPresence = myPresenceParam;
-    this.supervizChannel.presence.get((err, members) => {
-      members.forEach((member) => {
-        if (member.connectionId === myPresence.connectionId) {
-          myPresence = member;
-        }
-        if (
-          member.connectionId !== myPresence.connectionId &&
-          member.data.slotIndex !== undefined
-        ) {
-          usedSlots.push(member.data.slotIndex);
-        }
+  private confirmSlot = throttle(
+    async (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
+      const usedSlots: Ably.Types.PresenceMessage[] = [];
+      let myPresence = myPresenceParam;
+      this.supervizChannel.presence.get((err, members) => {
+        members.forEach((member) => {
+          if (member.connectionId === myPresence.connectionId) {
+            myPresence = member;
+          }
+          if (
+            member.connectionId !== myPresence.connectionId &&
+            member.data.slotIndex !== undefined
+          ) {
+            usedSlots.push(member.data.slotIndex);
+          }
+        });
       });
-    });
-    if (
-      this.myParticipant.data.slotIndex === undefined ||
-      usedSlots.includes(this.myParticipant.data.slotIndex)
-    ) {
-      this.findSlotIndex(myPresence);
-    } else {
-      // confirm slot and propagate
-      const roomProperties = await this.fetchRoomProperties();
-      this.updateRoomProperties(roomProperties);
-    }
-  }, 1000);
+      if (
+        this.myParticipant.data.slotIndex === undefined ||
+        usedSlots.includes(this.myParticipant.data.slotIndex)
+      ) {
+        this.findSlotIndex(myPresence);
+      } else {
+        // confirm slot and propagate
+        const roomProperties = await this.fetchRoomProperties();
+        this.updateRoomProperties(roomProperties);
+      }
+    },
+    1000,
+  );
 
   /**
    * @function onStateChange

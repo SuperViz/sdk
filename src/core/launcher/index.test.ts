@@ -116,6 +116,7 @@ describe('Launcher', () => {
 
       LauncherInstance['onParticipantListUpdate']({
         participant1: {
+          extras: null,
           clientId: 'client1',
           action: 'present',
           connectionId: 'connection1',
@@ -141,6 +142,7 @@ describe('Launcher', () => {
 
       LauncherInstance['onParticipantListUpdate']({
         [MOCK_LOCAL_PARTICIPANT.id]: {
+          extras: null,
           clientId: 'client1',
           action: 'present',
           connectionId: 'connection1',

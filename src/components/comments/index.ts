@@ -295,6 +295,7 @@ export class Comments extends BaseComponent {
   private addAnnotation(annotations: Annotation): void {
     const list = [annotations, ...this.annotations];
     this.element.updateAnnotations(list);
+    this.pinAdapter.updateAnnotations(list);
     this.updateAnnotationList(list);
   }
 
