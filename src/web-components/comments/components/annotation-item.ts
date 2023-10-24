@@ -28,7 +28,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     expandComments: { type: Boolean },
     selected: { type: String, reflect: true },
     resolved: { type: Boolean },
-    shouldShowUndoResolved: { type: Boolean },
+    shouldShowUndoResolved: { type: Boolean, reflect: true },
     isLastAnnotation: { type: Boolean },
     annotationFilter: { type: String },
   };
@@ -57,6 +57,28 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       text,
     });
   }
+
+  private resolveAnnotation = ({ detail }: CustomEvent) => {
+    const { uuid } = this.annotation;
+    const { resolved, type } = detail;
+    const isResolveAnnotation =
+      type === 'resolve-annotation' && this.annotationFilter === AnnotationFilter.ALL;
+
+    this.resolved = resolved;
+
+    this.emitEvent('resolve-annotation', {
+      uuid,
+      resolved,
+    });
+
+    if (isResolveAnnotation) {
+      this.shouldShowUndoResolved = true;
+    }
+  };
+
+  private hideUndoResolved = () => {
+    this.shouldShowUndoResolved = false;
+  };
 
   protected render() {
     const filterIsAll = this.annotationFilter === AnnotationFilter.ALL;
@@ -88,28 +110,6 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       'comments-container': true,
       'comment-item--expand': isSelected && this.expandComments,
       hidden: !(isSelected && this.expandComments),
-    };
-
-    const resolveAnnotation = ({ detail }: CustomEvent) => {
-      const { uuid } = this.annotation;
-      const { resolved, type } = detail;
-      const isResolveAnnotation =
-        type === 'resolve-annotation' && this.annotationFilter === AnnotationFilter.ALL;
-
-      this.resolved = resolved;
-
-      this.emitEvent('resolve-annotation', {
-        uuid,
-        resolved,
-      });
-
-      if (isResolveAnnotation) {
-        this.shouldShowUndoResolved = true;
-      }
-    };
-
-    const hideUndoResolved = () => {
-      this.shouldShowUndoResolved = false;
     };
 
     const avatarCommentsTemplate = () => {
@@ -153,8 +153,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
       return html`
         <superviz-comments-annotation-resolved
-          @undo-resolve=${resolveAnnotation}
-          @hide=${hideUndoResolved}
+          @undo-resolve=${this.resolveAnnotation}
+          @hide=${this.hideUndoResolved}
           class=${classMap({ hidden: filterIsResolved })}
         >
         </superviz-comments-annotation-resolved>
@@ -177,7 +177,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               resolvable
               ?resolved=${this.resolved}
               annotationFilter=${this.annotationFilter}
-              @resolve-annotation=${resolveAnnotation}
+              @resolve-annotation=${this.resolveAnnotation}
             ></superviz-comments-comment-item>
 
             <div class=${classMap(avatarCommentsClasses)}>

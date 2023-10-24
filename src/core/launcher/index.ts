@@ -177,7 +177,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     if (localParticipant && !isEqual(this.participant, localParticipant)) {
-      this.activeComponents = localParticipant.activeComponents;
+      this.activeComponents = localParticipant.activeComponents ?? [];
       this.participant = localParticipant;
       this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
