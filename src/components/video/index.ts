@@ -179,7 +179,7 @@ export class VideoComponent extends BaseComponent {
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
       canUseDefaultToolbar: this.params?.defaultToolbar ?? true,
-      camerasPosition: this.params?.camerasPosition,
+      camerasPosition: this.params?.collaborationMode?.position,
       devices: this.params?.devices,
       skipMeetingSettings: this.params?.skipMeetingSettings,
       browserService: this.browserService,
@@ -187,8 +187,8 @@ export class VideoComponent extends BaseComponent {
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
       customColors: this.params?.customColors,
-      layoutPosition: this.params?.layoutPosition,
-      layoutMode: this.params?.layoutMode ?? LayoutMode.LIST,
+      layoutPosition: this.params?.collaborationMode?.modalPosition,
+      layoutMode: this.params?.collaborationMode?.initialView ?? LayoutMode.LIST,
     };
 
     this.logger.log('video component @ start video', this.videoConfig);
