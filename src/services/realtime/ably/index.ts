@@ -1287,13 +1287,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.isJoinedPresence3D = true;
     }
 
+    if (!this.participants[participant.clientId]) return;
+
     const slot = this.getParticipantSlot(participant.clientId);
 
     this.presence3dJoinedObserver.publish({
       ...participant,
       data: {
         ...participant.data,
-        ...this.participants[participant.clientId].data,
+        ...this.participants[participant.clientId]?.data,
         slotIndex: slot,
         color: this.getSlotColor(slot).color,
       },
@@ -1313,6 +1315,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   private publish3DUpdate = (participant: Ably.Types.PresenceMessage): void => {
     const slot = this.getParticipantSlot(participant.clientId);
+
+    if (!this.participants[participant.clientId]) return;
 
     this.participantsOn3d[participant.clientId] = {
       ...participant,
