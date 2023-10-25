@@ -410,6 +410,7 @@ describe('VideoComponent', () => {
 
     test('should update participants', () => {
       const ablyParticipant: AblyParticipant = {
+        extras: null,
         clientId: MOCK_LOCAL_PARTICIPANT.id,
         action: 'present',
         connectionId: 'connection1',
@@ -508,6 +509,7 @@ describe('VideoComponent', () => {
       VideoComponentInstance['publish'] = jest.fn();
 
       const ablyParticipant: AblyParticipant = {
+        extras: null,
         clientId: MOCK_LOCAL_PARTICIPANT.id,
         action: 'present',
         connectionId: 'connection1',
@@ -534,6 +536,7 @@ describe('VideoComponent', () => {
       VideoComponentInstance['publish'] = jest.fn();
 
       const ablyParticipant: AblyParticipant = {
+        extras: null,
         clientId: MOCK_LOCAL_PARTICIPANT.id,
         action: 'present',
         connectionId: 'connection1',

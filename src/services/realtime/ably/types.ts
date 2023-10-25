@@ -14,6 +14,7 @@ export interface AblyParticipant {
   encoding: string;
   id: string;
   timestamp: number;
+  extras: any;
 }
 
 export interface AblyRealtimeData {

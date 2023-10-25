@@ -18,6 +18,7 @@ export const MOCK_GROUP: Group = {
 };
 
 export const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
+  extras: null,
   clientId: MOCK_LOCAL_PARTICIPANT.id,
   action: 'present',
   connectionId: 'connection1',
