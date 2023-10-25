@@ -27,6 +27,10 @@ export const floatButtonStyle = css`
     display: none;
   }
 
+  .hide-button {
+    display: none !important;
+  }
+
   button.float-button:hover {
     width: 110px;
     border-radius: 30px;

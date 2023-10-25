@@ -18,10 +18,10 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
   protected render() {
     return html`
       <div class="topbar">
-        <span class="text text-bold">COMMENTS</span>
-        <span @click=${this.close}>
-          <superviz-icon name="right" size="lg"></superviz-icon>
+        <span @click=${this.close} class="toggle-icon">
+          <superviz-icon name="left" size="lg"></superviz-icon>
         </span>
+        <span class="text text-bold">COMMENTS</span>
       </div>
     `;
   }
