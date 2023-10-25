@@ -3,6 +3,7 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
+import { ParticipantType } from '../../common/types/participant.types';
 import { BaseComponent } from '../../components/base';
 import { ComponentNames } from '../../components/types';
 import LimitsService from '../../services/limits';
@@ -59,7 +60,7 @@ describe('Launcher', () => {
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
-        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        localParticipant: { ...MOCK_LOCAL_PARTICIPANT, type: ParticipantType.GUEST },
         realtime: ABLY_REALTIME_MOCK,
         group: MOCK_GROUP,
         config: MOCK_CONFIG,

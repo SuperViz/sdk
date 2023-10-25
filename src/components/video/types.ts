@@ -29,6 +29,7 @@ export interface VideoComponentOptions {
   layoutPosition?: LayoutPosition;
   layoutMode?: LayoutMode;
   allowGuests?: boolean;
+  userType?: ParticipantType | 'host' | 'guest' | 'audience';
 }
 
 export type ParticipandToFrame = {

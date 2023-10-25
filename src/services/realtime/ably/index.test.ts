@@ -1032,7 +1032,9 @@ describe('AblyRealtimeService', () => {
 
       await AblyRealtimeServiceInstance.setHost('');
 
-      expect(AblyRealtimeServiceInstance['updateRoomProperties']).not.toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        hostClientId: null,
+      });
     });
 
     test('when the host leaves the room, should set the hostClientId to null', async () => {

@@ -1,7 +1,7 @@
 import { isEqual } from 'lodash';
 
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
-import { Group, Participant } from '../../common/types/participant.types';
+import { Group, Participant, ParticipantType } from '../../common/types/participant.types';
 import { Observable } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
 import { BaseComponent } from '../../components/base';
@@ -31,7 +31,11 @@ export class Launcher extends Observable implements DefaultLauncher {
   constructor({ participant, group }: LauncherOptions) {
     super();
 
-    this.participant = participant as Participant;
+    this.participant = {
+      ...participant,
+      type: ParticipantType.GUEST,
+    };
+
     this.group = group;
 
     this.logger = new Logger('@superviz/sdk/launcher');
@@ -183,6 +187,11 @@ export class Launcher extends Observable implements DefaultLauncher {
 
       this.logger.log('Publishing ParticipantEvent.UPDATED', localParticipant);
     }
+
+    this.logger.log(
+      'launcher service @ onParticipantListUpdate - participants updated',
+      participantList,
+    );
   };
 
   /**

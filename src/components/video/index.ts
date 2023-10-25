@@ -11,7 +11,7 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { Participant } from '../../common/types/participant.types';
+import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
@@ -47,7 +47,10 @@ export class VideoComponent extends BaseComponent {
   constructor(params?: VideoComponentOptions) {
     super();
 
-    this.params = params;
+    this.params = {
+      ...params,
+      userType: params?.userType ?? ParticipantType.GUEST,
+    };
 
     this.name = ComponentNames.VIDEO_CONFERENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.VIDEO_CONFERENCE}`);
@@ -131,6 +134,10 @@ export class VideoComponent extends BaseComponent {
   protected start(): void {
     this.logger.log('video component @ start');
     this.publish(MeetingEvent.MEETING_START);
+
+    if (this.params.userType !== ParticipantType.GUEST) {
+      this.localParticipant.type = this.params.userType as ParticipantType;
+    }
 
     this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
@@ -437,6 +444,7 @@ export class VideoComponent extends BaseComponent {
       this.realtime.updateMyProperties({
         avatar: participant.avatar,
         name: participant.name,
+        type: participant.type,
       });
 
       return;
@@ -444,6 +452,7 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.updateMyProperties({
       name: participant.name,
+      type: participant.type,
     });
   };
 
@@ -625,7 +634,9 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.updateMyProperties({
       activeComponents,
+      type: ParticipantType.GUEST,
     });
+    this.realtime.setKickParticipantsOnHostLeave(false);
 
     this.detach();
   }

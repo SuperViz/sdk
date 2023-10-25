@@ -18,6 +18,7 @@ import {
   TranscriptState,
 } from '../../common/types/events.types';
 import { MeetingColors } from '../../common/types/meeting-colors.types';
+import { ParticipantType } from '../../common/types/participant.types';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
@@ -70,7 +71,10 @@ describe('VideoComponent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    VideoComponentInstance = new VideoComponent();
+    VideoComponentInstance = new VideoComponent({
+      userType: 'host',
+    });
+
     VideoComponentInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, {
         isJoinedRoom: true,
@@ -274,7 +278,10 @@ describe('VideoComponent', () => {
 
       VideoComponentInstance['onParticipantJoined'](participant);
 
-      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({ name: 'John Doe' });
+      expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
+        name: 'John Doe',
+        type: ParticipantType.HOST,
+      });
     });
 
     test('should update participant avatar if it is not set and video frame has default avatars', () => {
@@ -290,6 +297,7 @@ describe('VideoComponent', () => {
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         name: 'John Doe',
         avatar: MOCK_AVATAR,
+        type: ParticipantType.HOST,
       });
     });
 
@@ -327,7 +335,9 @@ describe('VideoComponent', () => {
       );
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         activeComponents: [],
+        type: ParticipantType.GUEST,
       });
+      expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
       expect(VideoComponentInstance['detach']).toBeCalled();
     });
 
@@ -571,7 +581,9 @@ describe('VideoComponent', () => {
       );
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         activeComponents: [],
+        type: ParticipantType.GUEST,
       });
+      expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
       expect(VideoComponentInstance['detach']).toBeCalled();
     });
 
@@ -588,6 +600,7 @@ describe('VideoComponent', () => {
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         activeComponents: [],
+        type: ParticipantType.GUEST,
       });
       expect(VideoComponentInstance['detach']).toBeCalled();
     });
