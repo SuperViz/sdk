@@ -20,6 +20,9 @@ jobs:
         run: |
           touch .version.js && echo "echo \"export const version = 'beta'\" > .version.js" | bash -
           yarn build
+      - name: Create a .remote-config.js file
+        run: |
+          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
@@ -42,6 +45,9 @@ jobs:
         run: |
           touch .version.js && echo "echo \"export const version = 'lab'\" > .version.js" | bash -
           yarn build
+      - name: Create a .remote-config.js file
+        run: |
+          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
@@ -63,6 +69,9 @@ jobs:
         env:
           NPM_CONFIG_USERCONFIG: .npmrc.ci
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create a .remote-config.js file
+        run: |
+          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
       - run: git config --global user.name SuperViz
       - run: git config --global user.email ci@superviz.com
       - name: Publish npm package
