@@ -1,4 +1,4 @@
-export declare type RemoteConfig = {
+export type RemoteConfig = {
     apiUrl: string;
     conferenceLayerUrl: string;
 };

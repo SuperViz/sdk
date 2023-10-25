@@ -107,7 +107,7 @@ export declare enum DeviceEvent {
     DEVICES_INITIALIZATION_ERROR = "devices.inititalization-error",
     DEVICES_UNKNOWN_ERROR = "devices.unknown-error"
 }
-export declare type Dimensions = {
+export type Dimensions = {
     width: number | null;
     height: number | null;
 };

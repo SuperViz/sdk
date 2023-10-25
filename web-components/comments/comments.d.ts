@@ -28,6 +28,6 @@ export declare class Comments extends WebComponentsBaseElement {
     waterMarkStatus(waterMark: boolean): void;
     private setFilter;
     updated(changedProperties: any): void;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

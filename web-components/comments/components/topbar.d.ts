@@ -3,6 +3,6 @@ declare const CommentsTopbar_base: import("../../base/types").Constructor<import
 export declare class CommentsTopbar extends CommentsTopbar_base {
     static styles: CSSResultGroup[];
     private close;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

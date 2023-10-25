@@ -18,5 +18,5 @@ export declare class PresenceMouse extends LitElement {
      * @returns {void}
      * */
     removePresenceMouseParticipant(participantId: string): void;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }

@@ -25,6 +25,6 @@ export declare class CommentsAnnotationPin extends WebComponentsBaseElement {
     constructor();
     get userInitial(): string;
     private emitClick;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

@@ -7,4 +7,4 @@ export interface MessageBridgeOptions {
     allowedOrigins?: string;
     sourceBlockList?: Array<string>;
 }
-export declare type Message = FrameEvent | DeviceEvent | MeetingEvent | RealtimeEvent | string;
+export type Message = FrameEvent | DeviceEvent | MeetingEvent | RealtimeEvent | string;

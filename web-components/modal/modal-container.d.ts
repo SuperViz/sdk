@@ -7,6 +7,6 @@ export declare class ModalContainer extends WebComponentsBaseElement {
     setOptions(options: ModalOptions): void;
     private closeModal;
     private confirmModal;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

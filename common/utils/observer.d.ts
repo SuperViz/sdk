@@ -1,5 +1,5 @@
 import { Logger } from './logger';
-export declare type OberverOptions = {
+export type OberverOptions = {
     throttleTime?: number;
     logger?: Logger;
 };

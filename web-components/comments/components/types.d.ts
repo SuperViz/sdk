@@ -1,4 +1,4 @@
-export declare type AnnotationOptions = {
+export type AnnotationOptions = {
     resolvable?: boolean;
     resolved?: boolean;
 };

@@ -14,6 +14,6 @@ export declare class CommentsAnnotationFilter extends WebComponentsBaseElement {
             type: StringConstructor;
         };
     };
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

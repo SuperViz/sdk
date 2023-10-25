@@ -1,15 +1,15 @@
-export declare type AnnotationParams = {
+export type AnnotationParams = {
     roomId: string;
     url: string;
     position: string;
     userId: string;
 };
-export declare type CommentParams = {
+export type CommentParams = {
     annotationId: string;
     userId: string;
     text: string;
 };
-export declare type FetchAnnotationsParams = {
+export type FetchAnnotationsParams = {
     roomId: string;
     url: string;
 };

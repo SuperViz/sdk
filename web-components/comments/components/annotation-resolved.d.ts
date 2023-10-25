@@ -18,6 +18,6 @@ export declare class CommentsAnnotationResolved extends WebComponentsBaseElement
     private setTimer;
     private hide;
     private undone;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

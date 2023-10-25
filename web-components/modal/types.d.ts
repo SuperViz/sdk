@@ -1,5 +1,5 @@
 import { TemplateResult } from 'lit';
-export declare type ModalOptions = {
+export type ModalOptions = {
     title: string;
     confirm?: boolean;
     cancel?: boolean;

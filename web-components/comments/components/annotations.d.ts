@@ -14,6 +14,6 @@ export declare class CommentsAnnotations extends WebComponentsBaseElement {
     private cancelTemporaryAnnotation;
     connectedCallback(): void;
     disconnectedCallback(): void;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

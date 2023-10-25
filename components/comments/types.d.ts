@@ -1,12 +1,12 @@
 import { ParticipantApi } from '../../common/types/participant.types';
 import { Observer } from '../../common/utils';
-export declare type Annotation = {
+export type Annotation = {
     uuid: string;
     position: string;
     resolved: boolean;
     comments: Comment[];
 };
-export declare type Comment = {
+export type Comment = {
     uuid: string;
     avatar: string;
     text: string;

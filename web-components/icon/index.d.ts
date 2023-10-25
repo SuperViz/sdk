@@ -13,6 +13,6 @@ export declare class Icon extends WebComponentsBaseElement {
         };
     };
     static styles: (import("lit").CSSResult | CSSResultGroup[])[];
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

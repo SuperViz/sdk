@@ -1,4 +1,4 @@
-export declare type ComponentLimits = {
+export type ComponentLimits = {
     videoConference: boolean;
     presence: boolean;
     comments: boolean;

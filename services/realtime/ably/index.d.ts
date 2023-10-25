@@ -314,7 +314,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @param {Ably.Types.PresenceMessage} myPresenceParam - The presence message of the participant.
      * @returns {void}
      */
-    findSlotIndex: (myPresenceParam: Ably.Types.PresenceMessage) => void;
+    findSlotIndex: (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => void;
     /**
      * @function confirmSlot
      * @description confirms that my slot is valid

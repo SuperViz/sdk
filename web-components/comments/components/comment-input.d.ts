@@ -33,6 +33,6 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     private updateHeight;
     private send;
     private closeEditMode;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

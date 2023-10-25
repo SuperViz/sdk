@@ -3,6 +3,6 @@ declare const WebComponentsBaseElement: import("../../base/types").Constructor<i
 export declare class CommentsFloatButton extends WebComponentsBaseElement {
     static styles: CSSResultGroup[];
     private toggle;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

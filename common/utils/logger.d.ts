@@ -1,4 +1,4 @@
-export declare type Message = string | Error | number | Object;
+export type Message = string | Error | number | Object;
 export declare class Logger {
     private debug;
     constructor(scope: string);

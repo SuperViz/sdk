@@ -41,6 +41,6 @@ export declare class CommentsAnnotationItem extends WebComponentsBaseElement {
     private createComment;
     private resolveAnnotation;
     private hideUndoResolved;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

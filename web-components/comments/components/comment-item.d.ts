@@ -61,6 +61,6 @@ export declare class CommentsCommentItem extends WebComponentsBaseElement {
     private resolveAnnotation;
     private confirmDelete;
     private closeEditMode;
-    protected render(): import("lit-html").TemplateResult<1>;
+    protected render(): import("lit").TemplateResult<1>;
 }
 export {};

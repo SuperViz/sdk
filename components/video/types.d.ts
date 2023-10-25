@@ -22,7 +22,7 @@ export interface VideoComponentOptions {
     layoutMode?: LayoutMode;
     allowGuests?: boolean;
 }
-export declare type ParticipandToFrame = {
+export type ParticipandToFrame = {
     timestamp: number;
     connectionId: string;
     participantId: string;
