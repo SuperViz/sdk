@@ -397,7 +397,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     private publishPresenceMouseUpdate;
     /** Presence 3D */
-    enterPresence3DChannel: (participant: Participant) => void;
+    enterPresence3DChannel(participant: Participant): void;
     leavePresence3DChannel: () => void;
     updatePresence3D: import("lodash").DebouncedFunc<(data: ParticipantInfo) => void>;
     private onPresence3DChannelEnter;
