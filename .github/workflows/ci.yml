@@ -16,13 +16,15 @@ jobs:
           node-version: '18.x'
       - name: Install dependencies
         run: yarn install
-      - name: Build package
+      - name: Create .version file with beta version
         run: |
           touch .version.js && echo "echo \"export const version = 'beta'\" > .version.js" | bash -
-          yarn build
       - name: Create a .remote-config.js file
         run: |
           touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
+      - name: Build package
+        run: |
+          yarn build
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
@@ -41,13 +43,15 @@ jobs:
           node-version: '18.x'
       - name: Install dependencies
         run: yarn install
-      - name: Build package
+      - name: Create .version file with lab version
         run: |
           touch .version.js && echo "echo \"export const version = 'lab'\" > .version.js" | bash -
-          yarn build
       - name: Create a .remote-config.js file
         run: |
           touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
+      - name: Build package
+        run: |
+          yarn build
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
