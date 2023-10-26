@@ -1,4 +1,4 @@
-import type { Group, Avatar, ParticipantType } from './participant.types';
+import type { Group, Avatar } from './participant.types';
 export declare enum EnvironmentTypes {
     LOCAL = "local",
     DEV = "dev",
@@ -9,7 +9,6 @@ export interface SuperVizSdkOptions {
     participant: {
         id: string;
         name: string;
-        type?: ParticipantType | 'host' | 'guest' | 'audience';
         avatar?: Avatar;
     };
     group: Group;
