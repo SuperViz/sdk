@@ -1,7 +1,6 @@
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
-import { WaterMark } from '../../services/video-conference-manager/types';
 import type { Comments as CommentElement } from '../../web-components';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
 import { BaseComponent } from '../base';
@@ -378,15 +377,11 @@ export class Comments extends BaseComponent {
    */
   private async waterMarkState(): Promise<void> {
     try {
-      const dataWaterMark: WaterMark = await ApiService.fetchWaterMark(
+      const dataWaterMark: boolean = await ApiService.fetchWaterMark(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
       );
-      const waterMark = [WaterMark.ALL, WaterMark.POWERED_BY, WaterMark.POWERED_BY].includes(
-        dataWaterMark,
-      );
-
-      this.element.waterMarkStatus(waterMark);
+      this.element.waterMarkStatus(dataWaterMark);
     } catch (error) {
       this.logger.log('error when fetching waterMark', error);
     }

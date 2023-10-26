@@ -13,6 +13,7 @@ import {
 } from '../../common/types/events.types';
 import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
+import ApiService from '../../services/api';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
@@ -43,6 +44,7 @@ export class VideoComponent extends BaseComponent {
 
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
+  private showWaterMarkType: boolean;
 
   constructor(params?: VideoComponentOptions) {
     super();
@@ -131,7 +133,7 @@ export class VideoComponent extends BaseComponent {
    * @description start video component
    * @returns {void}
    */
-  protected start(): void {
+  protected async start(): Promise<void> {
     this.logger.log('video component @ start');
     this.publish(MeetingEvent.MEETING_START);
 
@@ -141,6 +143,7 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
+    await this.waterMarkState();
     this.startVideo();
   }
 
@@ -189,6 +192,7 @@ export class VideoComponent extends BaseComponent {
       customColors: this.params?.customColors,
       layoutPosition: this.params?.collaborationMode?.modalPosition,
       layoutMode: this.params?.collaborationMode?.initialView ?? LayoutMode.LIST,
+      waterMark: this.showWaterMarkType,
     };
 
     this.logger.log('video component @ start video', this.videoConfig);
@@ -364,6 +368,23 @@ export class VideoComponent extends BaseComponent {
     this.publish(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, error);
     this.internalRemoveComponent();
   };
+
+  /**
+   * @function waterMarkState
+   * @description Fetch waterMarkState from the API if must be shown
+   * @returns {Promise<void>}
+   */
+  private async waterMarkState(): Promise<void> {
+    try {
+      const dataWaterMark: boolean = await ApiService.fetchWaterMark(
+        config.get<string>('apiUrl'),
+        config.get<string>('apiKey'),
+      );
+      this.showWaterMarkType = dataWaterMark;
+    } catch (error) {
+      this.logger.log('error when fetching waterMark', error);
+    }
+  }
 
   /**
    * @function onDevicesChange

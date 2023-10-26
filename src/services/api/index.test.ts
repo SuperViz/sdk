@@ -1,5 +1,4 @@
 import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
-import { WaterMark } from '../video-conference-manager/types';
 
 import ApiService from './index';
 
@@ -34,7 +33,7 @@ jest.mock('../../common/utils', () => {
 
       if (url.includes('/user/watermark')) {
         return Promise.resolve({
-          message: WaterMark.ALL,
+          message: true,
         });
       }
 
@@ -106,7 +105,7 @@ describe('ApiService', () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
       const response = await ApiService.fetchWaterMark(baseUrl, VALID_API_KEY);
 
-      expect(response).toEqual(WaterMark.ALL);
+      expect(response).toEqual(true);
     });
   });
 

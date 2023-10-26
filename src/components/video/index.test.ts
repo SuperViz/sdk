@@ -121,7 +121,7 @@ describe('VideoComponent', () => {
       eventBus: EVENT_BUS_MOCK,
     });
 
-    expect(VideoComponentInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();
+    expect(VideoComponentInstance['videoConfig']?.canUseDefaultAvatars).toBeFalsy();
   });
 
   test('should subscribe to realtime events', () => {
