@@ -419,9 +419,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public setParticipantData = (data: ParticipantDataInput): void => {
     this.myParticipant.data = Object.assign({}, this.myParticipant.data, data);
 
-    if (this.presence3DChannel) {
-      this.updatePresence3D(data);
-    }
+    this.updatePresence3D(this.myParticipant.data);
   };
 
   /**
@@ -1297,11 +1295,22 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   /** Presence 3D */
 
-  public enterPresence3DChannel = (participant: Participant): void => {
-    if (!this.presence3DChannel) {
-      this.presence3DChannel = this.client.channels.get(
-        `${this.roomId.toLowerCase()}-presence-mouse`,
+  public enterPresence3DChannel(participant: Participant) {
+    if (!this.isJoinedRoom) {
+      this.logger.log(
+        'REALTIME',
+        'Cannot enter presence 3D channel because the participant is not in the room',
       );
+
+      setTimeout(() => {
+        this.enterPresence3DChannel(participant);
+      }, 1000);
+
+      return;
+    }
+
+    if (!this.presence3DChannel) {
+      this.presence3DChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-presence-3d`);
       this.presence3DChannel.attach();
 
       this.presence3DChannel.presence.subscribe('enter', this.onPresence3DChannelEnter);
@@ -1310,7 +1319,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     this.presence3DChannel.presence.enter(participant);
-  };
+  }
 
   public leavePresence3DChannel = (): void => {
     if (!this.presence3DChannel) return;
@@ -1320,7 +1329,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {
-    const participant = Object.assign({}, this.participantsOn3d[data.id] || {}, data);
+    const participant = Object.assign({}, this.participantsOn3d[data.id]?.data ?? {}, data);
+
+    this.participantsOn3d[data.id] = {
+      ...this.participants[participant.id],
+      data: {
+        ...participant,
+        ...this.participants[participant.id]?.data,
+      },
+    };
+
+    if (!this.presence3DChannel) return;
 
     this.presence3DChannel.presence.update(participant);
   }, SYNC_PROPERTY_INTERVAL);
@@ -1329,8 +1348,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (participant.clientId === this.myParticipant.clientId) {
       this.isJoinedPresence3D = true;
     }
-
-    if (!this.participants[participant.clientId]) return;
 
     const slot = this.getParticipantSlot(participant.clientId);
 
@@ -1359,17 +1376,21 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private publish3DUpdate = (participant: Ably.Types.PresenceMessage): void => {
     const slot = this.getParticipantSlot(participant.clientId);
 
-    if (!this.participants[participant.clientId]) return;
-
-    this.participantsOn3d[participant.clientId] = {
+    const participantToPublish = {
       ...participant,
       data: {
         ...participant.data,
-        ...this.participants[participant.clientId].data,
+        ...this.participants[participant.clientId]?.data,
         slotIndex: slot,
         color: this.getSlotColor(slot).color,
       },
     };
+
+    this.participantsOn3d[participant.clientId] = participantToPublish;
+
+    if (this.participants3DObservers[participant.clientId]) {
+      this.participants3DObservers[participant.clientId].publish(participantToPublish);
+    }
 
     this.presence3dObserver.publish(this.participantsOn3d);
   };
