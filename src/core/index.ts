@@ -82,14 +82,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     limits,
   });
 
-  return LauncherFacade(
-    Object.assign({}, options, {
-      participant: {
-        ...options.participant,
-        type: options.participant.type || ParticipantType.GUEST,
-      },
-    }),
-  );
+  return LauncherFacade(options);
 };
 
 export default init;
