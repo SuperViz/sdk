@@ -79,7 +79,7 @@ const AblyRestMock = {
         callback(null, mockTokenRequest);
       })
       .mockImplementation((params, options, callback) => {
-        callback('unit-test-error', null);
+        callback({ type: 'unit-test-error', message: "this domain don't have permission" }, null);
       }),
   },
 };
@@ -230,7 +230,7 @@ describe('AblyRealtimeService', () => {
       };
 
       AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
-        expect(error).toBe('unit-test-error');
+        expect(error).toMatchObject({ type: 'unit-test-error' });
         expect(tokenRequest).toBeNull();
       });
 
@@ -1692,6 +1692,25 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['clientSyncChannel']).toBe(null);
       expect(AblyRealtimeServiceInstance['client']).toBe(null);
       expect(AblyRealtimeServiceInstance['left']).toBe(true);
+    });
+
+    test('should dispatch event if domain is not whitelisted', () => {
+      const spy = jest.spyOn(window.document.body, 'dispatchEvent');
+
+      const mockTokenParams: Ably.Types.TokenParams = {
+        clientId: 'unit-test-client-id',
+      };
+
+      AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
+        expect(error).toMatchObject({ message: "this domain don't have permission" });
+      });
+
+      expect(spy).toHaveBeenCalledWith(
+        new CustomEvent('domain-not-whitelisted', {
+          composed: true,
+          bubbles: true,
+        }),
+      );
     });
   });
 });

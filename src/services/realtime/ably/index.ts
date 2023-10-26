@@ -60,11 +60,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private apiKey: string;
   private readonly apiUrl: string;
   private left: boolean = false;
+  private domainAproved: boolean = true;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private supervizChannelState: Ably.Types.ChannelStateChange;
   private connectionState: Ably.Types.ConnectionStateChange;
-
   constructor(apiUrl: string, ablyKey: string) {
     super();
 
@@ -145,6 +145,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private auth(tokenParams: Ably.Types.TokenParams, callback: AblyTokenCallBack): void {
+    if (!this.domainAproved) {
+      return;
+    }
+
     const ably = new Ably.Rest({ key: this.ablyKey });
     const { origin } = window.location;
 
@@ -162,6 +166,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         if (error) {
           this.authenticationObserver.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
         }
+
+        if (error?.message?.includes("this domain don't have permission")) {
+          document.body.dispatchEvent(
+            new CustomEvent('domain-not-whitelisted', {
+              composed: true,
+              bubbles: true,
+            }),
+          );
+          this.domainAproved = false;
+        }
+
         callback(error, tokenRequest);
       },
     );
@@ -1017,6 +1032,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     const currentState = Object.entries(availableStates).find(([key, value]) => value && key)[0];
     const newState = Number(currentState);
+
+    if (!this.domainAproved) {
+      return;
+    }
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.currentReconnectAttempt = 0;

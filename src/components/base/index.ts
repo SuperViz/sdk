@@ -16,12 +16,27 @@ export abstract class BaseComponent extends Observable {
   protected eventBus: EventBus;
 
   protected isAttached = false;
+  private domainAproved = true;
 
   /**
    * @function attach
    * @description attach component
    * @returns {void}
    */
+
+  constructor() {
+    super();
+    window.addEventListener('domain-not-whitelisted', this.onDomainNotAproved);
+  }
+
+  destructor() {
+    window.removeEventListener('domain-not-whitelisted', this.onDomainNotAproved);
+  }
+
+  private onDomainNotAproved = (): void => {
+    this.domainAproved = false;
+  };
+
   public attach = (params: DefaultAttachComponentOptions): void => {
     if (Object.values(params).includes(null) || Object.values(params).includes(undefined)) {
       const message = `${this.name} @ attach - params are required`;
@@ -39,6 +54,11 @@ export abstract class BaseComponent extends Observable {
     this.group = group;
     this.eventBus = eventBus;
     this.isAttached = true;
+
+    if (!this.domainAproved) {
+      this.logger.log(`${this.name} @ attach - domain not whitelisted`);
+      return;
+    }
 
     if (!this.realtime.isJoinedRoom) {
       this.logger.log(`${this.name} @ attach - not joined yet`);
