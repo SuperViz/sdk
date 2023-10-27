@@ -4,11 +4,18 @@ import config from '../../services/config';
 import { WaterMark } from '../../services/video-conference-manager/types';
 import type { Comments as CommentElement } from '../../web-components';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
-import { PinMode } from '../../web-components/comments/components/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { Annotation, Comment, PinAdapter, PinCoordinates } from './types';
+import {
+  Annotation,
+  ButtonLocation,
+  Comment,
+  CommentsOptions,
+  CommentsSide,
+  PinAdapter,
+  PinCoordinates,
+} from './types';
 
 export class Comments extends BaseComponent {
   public name: ComponentNames;
@@ -19,13 +26,14 @@ export class Comments extends BaseComponent {
   private annotations: Annotation[];
   private url: string;
   private pinAdapter: PinAdapter;
+  private layoutOptions: CommentsOptions;
 
-  constructor(pinAdapter: PinAdapter) {
+  constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
-
+    this.layoutOptions = options;
     this.pinAdapter = pinAdapter;
   }
 
@@ -37,13 +45,8 @@ export class Comments extends BaseComponent {
   protected start(): void {
     this.url = window.location.href;
 
-    this.element = document.createElement('superviz-comments') as CommentElement;
-    this.element.setAttribute('comments', JSON.stringify([]));
-    document.body.appendChild(this.element);
-
-    this.button = document.createElement('superviz-comments-button') as CommentsFloatButton;
-    document.body.appendChild(this.button);
-
+    this.positionComments();
+    this.positionFloatingButton();
     this.fetchAnnotations();
     this.waterMarkState();
     this.addListeners();
@@ -157,6 +160,62 @@ export class Comments extends BaseComponent {
         bubbles: true,
       }),
     );
+  };
+
+  /**
+   * @function positionFloatingButton
+   * @description position floating button at some corner or inside an element
+   * @returns {void}
+   */
+  private positionFloatingButton = (): void => {
+    this.button = document.createElement('superviz-comments-button') as CommentsFloatButton;
+    const { buttonLocation, position } = this.layoutOptions;
+
+    if (!buttonLocation) {
+      document.body.appendChild(this.button);
+      return;
+    }
+
+    let style: string = '';
+
+    const positionsOptions = Object.values(ButtonLocation);
+
+    if (!positionsOptions.includes(buttonLocation.toLocaleLowerCase() as ButtonLocation)) {
+      const element = window.document.querySelector(`#${buttonLocation}`);
+
+      if (element && !element?.firstChild) {
+        element.appendChild(this.button);
+      }
+    } else {
+      document.body.appendChild(this.button);
+      const [vertical, horizontal] = buttonLocation.split('-');
+      style = `${vertical}: 20px; ${horizontal}: 20px;`;
+    }
+
+    this.button.positionStyles = style;
+    this.button.commentsPosition = position;
+  };
+
+  /**
+   * @function positionComments
+   * @description put comments at the left or right side of the screen
+   * @returns {void}
+   */
+  private positionComments = (): void => {
+    this.element = document.createElement('superviz-comments') as CommentElement;
+    this.element.setAttribute('comments', JSON.stringify([]));
+    document.body.appendChild(this.element);
+
+    const { position } = this.layoutOptions;
+    if (!position) return;
+
+    const sidesOptions = Object.values(CommentsSide);
+    const parsedPosition = position.toLocaleLowerCase() as CommentsSide;
+
+    if (!sidesOptions.includes(parsedPosition)) return;
+
+    const style = position === CommentsSide.LEFT ? 'left: 0;' : 'right: 0;';
+    this.element.side = style;
   };
 
   /**
