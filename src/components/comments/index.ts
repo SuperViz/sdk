@@ -169,7 +169,8 @@ export class Comments extends BaseComponent {
    */
   private positionFloatingButton = (): void => {
     this.button = document.createElement('superviz-comments-button') as CommentsFloatButton;
-    const { buttonLocation, position } = this.layoutOptions;
+    const buttonLocation = this.layoutOptions?.buttonLocation;
+    const position = this.layoutOptions?.position;
 
     if (!buttonLocation) {
       document.body.appendChild(this.button);
@@ -206,7 +207,7 @@ export class Comments extends BaseComponent {
     this.element.setAttribute('comments', JSON.stringify([]));
     document.body.appendChild(this.element);
 
-    const { position } = this.layoutOptions;
+    const position = this.layoutOptions?.position;
     if (!position) return;
 
     const sidesOptions = Object.values(CommentsSide);
