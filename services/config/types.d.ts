@@ -9,4 +9,5 @@ export interface Configuration {
     conferenceLayerUrl: string;
     debug: boolean;
     limits: ComponentLimits;
+    waterMark: boolean;
 }

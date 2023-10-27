@@ -12,6 +12,7 @@ export declare class VideoComponent extends BaseComponent {
     private browserService;
     private videoConfig;
     private params?;
+    private showWaterMarkType;
     constructor(params?: VideoComponentOptions);
     /**
      * @function toggleMeetingSetup
