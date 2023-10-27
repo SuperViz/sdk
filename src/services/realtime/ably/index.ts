@@ -60,7 +60,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private apiKey: string;
   private readonly apiUrl: string;
   private left: boolean = false;
-  private domainAproved: boolean = true;
+  private domainWhitelisted: boolean = true;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private supervizChannelState: Ably.Types.ChannelStateChange;
@@ -94,6 +94,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   public get isLocalParticipantHost(): boolean {
     return this.hostClientId === this.localParticipantId;
+  }
+
+  public get isDomainWhitelisted(): boolean {
+    return this.domainWhitelisted;
   }
 
   public get getParticipants(): Record<string, AblyParticipant> {
@@ -145,7 +149,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private auth(tokenParams: Ably.Types.TokenParams, callback: AblyTokenCallBack): void {
-    if (!this.domainAproved) {
+    if (!this.domainWhitelisted) {
       return;
     }
 
@@ -168,13 +172,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
 
         if (error?.message?.includes("this domain don't have permission")) {
-          document.body.dispatchEvent(
-            new CustomEvent('domain-not-whitelisted', {
-              composed: true,
-              bubbles: true,
-            }),
-          );
-          this.domainAproved = false;
+          this.domainWhitelisted = false;
+          this.domainRefusedObserver.publish(this.domainWhitelisted);
         }
 
         callback(error, tokenRequest);
@@ -1033,7 +1032,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const currentState = Object.entries(availableStates).find(([key, value]) => value && key)[0];
     const newState = Number(currentState);
 
-    if (!this.domainAproved) {
+    if (!this.domainWhitelisted) {
       return;
     }
 

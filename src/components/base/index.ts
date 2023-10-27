@@ -16,26 +16,12 @@ export abstract class BaseComponent extends Observable {
   protected eventBus: EventBus;
 
   protected isAttached = false;
-  private domainAproved = true;
 
   /**
    * @function attach
    * @description attach component
    * @returns {void}
    */
-
-  constructor() {
-    super();
-    window.addEventListener('domain-not-whitelisted', this.onDomainNotAproved);
-  }
-
-  destructor() {
-    window.removeEventListener('domain-not-whitelisted', this.onDomainNotAproved);
-  }
-
-  private onDomainNotAproved = (): void => {
-    this.domainAproved = false;
-  };
 
   public attach = (params: DefaultAttachComponentOptions): void => {
     if (Object.values(params).includes(null) || Object.values(params).includes(undefined)) {
@@ -47,18 +33,19 @@ export abstract class BaseComponent extends Observable {
 
     const { realtime, localParticipant, group, config: globalConfig, eventBus } = params;
 
-    config.setConfig(globalConfig);
+    if (!realtime.isDomainWhitelisted) {
+      const message = `Component ${this.name} can't be used because this website's domain is not whitelisted. Please add your domain in https://dev-dashboard.superviz.com/developer`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
 
+    config.setConfig(globalConfig);
     this.realtime = realtime;
     this.localParticipant = localParticipant;
     this.group = group;
     this.eventBus = eventBus;
     this.isAttached = true;
-
-    if (!this.domainAproved) {
-      this.logger.log(`${this.name} @ attach - domain not whitelisted`);
-      return;
-    }
 
     if (!this.realtime.isJoinedRoom) {
       this.logger.log(`${this.name} @ attach - not joined yet`);
