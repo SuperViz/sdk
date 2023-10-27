@@ -1,33 +1,33 @@
+let observer: MutationObserver;
+
 export function waterMarkElementObserver(shadowRoot: ShadowRoot) {
   const superVizCommentsId = shadowRoot.querySelector('#superviz-comments');
-  if (superVizCommentsId) {
+
+  if (superVizCommentsId && !observer) {
     const options = {
       childList: true,
       attributes: true,
       characterData: true,
       subtree: true,
     };
-    const superVizCommentsIdobserver = new MutationObserver((mutationsList, observer) => {
-      mutationsList.forEach((mutation) => {
-        const supervizCommentsDiv = shadowRoot.querySelector('#superviz-comments');
 
-        if (supervizCommentsDiv && supervizCommentsDiv.contains(mutation.target)) {
-          observer.disconnect();
-          reloadWaterMarkContent(shadowRoot);
-        }
+    observer = new MutationObserver((mutationsList) => {
+      mutationsList.forEach((mutation) => {
+        if (!mutation.removedNodes.length) return;
+
+        mutation.removedNodes.forEach((node: HTMLElement) => {
+          if (node.id === 'poweredby-footer') {
+            reloadWaterMarkContent(shadowRoot);
+          }
+        });
       });
     });
 
-    superVizCommentsIdobserver.observe(superVizCommentsId, options);
+    observer.observe(superVizCommentsId, options);
   }
 }
 
 export function reloadWaterMarkContent(shadowRoot: ShadowRoot) {
-  const poweredByFooterId = shadowRoot.querySelector('#poweredby-footer');
-  if (poweredByFooterId) {
-    poweredByFooterId.remove();
-  }
-
   const divPoweredByFooter = document.createElement('div');
   divPoweredByFooter.id = 'poweredby-footer';
   divPoweredByFooter.className = 'footer';
