@@ -6,7 +6,6 @@ import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participa
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
-import { WaterMark } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
 import { Annotation, PinAdapter } from './types';
@@ -15,7 +14,7 @@ import { Comments } from './index';
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
-  fetchWaterMark: jest.fn().mockImplementation((): any => WaterMark.ALL),
+  fetchWaterMark: jest.fn().mockImplementation((): boolean => true),
   createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
   createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
@@ -134,10 +133,10 @@ describe('Comments', () => {
       expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey);
 
       const response = await ApiService.fetchWaterMark(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey);
-      expect(response).toEqual(WaterMark.ALL);
+      expect(response).toEqual(true);
 
       commentsComponent['element'].waterMarkStatus = jest.fn();
-      await commentsComponent['element'].waterMarkStatus(!!WaterMark.ALL);
+      await commentsComponent['element'].waterMarkStatus(true);
 
       expect(commentsComponent['element'].waterMarkStatus).toHaveBeenCalledWith(true);
     });

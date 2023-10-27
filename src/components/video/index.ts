@@ -13,6 +13,7 @@ import {
 } from '../../common/types/events.types';
 import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
+import ApiService from '../../services/api';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
@@ -43,6 +44,7 @@ export class VideoComponent extends BaseComponent {
 
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
+  private showWaterMarkType: boolean;
 
   constructor(params?: VideoComponentOptions) {
     super();
@@ -141,6 +143,7 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
+    this.showWaterMarkType = config.get<boolean>('waterMark');
     this.startVideo();
   }
 
@@ -189,6 +192,7 @@ export class VideoComponent extends BaseComponent {
       customColors: this.params?.customColors,
       layoutPosition: this.params?.collaborationMode?.modalPosition,
       layoutMode: this.params?.collaborationMode?.initialView ?? LayoutMode.LIST,
+      waterMark: this.showWaterMarkType,
     };
 
     this.logger.log('video component @ start video', this.videoConfig);
