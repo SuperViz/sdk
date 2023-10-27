@@ -20,8 +20,10 @@ import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 import VideoConfereceManager from '../../services/video-conference-manager';
 import {
+  CamerasPosition,
   DrawingData,
   LayoutMode,
+  LayoutPosition,
   RealtimeObserverPayload,
   VideoFrameState,
   VideoManagerOptions,
@@ -179,7 +181,7 @@ export class VideoComponent extends BaseComponent {
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
       canUseDefaultToolbar: this.params?.defaultToolbar ?? true,
-      camerasPosition: this.params?.collaborationMode?.position,
+      camerasPosition: this.params?.collaborationMode?.position as CamerasPosition,
       devices: this.params?.devices,
       skipMeetingSettings: this.params?.skipMeetingSettings,
       browserService: this.browserService,
@@ -187,8 +189,8 @@ export class VideoComponent extends BaseComponent {
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
       customColors: this.params?.customColors,
-      layoutPosition: this.params?.collaborationMode?.modalPosition,
-      layoutMode: this.params?.collaborationMode?.initialView ?? LayoutMode.LIST,
+      layoutPosition: this.params?.collaborationMode?.modalPosition as LayoutPosition,
+      layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
     };
 
     this.logger.log('video component @ start video', this.videoConfig);
