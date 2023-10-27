@@ -528,7 +528,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     property[name] = data;
     this.syncPropertiesObserver.publish(property);
 
-    if (this.isLocalParticipantHost) this.saveClientRoomState(name, data);
+    if (message.clientId === this.myParticipant.data.participantId) {
+      this.saveClientRoomState(name, data);
+    }
   }
 
   /**
@@ -1329,6 +1331,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {
+    console.trace('update');
+
     const participant = Object.assign({}, this.participantsOn3d[data.id]?.data ?? {}, data);
 
     this.participantsOn3d[data.id] = {
@@ -1338,6 +1342,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         ...this.participants[participant.id]?.data,
       },
     };
+
+    console.log('updatePresence3D', this.participantsOn3d[data.id]);
 
     if (!this.presence3DChannel) return;
 
