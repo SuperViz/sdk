@@ -33,6 +33,8 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   join: jest.fn(),
   leave: jest.fn(),
   setFollowParticipant: jest.fn(),
+  domainWhitelisted: true,
+  isDomainWhitelisted: jest.fn().mockReturnValue(true),
   fetchSyncClientProperty: jest.fn((key?: string) => {
     if (key) {
       return createRealtimeMessage(key);
@@ -58,6 +60,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   presenceMouseParticipantLeaveObserver: MOCK_OBSERVER_HELPER,
   presenceMouseParticipantJoinedObserver: MOCK_OBSERVER_HELPER,
   presenceMouseObserver: MOCK_OBSERVER_HELPER,
+  domainRefusedObserver: MOCK_OBSERVER_HELPER,
   subscribeToParticipantUpdate: jest.fn(),
   unsubscribeFromParticipantUpdate: jest.fn(),
   updateMyProperties: jest.fn(),

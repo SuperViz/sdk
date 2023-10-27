@@ -69,6 +69,26 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance['attach']).toHaveBeenCalledTimes(1);
     });
 
+    test('should not start if domain is not whitelisted', () => {
+      const ablyMock = { ...ABLY_REALTIME_MOCK };
+
+      ablyMock['isDomainWhitelisted'] = jest.fn().mockReturnValue(false);
+
+      DummyComponentInstance.attach({
+        realtime: ablyMock as AblyRealtimeService,
+        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
+      });
+
+      DummyComponentInstance['start'] = jest.fn(DummyComponentInstance['start']);
+
+      jest.advanceTimersByTime(1000);
+
+      expect(DummyComponentInstance['start']).not.toHaveBeenCalled();
+    });
+
     test('should attach the component with success', () => {
       DummyComponentInstance['start'] = jest.fn();
       expect(DummyComponentInstance.attach).toBeDefined();

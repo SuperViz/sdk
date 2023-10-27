@@ -3,6 +3,7 @@ import { TextEncoder } from 'util';
 import Ably from 'ably';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { TranscriptState } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -222,6 +223,19 @@ describe('AblyRealtimeService', () => {
         },
         expect.any(Function),
       );
+    });
+
+    test('should not call callback if domain is not whitelisted', () => {
+      const mockTokenParams: Ably.Types.TokenParams = {
+        clientId: 'unit-test-client-id',
+      };
+
+      const realtimeInstance = { ...AblyRealtimeServiceInstance };
+      AblyRealtimeServiceInstance['domainWhitelisted'] = false;
+
+      AblyRealtimeServiceInstance['auth'](mockTokenParams, () => {});
+
+      expect(AblyRestMock.auth.requestToken).not.toHaveBeenCalled();
     });
 
     test('should call callback with error if token request fails', () => {
@@ -1692,25 +1706,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['clientSyncChannel']).toBe(null);
       expect(AblyRealtimeServiceInstance['client']).toBe(null);
       expect(AblyRealtimeServiceInstance['left']).toBe(true);
-    });
-
-    test('should dispatch event if domain is not whitelisted', () => {
-      const spy = jest.spyOn(window.document.body, 'dispatchEvent');
-
-      const mockTokenParams: Ably.Types.TokenParams = {
-        clientId: 'unit-test-client-id',
-      };
-
-      AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
-        expect(error).toMatchObject({ message: "this domain don't have permission" });
-      });
-
-      expect(spy).toHaveBeenCalledWith(
-        new CustomEvent('domain-not-whitelisted', {
-          composed: true,
-          bubbles: true,
-        }),
-      );
     });
   });
 });
