@@ -98,23 +98,30 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @description start realtime service and join to room
    * @returns {void}
    */
-  private canAddComponent = (component: BaseComponent): boolean => {
+   private canAddComponent = (component: BaseComponent): boolean => {
     const isWhitelisted = this.realtime.isDomainWhitelisted;
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
 
     const verifications = [
-      [
-        !isWhitelisted,
-        `Component ${component.name} can't be used because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dev-dashboard.superviz.com/developer`,
-      ],
-      [isComponentActive, `Component ${component.name} is already active. Please remove it first`],
-      [!hasComponentLimit, `You reached the limit usage of ${component.name}`],
+      {
+        isValid: isWhitelisted,
+        message: `Component ${component.name} can't be used because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dev-dashboard.superviz.com/developer`,
+      },
+      {
+        isValid: !isComponentActive,
+        message: `Component ${component.name} is already active. Please remove it first`,
+      },
+      {
+        isValid: hasComponentLimit,
+        message: `You reached the limit usage of ${component.name}`,
+      },
     ];
 
     for (let i = 0; i < verifications.length; i++) {
-      if (verifications[i][0]) {
-        const message = verifications[i][1];
+      const { isValid, message } = verifications[i];
+
+      if (!isValid) {
         this.logger.log(message);
         console.error(message);
         return false;
