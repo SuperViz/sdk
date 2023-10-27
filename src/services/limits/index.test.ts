@@ -25,9 +25,7 @@ describe('LimitsService', () => {
 
       const result = LimitsService.checkComponentLimit(componentName);
 
-      // @TODO - when API is ready, we should check the limits
-      // expect(result).toBe(false);
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
   });
 });

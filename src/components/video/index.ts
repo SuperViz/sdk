@@ -133,7 +133,7 @@ export class VideoComponent extends BaseComponent {
    * @description start video component
    * @returns {void}
    */
-  protected async start(): Promise<void> {
+  protected start(): void {
     this.logger.log('video component @ start');
     this.publish(MeetingEvent.MEETING_START);
 
@@ -143,7 +143,7 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
-    await this.waterMarkState();
+    this.showWaterMarkType = config.get<boolean>('waterMark');
     this.startVideo();
   }
 
@@ -368,23 +368,6 @@ export class VideoComponent extends BaseComponent {
     this.publish(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, error);
     this.internalRemoveComponent();
   };
-
-  /**
-   * @function waterMarkState
-   * @description Fetch waterMarkState from the API if must be shown
-   * @returns {Promise<void>}
-   */
-  private async waterMarkState(): Promise<void> {
-    try {
-      const dataWaterMark: boolean = await ApiService.fetchWaterMark(
-        config.get<string>('apiUrl'),
-        config.get<string>('apiKey'),
-      );
-      this.showWaterMarkType = dataWaterMark;
-    } catch (error) {
-      this.logger.log('error when fetching waterMark', error);
-    }
-  }
 
   /**
    * @function onDevicesChange
