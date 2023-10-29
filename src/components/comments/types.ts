@@ -47,12 +47,6 @@ export enum ButtonLocation {
 }
 
 export interface CommentsOptions {
-  position?: CommentsSide | 'left' | 'right';
-  buttonLocation?:
-    | ButtonLocation
-    | 'top-left'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-right'
-    | string;
+  position?: CommentsSide | `${CommentsSide}`;
+  buttonLocation?: ButtonLocation | `${ButtonLocation}` | string;
 }
