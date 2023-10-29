@@ -178,6 +178,7 @@ export class Comments extends BaseComponent {
 
     if (!buttonLocation) {
       document.body.appendChild(this.button);
+      this.button.commentsPosition = position;
       return;
     }
 

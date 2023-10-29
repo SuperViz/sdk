@@ -27,6 +27,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     this.isHidden = true;
     this.positionStyles = 'top: 20px; left: 20px;';
     this.shouldHide = false;
+    this.commentsPosition = 'left';
   }
 
   private toggle(details) {
