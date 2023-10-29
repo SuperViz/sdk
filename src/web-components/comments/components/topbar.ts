@@ -26,22 +26,24 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
   }
 
   protected render() {
-    return this.side === 'left'
-      ? html`
-          <div class="topbar">
-            <span @click=${this.close} class="toggle-icon">
-              <superviz-icon name="left" size="lg"></superviz-icon>
-            </span>
-            <span class="text text-bold">COMMENTS</span>
-          </div>
-        `
-      : html`
-          <div class="topbar">
-            <span class="text text-bold">COMMENTS</span>
-            <span @click=${this.close} class="toggle-icon">
-              <superviz-icon name="right" size="lg"></superviz-icon>
-            </span>
-          </div>
-        `;
+    if (this.side === 'left') {
+      return html`
+        <div class="topbar">
+          <span @click=${this.close} class="toggle-icon">
+            <superviz-icon name="left" size="lg"></superviz-icon>
+          </span>
+          <span class="text text-bold">COMMENTS</span>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="topbar">
+        <span class="text text-bold">COMMENTS</span>
+        <span @click=${this.close} class="toggle-icon">
+          <superviz-icon name="right" size="lg"></superviz-icon>
+        </span>
+      </div>
+    `;
   }
 }
