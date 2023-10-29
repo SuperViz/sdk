@@ -149,9 +149,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private auth(tokenParams: Ably.Types.TokenParams, callback: AblyTokenCallBack): void {
-    if (!this.domainWhitelisted) {
-      return;
-    }
+    if (!this.domainWhitelisted) return;
 
     const ably = new Ably.Rest({ key: this.ablyKey });
     const { origin } = window.location;
@@ -1032,9 +1030,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const currentState = Object.entries(availableStates).find(([key, value]) => value && key)[0];
     const newState = Number(currentState);
 
-    if (!this.domainWhitelisted) {
-      return;
-    }
+    if (!this.domainWhitelisted) return;
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.currentReconnectAttempt = 0;
