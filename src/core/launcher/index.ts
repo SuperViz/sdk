@@ -94,11 +94,12 @@ export class Launcher extends Observable implements DefaultLauncher {
   };
 
   /**
-   * @function startRealtime
-   * @description start realtime service and join to room
-   * @returns {void}
+   * @function canAddComponent
+   * @description verifies if component can be added
+   * @param component - component to be added
+   * @returns {boolean}
    */
-   private canAddComponent = (component: BaseComponent): boolean => {
+  private canAddComponent = (component: BaseComponent): boolean => {
     const isWhitelisted = this.realtime.isDomainWhitelisted;
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
