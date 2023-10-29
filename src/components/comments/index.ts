@@ -33,7 +33,11 @@ export class Comments extends BaseComponent {
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
-    this.layoutOptions = options;
+    this.layoutOptions = options ?? {
+      position: CommentsSide.LEFT,
+      buttonLocation: ButtonLocation.TOP_LEFT,
+    };
+
     this.pinAdapter = pinAdapter;
   }
 
