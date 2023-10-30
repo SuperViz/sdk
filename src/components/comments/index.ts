@@ -15,7 +15,7 @@ export class Comments extends BaseComponent {
   private button: CommentsFloatButton;
   private sidebarOpen: boolean = false;
   private annotations: Annotation[];
-  private url: string;
+  private clientUrl: string;
   private pinAdapter: PinAdapter;
 
   constructor(pinAdapter: PinAdapter) {
@@ -27,13 +27,20 @@ export class Comments extends BaseComponent {
     this.pinAdapter = pinAdapter;
   }
 
+  private get url(): string {
+    const url = new URL(this.clientUrl);
+    url.search = '';
+
+    return url.toString();
+  }
+
   /**
    * @function start
    * @description Initializes the Comments component
    * @returns {void}
    */
   protected start(): void {
-    this.url = window.location.href;
+    this.clientUrl = window.location.href;
 
     this.element = document.createElement('superviz-comments') as CommentElement;
     this.element.setAttribute('comments', JSON.stringify([]));
