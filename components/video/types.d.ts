@@ -18,11 +18,11 @@ export interface VideoComponentOptions {
     customColors?: ColorsVariables;
     skipMeetingSettings?: boolean;
     allowGuests?: boolean;
-    userType?: ParticipantType | 'host' | 'guest' | 'audience';
+    userType?: ParticipantType | `${ParticipantType}`;
     collaborationMode?: {
-        position?: CamerasPosition;
-        modalPosition?: LayoutPosition;
-        initialView?: LayoutMode;
+        position?: CamerasPosition | `${CamerasPosition}`;
+        modalPosition?: LayoutPosition | `${LayoutPosition}`;
+        initialView?: LayoutMode | `${LayoutMode}`;
     };
 }
 export type ParticipandToFrame = {
