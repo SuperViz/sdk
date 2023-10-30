@@ -528,7 +528,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     property[name] = data;
     this.syncPropertiesObserver.publish(property);
 
-    if (this.isLocalParticipantHost) this.saveClientRoomState(name, data);
+    if (message.clientId === this.myParticipant.data.participantId) {
+      this.saveClientRoomState(name, data);
+    }
   }
 
   /**

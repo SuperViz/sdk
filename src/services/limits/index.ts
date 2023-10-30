@@ -7,6 +7,6 @@ export default class LimitsService {
   static checkComponentLimit(name: ComponentNames): boolean {
     const componentName = Presence3d[name] ?? name;
     const limits = config.get<ComponentLimits>('limits');
-    return limits[componentName];
+    return limits?.[componentName] ?? false;
   }
 }
