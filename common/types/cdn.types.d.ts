@@ -1,7 +1,8 @@
 import { CanvasPin, Comments, MousePointers, Realtime, VideoComponent } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
-import { LayoutMode } from '../../services/video-conference-manager/types';
+import { CamerasPosition, LayoutMode, LayoutPosition } from '../../services/video-conference-manager/types';
 import { DeviceEvent, MeetingEvent, RealtimeEvent, MeetingState, MeetingConnectionStatus, MeetingControlsEvent, ParticipantEvent, FrameEvent } from './events.types';
+import { ParticipantType } from './participant.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
 export interface SuperVizCdn {
     init: (apiKey: string, options: SuperVizSdkOptions) => Promise<LauncherFacade>;
@@ -14,6 +15,9 @@ export interface SuperVizCdn {
     ParticipantEvent: typeof ParticipantEvent;
     FrameEvent: typeof FrameEvent;
     LayoutMode: typeof LayoutMode;
+    ParticipantType: typeof ParticipantType;
+    LayoutPosition: typeof LayoutPosition;
+    CamerasPosition: typeof CamerasPosition;
     VideoComponent: typeof VideoComponent;
     MousePointers: typeof MousePointers;
     Realtime: typeof Realtime;
