@@ -10,10 +10,11 @@ export declare enum ComponentNames {
     COMMENTS_AUTODESK = "comments3dAutodesk",
     COMMENTS_THREEJS = "comments3dThreejs"
 }
-export declare enum Presence3d {
+export declare enum PresenceMap {
     'presence3dMatterport' = "presence",
     'presence3dAutodesk' = "presence",
-    'presence3dThreejs' = "presence"
+    'presence3dThreejs' = "presence",
+    'realtime' = "presence"
 }
 export declare enum Comments3d {
     'comments3dMatterport' = "comments3d",
