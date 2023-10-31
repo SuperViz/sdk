@@ -52,8 +52,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-
-    if (this.eventType !== 'create-annotation') return;
+    if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
     window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
     this.addEventListener('keyup', this.sendEnter);
