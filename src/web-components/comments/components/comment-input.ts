@@ -17,7 +17,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare commentsInput: HTMLTextAreaElement;
 
   private pinCoordinates: PinCoordinates | null = null;
-  private this = this;
 
   constructor() {
     super();
@@ -57,7 +56,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (this.eventType !== 'create-annotation') return;
 
     window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
-    window.document.body.addEventListener('keyup', this.sendEnter);
+    this.addEventListener('keyup', this.sendEnter);
   }
 
   disconnectedCallback(): void {
@@ -103,8 +102,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (e.shiftKey) return;
 
     const input = this.getCommentInput();
+    const text = input.value.trim();
+
+    if (!text) return;
     const sendBtn = this.getSendBtn();
-    const text = input.value;
 
     this.emitEvent(
       this.eventType,
