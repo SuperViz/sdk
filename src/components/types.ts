@@ -11,10 +11,11 @@ export enum ComponentNames {
   COMMENTS_THREEJS = 'comments3dThreejs',
 }
 
-export enum Presence3d {
+export enum PresenceMap {
   'presence3dMatterport' = 'presence',
   'presence3dAutodesk' = 'presence',
   'presence3dThreejs' = 'presence',
+  'realtime' = 'presence',
 }
 export enum Comments3d {
   'comments3dMatterport' = 'comments3d',
