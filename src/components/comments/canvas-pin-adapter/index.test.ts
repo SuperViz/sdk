@@ -1,4 +1,5 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { sleep } from '../../../common/utils';
 
 import { CanvasPin } from '.';
 
@@ -100,24 +101,25 @@ describe('CanvasPinAdapter', () => {
     expect(canvasPinAdapter['pins'].size).toEqual(1);
   });
 
-  test('should not render annotations if the adapter is not active', () => {
+  test('should not render annotations if the adapter is not active and visibility is false', async () => {
     const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(false);
+    canvasPinAdapter.setPinsVisibility(false);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
 
     expect(canvasPinAdapter['pins'].size).toEqual(0);
   });
 
-  test('should remove pins when isActive is turned to false', () => {
+  test('should remove pins when visibility is false', () => {
     const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    canvasPinAdapter.setPinsVisibility(true);
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
 
     expect(canvasPinAdapter['pins'].size).toEqual(1);
 
-    canvasPinAdapter.setActive(false);
+    canvasPinAdapter.setPinsVisibility(false);
 
     expect(canvasPinAdapter['pins'].size).toEqual(0);
   });
@@ -222,6 +224,68 @@ describe('CanvasPinAdapter', () => {
     expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeFalsy();
   });
 
+  test('should remove highlight from annotation pin when sibar is closed', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+    canvasPinAdapter.setPinsVisibility(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    canvasPinAdapter['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    let pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeTruthy();
+
+    canvasPinAdapter['onToggleAnnotationSidebar'](
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: {
+          open: false,
+        },
+      }),
+    );
+
+    pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeFalsy();
+  });
+
+  test('should not remove highlight from annotation pin when sibar is opened', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+    canvasPinAdapter.setPinsVisibility(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    canvasPinAdapter['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    let pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeTruthy();
+
+    canvasPinAdapter['onToggleAnnotationSidebar'](
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: {
+          open: true,
+        },
+      }),
+    );
+
+    pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeTruthy();
+  });
+
   test('should not create a temporary pin if the adapter is not active', () => {
     const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(false);
@@ -261,6 +325,7 @@ describe('CanvasPinAdapter', () => {
 
     expect(canvasPinAdapter['pins'].size).toEqual(1);
   });
+
   test('should not render annotations if the canvas is hidden', () => {
     const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);

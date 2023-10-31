@@ -23,7 +23,7 @@ export class Comments extends BaseComponent {
   private button: CommentsFloatButton;
   private sidebarOpen: boolean = false;
   private annotations: Annotation[];
-  private url: string;
+  private clientUrl: string;
   private pinAdapter: PinAdapter;
   private layoutOptions: CommentsOptions;
 
@@ -40,19 +40,27 @@ export class Comments extends BaseComponent {
     this.pinAdapter = pinAdapter;
   }
 
+  private get url(): string {
+    const url = new URL(this.clientUrl);
+    url.search = '';
+
+    return url.toString();
+  }
+
   /**
    * @function start
    * @description Initializes the Comments component
    * @returns {void}
    */
   protected start(): void {
-    this.url = window.location.href;
+    this.clientUrl = window.location.href;
 
     this.positionComments();
     this.positionFloatingButton();
     this.fetchAnnotations();
     this.waterMarkState();
     this.addListeners();
+    this.pinAdapter.setPinsVisibility(true);
   }
 
   /**
@@ -88,6 +96,9 @@ export class Comments extends BaseComponent {
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
 
+    // annotation observers
+    document.body.addEventListener('select-annotation', this.onSelectAnnotation);
+
     // Realtime observers
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
 
@@ -113,6 +124,9 @@ export class Comments extends BaseComponent {
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
+
+    // annotation observers
+    document.body.removeEventListener('select-annotation', this.onSelectAnnotation);
 
     // Realtime observers
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
@@ -166,7 +180,18 @@ export class Comments extends BaseComponent {
   };
 
   /**
-   * @function positionFloatingButton
+   * @function onSelectAnnotation
+   * @description Opens the annotation sidebar when an annotation is selected
+   * @param _
+   * @returns {void}
+   */
+  private onSelectAnnotation = (_: CustomEvent): void => {
+    if (this.sidebarOpen) return;
+
+    this.toggleAnnotationSidebar();
+  };
+
+  /* @function positionFloatingButton
    * @description position floating button at some corner or inside an element
    * @returns {void}
    */
