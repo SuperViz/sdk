@@ -8,15 +8,20 @@ import {
   ParticipantEvent,
   FrameEvent,
 } from './common/types/events.types';
+import { ParticipantType } from './common/types/participant.types';
 import { VideoComponent, MousePointers, Realtime, Comments, CanvasPin } from './components';
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
-import { LayoutMode } from './services/video-conference-manager/types';
+import {
+  CamerasPosition,
+  LayoutMode,
+  LayoutPosition,
+} from './services/video-conference-manager/types';
 
 export { PinMode } from './web-components/comments/components/types';
 
-export { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
+export { Participant, Group, Avatar } from './common/types/participant.types';
 export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 export { BrowserService } from './services/browser';
 export { BrowserStats } from './services/browser/types';
@@ -43,6 +48,9 @@ if (window) {
     Realtime,
     Comments,
     CanvasPin,
+    ParticipantType,
+    LayoutPosition,
+    CamerasPosition,
   };
 }
 
@@ -56,6 +64,9 @@ export {
   ParticipantEvent,
   FrameEvent,
   LayoutMode,
+  ParticipantType,
+  LayoutPosition,
+  CamerasPosition,
 };
 
 export default init;

@@ -19,12 +19,14 @@ export class Comments extends WebComponentsBaseElement {
   declare annotations: Annotation[];
   declare annotationFilter: AnnotationFilter;
   declare waterMarkState: boolean;
+  declare side: string;
 
   static properties = {
     open: { type: Boolean },
     annotations: { type: Object },
     annotationFilter: { type: String },
     waterMarkState: { type: Boolean },
+    side: { type: String },
   };
 
   constructor() {
@@ -54,16 +56,22 @@ export class Comments extends WebComponentsBaseElement {
   updated(changedProperties) {
     super.updated(changedProperties);
     this.updateComplete.then(() => {
-      const supervizCommentsDiv = this.shadowRoot.querySelector('#superviz-comments');
+      const supervizCommentsDiv = this.shadowRoot.querySelector('.superviz-comments');
 
-      if (supervizCommentsDiv && this.waterMarkState) {
+      if (!supervizCommentsDiv) return;
+
+      if (this.waterMarkState) {
         waterMarkElementObserver(this.shadowRoot);
       }
+
+      supervizCommentsDiv.setAttribute('style', this.side);
     });
   }
 
   protected render() {
-    const containerClass = [this.open ? 'container' : 'container-close'].join(' ');
+    const containerClass = [this.open ? 'container' : 'container-close', 'superviz-comments'].join(
+      ' ',
+    );
     const poweredByFooter = html` <div id="poweredby-footer" class="footer">
       <div class="powered-by powered-by--horizontal">
         <a href="https://superviz.com/" target="_blank" class="link">

@@ -9,6 +9,7 @@ export class CanvasPin implements PinAdapter {
   private divWrapper: HTMLElement;
   private mouseElement: HTMLElement;
   private isActive: boolean;
+  private isPinsVisible: boolean = true;
   private annotations: Annotation[];
   private pins: Map<string, HTMLElement>;
   private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
@@ -28,6 +29,8 @@ export class CanvasPin implements PinAdapter {
       throw new Error(message);
     }
 
+    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrapper = this.createDivWrapper();
@@ -42,11 +45,24 @@ export class CanvasPin implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.mouseElement = null;
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
+    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
 
     if (this.divWrapperReplacementInterval) {
       clearInterval(this.divWrapperReplacementInterval);
       this.divWrapperReplacementInterval = null;
     }
+  }
+
+  public setPinsVisibility(isVisible: boolean): void {
+    this.isPinsVisible = isVisible;
+
+    if (this.isPinsVisible) {
+      this.renderAnnotationsPins();
+      return;
+    }
+
+    this.removeAnnotationsPins();
   }
 
   /**
@@ -60,11 +76,9 @@ export class CanvasPin implements PinAdapter {
 
     if (this.isActive) {
       this.addListeners();
-      this.renderAnnotationsPins();
       return;
     }
 
-    this.removeAnnotationsPins();
     this.removeListeners();
   }
 
@@ -79,7 +93,7 @@ export class CanvasPin implements PinAdapter {
 
     this.annotations = annotations;
 
-    if (!this.isActive) return;
+    if (!this.isActive && !this.isPinsVisible) return;
 
     this.renderAnnotationsPins();
   }
@@ -237,10 +251,20 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
+    if (!this.annotations || this.canvas.style.display === 'none') {
+      this.removeAnnotationsPins();
+      return;
+    }
+
     this.annotations.forEach((annotation) => {
       const position = JSON.parse(annotation.position) as PinCoordinates;
 
-      if (position.type !== 'canvas' || annotation.resolved || this.pins.has(annotation.uuid)) {
+      if (annotation.resolved) {
+        this.removeAnnotationPin(annotation.uuid);
+        return;
+      }
+
+      if (position.type !== 'canvas' || this.pins.has(annotation.uuid)) {
         return;
       }
 
@@ -299,6 +323,8 @@ export class CanvasPin implements PinAdapter {
    * @param event - The MouseEvent object representing the click event.
    */
   private onClick = (event: MouseEvent): void => {
+    if (!this.isActive) return;
+
     const { x, y } = event;
     const rect = this.divWrapper.getBoundingClientRect();
 
@@ -362,5 +388,15 @@ export class CanvasPin implements PinAdapter {
     if (this.mouseElement) return;
 
     this.mouseElement = this.createMouseElement();
+  };
+
+  private onToggleAnnotationSidebar = ({ detail }: CustomEvent): void => {
+    const { open } = detail;
+
+    if (open) return;
+
+    this.pins.forEach((pinElement) => {
+      pinElement.removeAttribute('active');
+    });
   };
 }

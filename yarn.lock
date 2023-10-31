@@ -2464,10 +2464,10 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
-"@superviz/sv-icons@^0.8.7":
-  version "0.8.7"
-  resolved "https://registry.yarnpkg.com/@superviz/sv-icons/-/sv-icons-0.8.7.tgz#90ad0ced73111636940b8dd9b99312244929fd98"
-  integrity sha512-dhZ/Y8kwJEVQFiLn0om90GIV41E3PZqqjKYDvKY5SJqg1Jdqh/ztI4aBQVR1kxg0iyOu3gVQMHHO4Vw3FSMSZA==
+"@superviz/sv-icons@^0.8.8":
+  version "0.8.8"
+  resolved "https://registry.yarnpkg.com/@superviz/sv-icons/-/sv-icons-0.8.8.tgz#702ff1f2dd6bd89bb9b82953ec05c60ee2037119"
+  integrity sha512-+X5yqHSriKNlCdJq6b2j0xRuOYl9gCGXSG58t7HMZ1Vm4bxYgNxkfWjz6HmWNnotsQh/mBktE5J00KZK3jP2Gg==
 
 "@szmarczak/http-timer@^4.0.5":
   version "4.0.6"
