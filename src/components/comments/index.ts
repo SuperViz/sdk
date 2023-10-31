@@ -321,6 +321,7 @@ export class Comments extends BaseComponent {
       const annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
       this.updateAnnotationList(annotations);
       this.pinAdapter.removeAnnotationPin(uuid);
+      this.element.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when deleting annotation', error);
     }
