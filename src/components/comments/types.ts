@@ -20,6 +20,7 @@ export type Comment = {
 };
 
 export interface PinAdapter {
+  setPinsVisibility(isVisible: boolean): void;
   setActive(isOpen: boolean): void;
   destroy(): void;
   updateAnnotations(annotations: Annotation[]): void;

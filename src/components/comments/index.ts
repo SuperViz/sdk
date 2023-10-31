@@ -52,6 +52,7 @@ export class Comments extends BaseComponent {
     this.fetchAnnotations();
     this.waterMarkState();
     this.addListeners();
+    this.pinAdapter.setPinsVisibility(true);
   }
 
   /**
@@ -87,6 +88,9 @@ export class Comments extends BaseComponent {
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
 
+    // annotation observers
+    document.body.addEventListener('select-annotation', this.onSelectAnnotation);
+
     // Realtime observers
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
 
@@ -112,6 +116,9 @@ export class Comments extends BaseComponent {
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
+
+    // annotation observers
+    document.body.removeEventListener('select-annotation', this.onSelectAnnotation);
 
     // Realtime observers
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
@@ -162,6 +169,18 @@ export class Comments extends BaseComponent {
         bubbles: true,
       }),
     );
+  };
+
+  /**
+   * @function onSelectAnnotation
+   * @description Opens the annotation sidebar when an annotation is selected
+   * @param _
+   * @returns {void}
+   */
+  private onSelectAnnotation = (_: CustomEvent): void => {
+    if (this.sidebarOpen) return;
+
+    this.toggleAnnotationSidebar();
   };
 
   /**

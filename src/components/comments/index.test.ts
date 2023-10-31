@@ -28,6 +28,7 @@ const DummiePinAdapter: PinAdapter = {
   setActive: jest.fn(),
   updateAnnotations: jest.fn(),
   removeAnnotationPin: jest.fn(),
+  setPinsVisibility: jest.fn(),
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
 };
 
