@@ -30,7 +30,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     this.commentsPosition = 'left';
   }
 
-  private toggle(details) {
+  private toggle() {
     this.emitEvent('toggle', {});
   }
 

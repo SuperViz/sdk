@@ -25,7 +25,6 @@ import {
   FrameLocale,
   FrameConfig,
   ColorsVariables,
-  WaterMark,
   LayoutPosition,
   CamerasPosition,
   LayoutModalsAndCameras,
@@ -154,8 +153,7 @@ export default class VideoConfereceManager {
 
   get isWaterMarkEnabled(): boolean {
     if (this.browserService.isMobileDevice) return false;
-
-    return [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark);
+    return this.frameConfig.waterMark;
   }
 
   get isHorizontalCameraEnabled(): boolean {

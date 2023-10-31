@@ -24,7 +24,7 @@ export interface VideoManagerOptions {
   locales?: Locale[];
   avatars?: Avatar[];
   customColors?: ColorsVariables;
-  waterMark?: WaterMark;
+  waterMark?: boolean;
   layoutPosition?: LayoutPosition;
   layoutMode?: LayoutMode;
 }
@@ -62,7 +62,7 @@ export interface FrameConfig {
   canUseDefaultToolbar: boolean;
   camerasPosition: CamerasPosition;
   devices: DevicesConfig;
-  waterMark: WaterMark;
+  waterMark: boolean;
   skipMeetingSettings: boolean;
   layoutPosition: LayoutPosition;
   layoutMode?: LayoutMode;
@@ -142,12 +142,6 @@ export interface DrawingData {
 export interface RealtimeObserverPayload {
   event: RealtimeEvent | MeetingEvent;
   data: unknown;
-}
-
-export enum WaterMark {
-  ALL = 'all',
-  CAMERA = 'camera',
-  POWERED_BY = 'powered-by',
 }
 
 export enum LayoutPosition {

@@ -15,7 +15,6 @@ export interface VideoComponentOptions {
   chatOff?: boolean;
   defaultAvatars?: boolean;
   offset?: Offset;
-  camerasPosition?: CamerasPosition;
   enableFollow?: boolean;
   enableGoTo?: boolean;
   enableGather?: boolean;
@@ -26,9 +25,13 @@ export interface VideoComponentOptions {
   avatars?: Avatar[];
   customColors?: ColorsVariables;
   skipMeetingSettings?: boolean;
-  layoutPosition?: LayoutPosition;
-  layoutMode?: LayoutMode;
   allowGuests?: boolean;
+  userType?: ParticipantType | `${ParticipantType}`;
+  collaborationMode?: {
+    position?: CamerasPosition | `${CamerasPosition}`;
+    modalPosition?: LayoutPosition | `${LayoutPosition}`;
+    initialView?: LayoutMode | `${LayoutMode}`;
+  };
 }
 
 export type ParticipandToFrame = {

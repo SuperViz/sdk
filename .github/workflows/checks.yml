@@ -12,12 +12,15 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - name: Install dependencies
         run: yarn install
       - name: Create a .version.js file
         run: |
           touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
+      - name: Create a .remote-config.js file
+        run: |
+           touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
       - name: Run tests
         run: yarn test:unit:ci --coverage
       - name: Code Coverage Report
@@ -31,7 +34,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - name: Install dependencies
         run: yarn install
       - name: Create a .version.js file
@@ -51,11 +54,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - name: Install dependencies
         run: yarn install
       - name: Create a .version.js file
         run: |
           touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
+      - name: Create a .remote-config.js file
+        run: |
+          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
       - name: Build
         run: yarn build

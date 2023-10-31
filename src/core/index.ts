@@ -64,6 +64,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
 
   const environment = await ApiService.fetchConfig(apiUrl, apiKey);
   const limits = await ApiService.fetchLimits(apiUrl, apiKey);
+  const waterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
 
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
@@ -80,16 +81,10 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     roomId: options.roomId,
     debug: options.debug,
     limits,
+    waterMark,
   });
 
-  return LauncherFacade(
-    Object.assign({}, options, {
-      participant: {
-        ...options.participant,
-        type: options.participant.type || ParticipantType.GUEST,
-      },
-    }),
-  );
+  return LauncherFacade(options);
 };
 
 export default init;

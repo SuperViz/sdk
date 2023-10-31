@@ -17,14 +17,15 @@ const SuperViz = await Manager(DEVELOPER_KEY, {
   participant: {
     id: this.userId,
     name: 'John Doe',
-    type: userType,
     avatar: {
       thumbnail: 'https://production.storage.superviz.com/readyplayerme/1.png',
     },
   },
 });
 
-const video = new VideoComponent();
+const video = new VideoComponent({
+  userType: 'host' | 'guest' | 'audience',
+});
 SuperViz.addComponent(video);
 
 const realtime = new Realtime();

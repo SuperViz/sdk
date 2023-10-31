@@ -11,7 +11,7 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { Participant } from '../../common/types/participant.types';
+import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
@@ -20,8 +20,10 @@ import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/
 import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 import VideoConfereceManager from '../../services/video-conference-manager';
 import {
+  CamerasPosition,
   DrawingData,
   LayoutMode,
+  LayoutPosition,
   RealtimeObserverPayload,
   VideoFrameState,
   VideoManagerOptions,
@@ -43,11 +45,15 @@ export class VideoComponent extends BaseComponent {
 
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
+  private showWaterMarkType: boolean;
 
   constructor(params?: VideoComponentOptions) {
     super();
 
-    this.params = params;
+    this.params = {
+      ...params,
+      userType: params?.userType ?? ParticipantType.GUEST,
+    };
 
     this.name = ComponentNames.VIDEO_CONFERENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.VIDEO_CONFERENCE}`);
@@ -132,8 +138,13 @@ export class VideoComponent extends BaseComponent {
     this.logger.log('video component @ start');
     this.publish(MeetingEvent.MEETING_START);
 
+    if (this.params.userType !== ParticipantType.GUEST) {
+      this.localParticipant.type = this.params.userType as ParticipantType;
+    }
+
     this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
+    this.showWaterMarkType = config.get<boolean>('waterMark');
     this.startVideo();
   }
 
@@ -172,7 +183,7 @@ export class VideoComponent extends BaseComponent {
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
       canUseDefaultToolbar: this.params?.defaultToolbar ?? true,
-      camerasPosition: this.params?.camerasPosition,
+      camerasPosition: this.params?.collaborationMode?.position as CamerasPosition,
       devices: this.params?.devices,
       skipMeetingSettings: this.params?.skipMeetingSettings,
       browserService: this.browserService,
@@ -180,8 +191,9 @@ export class VideoComponent extends BaseComponent {
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
       customColors: this.params?.customColors,
-      layoutPosition: this.params?.layoutPosition,
-      layoutMode: this.params?.layoutMode ?? LayoutMode.LIST,
+      layoutPosition: this.params?.collaborationMode?.modalPosition as LayoutPosition,
+      layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
+      waterMark: this.showWaterMarkType,
     };
 
     this.logger.log('video component @ start video', this.videoConfig);
@@ -437,6 +449,7 @@ export class VideoComponent extends BaseComponent {
       this.realtime.updateMyProperties({
         avatar: participant.avatar,
         name: participant.name,
+        type: participant.type,
       });
 
       return;
@@ -444,6 +457,7 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.updateMyProperties({
       name: participant.name,
+      type: participant.type,
     });
   };
 
@@ -625,7 +639,9 @@ export class VideoComponent extends BaseComponent {
 
     this.realtime.updateMyProperties({
       activeComponents,
+      type: ParticipantType.GUEST,
     });
+    this.realtime.setKickParticipantsOnHostLeave(false);
 
     this.detach();
   }
