@@ -220,6 +220,7 @@ export class Comments extends BaseComponent {
 
       if (element) {
         element.appendChild(this.button);
+        style = 'position: relative';
       } else {
         unfindableElement = true;
         buttonLocation = ButtonLocation.TOP_LEFT;
