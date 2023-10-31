@@ -1,7 +1,7 @@
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
-import { PinAdapter } from './types';
+import { CommentsOptions, PinAdapter } from './types';
 export declare class Comments extends BaseComponent {
     name: ComponentNames;
     protected logger: Logger;
@@ -11,7 +11,8 @@ export declare class Comments extends BaseComponent {
     private annotations;
     private url;
     private pinAdapter;
-    constructor(pinAdapter: PinAdapter);
+    private layoutOptions;
+    constructor(pinAdapter: PinAdapter, options?: CommentsOptions);
     /**
      * @function start
      * @description Initializes the Comments component
@@ -47,6 +48,18 @@ export declare class Comments extends BaseComponent {
      * @returns {void}
      */
     private toggleAnnotationSidebar;
+    /**
+     * @function positionFloatingButton
+     * @description position floating button at some corner or inside an element
+     * @returns {void}
+     */
+    private positionFloatingButton;
+    /**
+     * @function positionComments
+     * @description put comments at the left or right side of the screen
+     * @returns {void}
+     */
+    private positionComments;
     /**
      * @function createAnnotation
      * @description Creates a new annotation and comment and adds them to the Comments component
