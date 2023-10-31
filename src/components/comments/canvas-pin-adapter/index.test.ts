@@ -1,4 +1,7 @@
+import { positional } from 'yargs';
+
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { Annotation } from '../types';
 
 import { CanvasPin } from '.';
 
@@ -181,6 +184,72 @@ describe('CanvasPinAdapter', () => {
     expect(
       [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
     ).toBeFalsy();
+  });
+
+  test('should reset on KeyBoardEvent if the key is Escape', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+
+    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+
+    canvasPinAdapter['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
+
+    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeFalsy();
+  });
+
+  test('should not reset on KeyboardEvent if the key is not Escape', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+
+    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+
+    canvasPinAdapter['resetPins']({ key: 'Enter' } as unknown as KeyboardEvent);
+
+    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+  });
+
+  test('should remove active on Escape key', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    const detail = {
+      uuid: MOCK_ANNOTATION.uuid,
+    };
+
+    canvasPinAdapter['annotationSelected']({ detail } as unknown as CustomEvent);
+
+    expect(canvasPinAdapter['selectedPin']).not.toBeNull();
+
+    canvasPinAdapter['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
+
+    expect(canvasPinAdapter['selectedPin']).toBeNull();
+  });
+
+  test('should toggle active attribute when click same annotation twice', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+
+    canvasPinAdapter.setActive(true);
+    const detail = {
+      uuid: MOCK_ANNOTATION.uuid,
+    };
+
+    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    canvasPinAdapter['annotationSelected']({ detail } as unknown as CustomEvent);
+
+    expect(canvasPinAdapter['selectedPin']).not.toBeNull();
+    expect(canvasPinAdapter['selectedPin']?.hasAttribute('active')).toBeTruthy();
+
+    const ann = canvasPinAdapter['selectedPin'];
+    canvasPinAdapter['annotationSelected']({ detail } as unknown as CustomEvent);
+
+    expect(canvasPinAdapter['selectedPin']).toBeNull();
   });
 
   test('should not select annotation pin if it does not exist', async () => {

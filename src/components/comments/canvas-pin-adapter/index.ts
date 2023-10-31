@@ -273,7 +273,9 @@ export class CanvasPin implements PinAdapter {
 
     type PinElement = HTMLElement & { annotation: { uuid: string } };
 
-    if ((this.selectedPin as PinElement)?.annotation.uuid === uuid) {
+    const annotation = this.selectedPin?.getAttribute('annotation') ?? '{}';
+
+    if (JSON.parse(annotation)?.uuid === uuid) {
       this.resetPins();
       return;
     }
