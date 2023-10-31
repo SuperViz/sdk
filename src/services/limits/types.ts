@@ -1,8 +1,6 @@
 export type ComponentLimits = {
-    videoConference: boolean
-    presence: boolean
-    comments: boolean
-    presence3d?: boolean
-    comments3d?: boolean
-    transcript?: boolean
-}
+  videoConference: boolean;
+  presence: boolean;
+  comments: boolean;
+  transcript?: boolean;
+};
