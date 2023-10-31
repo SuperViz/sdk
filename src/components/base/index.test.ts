@@ -72,7 +72,7 @@ describe('BaseComponent', () => {
     test('should not start if domain is not whitelisted', () => {
       const ablyMock = { ...ABLY_REALTIME_MOCK };
 
-      ablyMock['isDomainWhitelisted'] = jest.fn().mockReturnValue(false);
+      ablyMock['isDomainWhitelisted'] = false;
 
       DummyComponentInstance.attach({
         realtime: ablyMock as AblyRealtimeService,
@@ -82,7 +82,7 @@ describe('BaseComponent', () => {
         eventBus: EVENT_BUS_MOCK,
       });
 
-      DummyComponentInstance['start'] = jest.fn(DummyComponentInstance['start']);
+      DummyComponentInstance['start'] = jest.fn();
 
       jest.advanceTimersByTime(1000);
 
