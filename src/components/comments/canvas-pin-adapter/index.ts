@@ -129,7 +129,6 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttributeNode(document.createAttribute('active'));
-      temporaryPin.style.pointerEvents = 'auto';
     }
 
     temporaryPin.setAttribute('position', JSON.stringify(coordinates));
@@ -242,7 +241,6 @@ export class CanvasPin implements PinAdapter {
       pinElement.setAttribute('type', PinMode.SHOW);
       pinElement.setAttribute('annotation', JSON.stringify(annotation));
       pinElement.setAttribute('position', JSON.stringify({ x, y }));
-      pinElement.style.pointerEvents = 'auto';
 
       this.divWrapper.appendChild(pinElement);
       this.pins.set(annotation.uuid, pinElement);
@@ -360,5 +358,9 @@ export class CanvasPin implements PinAdapter {
     this.pins.forEach((pinElement) => {
       pinElement.removeAttribute('active');
     });
+
+    if (this.pins.has('temporary-pin')) {
+      this.removeAnnotationPin('temporary-pin');
+    }
   };
 }

@@ -68,7 +68,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       <div
         @click=${this.emitClick}
         class=${classMap(classes)}
-        style=${`top: ${this.position?.y}px; left: ${this.position?.x}px;`}
+        style=${`top: ${this.position?.y}px; left: ${this.position?.x}px; pointer-events: auto;`}
       >
         <div class="annotation-pin__avatar">
           <p class="text text-bold text-big">${this.userInitial}</p>
