@@ -16,6 +16,7 @@ export type Comment = {
     participant: ParticipantApi;
 };
 export interface PinAdapter {
+    setPinsVisibility(isVisible: boolean): void;
     setActive(isOpen: boolean): void;
     destroy(): void;
     updateAnnotations(annotations: Annotation[]): void;

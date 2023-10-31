@@ -9,10 +9,11 @@ export declare class Comments extends BaseComponent {
     private button;
     private sidebarOpen;
     private annotations;
-    private url;
+    private clientUrl;
     private pinAdapter;
     private layoutOptions;
     constructor(pinAdapter: PinAdapter, options?: CommentsOptions);
+    private get url();
     /**
      * @function start
      * @description Initializes the Comments component
@@ -49,10 +50,12 @@ export declare class Comments extends BaseComponent {
      */
     private toggleAnnotationSidebar;
     /**
-     * @function positionFloatingButton
-     * @description position floating button at some corner or inside an element
+     * @function onSelectAnnotation
+     * @description Opens the annotation sidebar when an annotation is selected
+     * @param _
      * @returns {void}
      */
+    private onSelectAnnotation;
     private positionFloatingButton;
     /**
      * @function positionComments

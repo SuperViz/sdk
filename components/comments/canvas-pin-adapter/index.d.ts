@@ -7,6 +7,7 @@ export declare class CanvasPin implements PinAdapter {
     private divWrapper;
     private mouseElement;
     private isActive;
+    private isPinsVisible;
     private annotations;
     private pins;
     private divWrapperReplacementInterval;
@@ -18,6 +19,7 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      * */
     destroy(): void;
+    setPinsVisibility(isVisible: boolean): void;
     /**
      * @function setActive
      * @param {boolean} isOpen - Whether the canvas pin adapter is active or not.
@@ -110,4 +112,5 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private onMouseEnter;
+    private onToggleAnnotationSidebar;
 }
