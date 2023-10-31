@@ -147,7 +147,7 @@ describe('CanvasPinAdapter', () => {
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
 
-    expect(canvasPinAdapter['selectedPin']).not.toBeDefined();
+    expect(canvasPinAdapter['selectedPin']).toBeNull();
 
     canvasPinAdapter['annotationSelected'](
       new CustomEvent('select-annotation', {
@@ -168,7 +168,7 @@ describe('CanvasPinAdapter', () => {
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
 
-    expect(canvasPinAdapter['selectedPin']).not.toBeDefined();
+    expect(canvasPinAdapter['selectedPin']).toBeNull();
 
     canvasPinAdapter['annotationSelected'](
       new CustomEvent('select-annotation', {
@@ -189,7 +189,7 @@ describe('CanvasPinAdapter', () => {
 
     canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
 
-    expect(canvasPinAdapter['selectedPin']).not.toBeDefined();
+    expect(canvasPinAdapter['selectedPin']).toBeNull();
 
     canvasPinAdapter['annotationSelected'](
       new CustomEvent('select-annotation', {

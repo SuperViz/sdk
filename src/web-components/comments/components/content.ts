@@ -30,7 +30,21 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotationFilter: { type: String },
   };
 
+  private unselectAnnotation = () => {
+    this.selectedAnnotation = null;
+  };
+
+  private unselectAnnotationEsc = (event?: KeyboardEvent) => {
+    if (event && event?.key !== 'Escape') return;
+    this.selectedAnnotation = null;
+  };
+
   private selectAnnotation = ({ detail }: CustomEvent) => {
+    if (this.selectedAnnotation === detail.uuid) {
+      this.selectedAnnotation = null;
+      return;
+    }
+
     const { uuid } = detail;
     this.selectedAnnotation = uuid;
   };
@@ -66,12 +80,16 @@ export class CommentsContent extends WebComponentsBaseElement {
     super.connectedCallback();
 
     window.document.body.addEventListener('select-annotation', this.selectAnnotation);
+    window.document.body.addEventListener('keyup', this.unselectAnnotationEsc);
+    window.document.body.addEventListener('unselect-annotation', this.unselectAnnotation);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
 
     window.document.body.removeEventListener('select-annotation', this.selectAnnotation);
+    window.document.body.removeEventListener('keyup', this.unselectAnnotationEsc);
+    window.document.body.removeEventListener('unselect-annotation', this.unselectAnnotation);
   }
 
   protected render() {

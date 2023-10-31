@@ -60,7 +60,9 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     });
   };
 
-  private resolveAnnotation = () => {
+  private resolveAnnotation = (event: Event) => {
+    event.stopPropagation();
+
     this.emitEvent(
       'resolve-annotation',
       {
@@ -130,6 +132,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         <superviz-comments-comment-input
           class="comment-item--editable"
           editable
+          @click=${(event: Event) => event.stopPropagation()}
           text=${this.text}
           eventType="update-comment"
           @update-comment=${this.updateComment}
@@ -185,6 +188,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
               returnTo="label"
               position="bottom-right"
               @selected=${dropdownOptionsHandler}
+              @click=${(event: Event) => event.stopPropagation()}
             >
               <button slot="dropdown" class="icon-button icon-button--clickable icon-button--small">
                 <superviz-icon name="more" size="sm"></superviz-icon>

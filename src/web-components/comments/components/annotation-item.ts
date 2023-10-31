@@ -190,6 +190,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
             <superviz-comments-comment-input
               @create-comment=${this.createComment}
               eventType="create-comment"
+              @click=${(event: Event) => event.stopPropagation()}
             ></superviz-comments-comment-input>
           </div>
         </div>
