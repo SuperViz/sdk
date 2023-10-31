@@ -1090,7 +1090,7 @@ var hr=Object.defineProperty,Li=Object.defineProperties,Fi=Object.getOwnProperty
       <div
         @click=${this.emitClick}
         class=${N(e)}
-        style=${`top: ${(s=this.position)==null?void 0:s.y}px; left: ${(r=this.position)==null?void 0:r.x}px;`}
+        style=${`top: ${(s=this.position)==null?void 0:s.y}px; left: ${(r=this.position)==null?void 0:r.x}px; pointer-events: auto;`}
       >
         <div class="annotation-pin__avatar">
           <p class="text text-bold text-big">${this.userInitial}</p>
