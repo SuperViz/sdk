@@ -7,9 +7,10 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { WaterMark } from '../../services/video-conference-manager/types';
+import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import { PinAdapter } from './types';
+import { PinAdapter, CommentsSide } from './types';
 
 import { Comments } from './index';
 
@@ -141,6 +142,117 @@ describe('Comments', () => {
 
       expect(commentsComponent['element'].waterMarkStatus).toHaveBeenCalledWith(true);
     });
+  });
+
+  test('should append the button to the body and set the comments position if no button location is specified', () => {
+    const comments = new Comments(DummiePinAdapter);
+    comments['layoutOptions'] = {
+      buttonLocation: '',
+      position: 'left',
+    };
+
+    comments['positionFloatingButton']();
+
+    expect(document.body.contains(comments['button'])).toBe(true);
+    expect(comments['button'].commentsPosition).toBe(comments['layoutOptions'].position);
+  });
+
+  test('should append the button to the specified element if a valid button location is specified and the element has no child nodes', () => {
+    const comments = new Comments(DummiePinAdapter);
+    comments['layoutOptions'].buttonLocation = 'test-element';
+
+    const element = document.createElement('div');
+    element.id = 'test-element';
+    document.body.appendChild(element);
+
+    comments['positionFloatingButton']();
+
+    expect(element.contains(comments['button'])).toBe(true);
+  });
+
+  test('should append the button to the body and set the position styles if an invalid button location is specified', () => {
+    const comments = new Comments(DummiePinAdapter);
+
+    comments['layoutOptions'].buttonLocation = 'invalid-location';
+
+    comments['positionFloatingButton']();
+
+    expect(document.body.contains(comments['button'])).toBe(true);
+    expect(comments['button'].positionStyles).toBe('top: 20px; left: 20px;');
+  });
+
+  test('should set the comments position if a valid button location is specified and the element has child nodes', () => {
+    const comments = new Comments(DummiePinAdapter);
+    comments['layoutOptions'].buttonLocation = 'testa-element';
+
+    const element = document.createElement('div');
+    element.id = 'testa-element';
+
+    element.appendChild(document.createElement('ul'));
+    window.document.body.appendChild(element);
+
+    comments['positionFloatingButton']();
+
+    const button = window.document.body.querySelector(
+      'superviz-comments-button',
+    ) as CommentsFloatButton;
+
+    expect(button).not.toBeNull();
+    expect(button.commentsPosition).toBe(comments['layoutOptions'].position);
+    expect(element.children.length).toBe(2);
+  });
+
+  test('should create the comments element and append it to the body', () => {
+    const comment = new Comments(DummiePinAdapter);
+
+    comment['positionComments']();
+
+    expect(document.body.querySelector('superviz-comments')).toBeTruthy();
+  });
+
+  test('should set the side to left if no position is specified', () => {
+    const comments = new Comments(DummiePinAdapter);
+
+    comments['positionComments']();
+
+    expect(comments['element'].side).toBe('left: 0;');
+  });
+
+  test('should set the left side style if the position is "left"', () => {
+    const comments = new Comments(DummiePinAdapter);
+
+    comments['layoutOptions'].position = CommentsSide.LEFT;
+    comments['positionComments']();
+
+    expect(comments['element'].side).toBe('left: 0;');
+  });
+
+  test('should set the right side style if the position is "right"', () => {
+    const comments = new Comments(DummiePinAdapter);
+
+    comments['layoutOptions'].position = CommentsSide.RIGHT;
+    comments['positionComments']();
+
+    expect(comments['element'].side).toBe('right: 0;');
+  });
+
+  test('should have position "left" if no position is passed', () => {
+    const comments = new Comments(DummiePinAdapter);
+    comments['layoutOptions'] = {
+      buttonLocation: 'top-rigth',
+    };
+
+    comments['positionComments']();
+
+    expect(comments['element'].side).toBe('left: 0;');
+  });
+
+  test('should have position "left" if invalid position is passed', () => {
+    const comments = new Comments(DummiePinAdapter);
+    comments['layoutOptions'].position = 'invalid-position' as any;
+    comments['positionComments']();
+
+    expect(comments['element'].side).toBe('left: 0;');
   });
 
   test('should call apiService when resolve annotation', async () => {

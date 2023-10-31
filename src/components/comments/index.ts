@@ -64,7 +64,7 @@ export class Comments extends BaseComponent {
   protected destroy(): void {
     this.destroyListeners();
 
-    document.body.removeChild(this.element);
+    document.body.querySelector('superviz-comments').remove();
     this.element = undefined;
     this.pinAdapter.destroy();
   }
@@ -173,7 +173,7 @@ export class Comments extends BaseComponent {
    */
   private positionFloatingButton = (): void => {
     this.button = document.createElement('superviz-comments-button') as CommentsFloatButton;
-    const buttonLocation = this.layoutOptions?.buttonLocation;
+    let buttonLocation = this.layoutOptions?.buttonLocation;
     const position = this.layoutOptions?.position;
 
     if (!buttonLocation) {
@@ -185,14 +185,24 @@ export class Comments extends BaseComponent {
     let style: string = '';
 
     const positionsOptions = Object.values(ButtonLocation);
+    let unfindableElement = false;
 
-    if (!positionsOptions.includes(buttonLocation.toLocaleLowerCase() as ButtonLocation)) {
-      const element = window.document.querySelector(`#${buttonLocation}`);
+    const positionById = !positionsOptions.includes(
+      buttonLocation.toLocaleLowerCase() as ButtonLocation,
+    );
 
-      if (element && !element?.firstChild) {
+    if (positionById) {
+      const element = window.document.body.querySelector(`#${buttonLocation}`);
+
+      if (element) {
         element.appendChild(this.button);
+      } else {
+        unfindableElement = true;
+        buttonLocation = ButtonLocation.TOP_LEFT;
       }
-    } else {
+    }
+
+    if (!positionById || unfindableElement) {
       document.body.appendChild(this.button);
       const [vertical, horizontal] = buttonLocation.split('-');
       style = `${vertical}: 20px; ${horizontal}: 20px;`;
@@ -210,6 +220,7 @@ export class Comments extends BaseComponent {
   private positionComments = (): void => {
     this.element = document.createElement('superviz-comments') as CommentElement;
     this.element.setAttribute('comments', JSON.stringify([]));
+    this.element.side = 'left: 0;';
     document.body.appendChild(this.element);
 
     const position = this.layoutOptions?.position;
