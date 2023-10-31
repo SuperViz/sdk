@@ -209,10 +209,20 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
+    if (!this.annotations || this.canvas.style.display === 'none') {
+      this.removeAnnotationsPins();
+      return;
+    }
+
     this.annotations.forEach((annotation) => {
       const position = JSON.parse(annotation.position) as PinCoordinates;
 
-      if (position.type !== 'canvas' || annotation.resolved || this.pins.has(annotation.uuid)) {
+      if (annotation.resolved) {
+        this.removeAnnotationPin(annotation.uuid);
+        return;
+      }
+
+      if (position.type !== 'canvas' || this.pins.has(annotation.uuid)) {
         return;
       }
 
@@ -270,6 +280,8 @@ export class CanvasPin implements PinAdapter {
    * @param event - The MouseEvent object representing the click event.
    */
   private onClick = (event: MouseEvent): void => {
+    if (!this.isActive) return;
+
     const { x, y } = event;
     const rect = this.divWrapper.getBoundingClientRect();
 
