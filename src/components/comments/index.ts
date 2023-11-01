@@ -429,21 +429,19 @@ export class Comments extends BaseComponent {
    * @returns {void}
    */
   private addComment(annotationId: string, comment: Comment): void {
-    const annotationIndex = this.annotations.findIndex(
-      (annotation) => annotation.uuid === annotationId,
-    );
+    const annotationToBeUpdated = this.annotations.find((annotation) => {
+      return annotation.uuid === annotationId;
+    });
 
-    if (annotationIndex === -1) return;
+    annotationToBeUpdated.comments.push(comment);
 
-    const annotation = this.annotations[annotationIndex];
+    const list = this.annotations.map((annotation) => {
+      if (annotation.uuid === annotationId) {
+        return annotationToBeUpdated;
+      }
 
-    annotation.comments = [...annotation.comments, comment];
-
-    const list = [
-      ...this.annotations.slice(0, annotationIndex),
-      annotation,
-      ...this.annotations.slice(annotationIndex + 1),
-    ];
+      return annotation;
+    });
 
     this.updateAnnotationList(list);
     this.element.updateAnnotations(list);
@@ -534,28 +532,31 @@ export class Comments extends BaseComponent {
    * @param {CustomEvent} event - The custom event containing the UUID of the comment to delete
    * @returns {Promise<void>}
    */
+
   private deleteComment = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { uuid } = detail;
+      const { uuid, annotationId } = detail;
+
+      if (!uuid || !annotationId) return;
 
       await ApiService.deleteComment(config.get('apiUrl'), config.get('apiKey'), uuid);
 
-      const annotationIndex = this.annotations.findIndex((annotation) => {
-        return annotation.comments.some((comment) => comment.uuid === uuid);
+      const annotationToBeUpdated = this.annotations.find((annotation) => {
+        return annotation.uuid === annotationId;
+      });
+      annotationToBeUpdated.comments = annotationToBeUpdated.comments.filter((comment) => {
+        return comment.uuid !== uuid;
       });
 
-      if (annotationIndex === -1) return;
+      const list = this.annotations.map((annotation) => {
+        if (annotation.uuid === annotationId) {
+          return annotationToBeUpdated;
+        }
 
-      const annotation = this.annotations[annotationIndex];
+        return annotation;
+      });
 
-      annotation.comments = annotation.comments.filter((comment) => comment.uuid !== uuid);
-
-      const list = [
-        ...this.annotations.slice(0, annotationIndex),
-        annotation,
-        ...this.annotations.slice(annotationIndex + 1),
-      ];
-
+      this.element.updateAnnotations(list);
       this.updateAnnotationList(list);
     } catch (error) {
       this.logger.log('error when deleting comment', error);

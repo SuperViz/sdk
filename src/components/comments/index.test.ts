@@ -8,6 +8,7 @@ import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
+
 import { PinAdapter, CommentsSide, Annotation } from './types';
 
 import { Comments } from './index';
@@ -487,6 +488,7 @@ describe('Comments', () => {
       new CustomEvent('delete-comment', {
         detail: {
           uuid: 'uuid-test',
+          annotationId: 'uuid-test',
         },
       }),
     );
@@ -500,6 +502,7 @@ describe('Comments', () => {
     commentsComponent['element'].dispatchEvent(
       new CustomEvent('delete-comment', {
         detail: {
+          annotationId: MOCK_ANNOTATION.uuid,
           uuid: MOCK_ANNOTATION.comments[0].uuid,
         },
       }),
@@ -522,6 +525,7 @@ describe('Comments', () => {
       new CustomEvent('delete-comment', {
         detail: {
           uuid: MOCK_ANNOTATION.comments[0].uuid,
+          annotationId: MOCK_ANNOTATION.uuid,
         },
       }),
     );

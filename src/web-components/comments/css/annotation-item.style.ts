@@ -19,58 +19,28 @@ export const annotationItemStyle = css`
     display: flex;
     align-items: center;
     width: 100%;
-    height: 18px;
   }
 
   .avatar {
-    position: absolute;
     width: 18px;
     height: 18px;
     border-radius: 50%;
     overflow: hidden;
-  }
+    background-color: rgb(var(--sv-gray-300));
+    border: 1px solid rgb(var(--sv-gray-500));
+    color: #fff;
 
-  .avatar-divs-1 {
-    z-index: 4;
-    left: 0;
-  }
-
-  .avatar-divs-2 {
-    z-index: 3;
-    left: 16px;
-  }
-
-  .avatar-divs-3 {
-    z-index: 2;
-    left: 32px;
-  }
-
-  .avatar-divs-4 {
-    z-index: 1;
-    left: 48px;
-  }
-
-  .avatar-divs-5 {
-    z-index: 1;
-    left: 60px;
-  }
-
-  .replies {
     display: flex;
-    justify-content: center;
     align-items: center;
-    position: absolute;
-    padding-left: 8px;
+    justify-content: center;
   }
 
-  .last-reply {
-    padding-left: 14px;
+  .avatar:not(:first-child) {
+    margin-left: -6px;
   }
 
-  .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  div:last-child {
+    margin-left: 8px;
   }
 
   .comments-container {

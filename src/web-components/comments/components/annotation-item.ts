@@ -83,7 +83,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   protected render() {
     const filterIsAll = this.annotationFilter === AnnotationFilter.ALL;
     const filterIsResolved = this.annotationFilter === AnnotationFilter.RESOLVED;
-    const replies = this.annotation.comments?.length;
+    const replies = [...this.annotation.comments].splice(1).length;
     const isSelected = this.selected === this.annotation.uuid;
 
     const annotationClasses = {
@@ -103,7 +103,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const avatarCommentsClasses = {
       'avatars-comments': true,
       'comment-avatar--expand': !this.expandComments && replies > 1,
-      hidden: !(!this.expandComments && replies > 1),
+      hidden: !(!this.expandComments && replies >= 1),
     };
 
     const commentsClasses = {
@@ -114,23 +114,22 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
     const avatarCommentsTemplate = () => {
       const repliesSize = replies >= 5 ? 5 : replies;
-      const isLastReply = replies - 1 > 5 ? 'last-reply' : '';
-      const replyText = replies - 1 > 1 ? 'replies' : 'reply';
+      const replyText = replies !== 1 ? 'replies' : 'reply';
       const avatarDivs = [];
 
-      for (let index = 0; index < repliesSize; index++) {
+      for (let index = 1; index <= repliesSize; index++) {
         avatarDivs.push(html`
-          <div class="avatar avatar-divs-${index}">
-            <img src="https://picsum.photos/200/300" />
+          <div class="avatar">
+            <p class="text text-bold">
+              ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
+            </p>
           </div>
         `);
       }
 
       return html`
         ${avatarDivs}
-        <div class="avatar-divs-${repliesSize} replies ${isLastReply} text text-big sv-gray-500">
-          ${replies - 1} ${replyText}
-        </div>
+        <div class="text text-big sv-gray-500">${replies} ${replyText}</div>
       `;
     };
 
@@ -144,6 +143,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
           username=${comment.participant.name || 'Anonymous'}
           text=${comment.text}
           createdAt=${comment.createdAt}
+          annotationId=${this.annotation.uuid}
         ></superviz-comments-comment-item>
       `;
     };

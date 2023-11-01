@@ -83,6 +83,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     }
 
     this.emitEvent('delete-comment', {
+      annotationId: this.annotationId,
       uuid: this.uuid,
     });
   };
