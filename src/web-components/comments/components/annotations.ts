@@ -35,6 +35,12 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
     this.annotation = null;
   };
 
+  private cancelTemporaryAnnotationEsc = (event: KeyboardEvent) => {
+    if (event?.key !== 'Escape') return;
+
+    this.annotation = null;
+  };
+
   connectedCallback(): void {
     super.connectedCallback();
     window.document.body.addEventListener(
@@ -45,6 +51,12 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
       'close-temporary-annotation',
       this.cancelTemporaryAnnotation,
     );
+
+    window.document.body.addEventListener('keyup', (e) => {
+      if (e.key === 'Escape') {
+        this.cancelTemporaryAnnotationEsc(e);
+      }
+    });
   }
 
   disconnectedCallback(): void {
@@ -57,6 +69,12 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
       'close-temporary-annotation',
       this.cancelTemporaryAnnotation,
     );
+
+    window.document.body.removeEventListener('keyup', (e) => {
+      if (e.key === 'Escape') {
+        this.cancelTemporaryAnnotationEsc(e);
+      }
+    });
   }
 
   protected render() {

@@ -13,7 +13,7 @@ export class CanvasPin implements PinAdapter {
   private annotations: Annotation[];
   private pins: Map<string, HTMLElement>;
   private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
-
+  private selectedPin: HTMLElement | null = null;
   public onPinFixedObserver: Observer;
 
   constructor(canvasId: string) {
@@ -147,6 +147,8 @@ export class CanvasPin implements PinAdapter {
     this.canvas.addEventListener('mousemove', this.onMouseMove);
     this.canvas.addEventListener('mouseout', this.onMouseLeave);
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
+    document.body.addEventListener('keyup', this.resetPins);
+    document.body.addEventListener('select-annotation', this.annotationSelected);
   }
 
   /**
@@ -159,6 +161,8 @@ export class CanvasPin implements PinAdapter {
     this.canvas.removeEventListener('mousemove', this.onMouseMove);
     this.canvas.removeEventListener('mouseout', this.onMouseLeave);
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
+    document.body.removeEventListener('keyup', this.resetPins);
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
   }
 
   /**
@@ -177,6 +181,31 @@ export class CanvasPin implements PinAdapter {
 
     return mouseElement;
   }
+
+  /**
+   * @function resetSelectedPin
+   * @description Unselects a pin by removing its 'active' attribute
+   * @returns {void}
+   * */
+  private resetSelectedPin(): void {
+    if (!this.selectedPin) return;
+    this.selectedPin.removeAttribute('active');
+    this.selectedPin = null;
+  }
+
+  /**
+   * @function resetPins
+   * @description Unselects selected pin and removes temporary pin.
+   * @param {that} this - The canvas pin adapter instance.
+   * @param {KeyboardEvent} event - The keyboard event object.
+   * @returns {void}
+   * */
+  private resetPins = (event?: KeyboardEvent): void => {
+    if (event && event?.key !== 'Escape') return;
+
+    this.resetSelectedPin();
+    this.removeAnnotationPin('temporary-pin');
+  };
 
   /**
    * @function createDivWrapper
@@ -259,18 +288,16 @@ export class CanvasPin implements PinAdapter {
 
   private annotationSelected = ({ detail }: CustomEvent): void => {
     const { uuid } = detail;
-
     if (!uuid) return;
 
-    this.pins.forEach((pinElement) => {
-      if (pinElement.id === 'superviz-temporary-pin') {
-        this.removeAnnotationPin('temporary-pin');
-        return;
-      }
+    const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
 
-      pinElement.removeAttribute('active');
-    });
+    if (annotation?.uuid === uuid) {
+      this.resetPins();
+      return;
+    }
 
+    this.resetPins();
     document.body.dispatchEvent(new CustomEvent('close-temporary-annotation'));
 
     const pinElement = this.pins.get(uuid);
@@ -278,6 +305,7 @@ export class CanvasPin implements PinAdapter {
     if (!pinElement) return;
 
     pinElement.setAttribute('active', '');
+    this.selectedPin = pinElement;
   };
 
   /**
@@ -302,7 +330,12 @@ export class CanvasPin implements PinAdapter {
       type: 'canvas',
     });
 
+    this.resetSelectedPin();
     this.createTemporaryPin({ x: xToSave, y: yToSave, type: 'canvas' });
+
+    if (this.selectedPin) return;
+
+    document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
   };
 
   /**

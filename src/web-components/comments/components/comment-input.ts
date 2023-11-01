@@ -52,10 +52,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-
-    if (this.eventType !== 'create-annotation') return;
+    if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
     window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
+    this.addEventListener('keyup', this.sendEnter);
   }
 
   disconnectedCallback(): void {
@@ -94,6 +94,40 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const btnSend = this.getSendBtn();
     btnSend.disabled = !(commentsInput.value.length > 0);
   }
+
+  private sendEnter = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+
+    if (e.shiftKey) return;
+
+    const input = this.getCommentInput();
+    const text = input.value.trim();
+
+    if (!text) return;
+    const sendBtn = this.getSendBtn();
+
+    this.emitEvent(
+      this.eventType,
+      {
+        text,
+        position: {
+          x: this.pinCoordinates?.x ?? null,
+          y: this.pinCoordinates?.y ?? null,
+          z: this.pinCoordinates?.z ?? null,
+          type: this.pinCoordinates?.type ?? null,
+        },
+      },
+      {
+        composed: false,
+        bubbles: false,
+      },
+    );
+
+    this.pinCoordinates = null;
+    input.value = '';
+    sendBtn.disabled = true;
+    this.updateHeight();
+  };
 
   private send(e: Event) {
     e.preventDefault();
