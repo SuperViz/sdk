@@ -404,7 +404,9 @@ export class Comments extends BaseComponent {
    * @returns {void}
    */
   private addAnnotation(annotations: Annotation): void {
+    console.log('annotations', annotations);
     const list = [annotations, ...this.annotations];
+    console.log('list', list);
     this.element.updateAnnotations(list);
     this.pinAdapter.updateAnnotations(list);
     this.updateAnnotationList(list);
@@ -513,14 +515,14 @@ export class Comments extends BaseComponent {
         return annotation;
       });
 
-      this.updateAnnotationList(annotations);
+      // this.updateAnnotationList(annotations);
 
-      if (resolved) {
-        this.pinAdapter.removeAnnotationPin(uuid);
-        return;
-      }
+      // if (resolved) {
+      //   this.pinAdapter.removeAnnotationPin(uuid);
+      //   return;
+      // }
 
-      this.pinAdapter.updateAnnotations(this.annotations);
+      // this.pinAdapter.updateAnnotations(this.annotations);
     } catch (error) {
       this.logger.log('error when resolve annotation', error);
     }
