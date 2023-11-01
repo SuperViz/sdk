@@ -26,6 +26,13 @@ export declare class Launcher extends Observable implements DefaultLauncher {
      */
     removeComponent: (component: BaseComponent) => void;
     /**
+     * @function canAddComponent
+     * @description verifies if component can be added
+     * @param component - component to be added
+     * @returns {boolean}
+     */
+    private canAddComponent;
+    /**
      * @function startRealtime
      * @description start realtime service and join to room
      * @returns {void}

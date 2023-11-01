@@ -38,6 +38,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private apiKey;
     private readonly apiUrl;
     private left;
+    private domainWhitelisted;
     private state;
     private supervizChannelState;
     private connectionState;
@@ -45,6 +46,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     get roomProperties(): AblyRealtimeData;
     get hostClientId(): string;
     get isLocalParticipantHost(): boolean;
+    get isDomainWhitelisted(): boolean;
     get getParticipants(): Record<string, AblyParticipant>;
     get participant(): AblyParticipant;
     get localParticipantId(): string | null;

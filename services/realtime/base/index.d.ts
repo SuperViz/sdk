@@ -24,6 +24,7 @@ export declare class RealtimeService implements DefaultRealtimeService {
     presence3dObserver: Observer;
     presence3dLeaveObserver: Observer;
     presence3dJoinedObserver: Observer;
+    domainRefusedObserver: Observer;
     constructor();
     /**
      * @function subscribeToParticipantUpdate
