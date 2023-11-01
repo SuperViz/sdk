@@ -3,6 +3,7 @@ import { TextEncoder } from 'util';
 import Ably from 'ably';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { TranscriptState } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -79,7 +80,7 @@ const AblyRestMock = {
         callback(null, mockTokenRequest);
       })
       .mockImplementation((params, options, callback) => {
-        callback('unit-test-error', null);
+        callback({ type: 'unit-test-error', message: "this domain don't have permission" }, null);
       }),
   },
 };
@@ -224,13 +225,26 @@ describe('AblyRealtimeService', () => {
       );
     });
 
+    test('should not call callback if domain is not whitelisted', () => {
+      const mockTokenParams: Ably.Types.TokenParams = {
+        clientId: 'unit-test-client-id',
+      };
+
+      const realtimeInstance = { ...AblyRealtimeServiceInstance };
+      AblyRealtimeServiceInstance['domainWhitelisted'] = false;
+
+      AblyRealtimeServiceInstance['auth'](mockTokenParams, () => {});
+
+      expect(AblyRestMock.auth.requestToken).not.toHaveBeenCalled();
+    });
+
     test('should call callback with error if token request fails', () => {
       const mockTokenParams: Ably.Types.TokenParams = {
         clientId: 'unit-test-client-id',
       };
 
       AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
-        expect(error).toBe('unit-test-error');
+        expect(error).toMatchObject({ type: 'unit-test-error' });
         expect(tokenRequest).toBeNull();
       });
 

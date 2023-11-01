@@ -61,11 +61,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private apiKey: string;
   private readonly apiUrl: string;
   private left: boolean = false;
+  private domainWhitelisted: boolean = true;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private supervizChannelState: Ably.Types.ChannelStateChange;
   private connectionState: Ably.Types.ConnectionStateChange;
-
   constructor(apiUrl: string, ablyKey: string) {
     super();
 
@@ -95,6 +95,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   public get isLocalParticipantHost(): boolean {
     return this.hostClientId === this.localParticipantId;
+  }
+
+  public get isDomainWhitelisted(): boolean {
+    return this.domainWhitelisted;
   }
 
   public get getParticipants(): Record<string, AblyParticipant> {
@@ -147,6 +151,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private auth(tokenParams: Ably.Types.TokenParams, callback: AblyTokenCallBack): void {
+    if (!this.domainWhitelisted) return;
+
     const ably = new Ably.Rest({ key: this.ablyKey });
     const { origin } = window.location;
 
@@ -164,6 +170,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         if (error) {
           this.authenticationObserver.publish(RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
         }
+
+        if (error?.message?.includes("this domain don't have permission")) {
+          this.domainWhitelisted = false;
+          this.domainRefusedObserver.publish(this.domainWhitelisted);
+        }
+
         callback(error, tokenRequest);
       },
     );
@@ -1064,6 +1076,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     const currentState = Object.entries(availableStates).find(([key, value]) => value && key)[0];
     const newState = Number(currentState);
+
+    if (!this.domainWhitelisted) return;
 
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.currentReconnectAttempt = 0;

@@ -22,6 +22,7 @@ export abstract class BaseComponent extends Observable {
    * @description attach component
    * @returns {void}
    */
+
   public attach = (params: DefaultAttachComponentOptions): void => {
     if (Object.values(params).includes(null) || Object.values(params).includes(undefined)) {
       const message = `${this.name} @ attach - params are required`;
@@ -32,8 +33,14 @@ export abstract class BaseComponent extends Observable {
 
     const { realtime, localParticipant, group, config: globalConfig, eventBus } = params;
 
-    config.setConfig(globalConfig);
+    if (!realtime.isDomainWhitelisted) {
+      const message = `Component ${this.name} can't be used because this website's domain is not whitelisted. Please add your domain in https://dashboard.superviz.com/developer`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
 
+    config.setConfig(globalConfig);
     this.realtime = realtime;
     this.localParticipant = localParticipant;
     this.group = group;
