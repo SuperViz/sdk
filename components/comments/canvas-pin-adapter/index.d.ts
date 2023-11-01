@@ -11,6 +11,7 @@ export declare class CanvasPin implements PinAdapter {
     private annotations;
     private pins;
     private divWrapperReplacementInterval;
+    private selectedPin;
     onPinFixedObserver: Observer;
     constructor(canvasId: string);
     /**
@@ -66,6 +67,20 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {HTMLElement} The newly created mouse element.
      */
     private createMouseElement;
+    /**
+     * @function resetSelectedPin
+     * @description Unselects a pin by removing its 'active' attribute
+     * @returns {void}
+     * */
+    private resetSelectedPin;
+    /**
+     * @function resetPins
+     * @description Unselects selected pin and removes temporary pin.
+     * @param {that} this - The canvas pin adapter instance.
+     * @param {KeyboardEvent} event - The keyboard event object.
+     * @returns {void}
+     * */
+    private resetPins;
     /**
      * @function createDivWrapper
      * @description Creates a div wrapper for the pins.

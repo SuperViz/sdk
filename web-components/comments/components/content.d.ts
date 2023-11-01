@@ -20,6 +20,8 @@ export declare class CommentsContent extends WebComponentsBaseElement {
             type: StringConstructor;
         };
     };
+    private unselectAnnotation;
+    private unselectAnnotationEsc;
     private selectAnnotation;
     updated(changedProperties: any): void;
     connectedCallback(): void;

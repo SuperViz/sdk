@@ -31,6 +31,7 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     disconnectedCallback(): void;
     updated(changedProperties: Map<string, any>): void;
     private updateHeight;
+    private sendEnter;
     private send;
     private closeEditMode;
     protected render(): import("lit").TemplateResult<1>;
