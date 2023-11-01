@@ -95,11 +95,11 @@ export class CommentsContent extends WebComponentsBaseElement {
 
   protected render() {
     const annotationsUnresolved = this.annotations?.filter((annotation: Annotation) => {
-      return annotation.resolved === false;
+      return !annotation.resolved;
     });
 
     const annotationsResolved = this.annotations?.filter((annotation: Annotation) => {
-      return annotation.resolved === true;
+      return annotation.resolved;
     });
 
     const isLastAnnotation = (index: number, resolved: boolean) => {
@@ -126,7 +126,7 @@ export class CommentsContent extends WebComponentsBaseElement {
           `
         : html``;
 
-      return html` ${annotationComments} `;
+      return annotationComments;
     };
 
     const annotationsUnresolvedTemplate = annotationsUnresolved?.map((annotation, index) => {

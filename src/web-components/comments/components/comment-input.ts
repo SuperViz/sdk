@@ -96,9 +96,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private sendEnter = (e: KeyboardEvent) => {
-    if (e.key !== 'Enter') return;
-
-    if (e.shiftKey) return;
+    if (e.key !== 'Enter' || e.shiftKey) return;
 
     const input = this.getCommentInput();
     const text = input.value.trim();
