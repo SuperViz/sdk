@@ -52,10 +52,9 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
       this.cancelTemporaryAnnotation,
     );
 
-    const that = this;
     window.document.body.addEventListener('keyup', (e) => {
       if (e.key === 'Escape') {
-        that.cancelTemporaryAnnotationEsc(e);
+        this.cancelTemporaryAnnotationEsc(e);
       }
     });
   }
@@ -71,10 +70,9 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
       this.cancelTemporaryAnnotation,
     );
 
-    const that = this;
     window.document.body.removeEventListener('keyup', (e) => {
       if (e.key === 'Escape') {
-        that.cancelTemporaryAnnotationEsc(e);
+        this.cancelTemporaryAnnotationEsc(e);
       }
     });
   }

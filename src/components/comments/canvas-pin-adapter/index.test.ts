@@ -1,5 +1,3 @@
-import { positional } from 'yargs';
-
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 
 import { CanvasPin } from '.';

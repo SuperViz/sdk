@@ -40,12 +40,13 @@ export class CommentsContent extends WebComponentsBaseElement {
   };
 
   private selectAnnotation = ({ detail }: CustomEvent) => {
-    if (this.selectedAnnotation === detail.uuid) {
+    const { uuid } = detail;
+
+    if (this.selectedAnnotation === uuid) {
       this.selectedAnnotation = null;
       return;
     }
 
-    const { uuid } = detail;
     this.selectedAnnotation = uuid;
   };
 
