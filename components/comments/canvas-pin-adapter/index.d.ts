@@ -96,6 +96,8 @@ export declare class CanvasPin implements PinAdapter {
     private removeAnnotationsPins;
     /** Callbacks  */
     private annotationSelected;
+    private scrollIntoView;
+    private isScrollable;
     /**
      * @function onClick
      * @description
