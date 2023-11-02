@@ -5,7 +5,11 @@ import { CanvasPin } from '.';
 describe('CanvasPinAdapter', () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <canvas id="canvas"></canvas>
+      <div id="parentElement" style="width: 200px; height: 200px; overflow: auto;">
+        <div id="divWrapper">
+          <canvas id="canvas"></canvas>
+        </div>
+      </div>
     `;
   });
 
@@ -422,5 +426,59 @@ describe('CanvasPinAdapter', () => {
     const element = canvasPinAdapter['mouseElement'];
     expect(element).toBeDefined();
     expect(element.getAttribute('position')).toBe(JSON.stringify({ x: 100, y: 200 }));
+  });
+
+  test('should not scroll if element is null', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+
+    const divWrapper = document.getElementById('divWrapper')!;
+
+    canvasPinAdapter['scrollIntoView'](null as any);
+    expect(divWrapper.scrollTop).toEqual(0);
+    expect(divWrapper.scrollLeft).toEqual(0);
+  });
+
+  test('should not scroll if canvas is already in view', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+    const divWrapper = document.getElementById('divWrapper')!;
+
+    canvasPinAdapter['scrollIntoView'](document.getElementById('canvas')!);
+    expect(divWrapper.scrollTop).toEqual(0);
+    expect(divWrapper.scrollLeft).toEqual(0);
+  });
+
+  test('should scroll to element if it is larger than its parent', () => {
+    const canvasPinAdapter = new CanvasPin('canvas');
+    canvasPinAdapter.setActive(true);
+
+    canvasPinAdapter['divWrapper'].parentElement!.scrollTo = jest.fn();
+
+    jest.spyOn(canvasPinAdapter['divWrapper'], 'clientWidth', 'get').mockReturnValue(100);
+    jest.spyOn(canvasPinAdapter['divWrapper'], 'clientHeight', 'get').mockReturnValue(100);
+
+    jest
+      .spyOn(canvasPinAdapter['divWrapper'].parentElement as HTMLElement, 'clientWidth', 'get')
+      .mockReturnValue(10);
+    jest
+      .spyOn(canvasPinAdapter['divWrapper'].parentElement as HTMLElement, 'clientHeight', 'get')
+      .mockReturnValue(10);
+    jest
+      .spyOn(canvasPinAdapter['divWrapper'].parentElement as HTMLElement, 'scrollHeight', 'get')
+      .mockReturnValue(1000);
+
+    const element = document.createElement('div');
+    element.setAttribute('position', JSON.stringify({ x: 40, y: 40 }));
+    canvasPinAdapter['divWrapper'].appendChild(element);
+
+    canvasPinAdapter['scrollIntoView'](element);
+
+    expect(canvasPinAdapter['divWrapper'].parentElement!.scrollTo).toHaveBeenCalledTimes(1);
+    expect(canvasPinAdapter['divWrapper'].parentElement!.scrollTo).toHaveBeenCalledWith({
+      left: 40,
+      top: 40,
+      behavior: 'smooth',
+    });
   });
 });
