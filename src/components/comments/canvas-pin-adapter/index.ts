@@ -288,16 +288,15 @@ export class CanvasPin implements PinAdapter {
 
   private annotationSelected = ({ detail }: CustomEvent): void => {
     const { uuid } = detail;
+
     if (!uuid) return;
 
     const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
 
-    if (annotation?.uuid === uuid) {
-      this.resetPins();
-      return;
-    }
-
     this.resetPins();
+
+    if (annotation?.uuid === uuid) return;
+
     document.body.dispatchEvent(new CustomEvent('close-temporary-annotation'));
 
     const pinElement = this.pins.get(uuid);
@@ -305,8 +304,62 @@ export class CanvasPin implements PinAdapter {
     if (!pinElement) return;
 
     pinElement.setAttribute('active', '');
+
     this.selectedPin = pinElement;
+    this.scrollIntoView(pinElement);
   };
+
+  private scrollIntoView(element: HTMLElement): void {
+    if (!element) return;
+
+    // If the divWrapper is smaller than it's parent, all pins are visible
+    if (
+      this.divWrapper.clientWidth <= this.divWrapper.parentElement.clientWidth &&
+      this.divWrapper.clientHeight <= this.divWrapper.parentElement.clientHeight
+    ) {
+      return;
+    }
+
+    let elementWithOverflow: HTMLElement;
+    let nextElement: HTMLElement = this.divWrapper;
+
+    while (!elementWithOverflow) {
+      const parent = nextElement?.parentElement;
+
+      const hasOverflow = this.isScrollable(parent);
+
+      if (hasOverflow) {
+        elementWithOverflow = parent;
+        break;
+      }
+
+      nextElement = parent;
+
+      if (!nextElement) break;
+    }
+
+    const pinCoordinates = JSON.parse(element.getAttribute('position')) as PinCoordinates;
+
+    if (!elementWithOverflow) return;
+
+    elementWithOverflow.scrollTo({
+      top: pinCoordinates.y,
+      left: pinCoordinates.x,
+      behavior: 'smooth',
+    });
+  }
+
+  private isScrollable(element: HTMLElement): boolean {
+    if (!element) return false;
+
+    const hasScrollableContent = element.scrollHeight > element.clientHeight;
+    const overflowYStyle = window.getComputedStyle(element).overflowY;
+    const overflowXStyle = window.getComputedStyle(element).overflowX;
+    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
+    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
+
+    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
+  }
 
   /**
    * @function onClick
