@@ -115,4 +115,24 @@ describe('realtime component', () => {
 
     expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith('test', callback);
   });
+
+  test('should not publish event when realtime is not started', () => {
+    console.error = jest.fn();
+    const RealtimeComponentInstance = new Realtime();
+
+    RealtimeComponentInstance.attach({
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    RealtimeComponentInstance.publish('test', 'test');
+
+    expect(console.error).toHaveBeenCalledWith(
+      "Realtime component is not started yet. You can't publish event test before start",
+    );
+    expect(PUB_SUB_MOCK.publish).not.toHaveBeenCalled();
+  });
 });

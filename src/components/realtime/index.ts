@@ -50,6 +50,13 @@ export class Realtime extends BaseComponent {
    * @returns {void}
    */
   public publish = (event: string, data?: unknown): void => {
+    if (!this.pubsub) {
+      const message = `Realtime component is not started yet. You can't publish event ${event} before start`;
+      this.logger.log(message);
+      console.error(message);
+      return;
+    }
+
     this.pubsub.publish(event, data);
   };
 
