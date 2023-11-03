@@ -1178,7 +1178,7 @@ function print() { __p += __j.call(arguments, '') }
       ${r()}
     `}};Yr.styles=Y1,Yr.properties={open:{type:Boolean},useSlot:{type:Boolean}},Yr=Ge([We("superviz-comments-delete-comments-modal")],Yr);B();var jg=je(Pe),Q1=[jg.styles,dc],X1=10*1e3,Qr=class extends jg{constructor(){super();this.setTimer=()=>{clearTimeout(this.timeout),this.isCanceled=!1,this.timeout=setTimeout(()=>{this.isCanceled||(this.timeToHide=0,this.isCanceled=!1,this.hide())},this.timeToHide)};this.timeToHide=X1,this.isCanceled=!1}firstUpdated(){this.setTimer()}hide(){this.emitEvent("hide",{},{bubbles:!1,composed:!1})}undone(){this.isCanceled=!0,this.hide(),this.emitEvent("undo-resolve",{type:"undo-resolve",resolved:!1},{bubbles:!1,composed:!1}),clearTimeout(this.timeout)}render(){return this.timeToHide===0?be``:this.isCanceled?be``:be`
       <div class="annotation-resolved">
-        <span class="text text-big sv-gray-700">You resolve this comment</span>
+        <span class="text text-big sv-gray-700">You resolved this comment</span>
         <button
           id="undone"
           @click=${this.undone}

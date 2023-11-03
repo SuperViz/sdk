@@ -1136,7 +1136,7 @@ var hr=Object.defineProperty,Li=Object.defineProperties,Fi=Object.getOwnProperty
       ${s()}
     `}};qt.styles=Rl,qt.properties={open:{type:Boolean},useSlot:{type:Boolean}},qt=T([$("superviz-comments-delete-comments-modal")],qt);var Ii=_(E),Ul=[Ii.styles,Sn],Pl=10*1e3,Gt=class extends Ii{constructor(){super();this.setTimer=()=>{clearTimeout(this.timeout),this.isCanceled=!1,this.timeout=setTimeout(()=>{this.isCanceled||(this.timeToHide=0,this.isCanceled=!1,this.hide())},this.timeToHide)};this.timeToHide=Pl,this.isCanceled=!1}firstUpdated(){this.setTimer()}hide(){this.emitEvent("hide",{},{bubbles:!1,composed:!1})}undone(){this.isCanceled=!0,this.hide(),this.emitEvent("undo-resolve",{type:"undo-resolve",resolved:!1},{bubbles:!1,composed:!1}),clearTimeout(this.timeout)}render(){return this.timeToHide===0?f``:this.isCanceled?f``:f`
       <div class="annotation-resolved">
-        <span class="text text-big sv-gray-700">You resolve this comment</span>
+        <span class="text text-big sv-gray-700">You resolved this comment</span>
         <button
           id="undone"
           @click=${this.undone}
