@@ -1,4 +1,5 @@
 import { CanvasPin, Comments, MousePointers, Realtime, VideoComponent } from '../../components';
+import { RealtimeComponentEvent, RealtimeComponentState } from '../../components/realtime/types';
 import { LauncherFacade } from '../../core/launcher/types';
 import {
   CamerasPosition,
@@ -38,4 +39,6 @@ export interface SuperVizCdn {
   Realtime: typeof Realtime;
   Comments: typeof Comments;
   CanvasPin: typeof CanvasPin;
+  RealtimeComponentState: typeof RealtimeComponentState;
+  RealtimeComponentEvent: typeof RealtimeComponentEvent;
 }
