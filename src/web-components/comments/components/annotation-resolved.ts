@@ -72,7 +72,7 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
 
     return html`
       <div class="annotation-resolved">
-        <span class="text text-big sv-gray-700">You resolve this comment</span>
+        <span class="text text-big sv-gray-700">You resolved this comment</span>
         <button
           id="undone"
           @click=${this.undone}
