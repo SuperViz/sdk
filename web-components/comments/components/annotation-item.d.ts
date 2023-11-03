@@ -26,7 +26,6 @@ export declare class CommentsAnnotationItem extends WebComponentsBaseElement {
         };
         shouldShowUndoResolved: {
             type: BooleanConstructor;
-            reflect: boolean;
         };
         isLastAnnotation: {
             type: BooleanConstructor;
@@ -35,12 +34,26 @@ export declare class CommentsAnnotationItem extends WebComponentsBaseElement {
             type: StringConstructor;
         };
     };
+    private get filterIsAll();
+    private get filterIsResolved();
+    private get shouldHiddenAnnotation();
+    private get replies();
+    private get repliesSize();
+    private get replyText();
+    private get isSelected();
+    private get annotationClasses();
+    private get hrClasses();
+    private get avatarCommentsClasses();
+    private get commentsClasses();
     protected firstUpdated(): void;
-    updated(changedProperties: Map<string | number | symbol, unknown>): void;
-    selectAnnotation: () => void;
+    protected updated(changedProperties: Map<string | number | symbol, unknown>): void;
+    private selectAnnotation;
     private createComment;
     private resolveAnnotation;
     private hideUndoResolved;
+    private generateAvatarCommentsTemplate;
+    private generateExpantedCommentesTemplate;
+    private annotationResolvedTemplate;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};

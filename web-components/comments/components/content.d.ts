@@ -26,6 +26,7 @@ export declare class CommentsContent extends WebComponentsBaseElement {
     updated(changedProperties: any): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    private checkLastAnnotation;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};
