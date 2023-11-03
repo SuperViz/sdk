@@ -28,23 +28,83 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     expandComments: { type: Boolean },
     selected: { type: String, reflect: true },
     resolved: { type: Boolean },
-    shouldShowUndoResolved: { type: Boolean, reflect: true },
+    shouldShowUndoResolved: { type: Boolean },
     isLastAnnotation: { type: Boolean },
     annotationFilter: { type: String },
   };
+
+  private get filterIsAll(): boolean {
+    return this.annotationFilter === AnnotationFilter.ALL;
+  }
+
+  private get filterIsResolved(): boolean {
+    return this.annotationFilter === AnnotationFilter.RESOLVED;
+  }
+
+  private get shouldHiddenAnnotation() {
+    return {
+      hidden: (this.resolved && this.filterIsAll) || (!this.resolved && this.filterIsResolved),
+    };
+  }
+
+  private get replies(): number {
+    return [...this.annotation.comments].splice(1).length;
+  }
+
+  private get repliesSize(): number {
+    return this.replies >= 5 ? 5 : this.replies;
+  }
+
+  private get replyText(): string {
+    return this.replies !== 1 ? 'replies' : 'reply';
+  }
+
+  private get isSelected(): boolean {
+    return this.selected === this.annotation.uuid;
+  }
+
+  private get annotationClasses() {
+    return {
+      'annotation-item': true,
+      'annotation-item--selected': this.isSelected,
+    };
+  }
+
+  private get hrClasses() {
+    return {
+      'sv-hr': true,
+      hidden: this.isLastAnnotation,
+    };
+  }
+
+  private get avatarCommentsClasses() {
+    return {
+      'avatars-comments': true,
+      'comment-avatar--expand': !this.expandComments && this.replies > 1,
+      hidden: !(!this.expandComments && this.replies >= 1),
+    };
+  }
+
+  private get commentsClasses() {
+    return {
+      'comments-container': true,
+      'comment-item--expand': this.isSelected && this.expandComments,
+      hidden: !(this.isSelected && this.expandComments),
+    };
+  }
 
   protected firstUpdated(): void {
     this.resolved = this.annotation.resolved;
   }
 
-  updated(changedProperties: Map<string | number | symbol, unknown>) {
+  protected updated(changedProperties: Map<string | number | symbol, unknown>) {
     if (changedProperties.has('selected')) {
       const isSelected = this.selected === this.annotation.uuid;
       this.expandComments = isSelected;
     }
   }
 
-  selectAnnotation = () => {
+  private selectAnnotation = () => {
     const { uuid } = this.annotation;
     document.body.dispatchEvent(new CustomEvent('select-annotation', { detail: { uuid } }));
   };
@@ -80,92 +140,59 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     this.shouldShowUndoResolved = false;
   };
 
-  protected render() {
-    const filterIsAll = this.annotationFilter === AnnotationFilter.ALL;
-    const filterIsResolved = this.annotationFilter === AnnotationFilter.RESOLVED;
-    const replies = [...this.annotation.comments].splice(1).length;
-    const isSelected = this.selected === this.annotation.uuid;
+  private generateAvatarCommentsTemplate() {
+    const avatarDivs = [];
 
-    const annotationClasses = {
-      'annotation-item': true,
-      'annotation-item--selected': isSelected,
-    };
-
-    const shouldHiddenAnnotation = {
-      hidden: (this.resolved && filterIsAll) || (!this.resolved && filterIsResolved),
-    };
-
-    const HrClasses = {
-      'sv-hr': true,
-      hidden: this.isLastAnnotation,
-    };
-
-    const avatarCommentsClasses = {
-      'avatars-comments': true,
-      'comment-avatar--expand': !this.expandComments && replies > 1,
-      hidden: !(!this.expandComments && replies >= 1),
-    };
-
-    const commentsClasses = {
-      'comments-container': true,
-      'comment-item--expand': isSelected && this.expandComments,
-      hidden: !(isSelected && this.expandComments),
-    };
-
-    const avatarCommentsTemplate = () => {
-      const repliesSize = replies >= 5 ? 5 : replies;
-      const replyText = replies !== 1 ? 'replies' : 'reply';
-      const avatarDivs = [];
-
-      for (let index = 1; index <= repliesSize; index++) {
-        avatarDivs.push(html`
-          <div class="avatar">
-            <p class="text text-bold">
-              ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
-            </p>
-          </div>
-        `);
-      }
-
-      return html`
-        ${avatarDivs}
-        <div class="text text-big sv-gray-500">${replies} ${replyText}</div>
-      `;
-    };
-
-    const expandedCommentsTemplate = (comment: Comment, index: number) => {
-      if (index === 0) return html``;
-
-      return html`
-        <superviz-comments-comment-item
-          uuid=${comment.uuid}
-          avatar="https://picsum.photos/200/300"
-          username=${comment.participant.name || 'Anonymous'}
-          text=${comment.text}
-          createdAt=${comment.createdAt}
-          annotationId=${this.annotation.uuid}
-        ></superviz-comments-comment-item>
-      `;
-    };
-
-    const annotationResolvedTemplate = () => {
-      if (!this.shouldShowUndoResolved) return html``;
-
-      return html`
-        <superviz-comments-annotation-resolved
-          @undo-resolve=${this.resolveAnnotation}
-          @hide=${this.hideUndoResolved}
-          class=${classMap({ hidden: filterIsResolved })}
-        >
-        </superviz-comments-annotation-resolved>
-      `;
-    };
+    for (let index = 1; index <= this.repliesSize; index++) {
+      avatarDivs.push(html`
+        <div class="avatar">
+          <p class="text text-bold">
+            ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
+          </p>
+        </div>
+      `);
+    }
 
     return html`
-      ${annotationResolvedTemplate()}
+      ${avatarDivs}
+      <div class="text text-big sv-gray-500">${this.replies} ${this.replyText}</div>
+    `;
+  }
 
-      <div class=${classMap(shouldHiddenAnnotation)}>
-        <div class=${classMap(annotationClasses)} @click=${this.selectAnnotation}>
+  private generateExpantedCommentesTemplate = (comment: Comment, index: number) => {
+    if (index === 0) return html``;
+
+    return html`
+      <superviz-comments-comment-item
+        uuid=${comment.uuid}
+        avatar="https://picsum.photos/200/300"
+        username=${comment.participant.name || 'Anonymous'}
+        text=${comment.text}
+        createdAt=${comment.createdAt}
+        annotationId=${this.annotation.uuid}
+      ></superviz-comments-comment-item>
+    `;
+  };
+
+  private annotationResolvedTemplate() {
+    if (!this.shouldShowUndoResolved) return html``;
+
+    return html`
+      <superviz-comments-annotation-resolved
+        @undo-resolve=${this.resolveAnnotation}
+        @hide=${this.hideUndoResolved}
+        class=${classMap({ hidden: this.filterIsResolved })}
+      >
+      </superviz-comments-annotation-resolved>
+    `;
+  }
+
+  protected render() {
+    return html`
+      ${this.annotationResolvedTemplate()}
+
+      <div class=${classMap(this.shouldHiddenAnnotation)}>
+        <div class=${classMap(this.annotationClasses)} @click=${this.selectAnnotation}>
           <div>
             <superviz-comments-comment-item
               uuid=${this.annotation.comments?.[0].uuid}
@@ -180,13 +207,13 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               @resolve-annotation=${this.resolveAnnotation}
             ></superviz-comments-comment-item>
 
-            <div class=${classMap(avatarCommentsClasses)}>
-              <div class="avatar-container">${avatarCommentsTemplate()}</div>
+            <div class=${classMap(this.avatarCommentsClasses)}>
+              <div class="avatar-container">${this.generateAvatarCommentsTemplate()}</div>
             </div>
           </div>
 
-          <div class=${classMap(commentsClasses)}>
-            ${this.annotation.comments?.map(expandedCommentsTemplate)}
+          <div class=${classMap(this.commentsClasses)}>
+            ${this.annotation.comments?.map(this.generateExpantedCommentesTemplate)}
             <superviz-comments-comment-input
               @create-comment=${this.createComment}
               eventType="create-comment"
@@ -194,7 +221,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
             ></superviz-comments-comment-input>
           </div>
         </div>
-        <div class=${classMap(HrClasses)}></div>
+        <div class=${classMap(this.hrClasses)}></div>
       </div>
     `;
   }

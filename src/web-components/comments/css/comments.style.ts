@@ -11,6 +11,7 @@ export const commentsStyle = css`
     top: 0;
     bottom: 0;
     box-shadow: -2px 0 4px 0 rgba(0, 0, 0, 0.1);
+    height: 100%;
   }
 
   .container-close {
@@ -22,6 +23,7 @@ export const commentsStyle = css`
   }
 
   .content {
+    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
   }
