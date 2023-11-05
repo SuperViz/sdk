@@ -71,6 +71,51 @@ describe('Launcher', () => {
       });
     });
 
+    test('should not add Connection component if Presence not added', () => {
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+
+      const mockConnection = {
+        ...MOCK_COMPONENT,
+        name: ComponentNames.CONNECTION,
+      } as unknown as BaseComponent;
+
+      mockConnection.attach = jest.fn();
+
+      LauncherInstance.addComponent(mockConnection);
+
+      expect(mockConnection.attach).not.toHaveBeenCalled();
+      expect(LauncherInstance['activeComponents']).not.toEqual([mockConnection.name]);
+    });
+
+    test('should add Connection component if Presence added', () => {
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+
+      const mockPresence = {
+        ...MOCK_COMPONENT,
+        name: ComponentNames.PRESENCE,
+      } as unknown as BaseComponent;
+
+      LauncherInstance.addComponent(mockPresence);
+
+      expect(mockPresence.attach).toHaveBeenCalled();
+      expect(LauncherInstance['activeComponents']).toEqual([mockPresence.name]);
+
+      const mockConnection = {
+        ...MOCK_COMPONENT,
+        name: ComponentNames.CONNECTION,
+      } as unknown as BaseComponent;
+
+      mockConnection.attach = jest.fn();
+
+      LauncherInstance.addComponent(mockConnection);
+
+      expect(mockConnection.attach).toHaveBeenCalled();
+      expect(LauncherInstance['activeComponents']).toEqual([
+        mockPresence.name,
+        mockConnection.name,
+      ]);
+    });
+
     test('should show a console message if limit reached and not add component', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(false);
 

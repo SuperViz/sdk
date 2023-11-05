@@ -133,6 +133,16 @@ export class Launcher extends Observable implements DefaultLauncher {
       }
     }
 
+    const isAddingConnection = component.name === ComponentNames.CONNECTION;
+    const presenceNotAdded = !this.activeComponents.includes(ComponentNames.PRESENCE);
+
+    if (isAddingConnection && presenceNotAdded) {
+      this.realtime.presenceMouseParticipantJoinedObserver.subscribe(() => {
+        this.addComponent(component);
+      });
+      return false;
+    }
+
     return true;
   };
 
