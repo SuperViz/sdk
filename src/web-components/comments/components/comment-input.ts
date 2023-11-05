@@ -109,6 +109,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       {
         text,
         position: {
+          ...this.pinCoordinates,
           x: this.pinCoordinates?.x ?? null,
           y: this.pinCoordinates?.y ?? null,
           z: this.pinCoordinates?.z ?? null,
@@ -139,6 +140,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       {
         text,
         position: {
+          ...this.pinCoordinates,
           x: this.pinCoordinates?.x ?? null,
           y: this.pinCoordinates?.y ?? null,
           z: this.pinCoordinates?.z ?? null,
