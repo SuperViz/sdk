@@ -9,7 +9,14 @@ import {
   FrameEvent,
 } from './common/types/events.types';
 import { ParticipantType } from './common/types/participant.types';
-import { VideoComponent, MousePointers, Realtime, Comments, CanvasPin } from './components';
+import {
+  VideoComponent,
+  MousePointers,
+  Realtime,
+  Comments,
+  CanvasPin,
+  Connection,
+} from './components';
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
@@ -48,6 +55,7 @@ if (window) {
     Realtime,
     Comments,
     CanvasPin,
+    Connection,
     ParticipantType,
     LayoutPosition,
     CamerasPosition,

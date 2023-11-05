@@ -3,6 +3,7 @@ export enum ComponentNames {
   PRESENCE = 'presence',
   VIDEO_CONFERENCE = 'videoConference',
   COMMENTS = 'comments',
+  CONNECTION = 'connection',
   PRESENCE_MATTERPORT = 'presence3dMatterport',
   PRESENCE_AUTODESK = 'presence3dAutodesk',
   PRESENCE_THREEJS = 'presence3dThreejs',
@@ -16,6 +17,7 @@ export enum PresenceMap {
   'presence3dAutodesk' = 'presence',
   'presence3dThreejs' = 'presence',
   'realtime' = 'presence',
+  'connection' = 'presence',
 }
 export enum Comments3d {
   'comments3dMatterport' = 'comments3d',
