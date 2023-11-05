@@ -10,6 +10,7 @@ import {
 } from './common/types/events.types';
 import { ParticipantType } from './common/types/participant.types';
 import { VideoComponent, MousePointers, Realtime, Comments, CanvasPin } from './components';
+import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
@@ -51,6 +52,8 @@ if (window) {
     ParticipantType,
     LayoutPosition,
     CamerasPosition,
+    RealtimeComponentState,
+    RealtimeComponentEvent,
   };
 }
 
@@ -67,6 +70,8 @@ export {
   ParticipantType,
   LayoutPosition,
   CamerasPosition,
+  RealtimeComponentState,
+  RealtimeComponentEvent,
 };
 
 export default init;
