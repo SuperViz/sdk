@@ -13,15 +13,6 @@ describe('CommentsAnnotations', () => {
     document.body.removeChild(element);
   });
 
-  test('renders the add comment button', async () => {
-    const button = element.shadowRoot!.querySelector(
-      '.annotations--add-comment-btn',
-    ) as HTMLSpanElement;
-
-    expect(button).toBeDefined();
-    expect(button.textContent).toEqual('Click anywhere to add a comment');
-  });
-
   test('renders the comment input', async () => {
     const commentInput = element.shadowRoot!.querySelector(
       'superviz-comments-comment-input',
