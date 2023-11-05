@@ -5,3 +5,4 @@ export { PresenceMouse } from './presence-mouse';
 
 export * from './modal';
 export * from './comments';
+export * from './connection';
