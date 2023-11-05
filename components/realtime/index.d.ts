@@ -4,8 +4,10 @@ import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 export declare class Realtime extends BaseComponent {
     private pubsub;
+    private callbacksToSubscribeWhenJoined;
     protected logger: Logger;
     name: ComponentNames;
+    private state;
     constructor();
     protected destroy(): void;
     protected start(): void;
@@ -39,4 +41,11 @@ export declare class Realtime extends BaseComponent {
      * @returns {RealtimeMessage | Record<string, RealtimeMessage>}
      */
     fetchHistory(eventName?: string): Promise<RealtimeMessage | Record<string, RealtimeMessage>>;
+    /**
+     * @function changeState
+     * @description change realtime component state and publish state to client
+     * @param state
+     * @returns {void}
+     */
+    private changeState;
 }
