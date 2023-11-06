@@ -374,6 +374,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      */
     private syncBroadcast;
     /**
+     * @function spliceArrayBySize
+     * @description splits an array into smaller arrays by size
+     * @param {Array<unknown>} array
+     * @param {number} maxSizeKB
+     */
+    private spliceArrayBySize;
+    /**
      * @function isMessageTooBig
      * @description calculates the size of a sync message and checks if it's bigger than limit
      * @param {unknown} msg
@@ -381,13 +388,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {boolean}
      */
     private isMessageTooBig;
-    /**
-     * @function spliceArrayBySize
-     * @description splits an array into smaller arrays by size
-     * @param {Array<unknown>} array
-     * @param {number} maxSizeKB
-     */
-    private spliceArrayBySize;
     /** Comments */
     private onCommentsChannelUpdate;
     updateComments: (annotations: Annotation[]) => void;
