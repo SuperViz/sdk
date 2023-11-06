@@ -15,6 +15,7 @@ import { Logger, Observer } from '../../common/utils';
 import { BrowserService } from '../browser';
 import config from '../config';
 import { FrameBricklayer } from '../frame-brick-layer';
+import { ComponentLimits } from '../limits/types';
 import { MessageBridge } from '../message-bridge';
 
 import {
@@ -98,6 +99,8 @@ export default class VideoConfereceManager {
       apiUrl: config.get<string>('apiUrl'),
       ablyKey: config.get<string>('ablyKey'),
       debug: config.get<boolean>('debug'),
+      roomId: config.get<string>('roomId'),
+      limits: config.get<ComponentLimits>('limits'),
       canUseFollow,
       canUseGoTo,
       canUseCams,
@@ -107,7 +110,6 @@ export default class VideoConfereceManager {
       canUseDefaultAvatars,
       camerasPosition: positions.camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
-      roomId: config.get<string>('roomId'),
       devices: {
         audioInput: devices?.audioInput ?? true,
         audioOutput: devices?.audioOutput ?? true,
