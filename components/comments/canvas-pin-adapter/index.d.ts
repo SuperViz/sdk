@@ -1,5 +1,5 @@
 import { Observer } from '../../../common/utils';
-import { Annotation, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, AnnotationPositionInfo, PinAdapter } from '../types';
 export declare class CanvasPin implements PinAdapter {
     private logger;
     private canvasId;
@@ -46,9 +46,9 @@ export declare class CanvasPin implements PinAdapter {
      * @description
             creates a temporary pin with the id
             temporary-pin to mark where the annotation is being created
-     * @param {PinCoordinates} coordinates  - The coordinates of the pin to be created.
+     * @param {AnnotationPositionInfo} coordinates  - The coordinates of the pin to be created.
      */
-    createTemporaryPin(coordinates: PinCoordinates): void;
+    createTemporaryPin(coordinates: AnnotationPositionInfo): void;
     /**
      * @function addListeners
      * @description adds event listeners to the canvas element.

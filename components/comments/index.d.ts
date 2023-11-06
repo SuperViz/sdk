@@ -39,8 +39,9 @@ export declare class Comments extends BaseComponent {
      */
     private destroyListeners;
     /**
-     *
-     * @param {PinCoordinates} coordinates
+     * @function onFixedPin
+     * @description Creates a new annotation when a pin is fixed
+     * @param {AnnotationPositionInfo} coordinates
      */
     private onFixedPin;
     /**

@@ -29,6 +29,11 @@ export interface PinCoordinates {
     z?: number;
     type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
 }
+export interface PinCoordinatesWithCamera {
+    position: PinCoordinates;
+    camera: any;
+}
+export type AnnotationPositionInfo = PinCoordinates | PinCoordinatesWithCamera;
 export declare enum CommentsSide {
     LEFT = "left",
     RIGHT = "right"
