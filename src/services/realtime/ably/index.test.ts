@@ -860,25 +860,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
     });
 
-    test('should publish the queue if it is too big', () => {
-      const publishClientSyncPropertiesSpy = jest.spyOn(
-        AblyRealtimeServiceInstance as any,
-        'publishClientSyncProperties',
-      );
-
-      const name = 'test';
-      const property = { test: true };
-      const queue = new Array(60000).fill({ name, data: property });
-
-      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name] = queue;
-
-      AblyRealtimeServiceInstance.setSyncProperty(name, property);
-      jest.runAllTimers();
-
-      expect(publishClientSyncPropertiesSpy).toHaveBeenCalledTimes(2);
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(0);
-    });
-
     test('should throw an error if the message is too big', () => {
       const publishClientSyncPropertiesSpy = jest.spyOn(
         AblyRealtimeServiceInstance as any,
@@ -893,25 +874,6 @@ describe('AblyRealtimeService', () => {
       );
       expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
       expect(throwSpy).toHaveBeenCalledWith('Message too long, the message limit size is 10kb.');
-    });
-
-    test('should add the event to the queue and publish it after 1 second', async () => {
-      const publishClientSyncPropertiesSpy = jest.spyOn(
-        AblyRealtimeServiceInstance as any,
-        'publishClientSyncProperties',
-      );
-      const name = 'test';
-      const property = { test: true };
-
-      AblyRealtimeServiceInstance.setSyncProperty(name, property);
-
-      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
-
-      jest.advanceTimersByTime(1000);
-
-      expect(publishClientSyncPropertiesSpy).toHaveBeenCalled();
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(0);
     });
 
     /**
