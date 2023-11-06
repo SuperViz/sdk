@@ -8,6 +8,7 @@ import { ComponentNames } from '../types';
 
 import {
   Annotation,
+  AnnotationPositionInfo,
   ButtonLocation,
   Comment,
   CommentsOptions,
@@ -136,10 +137,11 @@ export class Comments extends BaseComponent {
   }
 
   /**
-   *
-   * @param {PinCoordinates} coordinates
+   * @function onFixedPin
+   * @description Creates a new annotation when a pin is fixed
+   * @param {AnnotationPositionInfo} coordinates
    */
-  private onFixedPin = (coordinates: PinCoordinates): void => {
+  private onFixedPin = (coordinates: AnnotationPositionInfo): void => {
     document.body.dispatchEvent(
       new CustomEvent('prepare-to-create-annotation', {
         detail: {
