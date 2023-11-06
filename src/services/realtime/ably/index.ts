@@ -335,7 +335,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         timestamp: Date.now(),
       };
     };
-
     // if the property is too big, don't add to the queue
     if (this.isMessageTooBig(createEvent(name, property), CLIENT_MESSAGE_SIZE_LIMIT)) {
       this.logger.log('REALTIME', 'Message too big, not sending');
@@ -1225,24 +1224,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }, 1000);
 
   /**
-   * @function isMessageTooBig
-   * @description calculates the size of a sync message and checks if it's bigger than limit
-   * @param {unknown} msg
-   * @param {number} limit
-   * @returns {boolean}
-   */
-  private isMessageTooBig = (msg: unknown, limit: number = MESSAGE_SIZE_LIMIT): boolean => {
-    const messageString = JSON.stringify(msg);
-    const size = new TextEncoder().encode(messageString).length;
-
-    if (size > limit) {
-      this.logger.log('Message too long, the message limit size is 60kb.');
-      return true;
-    }
-    return false;
-  };
-
-  /**
    * @function spliceArrayBySize
    * @description splits an array into smaller arrays by size
    * @param {Array<unknown>} array
@@ -1282,6 +1263,24 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       lengthToBeSplitted: splicedArrays[0].length,
     };
   }
+
+  /**
+   * @function isMessageTooBig
+   * @description calculates the size of a sync message and checks if it's bigger than limit
+   * @param {unknown} msg
+   * @param {number} limit
+   * @returns {boolean}
+   */
+  private isMessageTooBig = (msg: unknown, limit: number = MESSAGE_SIZE_LIMIT): boolean => {
+    const messageString = JSON.stringify(msg);
+    const size = new TextEncoder().encode(messageString).length;
+
+    if (size > limit) {
+      this.logger.log('Message too long, the message limit size is 60kb.');
+      return true;
+    }
+    return false;
+  };
 
   /** Comments */
   private onCommentsChannelUpdate = (message: Ably.Types.Message): void => {
