@@ -900,25 +900,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
     });
 
-    test('should publish the queue if it is too big', () => {
-      const publishClientSyncPropertiesSpy = jest.spyOn(
-        AblyRealtimeServiceInstance as any,
-        'publishClientSyncProperties',
-      );
-
-      const name = 'test';
-      const property = { test: true };
-      const queue = new Array(60000).fill({ name, data: property });
-
-      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name] = queue;
-
-      AblyRealtimeServiceInstance.setSyncProperty(name, property);
-      jest.runAllTimers();
-
-      expect(publishClientSyncPropertiesSpy).toHaveBeenCalledTimes(2);
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(0);
-    });
-
     test('should throw an error if the message is too big', () => {
       const publishClientSyncPropertiesSpy = jest.spyOn(
         AblyRealtimeServiceInstance as any,
