@@ -30,7 +30,13 @@ export { BrowserStats } from './services/browser/types';
 export { RealtimeMessage } from './services/realtime/ably/types';
 export { LauncherFacade } from './core/launcher/types';
 export { Observer } from './common/utils/observer';
-export { Annotation, Comment, PinAdapter, PinCoordinates } from './components/comments/types';
+export {
+  Annotation,
+  Comment,
+  PinAdapter,
+  PinCoordinates,
+  AnnotationPositionInfo,
+} from './components/comments/types';
 
 if (window) {
   window.SuperVizSdk = {

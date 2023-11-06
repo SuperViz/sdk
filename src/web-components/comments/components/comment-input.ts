@@ -1,7 +1,7 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { PinCoordinates } from '../../../components/comments/types';
+import { AnnotationPositionInfo } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 
@@ -16,7 +16,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
 
-  private pinCoordinates: PinCoordinates | null = null;
+  private pinCoordinates: AnnotationPositionInfo | null = null;
 
   constructor() {
     super();
@@ -108,13 +108,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
-        position: {
-          ...this.pinCoordinates,
-          x: this.pinCoordinates?.x ?? null,
-          y: this.pinCoordinates?.y ?? null,
-          z: this.pinCoordinates?.z ?? null,
-          type: this.pinCoordinates?.type ?? null,
-        },
+        position: this.pinCoordinates,
       },
       {
         composed: false,
@@ -139,13 +133,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
-        position: {
-          ...this.pinCoordinates,
-          x: this.pinCoordinates?.x ?? null,
-          y: this.pinCoordinates?.y ?? null,
-          z: this.pinCoordinates?.z ?? null,
-          type: this.pinCoordinates?.type ?? null,
-        },
+        position: this.pinCoordinates,
       },
       {
         composed: false,
