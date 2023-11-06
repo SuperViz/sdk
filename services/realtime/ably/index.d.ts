@@ -24,7 +24,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private presence3DChannel;
     private clientRoomState;
     private clientSyncPropertiesQueue;
-    private clientSyncPropertiesTimeOut;
     private isReconnecting;
     isJoinedRoom: boolean;
     isJoinedPresence3D: boolean;
@@ -382,6 +381,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {boolean}
      */
     private isMessageTooBig;
+    /**
+     * @function spliceArrayBySize
+     * @description splits an array into smaller arrays by size
+     * @param {Array<unknown>} array
+     * @param {number} maxSizeKB
+     */
+    private spliceArrayBySize;
     /** Comments */
     private onCommentsChannelUpdate;
     updateComments: (annotations: Annotation[]) => void;
