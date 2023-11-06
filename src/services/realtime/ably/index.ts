@@ -76,6 +76,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.onReceiveBroadcastSync = this.onReceiveBroadcastSync.bind(this);
     this.getParticipantSlot = this.getParticipantSlot.bind(this);
     this.auth = this.auth.bind(this);
+
+    setInterval(() => {
+      this.publishClientSyncProperties();
+    }, 1000);
   }
 
   public get roomProperties() {
@@ -285,8 +289,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setSyncProperty<T>(name: string, property: T): void {
-    const queue = this.clientSyncPropertiesQueue[name] ?? [];
-
     // closure to create the event
     const createEvent = (name: string, data: T): RealtimeMessage => {
       return {
@@ -296,17 +298,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         timestamp: Date.now(),
       };
     };
-
     // if the property is too big, don't add to the queue
     if (this.isMessageTooBig(createEvent(name, property), CLIENT_MESSAGE_SIZE_LIMIT)) {
       logger.log('REALTIME', 'Message too big, not sending');
       this.throw('Message too long, the message limit size is 10kb.');
-    }
-
-    // if the queue is too big, publish before add more events
-    if (this.isMessageTooBig(queue)) {
-      logger.log('REALTIME', 'Message queue too big, publishing');
-      this.publishClientSyncProperties();
     }
 
     logger.log('adding to queue', name, property);
@@ -316,12 +311,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     this.clientSyncPropertiesQueue[name].push(createEvent(name, property));
-
-    if (!this.clientSyncPropertiesTimeOut) {
-      this.clientSyncPropertiesTimeOut = setTimeout(() => {
-        this.publishClientSyncProperties();
-      }, 1000);
-    }
   }
 
   /**
@@ -404,16 +393,25 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (this.state !== RealtimeStateTypes.CONNECTED) return;
 
     Object.keys(this.clientSyncPropertiesQueue).forEach((name) => {
-      const eventQueue = this.clientSyncPropertiesQueue[name];
-      this.clientSyncPropertiesQueue[name] = [];
+      this.clientSyncPropertiesQueue[name] = this.clientSyncPropertiesQueue[name].sort(
+        (a, b) => a.timestamp - b.timestamp,
+      );
 
-      if (!eventQueue.length) return;
+      if (!this.clientSyncPropertiesQueue[name].length) return;
 
-      this.clientSyncChannel.publish(name, eventQueue);
+      const { data, lengthToBeSplitted } = this.spliceArrayBySize(
+        this.clientSyncPropertiesQueue[name],
+      );
+
+      const eventQueue = data;
+      this.clientSyncPropertiesQueue[name].splice(0, lengthToBeSplitted);
+
+      this.clientSyncChannel.publish(name, eventQueue, (error) => {
+        if (!error) return;
+
+        logger.log('REALTIME', 'Error in publish client sync properties', error.message);
+      });
     });
-
-    clearTimeout(this.clientSyncPropertiesTimeOut);
-    this.clientSyncPropertiesTimeOut = null;
   };
 
   /**
@@ -1143,6 +1141,47 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         this.broadcastChannel.publish('update', participants);
       });
   }, 1000);
+
+  /**
+   * @function spliceArrayBySize
+   * @description splits an array into smaller arrays by size
+   * @param {Array<unknown>} array
+   * @param {number} maxSizeKB
+   */
+  private spliceArrayBySize(array: Array<unknown>, maxSizeKB: number = MESSAGE_SIZE_LIMIT) {
+    const sizeOfElementInKB = (element: unknown) => {
+      const elementString = JSON.stringify(element);
+      const size = new TextEncoder().encode(elementString).length;
+
+      return size;
+    };
+
+    let currentSizeKB = 0;
+    const splicedArrays = [];
+    let currentSlice = [];
+
+    for (let i = 0; i < array.length; i++) {
+      const elementSizeKB = sizeOfElementInKB(array[i]);
+
+      if (currentSizeKB + elementSizeKB <= maxSizeKB) {
+        currentSlice.push(array[i]);
+        currentSizeKB += elementSizeKB;
+      } else {
+        splicedArrays.push(currentSlice);
+        currentSlice = [array[i]];
+        currentSizeKB = elementSizeKB;
+      }
+    }
+
+    if (currentSlice.length > 0) {
+      splicedArrays.push(currentSlice);
+    }
+
+    return {
+      data: splicedArrays[0],
+      lengthToBeSplitted: splicedArrays[0].length,
+    };
+  }
 
   /**
    * @function isMessageTooBig
