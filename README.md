@@ -11,7 +11,7 @@
 <img alt="npm" src="https://img.shields.io/npm/dw/@superviz/sdk">
 </p>
 
-SuperViz provides a complete suite of components, all synchronized with an advanced Real-time Data Engine, enabling real-time collaboration within any application based on JavaScript.
+SuperViz provides a suite of programmable low-code Collaboration and Communication components, all synchronized with an advanced Real-time Data Engine, enabling real-time and asynchronous collaboration and communication within any JavaScript based application.
 
 SuperViz offers a comprehensive suite of components, all synchronized with an advanced Real-time Data Engine, facilitating real-time collaboration in JavaScript-based applications. SuperViz SDK enables you to use one of our components:
 
