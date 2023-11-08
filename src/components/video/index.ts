@@ -33,7 +33,7 @@ import { ComponentNames } from '../types';
 
 import { ParticipandToFrame, VideoComponentOptions } from './types';
 
-export class VideoComponent extends BaseComponent {
+export class VideoConference extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private participantToFrameList: ParticipandToFrame[] = [];
@@ -131,11 +131,11 @@ export class VideoComponent extends BaseComponent {
 
   /**
    * @function start
-   * @description start video component
+   * @description start video conference
    * @returns {void}
    */
   protected start(): void {
-    this.logger.log('video component @ start');
+    this.logger.log('video conference @ start');
     this.publish(MeetingEvent.MEETING_START);
 
     if (this.params.userType !== ParticipantType.GUEST) {
@@ -150,11 +150,11 @@ export class VideoComponent extends BaseComponent {
 
   /**
    * @function destroy
-   * @description destroy video component
+   * @description destroy video conference
    * @returns {void}
    */
   protected destroy(): void {
-    this.logger.log('video component @ destroy');
+    this.logger.log('video conference @ destroy');
 
     this.publish(MeetingEvent.DESTROY);
 
@@ -174,6 +174,7 @@ export class VideoComponent extends BaseComponent {
   private startVideo = (): void => {
     this.videoConfig = {
       language: this.params?.language,
+      canUseTranscription: this.params?.transcriptOff === false,
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
@@ -196,7 +197,7 @@ export class VideoComponent extends BaseComponent {
       waterMark: this.showWaterMarkType,
     };
 
-    this.logger.log('video component @ start video', this.videoConfig);
+    this.logger.log('video conference @ start video', this.videoConfig);
     this.videoManager = new VideoConfereceManager(this.videoConfig);
 
     this.subscribeToVideoEvents();
@@ -208,7 +209,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private subscribeToVideoEvents = (): void => {
-    this.logger.log('video component @ subscribe to video events');
+    this.logger.log('video conference @ subscribe to video events');
 
     this.videoManager.meetingConnectionObserver.subscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -231,7 +232,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    * */
   private unsubscribeFromVideoEvents = (): void => {
-    this.logger.log('video component @ unsubscribe from video events');
+    this.logger.log('video conference @ unsubscribe from video events');
 
     this.videoManager.meetingConnectionObserver.unsubscribe(
       this.connectionService.updateMeetingConnectionStatus,
@@ -254,7 +255,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private suscribeToRealtimeEvents = (): void => {
-    this.logger.log('video component @ subscribe to realtime events');
+    this.logger.log('video conference @ subscribe to realtime events');
     this.realtime.kickAllParticipantsObserver.subscribe(this.onKickAllParticipantsDidChange);
     this.realtime.kickParticipantObserver.subscribe(this.onKickLocalParticipant);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoinedOnRealtime);
@@ -270,7 +271,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private unsubscribeFromRealtimeEvents = (): void => {
-    this.logger.log('video component @ unsubscribe from realtime events');
+    this.logger.log('video conference @ unsubscribe from realtime events');
     this.realtime.kickAllParticipantsObserver.unsubscribe(this.onKickAllParticipantsDidChange);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoinedOnRealtime);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeftOnRealtime);
@@ -325,7 +326,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onConnectionStatusChange = (newStatus: MeetingConnectionStatus): void => {
-    this.logger.log('video component @ on connection status change', newStatus);
+    this.logger.log('video conference @ on connection status change', newStatus);
 
     const connectionProblemStatus = [
       MeetingConnectionStatus.BAD,
@@ -355,7 +356,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onMeetingStateChange = (state: MeetingState): void => {
-    this.logger.log('video component @ on meeting state change', state);
+    this.logger.log('video conference @ on meeting state change', state);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, state);
   };
 
@@ -387,7 +388,7 @@ export class VideoComponent extends BaseComponent {
    * @returns
    */
   private onFrameStateChange = (state: VideoFrameState): void => {
-    this.logger.log('video component @ on frame state change', state);
+    this.logger.log('video conference @ on frame state change', state);
 
     if (state !== VideoFrameState.INITIALIZED) return;
 
@@ -405,7 +406,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    * */
   private onRealtimeEventFromFrame = ({ event, data }: RealtimeObserverPayload): void => {
-    this.logger.log('video component @ on realtime event from frame', event, data);
+    this.logger.log('video conference @ on realtime event from frame', event, data);
 
     const _ = {
       [RealtimeEvent.REALTIME_HOST_CHANGE]: (data: string) => this.realtime.setHost(data),
@@ -438,7 +439,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onParticipantJoined = (participant: Participant): void => {
-    this.logger.log('video component @ on participant joined', participant);
+    this.logger.log('video conference @ on participant joined', participant);
 
     this.localParticipant = participant;
 
@@ -468,14 +469,14 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onParticipantLeft = (_: Participant): void => {
-    this.logger.log('video component @ on participant left', this.localParticipant);
+    this.logger.log('video conference @ on participant left', this.localParticipant);
 
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
     this.internalRemoveComponent();
   };
 
   private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
-    this.logger.log('video component @ on participant list update', participants);
+    this.logger.log('video conference @ on participant list update', participants);
 
     if (isEqual(this.participantsOnMeeting, participants)) return;
 
@@ -497,7 +498,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onKickAllParticipantsDidChange = (kick: boolean): void => {
-    this.logger.log('video component @ on kick all participants did change', kick);
+    this.logger.log('video conference @ on kick all participants did change', kick);
 
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANTS, kick);
     this.internalRemoveComponent();
@@ -511,7 +512,7 @@ export class VideoComponent extends BaseComponent {
    */
 
   private onKickLocalParticipant = (): void => {
-    this.logger.log('video component @ on kick local participant');
+    this.logger.log('video conference @ on kick local participant');
 
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANT, this.localParticipant);
     this.internalRemoveComponent();
@@ -524,7 +525,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    * */
   private onRoomInfoUpdated = (room: AblyRealtimeData): void => {
-    this.logger.log('video component @ on room info updated', room);
+    this.logger.log('video conference @ on room info updated', room);
     const { isGridModeEnable, followParticipantId, gather, drawing, transcript } = room;
 
     this.videoManager.publishMessageToFrame(
@@ -552,7 +553,7 @@ export class VideoComponent extends BaseComponent {
   private onRealtimeParticipantsDidChange = (
     participants: Record<string, AblyParticipant>,
   ): void => {
-    this.logger.log('video component @ on participants did change', participants);
+    this.logger.log('video conference @ on participants did change', participants);
 
     const participantList: ParticipandToFrame[] = Object.values(participants).map(
       (participant: AblyParticipant) => {
@@ -586,7 +587,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    * */
   private onHostParticipantDidChange = (data: HostObserverCallbackResponse): void => {
-    this.logger.log('video component @ on host participant did change', data);
+    this.logger.log('video conference @ on host participant did change', data);
 
     this.videoManager.publishMessageToFrame(
       RealtimeEvent.REALTIME_HOST_CHANGE,
@@ -601,7 +602,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onParticipantJoinedOnRealtime = (participant: AblyParticipant): void => {
-    this.logger.log('video component @ on participant joined on realtime', participant);
+    this.logger.log('video conference @ on participant joined on realtime', participant);
 
     this.publish(
       MeetingEvent.MEETING_PARTICIPANT_JOINED,
@@ -616,7 +617,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private onParticipantLeftOnRealtime = (participant: AblyParticipant): void => {
-    this.logger.log('video component @ on participant left on realtime', participant);
+    this.logger.log('video conference @ on participant left on realtime', participant);
 
     this.publish(
       MeetingEvent.MEETING_PARTICIPANT_LEFT,
@@ -630,7 +631,7 @@ export class VideoComponent extends BaseComponent {
    * @returns {void}
    */
   private internalRemoveComponent(): void {
-    this.logger.log('video component @ internal remove component');
+    this.logger.log('video conference @ internal remove component');
 
     const { data } = this.realtime.participant;
     const activeComponents = data.activeComponents.filter((componentName: string) => {

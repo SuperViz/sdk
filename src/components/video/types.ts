@@ -13,6 +13,7 @@ export interface VideoComponentOptions {
   camsOff?: boolean;
   screenshareOff?: boolean;
   chatOff?: boolean;
+  transcriptOff?: boolean;
   defaultAvatars?: boolean;
   offset?: Offset;
   enableFollow?: boolean;

@@ -2,14 +2,14 @@ import { Comments } from './comments';
 import { CanvasPin } from './comments/canvas-pin-adapter';
 import { MousePointers } from './presence-mouse';
 import { Realtime } from './realtime';
-import { VideoComponent } from './video';
+import { VideoConference } from './video';
 
 import * as Components from '.';
 
 describe('Components', () => {
-  test('should be export VideoComponent', () => {
-    expect(Components.VideoComponent).toBeDefined();
-    expect(Components.VideoComponent).toBe(VideoComponent);
+  test('should be export VideoConference', () => {
+    expect(Components.VideoConference).toBeDefined();
+    expect(Components.VideoConference).toBe(VideoConference);
   });
 
   test('should be export Comments', () => {
