@@ -2,7 +2,7 @@ import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 import { VideoComponentOptions } from './types';
-export declare class VideoComponent extends BaseComponent {
+export declare class VideoConference extends BaseComponent {
     name: ComponentNames;
     protected logger: Logger;
     private participantToFrameList;
@@ -58,13 +58,13 @@ export declare class VideoComponent extends BaseComponent {
     hangUp(): void;
     /**
      * @function start
-     * @description start video component
+     * @description start video conference
      * @returns {void}
      */
     protected start(): void;
     /**
      * @function destroy
-     * @description destroy video component
+     * @description destroy video conference
      * @returns {void}
      */
     protected destroy(): void;
