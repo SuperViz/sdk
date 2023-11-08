@@ -2,7 +2,8 @@ import { MeetingEvent, RealtimeEvent, MeetingControlsEvent } from '../../common/
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Observer } from '../../common/utils';
 import { VideoFrameState, VideoManagerOptions } from './types';
-export default class VideoConferenceManager {
+export default class VideoConfereceManager {
+    private readonly logger;
     private messageBridge;
     private bricklayer;
     private browserService;
@@ -13,29 +14,25 @@ export default class VideoConferenceManager {
     private readonly customColors;
     readonly frameStateObserver: Observer;
     readonly frameSizeObserver: Observer;
-    readonly realtimeObserver: Observer;
-    readonly hostChangeObserver: Observer;
-    readonly kickParticipantObserver: Observer;
-    readonly gridModeChangeObserver: Observer;
-    readonly drawingChangeObserver: Observer;
-    readonly transcriptChangeObserver: Observer;
-    readonly followParticipantObserver: Observer;
-    readonly goToParticipantObserver: Observer;
-    readonly gatherParticipantsObserver: Observer;
     readonly waitingForHostObserver: Observer;
+    readonly realtimeEventsObserver: Observer;
     readonly sameAccountErrorObserver: Observer;
     readonly devicesObserver: Observer;
     readonly meetingStateObserver: Observer;
     readonly meetingConnectionObserver: Observer;
     readonly participantJoinedObserver: Observer;
     readonly participantLeftObserver: Observer;
+    readonly participantListObserver: Observer;
     frameState: VideoFrameState;
     constructor(options: VideoManagerOptions);
     get isWaterMarkEnabled(): boolean;
     get isHorizontalCameraEnabled(): boolean;
     /**
      * @function layoutModalsAndCamerasConfig
-     * @returns {any}
+     * @description returns the correct layout and cameras position
+     * @param {LayoutPosition} layout - layout position
+     * @param {CamerasPosition} cameras - cameras position
+     * @returns {LayoutModalsAndCameras}
      */
     private layoutModalsAndCamerasConfig;
     /**
@@ -89,6 +86,7 @@ export default class VideoConferenceManager {
      * @returns {void}
      */
     private updateMeetingAvatars;
+    private onParticipantJoined;
     /**
      * @function onParticipantLeft
      * @param {Participant} participant
@@ -103,12 +101,6 @@ export default class VideoConferenceManager {
      * @returns {void}
      */
     private updateFrameState;
-    /**
-     * @function realtimeJoin
-     * @param participantInfo
-     * @returns {void}
-     */
-    private realtimeJoin;
     /**
      * @function onMeetingHostChange
      * @param {string} hostId
@@ -181,6 +173,7 @@ export default class VideoConferenceManager {
      */
     private onConnectionStatusChange;
     private onWaitingForHostDidChange;
+    private onParticipantListUpdate;
     /**
      * @function start
      * @param {StartMeetingOptions} options

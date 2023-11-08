@@ -5,4 +5,4 @@ export interface DefaultConnectionService {
     removeListeners: () => void;
     updateMeetingConnectionStatus: (newStatus: MeetingConnectionStatus) => void;
 }
-export declare type WindowConnectionStatus = 'online' | 'offline';
+export type WindowConnectionStatus = 'online' | 'offline';

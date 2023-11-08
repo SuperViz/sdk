@@ -2,6 +2,7 @@ import { MeetingConnectionStatus } from '../../common/types/events.types';
 import { Observer } from '../../common/utils';
 import { DefaultConnectionService } from './types';
 export declare class ConnectionService implements DefaultConnectionService {
+    private readonly logger;
     connectionStatus: MeetingConnectionStatus;
     oldConnectionStatus: MeetingConnectionStatus;
     connectionStatusObserver: Observer;

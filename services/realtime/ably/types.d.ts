@@ -12,6 +12,7 @@ export interface AblyParticipant {
     encoding: string;
     id: string;
     timestamp: number;
+    extras: any;
 }
 export interface AblyRealtimeData {
     hostClientId?: string;
@@ -22,11 +23,11 @@ export interface AblyRealtimeData {
     kickParticipant?: AblyParticipant;
     transcript?: TranscriptState;
 }
-export declare type AblyTokenCallBack = (error: Ably.Types.ErrorInfo | string, tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string) => void;
+export type AblyTokenCallBack = (error: Ably.Types.ErrorInfo | string, tokenRequestOrDetails: Ably.Types.TokenDetails | Ably.Types.TokenRequest | string) => void;
 export interface ParticipantDataInput {
     [key: string]: string | number | Array<unknown> | Object;
 }
-export declare type RealtimeMessage = {
+export type RealtimeMessage = {
     name: string;
     participantId: string;
     data: unknown;

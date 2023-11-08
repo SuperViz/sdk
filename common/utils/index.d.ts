@@ -1,4 +1,6 @@
 import doRequest from './do-request';
-import logger from './logger';
+import { Logger } from './logger';
+import { Observable } from './observable';
 import { Observer } from './observer';
-export { logger, doRequest, Observer };
+import sleep from './sleep';
+export { Logger, doRequest, Observer, sleep, Observable };

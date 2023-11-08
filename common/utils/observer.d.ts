@@ -1,7 +1,7 @@
-import { Debug } from './logger';
-export declare type OberverOptions = {
+import { Logger } from './logger';
+export type OberverOptions = {
     throttleTime?: number;
-    logger?: Debug;
+    logger?: Logger;
 };
 export declare class Observer {
     private logger;
