@@ -23,7 +23,6 @@ export enum MeetingEvent {
 
 export enum FrameEvent {
   FRAME_LOAD = 'frame.load',
-  FRAME_SIZE_UPDATE = 'frame.size-update',
   FRAME_DIMENSIONS_UPDATE = 'frame.dimensions-update',
   FRAME_PARENT_SIZE_UPDATE = 'frame.parent-window-size-update',
   FRAME_LOCALE_UPDATE = 'frame.locales-update',
@@ -37,11 +36,11 @@ export enum MeetingControlsEvent {
   TOGGLE_MICROPHONE = 'meeting-controls.toggle-microphone',
   TOGGLE_CAM = 'meeting-controls.toggle-cam',
   TOGGLE_SCREENSHARE = 'meeting-controls.toggle-screenshare',
+  TOGGLE_TRANSCRIPT = 'meeting-controls.toggle-transcript',
   HANG_UP = 'hang-up',
 }
 
 export enum RealtimeEvent {
-  REALTIME_JOIN = 'realtime.join',
   REALTIME_PARTICIPANT_LIST_UPDATE = 'realtime.participant-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
   REALTIME_HOST_AVAILABLE = 'realtime.host-available',
@@ -75,6 +74,15 @@ export enum MeetingState {
   FRAME_INITIALIZING = 6,
   FRAME_INITIALIZED = 7,
   FRAME_UNINITIALIZED = 8,
+}
+
+export enum ParticipantEvent {
+  JOINED = 'participant.joined',
+  LOCAL_JOINED = 'participant.local-joined',
+  LEFT = 'participant.left',
+  LOCAL_LEFT = 'participant.local-left',
+  LOCAL_UPDATED = 'participant.updated',
+  LIST_UPDATED = 'participant.list-updated',
 }
 
 /**

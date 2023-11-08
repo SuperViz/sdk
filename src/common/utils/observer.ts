@@ -1,21 +1,21 @@
 import throttle from 'lodash/throttle';
 
-import { Debug } from './logger';
+import { Logger } from './logger';
 
 export type OberverOptions = {
   throttleTime?: number;
-  logger?: Debug;
+  logger?: Logger;
 };
 
 export class Observer {
-  private logger: Debug;
+  private logger: Logger;
   private callbacks: Function[];
   private throttle: number;
 
   constructor(options: OberverOptions = {}) {
     const { logger, throttleTime } = options;
 
-    this.logger = logger ?? new Debug('@superviz/sdk/observer-helper');
+    this.logger = logger ?? new Logger('@superviz/sdk/observer-helper');
     this.throttle = throttleTime;
     this.callbacks = [];
 

@@ -67,4 +67,26 @@ describe('doRequest', () => {
       statusText: 'Not Found',
     });
   });
+
+  test('should make a GET request with the correct URL and custom headers', async () => {
+    const url = 'https://example.com';
+    const method = 'GET';
+    const body = null;
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn(),
+    });
+
+    await doRequest(url, method, body, { any_header: 'any_value' });
+
+    expect(mockFetch).toHaveBeenCalledWith(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        any_header: 'any_value',
+      },
+      body: null,
+    });
+  });
 });

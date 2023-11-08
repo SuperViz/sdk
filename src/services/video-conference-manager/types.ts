@@ -1,16 +1,13 @@
+import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
+import { ComponentLimits } from '../limits/types';
 
 export interface VideoManagerOptions {
-  conferenceLayerUrl: string;
-  ablyKey: string;
-  apiKey: string;
-  apiUrl: string;
-  debug: boolean;
   language?: string;
-  roomId: string;
   canUseChat: boolean;
   canUseCams: boolean;
+  canUseTranscription: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
   canUseGather: boolean;
@@ -24,14 +21,14 @@ export interface VideoManagerOptions {
     videoInput: boolean;
   };
   skipMeetingSettings: boolean;
-  disableCameraOverlay: boolean;
   browserService: BrowserService;
   offset?: Offset;
   locales?: Locale[];
   avatars?: Avatar[];
   customColors?: ColorsVariables;
-  waterMark?: WaterMark;
+  waterMark?: boolean;
   layoutPosition?: LayoutPosition;
+  layoutMode?: LayoutMode;
 }
 
 export interface WindowSize {
@@ -57,20 +54,22 @@ export interface FrameConfig {
   ablyKey: string;
   roomId: string;
   debug: boolean;
+  limits: ComponentLimits;
   canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
+  canUseTranscription: boolean;
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseGather: boolean;
   canUseDefaultToolbar: boolean;
   camerasPosition: CamerasPosition;
   devices: DevicesConfig;
-  waterMark: WaterMark;
+  waterMark: boolean;
   skipMeetingSettings: boolean;
-  disableCameraOverlay: boolean;
   layoutPosition: LayoutPosition;
+  layoutMode?: LayoutMode;
 }
 
 export enum ColorsVariablesNames {
@@ -144,16 +143,20 @@ export interface DrawingData {
   fadeOut: boolean;
 }
 
-export enum WaterMark {
-  ALL = 'all',
-  CAMERA = 'camera',
-  POWERED_BY = 'powered-by',
+export interface RealtimeObserverPayload {
+  event: RealtimeEvent | MeetingEvent;
+  data: unknown;
 }
 
 export enum LayoutPosition {
   RIGHT = 'right',
   CENTER = 'center',
   LEFT = 'left',
+}
+
+export enum LayoutMode {
+  GRID = 'grid',
+  LIST = 'list',
 }
 
 export enum CamerasPosition {
