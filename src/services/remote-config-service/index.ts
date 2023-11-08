@@ -17,10 +17,10 @@ export default class RemoteConfigService {
   static async getRemoteConfig(
     environment: EnvironmentTypes = EnvironmentTypes.PROD,
   ): Promise<RemoteConfig> {
-    const { version } = await import('../../../.version');
+    const { version } = await import('../../../.version.js');
 
     if (environment === EnvironmentTypes.LOCAL) {
-      const { remoteConfig } = await import('../../../.remote-config');
+      const { remoteConfig } = await import('../../../.remote-config.js');
       return remoteConfig;
     }
     const remoteConfigParams: RemoteConfigParams = {

@@ -2,11 +2,11 @@ import { TextEncoder } from 'util';
 
 import Ably from 'ably';
 
-import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { TranscriptState } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { ParticipantInfo } from '../base/types';
 
 import { AblyParticipant, AblyRealtimeData } from './types';
 
@@ -80,7 +80,7 @@ const AblyRestMock = {
         callback(null, mockTokenRequest);
       })
       .mockImplementation((params, options, callback) => {
-        callback('unit-test-error', null);
+        callback({ type: 'unit-test-error', message: "this domain don't have permission" }, null);
       }),
   },
 };
@@ -117,19 +117,10 @@ describe('AblyRealtimeService', () => {
   test('should start realtime connection', () => {
     expect(AblyRealtimeServiceInstance.start).toBeDefined();
 
-    const participant: ParticipantInfo = {
-      ...MOCK_LOCAL_PARTICIPANT,
-      ...MOCK_AVATAR,
-      slotIndex: 0,
-      participantId: 'unit-test-participant-id',
-    };
-
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
-      initialParticipantData: participant,
-      isBroadcast: false,
+      participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
     expect(AblyRealtimeMock.connection.on).toHaveBeenCalledTimes(1);
@@ -138,19 +129,10 @@ describe('AblyRealtimeService', () => {
   test('should throw error if client is already initialized', () => {
     expect(AblyRealtimeServiceInstance['buildClient']).toBeDefined();
 
-    const participant: ParticipantInfo = {
-      ...MOCK_LOCAL_PARTICIPANT,
-      ...MOCK_AVATAR,
-      slotIndex: 0,
-      participantId: 'unit-test-participant-id',
-    };
-
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
-      initialParticipantData: participant,
-      isBroadcast: false,
+      participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
     expect(() => {
@@ -161,24 +143,15 @@ describe('AblyRealtimeService', () => {
   test('should join room and subscribe to channels', () => {
     expect(AblyRealtimeServiceInstance.join).toBeDefined();
 
-    const participant: ParticipantInfo = {
-      ...MOCK_LOCAL_PARTICIPANT,
-      ...MOCK_AVATAR,
-      slotIndex: 0,
-      participantId: 'unit-test-participant-id',
-    };
-
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
-      initialParticipantData: participant,
-      isBroadcast: false,
+      participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
-    AblyRealtimeServiceInstance.join(participant);
+    AblyRealtimeServiceInstance.join();
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
     );
@@ -187,6 +160,9 @@ describe('AblyRealtimeService', () => {
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
+    );
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
+      'superviz:unit-test-room-id-unit-test-api-key:comments',
     );
 
     expect(AblyRealtimeMock.connection.on).toHaveBeenCalledTimes(1);
@@ -195,27 +171,19 @@ describe('AblyRealtimeService', () => {
   test('should subscribe to broadcast channel if participant is audience', () => {
     expect(AblyRealtimeServiceInstance.join).toBeDefined();
 
-    const participant: ParticipantInfo = {
-      ...MOCK_LOCAL_PARTICIPANT,
-      ...MOCK_AVATAR,
-      slotIndex: 0,
-      participantId: 'unit-test-participant-id',
-      type: ParticipantType.AUDIENCE,
-    };
+    MOCK_LOCAL_PARTICIPANT.type = ParticipantType.AUDIENCE;
 
     AblyRealtimeServiceInstance.start({
       apiKey: 'unit-test-api-key',
-      initialParticipantData: participant,
-      isBroadcast: true,
+      participant: MOCK_LOCAL_PARTICIPANT,
       roomId: 'unit-test-room-id',
-      shouldKickParticipantsOnHostLeave: true,
     });
 
-    AblyRealtimeServiceInstance.join(participant);
+    AblyRealtimeServiceInstance.join();
 
     const spy = jest.spyOn(AblyRealtimeServiceInstance['broadcastChannel'], 'subscribe');
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
     );
@@ -224,6 +192,9 @@ describe('AblyRealtimeService', () => {
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
+    );
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
+      'superviz:unit-test-room-id-unit-test-api-key:comments',
     );
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -254,13 +225,26 @@ describe('AblyRealtimeService', () => {
       );
     });
 
+    test('should not call callback if domain is not whitelisted', () => {
+      const mockTokenParams: Ably.Types.TokenParams = {
+        clientId: 'unit-test-client-id',
+      };
+
+      const realtimeInstance = { ...AblyRealtimeServiceInstance };
+      AblyRealtimeServiceInstance['domainWhitelisted'] = false;
+
+      AblyRealtimeServiceInstance['auth'](mockTokenParams, () => {});
+
+      expect(AblyRestMock.auth.requestToken).not.toHaveBeenCalled();
+    });
+
     test('should call callback with error if token request fails', () => {
       const mockTokenParams: Ably.Types.TokenParams = {
         clientId: 'unit-test-client-id',
       };
 
       AblyRealtimeServiceInstance['auth'](mockTokenParams, (error, tokenRequest) => {
-        expect(error).toBe('unit-test-error');
+        expect(error).toMatchObject({ type: 'unit-test-error' });
         expect(tokenRequest).toBeNull();
       });
 
@@ -399,6 +383,7 @@ describe('AblyRealtimeService', () => {
         connectionId: 'unit-test-connection-id',
         encoding: '',
         timestamp: new Date().getTime(),
+        extras: {},
       };
 
       AblyRealtimeServiceInstance['updateParticipants'] = jest.fn();
@@ -424,22 +409,13 @@ describe('AblyRealtimeService', () => {
 
   describe('handle on join room event', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
 
       AblyRealtimeServiceInstance['initializeRoomProperties'] = jest.fn();
       AblyRealtimeServiceInstance['updateParticipants'] = jest.fn();
@@ -451,6 +427,7 @@ describe('AblyRealtimeService', () => {
 
     test('should join room and update local room state', async () => {
       const mockPresence: Ably.Types.PresenceMessage = {
+        extras: null,
         clientId: 'unit-test-client-id',
         connectionId: 'unit-test-participant-id',
         data: {},
@@ -495,6 +472,7 @@ describe('AblyRealtimeService', () => {
         id: 'unit-test-id',
         timestamp: 1234567890,
         action: 'enter',
+        extras: null,
       };
 
       const mockRoomProperties = {
@@ -527,22 +505,13 @@ describe('AblyRealtimeService', () => {
 
   describe('handle state changes', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
 
       AblyRealtimeServiceInstance['forceReconnect'] = jest.fn();
     });
@@ -842,22 +811,13 @@ describe('AblyRealtimeService', () => {
 
   describe('client message handlers', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
 
       AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.CONNECTED;
     });
@@ -916,25 +876,6 @@ describe('AblyRealtimeService', () => {
       expect(throwSpy).toHaveBeenCalledWith('Message too long, the message limit size is 10kb.');
     });
 
-    test('should add the event to the queue and publish it after 1 second', async () => {
-      const publishClientSyncPropertiesSpy = jest.spyOn(
-        AblyRealtimeServiceInstance as any,
-        'publishClientSyncProperties',
-      );
-      const name = 'test';
-      const property = { test: true };
-
-      AblyRealtimeServiceInstance.setSyncProperty(name, property);
-
-      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
-
-      jest.advanceTimersByTime(1000);
-
-      expect(publishClientSyncPropertiesSpy).toHaveBeenCalled();
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(0);
-    });
-
     /**
      * publishClientSyncProperties
      * */
@@ -983,6 +924,7 @@ describe('AblyRealtimeService', () => {
      */
 
     test('should return the client sync properties history', async () => {
+      // @ts-ignore
       AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
         (callback as any)(null, AblyClientRoomStateHistoryMock);
       });
@@ -995,6 +937,7 @@ describe('AblyRealtimeService', () => {
     });
 
     test('should return the client sync properties history for a specific key', async () => {
+      // @ts-ignore
       AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
         (callback as any)(null, AblyClientRoomStateHistoryMock);
       });
@@ -1007,6 +950,7 @@ describe('AblyRealtimeService', () => {
     });
 
     test('should return null if the history is empty', async () => {
+      // @ts-ignore
       AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
         (callback as any)(null, null);
       });
@@ -1015,6 +959,7 @@ describe('AblyRealtimeService', () => {
     });
 
     test('should return throw an error if a event is not found', async () => {
+      // @ts-ignore
       AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
         (callback as any)(null, AblyClientRoomStateHistoryMock);
       });
@@ -1025,6 +970,7 @@ describe('AblyRealtimeService', () => {
     });
 
     test('should throw an error if ably dont responds', async () => {
+      // @ts-ignore
       AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
         (callback as any)('error', null);
       });
@@ -1046,6 +992,7 @@ describe('AblyRealtimeService', () => {
         data: {
           participantId,
         },
+        extras: null,
       };
       AblyRealtimeServiceInstance['participants'][participantId] = participant;
       AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
@@ -1061,7 +1008,9 @@ describe('AblyRealtimeService', () => {
 
       await AblyRealtimeServiceInstance.setHost('');
 
-      expect(AblyRealtimeServiceInstance['updateRoomProperties']).not.toHaveBeenCalled();
+      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
+        hostClientId: null,
+      });
     });
 
     test('when the host leaves the room, should set the hostClientId to null', async () => {
@@ -1080,6 +1029,7 @@ describe('AblyRealtimeService', () => {
           data: {
             participantId: 'participant1',
           },
+          extras: null,
         },
       };
 
@@ -1104,6 +1054,7 @@ describe('AblyRealtimeService', () => {
         data: {
           participantId,
         },
+        extras: null,
       };
       AblyRealtimeServiceInstance['participants'][participantId] = participant;
       AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
@@ -1117,22 +1068,13 @@ describe('AblyRealtimeService', () => {
 
   describe('presence events handlers', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
     });
 
     /**
@@ -1141,6 +1083,7 @@ describe('AblyRealtimeService', () => {
 
     test('should call onParticipantJoin when other participant joins the room', async () => {
       const presenceData: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'enter',
         clientId: 'participant1',
         connectionId: 'connection1',
@@ -1161,12 +1104,13 @@ describe('AblyRealtimeService', () => {
 
     test('should call onJoinRoom when my participant joins the room', async () => {
       const presenceData: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'enter',
-        clientId: 'unit-test-participant-id',
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
         connectionId: 'connection1',
         encoding: 'h264',
         data: {
-          participantId: 'unit-test-participant-id',
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
         },
         id: 'unit-test-participant-ably-id',
         timestamp: new Date().getTime(),
@@ -1190,6 +1134,7 @@ describe('AblyRealtimeService', () => {
         data: {
           participantId: 'participant1',
         },
+        extras: null,
       };
 
       AblyRealtimeServiceInstance.participantJoinedObserver.publish = jest.fn();
@@ -1215,6 +1160,7 @@ describe('AblyRealtimeService', () => {
 
     test('should skip the update if my participant not joined room', () => {
       const presenceData: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'update',
         clientId: 'unit-test-participant-id',
         connectionId: 'connection1',
@@ -1236,14 +1182,15 @@ describe('AblyRealtimeService', () => {
     test('should publish participant update', () => {
       const presenceData: Ably.Types.PresenceMessage = {
         action: 'update',
-        clientId: 'unit-test-participant-id',
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
         connectionId: 'connection1',
         encoding: 'h264',
         data: {
-          participantId: 'unit-test-participant-id',
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
         },
         id: 'unit-test-participant-ably-id',
         timestamp: new Date().getTime(),
+        extras: null,
       };
 
       const presenceDataUpdated = {
@@ -1257,25 +1204,25 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['onAblyPresenceEnter'](presenceData);
       AblyRealtimeServiceInstance['onAblyPresenceUpdate'](presenceDataUpdated);
 
-      expect(AblyRealtimeServiceInstance['participants']['unit-test-participant-id']).toEqual(
-        Object.assign({}, presenceDataUpdated, { participantId: 'unit-test-participant-id' }),
+      expect(AblyRealtimeServiceInstance['participants'][MOCK_LOCAL_PARTICIPANT.id]).toEqual(
+        Object.assign({}, presenceDataUpdated, { participantId: MOCK_LOCAL_PARTICIPANT.id }),
       );
     });
 
     test('if my participant is host and is broadcast mode, should call syncBroadcast', () => {
-      AblyRealtimeServiceInstance['isBroadcast'] = true;
-      AblyRealtimeServiceInstance['hostParticipantId'] = 'unit-test-participant-id';
-      AblyRealtimeServiceInstance['localParticipantId'] = 'unit-test-participant-id';
+      AblyRealtimeServiceInstance['hostParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
       // @ts-ignore
       AblyRealtimeServiceInstance['syncBroadcast'] = jest.fn();
+      jest.spyOn(AblyRealtimeServiceInstance, 'isBroadcast', 'get').mockReturnValueOnce(true);
 
       const presenceData: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'update',
-        clientId: 'unit-test-participant-id',
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
         connectionId: 'connection1',
         encoding: 'h264',
         data: {
-          participantId: 'unit-test-participant-id',
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
         },
         id: 'unit-test-participant-ably-id',
         timestamp: new Date().getTime(),
@@ -1292,8 +1239,8 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['onAblyPresenceEnter'](presenceData);
       AblyRealtimeServiceInstance['onAblyPresenceUpdate'](presenceDataUpdated);
 
-      expect(AblyRealtimeServiceInstance['participants']['unit-test-participant-id']).toEqual(
-        Object.assign({}, presenceDataUpdated, { participantId: 'unit-test-participant-id' }),
+      expect(AblyRealtimeServiceInstance['participants'][MOCK_LOCAL_PARTICIPANT.id]).toEqual(
+        Object.assign({}, presenceDataUpdated, { participantId: MOCK_LOCAL_PARTICIPANT.id }),
       );
 
       expect(AblyRealtimeServiceInstance['syncBroadcast']).toHaveBeenCalled();
@@ -1305,6 +1252,7 @@ describe('AblyRealtimeService', () => {
 
     test('should call onParticipantLeave when other participant leaves the room', async () => {
       const presenceData: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'leave',
         clientId: 'participant1',
         connectionId: 'connection1',
@@ -1327,6 +1275,7 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.READY_TO_JOIN;
 
       const presenceData: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'leave',
         clientId: 'unit-test-participant-id',
         connectionId: 'connection1',
@@ -1352,6 +1301,7 @@ describe('AblyRealtimeService', () => {
         });
 
       const myParticipant: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'enter',
         clientId: 'unit-test-participant-id',
         connectionId: 'connection1',
@@ -1364,6 +1314,7 @@ describe('AblyRealtimeService', () => {
       };
 
       const participantToBeRemoved: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'leave',
         clientId: 'participant1',
         connectionId: 'connection1',
@@ -1400,6 +1351,7 @@ describe('AblyRealtimeService', () => {
       const spy = jest.spyOn(AblyRealtimeServiceInstance, 'setFollowParticipant');
 
       const participantToBeRemoved: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'leave',
         clientId: 'participant1',
         connectionId: 'connection1',
@@ -1422,6 +1374,7 @@ describe('AblyRealtimeService', () => {
 
       AblyRealtimeServiceInstance['onHostLeft'] = jest.fn();
       const participantToBeRemoved: Ably.Types.PresenceMessage = {
+        extras: null,
         action: 'leave',
         clientId: 'unit-test-participant-id',
         connectionId: 'connection1',
@@ -1441,22 +1394,13 @@ describe('AblyRealtimeService', () => {
 
   describe('participant slot hadlers', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
     });
 
     /**
@@ -1465,6 +1409,7 @@ describe('AblyRealtimeService', () => {
 
     test('should return the participant slot', () => {
       const mockPresence: Ably.Types.PresenceMessage = {
+        extras: null,
         clientId: 'unit-test-participant-id',
         connectionId: 'unit-test-connection-id',
         data: {
@@ -1497,6 +1442,7 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
 
       const mockPresence: Ably.Types.PresenceMessage = {
+        extras: null,
         clientId: 'unit-test-participant-id',
         connectionId: 'unit-test-connection-id',
         data: {
@@ -1549,6 +1495,7 @@ describe('AblyRealtimeService', () => {
       global.window.console.error = jest.fn();
 
       const mockPresence: Ably.Types.PresenceMessage = {
+        extras: null,
         clientId: 'unit-test-participant-id',
         connectionId: 'unit-test-connection-id',
         data: {
@@ -1596,6 +1543,7 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
 
       const mockPresence: Ably.Types.PresenceMessage = {
+        extras: null,
         clientId: 'unit-test-participant-id',
         connectionId: 'unit-test-connection-id',
         data: {
@@ -1622,22 +1570,13 @@ describe('AblyRealtimeService', () => {
 
   describe('syncBroadcast', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
     });
 
     test('should call fetch with correct url and headers', async () => {
@@ -1660,22 +1599,13 @@ describe('AblyRealtimeService', () => {
 
   describe('freeze sync', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
     });
 
     test('should freeze sync', async () => {
@@ -1704,19 +1634,10 @@ describe('AblyRealtimeService', () => {
 
   describe('forceReconnect', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
     });
 
@@ -1733,9 +1654,7 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance.join = jest.fn();
       AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.READY_TO_JOIN;
       AblyRealtimeServiceInstance['forceReconnect']();
-      expect(AblyRealtimeServiceInstance.join).toHaveBeenCalledWith(
-        AblyRealtimeServiceInstance['myParticipant'].data,
-      );
+      expect(AblyRealtimeServiceInstance.join).toHaveBeenCalled();
     });
 
     test('should rebuild the client and update participant properties if client lost connection', () => {
@@ -1753,22 +1672,13 @@ describe('AblyRealtimeService', () => {
 
   describe('leave', () => {
     beforeEach(() => {
-      const participant: ParticipantInfo = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        ...MOCK_AVATAR,
-        slotIndex: 0,
-        participantId: 'unit-test-participant-id',
-      };
-
       AblyRealtimeServiceInstance.start({
         apiKey: 'unit-test-api-key',
-        initialParticipantData: participant,
-        isBroadcast: false,
+        participant: MOCK_LOCAL_PARTICIPANT,
         roomId: 'unit-test-room-id',
-        shouldKickParticipantsOnHostLeave: true,
       });
 
-      AblyRealtimeServiceInstance.join(participant);
+      AblyRealtimeServiceInstance.join();
     });
 
     test('should unsubscribe from presence channel and call callback with no error', async () => {

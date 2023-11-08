@@ -5,136 +5,41 @@ import {
   MeetingState,
   MeetingConnectionStatus,
   MeetingControlsEvent,
+  ParticipantEvent,
+  FrameEvent,
 } from './common/types/events.types';
-import { Participant, Group, Avatar, ParticipantType } from './common/types/participant.types';
-import { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
-import { logger } from './common/utils';
-import ApiService from './services/api';
-import AuthService from './services/auth-service';
-import { BrowserService } from './services/browser';
-import { BrowserStats } from './services/browser/types';
-import Communicator from './services/communicator';
-import { SuperVizSdk, PluginOptions } from './services/communicator/types';
-import { PluginMethods, Plugin } from './services/integration/base-plugin/types';
-import { ParticipantOn3D, ParticipantTo3D } from './services/integration/participants/types';
-import { RealtimeMessage } from './services/realtime/ably/types';
-import RemoteConfigService from './services/remote-config-service';
+import { ParticipantType } from './common/types/participant.types';
+import { VideoConference, MousePointers, Realtime, Comments, CanvasPin } from './components';
+import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
+import init from './core';
+import './web-components';
+import './common/styles/global.css';
 import {
-  ColorsVariables,
-  ColorsVariablesNames,
+  CamerasPosition,
+  LayoutMode,
   LayoutPosition,
-  WaterMark,
 } from './services/video-conference-manager/types';
 
-/**
- * @function validateOptions
- * @description Validate the options passed to the SDK
- * @param {SuperVizSdkOptions} param
- * @returns {void}
- */
-const validateOptions = ({
-  group,
-  participant,
-  roomId,
-  customColors,
-  skipMeetingSettings,
-}: SuperVizSdkOptions): void => {
-  if (customColors) {
-    validadeColorsVariablesNames(customColors);
-  }
+export { PinMode } from './web-components/comments/components/types';
 
-  if (!group || !group.name || !group.id) {
-    throw new Error('Group fields is required');
-  }
+export { Participant, Group, Avatar } from './common/types/participant.types';
+export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
+export { BrowserService } from './services/browser';
+export { BrowserStats } from './services/browser/types';
 
-  if (!participant || !participant.id) {
-    throw new Error('Participants fields is required');
-  }
-
-  if (!roomId) {
-    throw new Error('Room id is required');
-  }
-
-  if (skipMeetingSettings && !participant.name) {
-    throw new Error('When skipMeetingSettings is true, participant name is required');
-  }
-};
-
-/**
- * @function validadeColorsVariablesNames
- * @description Validate if the custom colors variables names are valid
- * @param colors {ColorsVariables}
- */
-const validadeColorsVariablesNames = (colors: ColorsVariables) => {
-  Object.entries(colors).forEach(([key, value]) => {
-    if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
-      throw new Error(
-        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
-      );
-    }
-
-    if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
-      throw new Error(
-        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
-      );
-    }
-  });
-};
-
-/**
- * @function init
- * @description Initialize the SDK
- * @param apiKey - API key
- * @param options - SDK options
- * @returns {SuperVizSdk}
- */
-const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<SuperVizSdk> => {
-  const validApiKey = apiKey && apiKey.trim();
-
-  if (!validApiKey) throw new Error('API key is required');
-
-  if (!options) throw new Error('Options is required');
-
-  validateOptions(options);
-
-  if (options.debug) {
-    logger.enable('@superviz/*');
-  } else {
-    logger.disable();
-  }
-
-  const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
-    options.environment,
-  );
-
-  const isValid = await AuthService(apiUrl, apiKey);
-
-  if (!isValid) {
-    throw new Error('Failed to validate API key');
-  }
-
-  const environment = await ApiService.fetchConfig(apiUrl, apiKey);
-  const waterMark: WaterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
-  const { layoutPosition } = options;
-  if (!environment || !environment.ablyKey) {
-    throw new Error('Failed to load configuration from server');
-  }
-
-  const { ablyKey } = environment;
-  return Communicator(
-    Object.assign({}, options, {
-      apiKey,
-      ablyKey,
-      conferenceLayerUrl,
-      apiUrl,
-      waterMark,
-      layoutPosition,
-    }),
-  );
-};
+export { RealtimeMessage } from './services/realtime/ably/types';
+export { LauncherFacade } from './core/launcher/types';
+export { Observer } from './common/utils/observer';
+export {
+  Annotation,
+  Comment,
+  PinAdapter,
+  PinCoordinates,
+  AnnotationPositionInfo,
+} from './components/comments/types';
 
 if (window) {
-  window.SuperVizSdk = {
+  window.SuperVizRoom = {
     init,
     MeetingEvent,
     DeviceEvent,
@@ -142,30 +47,37 @@ if (window) {
     MeetingState,
     MeetingConnectionStatus,
     MeetingControlsEvent,
+    ParticipantEvent,
+    FrameEvent,
+    LayoutMode,
+    VideoConference,
+    MousePointers,
+    Realtime,
+    Comments,
+    CanvasPin,
+    ParticipantType,
+    LayoutPosition,
+    CamerasPosition,
+    RealtimeComponentState,
+    RealtimeComponentEvent,
   };
 }
 
-export default { init };
 export {
   MeetingEvent,
   RealtimeEvent,
-  SuperVizSdkOptions,
   DeviceEvent,
-  SuperVizSdk,
   MeetingState,
-  Participant,
-  ParticipantType,
-  Group,
   MeetingConnectionStatus,
-  PluginMethods,
-  PluginOptions,
-  Plugin,
-  ParticipantOn3D,
-  ParticipantTo3D,
-  BrowserService,
-  BrowserStats,
-  Avatar,
   MeetingControlsEvent,
-  DevicesOptions,
-  RealtimeMessage,
+  ParticipantEvent,
+  FrameEvent,
+  LayoutMode,
+  ParticipantType,
+  LayoutPosition,
+  CamerasPosition,
+  RealtimeComponentState,
+  RealtimeComponentEvent,
 };
+
+export default init;

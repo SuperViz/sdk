@@ -1,16 +1,20 @@
 import { MeetingConnectionStatus } from '../../common/types/events.types';
-import { Observer, logger } from '../../common/utils';
+import { Logger, Observer } from '../../common/utils';
 
 import { DefaultConnectionService, WindowConnectionStatus } from './types';
 
 export class ConnectionService implements DefaultConnectionService {
-  connectionStatus: MeetingConnectionStatus;
-  oldConnectionStatus: MeetingConnectionStatus;
+  private readonly logger: Logger;
 
-  connectionStatusObserver = new Observer({ logger });
+  public connectionStatus: MeetingConnectionStatus;
+  public oldConnectionStatus: MeetingConnectionStatus;
+  public connectionStatusObserver: Observer;
 
   constructor() {
+    this.logger = new Logger('@superviz/sdk/connection-service');
+
     this.connectionStatus = MeetingConnectionStatus.NOT_AVAILABLE;
+    this.connectionStatusObserver = new Observer({ logger: this.logger });
   }
 
   /**
@@ -44,7 +48,7 @@ export class ConnectionService implements DefaultConnectionService {
     this.connectionStatus = newStatus;
     this.connectionStatusObserver.publish(newStatus);
 
-    logger.log('CONNECTION STATUS CHANGE', newStatus);
+    this.logger.log('CONNECTION STATUS CHANGE', newStatus);
   };
 
   /**

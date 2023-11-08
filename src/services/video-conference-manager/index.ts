@@ -1,4 +1,3 @@
-import videoConferenceStyle from '../../common/styles/videoConferenceStyle';
 import {
   DeviceEvent,
   MeetingConnectionStatus,
@@ -7,13 +6,16 @@ import {
   RealtimeEvent,
   Dimensions,
   MeetingControlsEvent,
-  FrameEvent, TranscriptState,
+  FrameEvent,
+  TranscriptState,
 } from '../../common/types/events.types';
 import { StartMeetingOptions } from '../../common/types/meeting.types';
 import { Participant, Avatar } from '../../common/types/participant.types';
-import { Observer, logger } from '../../common/utils';
+import { Logger, Observer } from '../../common/utils';
 import { BrowserService } from '../browser';
+import config from '../config';
 import { FrameBricklayer } from '../frame-brick-layer';
+import { ComponentLimits } from '../limits/types';
 import { MessageBridge } from '../message-bridge';
 
 import {
@@ -24,7 +26,6 @@ import {
   FrameLocale,
   FrameConfig,
   ColorsVariables,
-  WaterMark,
   LayoutPosition,
   CamerasPosition,
   LayoutModalsAndCameras,
@@ -32,7 +33,8 @@ import {
 
 const FRAME_ID = 'sv-video-frame';
 
-export default class VideoConferenceManager {
+export default class VideoConfereceManager {
+  private readonly logger: Logger = new Logger('@superviz/sdk/video-conference-manager');
   private messageBridge: MessageBridge;
   private bricklayer: FrameBricklayer;
   private browserService: BrowserService;
@@ -45,40 +47,26 @@ export default class VideoConferenceManager {
   private readonly frameConfig: FrameConfig;
   private readonly customColors: ColorsVariables;
 
-  public readonly frameStateObserver = new Observer({ logger });
-  public readonly frameSizeObserver = new Observer({ logger });
+  public readonly frameStateObserver = new Observer({ logger: this.logger });
+  public readonly frameSizeObserver = new Observer({ logger: this.logger });
 
-  public readonly realtimeObserver = new Observer({ logger });
-  public readonly hostChangeObserver = new Observer({ logger });
-  public readonly kickParticipantObserver = new Observer({ logger });
-  public readonly gridModeChangeObserver = new Observer({ logger });
-  public readonly drawingChangeObserver = new Observer({ logger });
-  public readonly transcriptChangeObserver = new Observer({ logger });
+  public readonly waitingForHostObserver = new Observer({ logger: this.logger });
+  public readonly realtimeEventsObserver = new Observer({ logger: this.logger });
 
-  public readonly followParticipantObserver = new Observer({ logger });
-  public readonly goToParticipantObserver = new Observer({ logger });
-  public readonly gatherParticipantsObserver = new Observer({ logger });
-  public readonly waitingForHostObserver = new Observer({ logger });
+  public readonly sameAccountErrorObserver = new Observer({ logger: this.logger });
+  public readonly devicesObserver = new Observer({ logger: this.logger });
+  public readonly meetingStateObserver = new Observer({ logger: this.logger });
+  public readonly meetingConnectionObserver = new Observer({ logger: this.logger });
 
-  public readonly sameAccountErrorObserver = new Observer({ logger });
-  public readonly devicesObserver = new Observer({ logger });
-  public readonly meetingStateObserver = new Observer({ logger });
-  public readonly meetingConnectionObserver = new Observer({ logger });
-
-  public readonly participantJoinedObserver = new Observer({ logger });
-  public readonly participantLeftObserver = new Observer({ logger });
+  public readonly participantJoinedObserver = new Observer({ logger: this.logger });
+  public readonly participantLeftObserver = new Observer({ logger: this.logger });
+  public readonly participantListObserver = new Observer({ logger: this.logger });
 
   frameState = VideoFrameState.UNINITIALIZED;
 
   constructor(options: VideoManagerOptions) {
     const {
-      conferenceLayerUrl,
-      ablyKey,
-      apiKey,
-      apiUrl,
-      debug,
       language,
-      roomId,
       canUseCams,
       canUseChat,
       canUseScreenshare,
@@ -86,40 +74,34 @@ export default class VideoConferenceManager {
       canUseFollow,
       canUseGoTo,
       canUseGather,
+      canUseDefaultToolbar,
+      canUseTranscription,
       browserService,
       offset,
-      canUseDefaultToolbar,
       locales,
       avatars,
       customColors,
       waterMark,
-      disableCameraOverlay,
       layoutPosition,
       camerasPosition,
+      skipMeetingSettings,
+      devices,
+      layoutMode,
     } = options;
-
-    let { skipMeetingSettings, devices } = options;
 
     this.browserService = browserService;
 
     const positions = this.layoutModalsAndCamerasConfig(layoutPosition, camerasPosition);
 
-    if (disableCameraOverlay) {
-      skipMeetingSettings = true;
-      devices = {
-        audioInput: false,
-        audioOutput: false,
-        videoInput: false,
-      };
-    }
-
     const wrapper = document.createElement('div');
 
     this.frameConfig = {
-      apiKey,
-      apiUrl,
-      ablyKey,
-      debug,
+      apiKey: config.get<string>('apiKey'),
+      apiUrl: config.get<string>('apiUrl'),
+      ablyKey: config.get<string>('ablyKey'),
+      debug: config.get<boolean>('debug'),
+      roomId: config.get<string>('roomId'),
+      limits: config.get<ComponentLimits>('limits'),
       canUseFollow,
       canUseGoTo,
       canUseCams,
@@ -127,17 +109,17 @@ export default class VideoConferenceManager {
       canUseGather,
       canUseScreenshare,
       canUseDefaultAvatars,
+      canUseTranscription,
       camerasPosition: positions.camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
-      roomId,
       devices: {
         audioInput: devices?.audioInput ?? true,
         audioOutput: devices?.audioOutput ?? true,
         videoInput: devices?.videoInput ?? true,
       },
       waterMark,
+      layoutMode,
       skipMeetingSettings,
-      disableCameraOverlay,
       layoutPosition: positions.layoutPosition,
     };
 
@@ -151,9 +133,15 @@ export default class VideoConferenceManager {
     this.updateFrameState(VideoFrameState.INITIALIZING);
 
     this.bricklayer = new FrameBricklayer();
-    this.bricklayer.build(wrapper.id, conferenceLayerUrl, FRAME_ID, undefined, {
-      allow: 'camera *;microphone *; display-capture *;',
-    });
+    this.bricklayer.build(
+      wrapper.id,
+      config.get<string>('conferenceLayerUrl'),
+      FRAME_ID,
+      undefined,
+      {
+        allow: 'camera *;microphone *; display-capture *;',
+      },
+    );
 
     this.setFrameOffset(offset);
     this.setFrameStyle(positions.camerasPosition);
@@ -169,8 +157,7 @@ export default class VideoConferenceManager {
 
   get isWaterMarkEnabled(): boolean {
     if (this.browserService.isMobileDevice) return false;
-
-    return [WaterMark.ALL, WaterMark.POWERED_BY].includes(this.frameConfig.waterMark);
+    return this.frameConfig.waterMark;
   }
 
   get isHorizontalCameraEnabled(): boolean {
@@ -181,9 +168,15 @@ export default class VideoConferenceManager {
 
   /**
    * @function layoutModalsAndCamerasConfig
-   * @returns {any}
+   * @description returns the correct layout and cameras position
+   * @param {LayoutPosition} layout - layout position
+   * @param {CamerasPosition} cameras - cameras position
+   * @returns {LayoutModalsAndCameras}
    */
-  private layoutModalsAndCamerasConfig = (layout, cameras): LayoutModalsAndCameras => {
+  private layoutModalsAndCamerasConfig = (
+    layout: LayoutPosition,
+    cameras: CamerasPosition,
+  ): LayoutModalsAndCameras => {
     let layoutPosition = layout;
     let camerasPosition = cameras;
 
@@ -227,7 +220,7 @@ export default class VideoConferenceManager {
    */
   private onFrameLoad = (): void => {
     this.messageBridge = new MessageBridge({
-      logger,
+      logger: this.logger,
       contentWindow: this.bricklayer.element.contentWindow,
     });
 
@@ -251,6 +244,11 @@ export default class VideoConferenceManager {
       MeetingEvent.MEETING_WAITING_FOR_HOST,
       this.onWaitingForHostDidChange,
     );
+    this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_JOINED, this.onParticipantJoined);
+    this.messageBridge.listen(
+      MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
+      this.onParticipantListUpdate,
+    );
     this.messageBridge.listen(MeetingEvent.MEETING_PARTICIPANT_LEFT, this.onParticipantLeft);
     this.messageBridge.listen(MeetingEvent.MEETING_HOST_CHANGE, this.onMeetingHostChange);
     this.messageBridge.listen(MeetingEvent.MEETING_KICK_PARTICIPANT, this.onMeetingKickParticipant);
@@ -261,7 +259,6 @@ export default class VideoConferenceManager {
       this.onConnectionStatusChange,
     );
     this.messageBridge.listen(MeetingEvent.MEETING_DEVICES_CHANGE, this.onDevicesChange);
-    this.messageBridge.listen(RealtimeEvent.REALTIME_JOIN, this.realtimeJoin);
     this.messageBridge.listen(RealtimeEvent.REALTIME_GRID_MODE_CHANGE, this.onGridModeChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_DRAWING_CHANGE, this.onDrawingChange);
     this.messageBridge.listen(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, this.onTranscriptChange);
@@ -313,21 +310,15 @@ export default class VideoConferenceManager {
     const { bottom, left, right, top } = this.frameOffset;
 
     style.innerHTML = `
-    :root {
-      --superviz-offset-top: ${top}px;
-      --superviz-offset-right: ${right}px;
-      --superviz-offset-left: ${left}px;
-      --superviz-offset-bottom: ${bottom}px;
-    } 
-    ${videoConferenceStyle}    
+      :root {
+        --superviz-offset-top: ${top}px;
+        --superviz-offset-right: ${right}px;
+        --superviz-offset-left: ${left}px;
+        --superviz-offset-bottom: ${bottom}px;
+      }     
     `;
 
     document.head.appendChild(style);
-
-    if (this.frameConfig.disableCameraOverlay) {
-      this.bricklayer.element.classList.add('sv-video-frame--no-overlay');
-      return;
-    }
 
     if (this.browserService.isMobileDevice) {
       this.bricklayer.element.classList.add('sv-video-frame--bottom');
@@ -368,7 +359,7 @@ export default class VideoConferenceManager {
     frame.style.width = frameWidth;
     frame.style.height = frameHeight;
 
-    this.frameSizeObserver.publish({ width: frameWidth, height: frameHeight });
+    this.frameSizeObserver.publish({ width: frame.offsetWidth, height: frame.offsetHeight });
   };
 
   /**
@@ -417,6 +408,10 @@ export default class VideoConferenceManager {
     this.messageBridge.publish(FrameEvent.FRAME_AVATAR_LIST_UPDATE, this.meetingAvatars);
   };
 
+  private onParticipantJoined = (participant: Participant): void => {
+    this.participantJoinedObserver.publish(participant);
+  };
+
   /**
    * @function onParticipantLeft
    * @param {Participant} participant
@@ -449,21 +444,15 @@ export default class VideoConferenceManager {
   }
 
   /**
-   * @function realtimeJoin
-   * @param participantInfo
-   * @returns {void}
-   */
-  private realtimeJoin = (participantInfo = {}): void => {
-    this.realtimeObserver.publish(participantInfo);
-  };
-
-  /**
    * @function onMeetingHostChange
    * @param {string} hostId
    * @returns {void}
    */
   private onMeetingHostChange = (hostId: string): void => {
-    this.hostChangeObserver.publish(hostId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_HOST_CHANGE,
+      data: hostId,
+    });
   };
 
   /**
@@ -472,7 +461,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onMeetingKickParticipant = (participantId: string): void => {
-    this.kickParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: MeetingEvent.MEETING_KICK_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -481,7 +473,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onFollowParticipantDidChange = (participantId?: string): void => {
-    this.followParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -490,7 +485,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onGoToDidChange = (participantId: string): void => {
-    this.goToParticipantObserver.publish(participantId);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+      data: participantId,
+    });
   };
 
   /**
@@ -498,7 +496,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onGather = (): void => {
-    this.gatherParticipantsObserver.publish();
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GATHER,
+      data: true,
+    });
   };
 
   /**
@@ -507,7 +508,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onGridModeChange = (isGridModeEnable: boolean): void => {
-    this.gridModeChangeObserver.publish(isGridModeEnable);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
+      data: isGridModeEnable,
+    });
   };
 
   /**
@@ -516,7 +520,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onDrawingChange = (drawing: DrawingData): void => {
-    this.drawingChangeObserver.publish(drawing);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_DRAWING_CHANGE,
+      data: drawing,
+    });
   };
 
   /**
@@ -525,7 +532,10 @@ export default class VideoConferenceManager {
    * @returns {void}
    */
   private onTranscriptChange = (state: TranscriptState): void => {
-    this.transcriptChangeObserver.publish(state);
+    this.realtimeEventsObserver.publish({
+      event: RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE,
+      data: state,
+    });
   };
 
   /**
@@ -568,6 +578,10 @@ export default class VideoConferenceManager {
     this.waitingForHostObserver.publish(isWaitingForHost);
   };
 
+  private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
+    this.participantListObserver.publish(participants);
+  };
+
   /**
    * @function start
    * @param {StartMeetingOptions} options
@@ -599,16 +613,8 @@ export default class VideoConferenceManager {
     this.bricklayer?.destroy();
 
     this.frameSizeObserver.destroy();
-    this.realtimeObserver.destroy();
-    this.hostChangeObserver.destroy();
-    this.kickParticipantObserver.destroy();
-    this.gridModeChangeObserver.destroy();
-    this.drawingChangeObserver.destroy();
-    this.transcriptChangeObserver.destroy();
 
-    this.followParticipantObserver.destroy();
-    this.goToParticipantObserver.destroy();
-    this.gatherParticipantsObserver.destroy();
+    this.realtimeEventsObserver.destroy();
     this.sameAccountErrorObserver.destroy();
     this.devicesObserver.destroy();
     this.meetingStateObserver.destroy();

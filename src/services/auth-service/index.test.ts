@@ -5,6 +5,9 @@ import auth from './index';
 jest.mock('../api');
 
 describe('auth', () => {
+  const mockFetch = jest.fn();
+  global.fetch = mockFetch;
+
   const baseUrl = 'https://example.com';
   const key = 'unit-test-key';
 
