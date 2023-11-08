@@ -39,7 +39,7 @@ export {
 } from './components/comments/types';
 
 if (window) {
-  window.SuperVizSdk = {
+  window.SuperVizRoom = {
     init,
     MeetingEvent,
     DeviceEvent,
