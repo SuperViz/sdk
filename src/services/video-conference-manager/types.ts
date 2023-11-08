@@ -7,6 +7,7 @@ export interface VideoManagerOptions {
   language?: string;
   canUseChat: boolean;
   canUseCams: boolean;
+  canUseTranscription: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
   canUseGather: boolean;
@@ -58,6 +59,7 @@ export interface FrameConfig {
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
+  canUseTranscription: boolean;
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseGather: boolean;
