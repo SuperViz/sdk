@@ -20,6 +20,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   protected readonly logger: Logger;
 
   private activeComponents: ComponentNames[] = [];
+  private activeComponentsInstances: BaseComponent[] = [];
   private participant: Participant;
   private group: Group;
 
@@ -69,6 +70,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     });
 
     this.activeComponents.push(component.name);
+    this.activeComponentsInstances.push(component);
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
 
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
@@ -93,8 +95,33 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     component.detach();
+
+    this.activeComponentsInstances = this.activeComponentsInstances.filter((c) => {
+      return c.name !== component.name;
+    });
     this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
+  };
+
+  /**
+   * @function destroy
+   * @description destroy launcher and all components
+   * @returns {void}
+   */
+  public destroy = (): void => {
+    this.logger.log('launcher service @ destroy');
+
+    this.activeComponentsInstances.forEach((component: BaseComponent) => {
+      this.logger.log('launcher service @ destroy - removing component', component.name);
+      this.removeComponent(component);
+    });
+
+    this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
+    this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
+    this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
+    this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
+    this.realtime.hostAvailabilityObserver.unsubscribe(this.onHostAvailabilityChange);
+    this.realtime.leave();
   };
 
   /**
@@ -204,6 +231,9 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     if (localParticipant && !isEqual(this.participant, localParticipant)) {
       this.activeComponents = localParticipant.activeComponents ?? [];
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+        return this.activeComponents.includes(component.name);
+      });
       this.participant = localParticipant;
       this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
@@ -308,6 +338,7 @@ export default (options: LauncherOptions): LauncherFacade => {
   const launcher = new Launcher(options);
 
   return {
+    destroy: launcher.destroy,
     subscribe: launcher.subscribe,
     unsubscribe: launcher.unsubscribe,
     addComponent: launcher.addComponent,
