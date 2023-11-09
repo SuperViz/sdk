@@ -4,7 +4,7 @@ import {
   MousePointers,
   Realtime,
   VideoComponent,
-  Connection,
+  WhoIsOnline,
 } from '../../components';
 import { LauncherFacade } from '../../core/launcher/types';
 import {
@@ -45,5 +45,5 @@ export interface SuperVizCdn {
   Realtime: typeof Realtime;
   Comments: typeof Comments;
   CanvasPin: typeof CanvasPin;
-  Connection: typeof Connection;
+  WhoIsOnline: typeof WhoIsOnline;
 }

@@ -15,7 +15,7 @@ import {
   Realtime,
   Comments,
   CanvasPin,
-  Connection,
+  WhoIsOnline,
 } from './components';
 import init from './core';
 import './web-components';
@@ -55,7 +55,7 @@ if (window) {
     Realtime,
     Comments,
     CanvasPin,
-    Connection,
+    WhoIsOnline,
     ParticipantType,
     LayoutPosition,
     CamerasPosition,
