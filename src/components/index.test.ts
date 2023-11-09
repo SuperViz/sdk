@@ -31,4 +31,9 @@ describe('Components', () => {
     expect(Components.Realtime).toBeDefined();
     expect(Components.Realtime).toBe(Realtime);
   });
+
+  test('should be export WhoIsOnline', () => {
+    expect(Components.WhoIsOnline).toBeDefined();
+    expect(Components.WhoIsOnline).toBe(Components.WhoIsOnline);
+  });
 });
