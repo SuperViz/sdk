@@ -2,11 +2,13 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
+import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { Annotation } from '../../../components/comments/types';
 import { ParticipantMouse } from '../../../components/presence-mouse/types';
 import { ComponentNames } from '../../../components/types';
+import { Participant as WhoIsOnlineParticipant } from '../../../components/who-is-online/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -35,13 +37,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private myParticipant: AblyParticipant = null;
 
   private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private whoIsOnlineChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presenceMouseChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
-
   private clientRoomState: Record<string, RealtimeMessage> = {};
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
   private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
@@ -723,6 +725,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       members.forEach((member) => {
         participants[member.clientId] = { ...member };
       });
+
       this.participants = participants;
       this.participantsObserver.publish(this.participants);
     });
@@ -972,6 +975,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
+
     let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
 
     this.supervizChannel.presence.get((error, members) => {
@@ -1042,6 +1046,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         // confirm slot and propagate
         const roomProperties = await this.fetchRoomProperties();
         this.updateRoomProperties(roomProperties);
+
+        this.presenceSlotsInfosObserver.publish({
+          slotIndex: this.myParticipant.data.slotIndex,
+          id: this.myParticipant.data.id,
+        });
       }
     },
     1000,
@@ -1309,6 +1318,32 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.presenceMouseObserver.publish(this.participantsMouse);
   };
 
+  /** Who Is Online * */
+  public enterWhoIsOnlineChannel = (participant: Participant): void => {
+    if (!this.whoIsOnlineChannel) {
+      this.whoIsOnlineChannel = this.client.channels.get(
+        `${this.roomId.toLowerCase()}-who-is-online`,
+      );
+      this.whoIsOnlineChannel.attach();
+
+      this.whoIsOnlineChannel.presence.subscribe('enter', this.onWhoIsOnlineChannelEnter);
+      this.whoIsOnlineChannel.presence.subscribe('update', this.publishWhoIsOnlineUpdate);
+    }
+
+    this.whoIsOnlineChannel.presence.enter([participant]);
+  };
+
+  private publishWhoIsOnlineUpdate = (message: Ably.Types.PresenceMessage): void => {
+    this.whoIsOnlineObserver.publish(message);
+  };
+
+  private onWhoIsOnlineChannelEnter = (message: Ably.Types.PresenceMessage): void => {
+    this.whoIsOnlineObserver.publish(message);
+  };
+
+  public updateWhoIsOnline(participants: WhoIsOnlineParticipant[]) {
+    this.whoIsOnlineChannel.presence.update(participants);
+  }
   /** Presence 3D */
 
   public enterPresence3DChannel(participant: Participant) {
