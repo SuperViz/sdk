@@ -133,10 +133,10 @@ export class Launcher extends Observable implements DefaultLauncher {
       }
     }
 
-    const isAddingConnection = component.name === ComponentNames.CONNECTION;
+    const isAddingWhoIsOnline = component.name === ComponentNames.WHO_IS_ONLINE;
     const presenceNotAdded = !this.activeComponents.includes(ComponentNames.PRESENCE);
 
-    if (isAddingConnection && presenceNotAdded) {
+    if (isAddingWhoIsOnline && presenceNotAdded) {
       this.realtime.presenceMouseParticipantJoinedObserver.subscribe(() => {
         this.addComponent(component);
       });
