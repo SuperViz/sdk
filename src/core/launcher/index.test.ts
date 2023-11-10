@@ -76,7 +76,7 @@ describe('Launcher', () => {
 
       const mockConnection = {
         ...MOCK_COMPONENT,
-        name: ComponentNames.CONNECTION,
+        name: ComponentNames.WHO_IS_ONLINE,
       } as unknown as BaseComponent;
 
       mockConnection.attach = jest.fn();
@@ -102,7 +102,7 @@ describe('Launcher', () => {
 
       const mockConnection = {
         ...MOCK_COMPONENT,
-        name: ComponentNames.CONNECTION,
+        name: ComponentNames.WHO_IS_ONLINE,
       } as unknown as BaseComponent;
 
       mockConnection.attach = jest.fn();
