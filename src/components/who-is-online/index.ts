@@ -29,7 +29,6 @@ export class WhoIsOnline extends BaseComponent {
   protected start(): void {
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
-    const parentColor = this.element?.parentElement.style.backgroundColor;
 
     this.participants = Object.values(this.realtime.getParticipants).map((participant, index) => {
       const slot = participant.data.slotIndex;
