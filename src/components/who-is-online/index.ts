@@ -105,7 +105,7 @@ export class WhoIsOnline extends BaseComponent {
 
   private positionWhoIsOnline(): void {
     this.element = document.createElement('superviz-who-is-online') as WhoIsOnlineElement;
-    const { location } = this;
+    let { location } = this;
 
     const positionsOptions = Object.values(location);
 
@@ -122,7 +122,7 @@ export class WhoIsOnline extends BaseComponent {
         return;
       }
 
-      this.location = LOCATION.TOP_LEFT;
+      location = LOCATION.TOP_RIGHT;
     }
 
     document.body.appendChild(this.element);
@@ -135,6 +135,6 @@ export class WhoIsOnline extends BaseComponent {
     if (clientId === this.localParticipant.id) return;
 
     this.participants = [...participants.data];
-    this.element.participants = Object.values(this.participants);
+    this.element.participants = this.participants;
   };
 }
