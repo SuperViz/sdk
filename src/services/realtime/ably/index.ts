@@ -1014,47 +1014,47 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }, timeToWait);
   };
 
+  private async throttleCallback(myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) {
+    const usedSlots: Ably.Types.PresenceMessage[] = [];
+    let myPresence = myPresenceParam;
+    this.supervizChannel.presence.get((err, members) => {
+      members.forEach((member) => {
+        if (member.connectionId === myPresence.connectionId) {
+          myPresence = member;
+        }
+        if (
+          member.connectionId !== myPresence.connectionId &&
+          member.data.slotIndex !== undefined
+        ) {
+          usedSlots.push(member.data.slotIndex);
+        }
+      });
+    });
+
+    if (
+      this.myParticipant.data.slotIndex === undefined ||
+      usedSlots.includes(this.myParticipant.data.slotIndex)
+    ) {
+      this.findSlotIndex(myPresence);
+    } else {
+      // confirm slot and propagate
+      const roomProperties = await this.fetchRoomProperties();
+      this.updateRoomProperties(roomProperties);
+
+      this.presenceSlotsInfosObserver.publish({
+        slotIndex: this.myParticipant.data.slotIndex,
+        id: this.myParticipant.data.id,
+      });
+    }
+  }
+
   /**
    * @function confirmSlot
    * @description confirms that my slot is valid
    * @param {Ably.Types.PresenceMessage} participant
    * @returns {void}
    */
-  private confirmSlot = throttle(
-    async (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
-      const usedSlots: Ably.Types.PresenceMessage[] = [];
-      let myPresence = myPresenceParam;
-      this.supervizChannel.presence.get((err, members) => {
-        members.forEach((member) => {
-          if (member.connectionId === myPresence.connectionId) {
-            myPresence = member;
-          }
-          if (
-            member.connectionId !== myPresence.connectionId &&
-            member.data.slotIndex !== undefined
-          ) {
-            usedSlots.push(member.data.slotIndex);
-          }
-        });
-      });
-      if (
-        this.myParticipant.data.slotIndex === undefined ||
-        usedSlots.includes(this.myParticipant.data.slotIndex)
-      ) {
-        this.findSlotIndex(myPresence);
-      } else {
-        // confirm slot and propagate
-        const roomProperties = await this.fetchRoomProperties();
-        this.updateRoomProperties(roomProperties);
-
-        this.presenceSlotsInfosObserver.publish({
-          slotIndex: this.myParticipant.data.slotIndex,
-          id: this.myParticipant.data.id,
-        });
-      }
-    },
-    1000,
-  );
+  private confirmSlot = throttle(this.throttleCallback, 1000);
 
   /**
    * @function onStateChange
@@ -1325,7 +1325,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         `${this.roomId.toLowerCase()}-who-is-online`,
       );
       this.whoIsOnlineChannel.attach();
-
       this.whoIsOnlineChannel.presence.subscribe('enter', this.onWhoIsOnlineChannelEnter);
       this.whoIsOnlineChannel.presence.subscribe('update', this.publishWhoIsOnlineUpdate);
     }
