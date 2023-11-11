@@ -1,7 +1,32 @@
 import '.';
 import sleep from '../../common/utils/sleep';
 
+import { Participant } from './components/types';
+
 let element: HTMLElement;
+
+const MOCK_PARTICIPANTS: Participant[] = [
+  {
+    name: 'name 1',
+    color: '#000',
+  },
+  {
+    name: 'name 2',
+    color: '#000',
+  },
+  {
+    name: 'name 3',
+    color: '#000',
+  },
+  {
+    name: 'name 4',
+    color: '#000',
+  },
+  {
+    name: 'name 5',
+    color: '#000',
+  },
+];
 
 describe('Who Is Online', () => {
   beforeEach(async () => {
@@ -10,36 +35,41 @@ describe('Who Is Online', () => {
     await sleep();
   });
 
-  test('should render a div with class "superviz-who-is-online"', () => {
-    const div = element?.shadowRoot?.querySelector('.superviz-who-is-online');
-    expect(div).not.toBeUndefined();
+  test('should render a participants with class "superviz-who-is-online"', () => {
+    const participants = element?.shadowRoot?.querySelector('.superviz-who-is-online');
+    expect(participants).not.toBeFalsy();
   });
 
   test('should have default positioning style', () => {
-    const div = element?.shadowRoot?.querySelector('.superviz-who-is-online') as HTMLElement;
-    expect(div.getAttribute('style')).toBe('left: 20px; top: 20px;');
+    const participants = element?.shadowRoot?.querySelector(
+      '.superviz-who-is-online',
+    ) as HTMLElement;
+    expect(participants.getAttribute('style')).toBe('top: 20px; right: 20px;');
   });
 
-  test('should update position style', (done) => {
-    const div = element?.shadowRoot?.querySelector('.superviz-who-is-online') as HTMLElement;
-    element['position'] = 'right: 20px; top: 20px;';
+  test('should update position style', async () => {
+    const participants = element?.shadowRoot?.querySelector(
+      '.superviz-who-is-online',
+    ) as HTMLElement;
+    element['position'] = 'top: 20px; left: 20px;';
 
-    setTimeout(() => {
-      expect(div.getAttribute('style')).toBe('right: 20px; top: 20px;');
-      done();
-    }, 200);
+    await sleep();
+
+    expect(participants.getAttribute('style')).toBe('top: 20px; left: 20px;');
   });
 
-  test('should not update position style if does not find div', (done) => {
-    const div = element?.shadowRoot?.querySelector('.superviz-who-is-online') as HTMLElement;
-    div.classList.remove('superviz-who-is-online');
+  test('should not update position style if does not find participants', async () => {
+    const participants = element?.shadowRoot?.querySelector(
+      '.superviz-who-is-online',
+    ) as HTMLElement;
+    participants.classList.remove('superviz-who-is-online');
 
-    element['position'] = 'right: 20px; top: 20px;';
+    element['position'] = 'top: 20px; left: 20px;';
 
-    setTimeout(() => {
-      expect(div.classList.contains('superviz-who-is-online')).toBeFalsy();
-      expect(div.getAttribute('style')).toBe('left: 20px; top: 20px;');
-      done();
-    }, 200);
+    await sleep();
+    expect(participants.classList.contains('superviz-who-is-online')).toBeFalsy();
+    expect(participants.getAttribute('style')).toBe('top: 20px; right: 20px;');
   });
+
+  test('should update participants list', () => {});
 });

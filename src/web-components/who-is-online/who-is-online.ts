@@ -23,7 +23,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   constructor() {
     super();
-    this.position = 'left: 20px; top: 20px;';
+    this.position = 'top: 20px; right: 20px;';
   }
 
   public updateParticipants(data: Participant[]) {
