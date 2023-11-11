@@ -16,7 +16,8 @@ export const dropdownStyle = css`
     border-radius: 2px;
   }
 
-  .who-is-online-dropdown__content:hover {
+  .who-is-online-dropdown__content:hover,
+  .who-is-online-dropdown__content--selected {
     background-color: rgb(var(--sv-gray-200));
   }
 
@@ -117,19 +118,6 @@ export const dropdownStyle = css`
     transform: translateX(-100%);
   }
 
-  .items li {
-    color: rgb(var(--sv-gray-600));
-    text-transform: uppercase;
-    padding: 5px 10px;
-    cursor: pointer;
-    min-width: 103px;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 5px;
-  }
-
   .sv-icon {
     width: 40px;
     height: 40px;
@@ -137,10 +125,6 @@ export const dropdownStyle = css`
   }
 
   .active {
-    background: rgb(var(--sv-gray-200));
-  }
-
-  .items li:hover {
     background: rgb(var(--sv-gray-200));
   }
 

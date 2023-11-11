@@ -24,18 +24,21 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare position: 'bottom-left' | 'bottom-center' | 'bottom-right';
   declare participants: Participant[];
   private textColorValues: number[];
+  declare selected: string;
 
   static properties = {
     open: { type: Boolean },
     align: { type: String },
     position: { type: String },
     participants: { type: Array },
+    selected: { type: String },
   };
 
   constructor() {
     super();
     // should match presence-mouse textColorValues
     this.textColorValues = [2, 4, 5, 7, 8, 16];
+    this.selected = '';
   }
 
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -67,6 +70,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     if (!(hasDropdownContent || hasDropdownList || hasDropdownCta)) {
       this.open = false;
+      this.selected = '';
+      this.emitEvent('clickout', {
+        detail: {
+          open: this.open,
+        },
+        bubbles: false,
+        composed: false,
+      });
     }
   };
 
@@ -78,6 +89,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   };
 
   public dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
+
+  private selectParticipant = (participantId: string) => {
+    return () => {
+      this.selected = participantId;
+    };
+  };
 
   private renderParticipants() {
     if (!this.participants) return;
@@ -93,6 +110,11 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         ? '#FFFFFF'
         : '#000000';
 
+      const contentClasses = {
+        'who-is-online-dropdown__content': true,
+        'who-is-online-dropdown__content--selected': this.selected === participant.id,
+      };
+
       return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
@@ -102,7 +124,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(icons)}"
         >
-        <div class="who-is-online-dropdown__content" slot="dropdown">
+        <div class=${classMap(contentClasses)} @click=${this.selectParticipant(
+        participant.id,
+      )} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${participant.color}">
               <div class="who-is-online-dropdown__avatar" style="background-color: ${
@@ -133,6 +157,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     const toggle = () => {
       this.open = !this.open;
+      this.selected = '';
     };
 
     return html`
