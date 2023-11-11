@@ -115,6 +115,7 @@ export class Dropdown extends WebComponentsBaseElement {
         'text-bold': true,
         active: this.active === option?.[this.returnTo],
       };
+
       return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
         ${icons?.at(index)} ${option[this.label]}
       </li>`;
