@@ -15,6 +15,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   static styles = styles;
   declare position: string;
   declare participants: Participant[];
+  private textColorValues: number[];
 
   static properties = {
     position: { type: String },
@@ -24,6 +25,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   constructor() {
     super();
     this.position = 'top: 20px; right: 20px;';
+
+    // should match presence-mouse textColorValues
+    this.textColorValues = [2, 4, 5, 7, 8, 16];
   }
 
   public updateParticipants(data: Participant[]) {
@@ -69,6 +73,10 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const icons = ['place', 'send'];
     return html`${this.participants.slice(0, 4).map((participant) => {
+      const letterColor = this.textColorValues.includes(participant.slotIndex)
+        ? '#FFFFFF'
+        : '#000000';
+
       return html`
         <superviz-dropdown
           options=${JSON.stringify(options)}
@@ -86,7 +94,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           >
             <div
               class="superviz-who-is-online__avatar"
-              style="background-color: ${participant.color}"
+              style="background-color: ${participant.color}; color: ${letterColor}"
             >
               ${participant.name?.at(0)}
             </div>

@@ -19,6 +19,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare align: 'left' | 'right';
   declare position: 'bottom-left' | 'bottom-center' | 'bottom-right';
   declare participants: Participant[];
+  private textColorValues: number[];
 
   static properties = {
     open: { type: Boolean },
@@ -26,6 +27,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     position: { type: String },
     participants: { type: Array },
   };
+
+  constructor() {
+    super();
+    // should match presence-mouse textColorValues
+    this.textColorValues = [2, 4, 5, 7, 8, 16];
+  }
 
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (_changedProperties.has('open')) {
@@ -78,6 +85,10 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
+      const letterColor = this.textColorValues.includes(participant.slotIndex)
+        ? '#FFFFFF'
+        : '#000000';
+
       return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
@@ -91,7 +102,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${participant.color}">
               <div class="who-is-online-dropdown__avatar" style="background-color: 
-              ${participant.color}">
+              ${participant.color}; color: ${letterColor}">
                 ${participant.name?.at(0)}
               </div>
             </div>
