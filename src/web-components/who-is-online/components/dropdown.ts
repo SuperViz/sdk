@@ -15,24 +15,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   static styles = styles;
 
   declare open: boolean;
-  declare disabled: boolean;
   declare align: 'left' | 'right';
   declare position: 'bottom-left' | 'bottom-center' | 'bottom-right';
-  declare options: object[];
-  declare label: string;
-  declare returnTo: string;
-  declare active: string | object;
   declare participants: Participant[];
 
   static properties = {
     open: { type: Boolean },
-    disabled: { type: Boolean },
     align: { type: String },
     position: { type: String },
-    options: { type: Array },
-    label: { type: String },
-    returnTo: { type: String },
-    active: { type: [String, Object] },
     participants: { type: Array },
   };
 
@@ -75,7 +65,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     });
   };
 
-  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
+  public dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
 
   private renderParticipants() {
     if (!this.participants) return;
@@ -83,6 +73,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => {
       return { label };
     });
+
     const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
