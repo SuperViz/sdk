@@ -49,11 +49,13 @@ export const whoIsOnlineStyle = css`
     color: #26242a;
   }
 
-  .excess_participants:hover {
-    background-color: #aea9b8;
+  .excess_participants:hover,
+  .excess_participants--open {
+    background-color: #aea9b8 !important;
   }
 
-  .excess_participants:hover > div {
+  .excess_participants:hover > div,
+  .excess_participants--open > div {
     color: #fff !important;
   }
 `;

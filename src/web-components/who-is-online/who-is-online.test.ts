@@ -152,4 +152,46 @@ describe('Who Is Online', () => {
       `background-color: ${backgroundColor}; color: #FFFFFF`,
     );
   });
+
+  test('should toggle open property', () => {
+    expect(element['open']).toBeFalsy();
+
+    element['toggleOpen']();
+    expect(element['open']).toBeTruthy();
+
+    element['toggleOpen']();
+    expect(element['open']).toBeFalsy();
+  });
+
+  test('should update open property when clicking outside', async () => {
+    const event = new CustomEvent('clickout', {
+      detail: {
+        open: false,
+      },
+    });
+
+    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
+
+    await sleep();
+    const dropdown = element.shadowRoot?.querySelector(
+      'superviz-who-is-online-dropdown',
+    ) as HTMLElement;
+
+    dropdown.dispatchEvent(event);
+    expect(element['open']).toBeFalsy();
+  });
+
+  // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
+  test('', async () => {
+    const event = new CustomEvent('selected');
+
+    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
+
+    await sleep();
+    const dropdown = element.shadowRoot?.querySelector(
+      'superviz-who-is-online-dropdown',
+    ) as HTMLElement;
+
+    dropdown.dispatchEvent(event);
+  });
 });

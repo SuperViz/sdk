@@ -1,5 +1,6 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
@@ -16,15 +17,18 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare position: string;
   declare participants: Participant[];
   private textColorValues: number[];
+  declare open: boolean;
 
   static properties = {
     position: { type: String },
     participants: { type: Object },
+    open: { type: Boolean },
   };
 
   constructor() {
     super();
     this.position = 'top: 20px; right: 20px;';
+    this.open = false;
 
     // should match presence-mouse textColorValues
     this.textColorValues = [2, 4, 5, 7, 8, 16];
@@ -34,16 +38,31 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.participants = data;
   }
 
+  private toggleOpen() {
+    this.open = !this.open;
+  }
+
+  private onClickOutDropdown = ({ detail }: CustomEvent) => {
+    this.open = detail.open;
+  };
+
   private renderExcessParticipants() {
     const excess = this.participants.length - 4;
     if (excess <= 0) return html``;
 
-    const participants = this.participants.slice(4).map(({ name, color }) => {
+    const participants = this.participants.slice(4).map(({ name, color, id }) => {
       return {
         name,
         color,
+        id,
       };
     });
+
+    const classes = {
+      'superviz-who-is-online__participant': true,
+      excess_participants: true,
+      'excess_participants--open': this.open,
+    };
 
     const dropdown = html`
       <superviz-who-is-online-dropdown
@@ -52,8 +71,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         position="bottom-center"
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
+        @clickout=${this.onClickOutDropdown}
       >
-        <div class="superviz-who-is-online__participant excess_participants" slot="dropdown">
+        <div class=${classMap(classes)} slot="dropdown" @click=${this.toggleOpen}>
           <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
         </div>
       </superviz-who-is-online-dropdown>
@@ -72,6 +92,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     });
 
     const icons = ['place', 'send'];
+
     return html`${this.participants.slice(0, 4).map((participant) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
         ? '#FFFFFF'
