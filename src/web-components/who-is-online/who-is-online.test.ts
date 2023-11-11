@@ -122,4 +122,34 @@ describe('Who Is Online', () => {
 
     expect(extraParticipants).toBeTruthy();
   });
+
+  test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
+    element['updateParticipants'](MOCK_PARTICIPANTS);
+    await sleep();
+
+    const letter = element?.shadowRoot?.querySelector('.superviz-who-is-online__avatar');
+
+    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex];
+    expect(letter?.getAttribute('style')).toBe(
+      `background-color: ${backgroundColor}; color: #000000`,
+    );
+  });
+
+  test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
+    const participant = {
+      ...MOCK_PARTICIPANTS[0],
+      slotIndex: 2,
+      color: MeetingColorsHex[2],
+    };
+
+    element['updateParticipants']([participant]);
+    await sleep();
+
+    const letter = element?.shadowRoot?.querySelector('.superviz-who-is-online__avatar');
+
+    const backgroundColor = MeetingColorsHex[participant.slotIndex];
+    expect(letter?.getAttribute('style')).toBe(
+      `background-color: ${backgroundColor}; color: #FFFFFF`,
+    );
+  });
 });

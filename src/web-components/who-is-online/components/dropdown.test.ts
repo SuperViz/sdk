@@ -1,8 +1,7 @@
 import '.';
-
+import { MeetingColorsHex } from '../../../common/types/meeting-colors.types';
 import sleep from '../../../common/utils/sleep';
-
-import { Participant } from './types';
+import { Participant } from '../../../components/who-is-online/types';
 
 interface elementProps {
   position: string;
@@ -15,10 +14,16 @@ interface elementProps {
   icons?: string[];
 }
 
-const mockParticipants = [
+const mockParticipants: Participant[] = [
   {
-    name: 'name 1',
-    color: '#000',
+    avatar: {
+      imageUrl: '',
+      model3DUrl: '',
+    },
+    color: MeetingColorsHex[0],
+    id: '1',
+    name: 'John Zero',
+    slotIndex: 0,
   },
 ];
 
@@ -181,6 +186,42 @@ describe('dropdown', () => {
     await sleep();
 
     expect(spy).toHaveBeenCalled();
+  });
+
+  test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
+    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+
+    await sleep();
+
+    const letter = element()?.shadowRoot?.querySelector('.who-is-online-dropdown__avatar');
+
+    const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex];
+    expect(letter?.getAttribute('style')).toBe(
+      `background-color: ${backgroundColor}; color: #000000`,
+    );
+  });
+
+  test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
+    const participant = {
+      ...mockParticipants[0],
+      slotIndex: 2,
+      color: MeetingColorsHex[2],
+    };
+
+    createEl({
+      position: 'bottom-right',
+      align: 'left',
+      participants: [participant],
+    });
+
+    await sleep();
+
+    const letter = element()?.shadowRoot?.querySelector('.who-is-online-dropdown__avatar');
+
+    const backgroundColor = MeetingColorsHex[2];
+    expect(letter?.getAttribute('style')).toBe(
+      `background-color: ${backgroundColor}; color: #FFFFFF`,
+    );
   });
 
   test('should call options handler when selecting an option', async () => {});

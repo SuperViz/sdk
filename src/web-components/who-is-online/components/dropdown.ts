@@ -1,3 +1,7 @@
+/* eslint-disable indent */
+// eslint was pointing indentation errors for a few lines
+// even though eslint was the one to format the code
+
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -101,8 +105,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         <div class="who-is-online-dropdown__content" slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${participant.color}">
-              <div class="who-is-online-dropdown__avatar" style="background-color: 
-              ${participant.color}; color: ${letterColor}">
+              <div class="who-is-online-dropdown__avatar" style="background-color: ${
+                participant.color
+              }; color: ${letterColor}">
                 ${participant.name?.at(0)}
               </div>
             </div>
