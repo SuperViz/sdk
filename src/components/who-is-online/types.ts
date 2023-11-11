@@ -1,3 +1,5 @@
+import { Avatar } from '../../common/types/participant.types';
+
 export enum LOCATION {
   TOP_LEFT = 'top-left',
   TOP_RIGHT = 'top-right',
@@ -7,9 +9,10 @@ export enum LOCATION {
 
 export interface Participant {
   name: string;
-  avatar: string;
+  avatar: Avatar;
   color: string;
   id: string;
+  slotIndex: number;
 }
 
 export type whoIsOnlineLocation = LOCATION | `${LOCATION}` | string;
