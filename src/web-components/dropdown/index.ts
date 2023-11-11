@@ -96,7 +96,7 @@ export class Dropdown extends WebComponentsBaseElement {
       'menu-open': this.open,
       'menu-left': this.align === 'left',
       'menu-right': this.align === 'right',
-      'distance-from-top': this.name,
+      'who-is-online-dropdown': this.name,
     };
 
     const header = () => {

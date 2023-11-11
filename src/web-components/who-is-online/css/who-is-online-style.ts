@@ -5,7 +5,7 @@ export const whoIsOnlineStyle = css`
     position: fixed;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
   }
 
   .superviz-who-is-online__participant {
@@ -57,5 +57,21 @@ export const whoIsOnlineStyle = css`
   .excess_participants:hover > div,
   .excess_participants--open > div {
     color: #fff !important;
+  }
+
+  @media (max-width: 780px) {
+    .superviz-who-is-online__participant {
+      width: 32px;
+      height: 32px;
+    }
+
+    .superviz-who-is-online__avatar {
+      width: 24px;
+      height: 24px;
+    }
+
+    .superviz-who-is-online {
+      gap: 8px;
+    }
   }
 `;

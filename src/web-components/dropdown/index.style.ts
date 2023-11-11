@@ -39,11 +39,11 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
-    top: -10px;
+    top: 7px;
   }
 
-  .distance-from-top {
-    top: 3px;
+  .who-is-online-dropdown {
+    top: 4px;
     padding: 4px;
   }
 
@@ -57,8 +57,7 @@ export const dropdownStyle = css`
   .menu--bottom-left {
     min-width: 103px;
     position: absolute;
-    left: 100%;
-    transform: translateX(-100%);
+    left: 0;
   }
 
   .menu--bottom-center {
@@ -71,8 +70,7 @@ export const dropdownStyle = css`
   .menu--bottom-right {
     min-width: 103px;
     position: absolute;
-    left: 26px;
-    transform: translateX(-100%);
+    right: 0;
   }
 
   .items li {

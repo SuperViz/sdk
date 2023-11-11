@@ -120,7 +120,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         options=${JSON.stringify(options)}
         label="label"
         returnTo="label"
-        position="bottom-center"
+        position="bottom-right"
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(icons)}"
         >

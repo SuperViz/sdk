@@ -30,7 +30,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.position = 'top: 20px; right: 20px;';
     this.open = false;
 
-    // should match presence-mouse textColorValues
+    // should match presence-mouse textColorValues property
     this.textColorValues = [2, 4, 5, 7, 8, 16];
   }
 
@@ -45,6 +45,19 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private onClickOutDropdown = ({ detail }: CustomEvent) => {
     this.open = detail.open;
   };
+
+  private dropdownPosition(index: number) {
+    if (index === 0) return 'bottom-left';
+
+    const thereAreExtraParticipants = this.participants.length > 4;
+    const isTheLastParticipantOfList = index + 1 === this.participants.length;
+
+    if (thereAreExtraParticipants || !isTheLastParticipantOfList) {
+      return 'bottom-center';
+    }
+
+    return 'bottom-right';
+  }
 
   private renderExcessParticipants() {
     const excess = this.participants.length - 4;
@@ -68,7 +81,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       <superviz-who-is-online-dropdown
         label="label"
         returnTo="label"
-        position="bottom-center"
+        position="bottom-right"
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
@@ -93,17 +106,18 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const icons = ['place', 'send'];
 
-    return html`${this.participants.slice(0, 4).map((participant) => {
+    return html`${this.participants.slice(0, 4).map((participant, index) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
         ? '#FFFFFF'
         : '#000000';
 
+      const position = this.dropdownPosition(index);
       return html`
         <superviz-dropdown
           options=${JSON.stringify(options)}
           label="label"
           returnTo="label"
-          position="bottom-center"
+          position="${position}"
           @selected=${this.dropdownOptionsHandler}
           icons="${JSON.stringify(icons)}"
           name="${participant.name}"
