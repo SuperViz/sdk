@@ -54,4 +54,17 @@ describe('EventBus', () => {
 
     expect(callback).not.toHaveBeenCalled();
   });
+
+  test('should remove all observers when the service is destroyed', () => {
+    const callback = jest.fn();
+
+    EventBusInstance.subscribe('test', callback);
+    EventBusInstance.destroy();
+
+    EventBusInstance['observers'].forEach((ob) => {
+      expect(ob.reset).toHaveBeenCalled();
+      expect(ob.destroy).toHaveBeenCalled();
+    });
+    expect(EventBusInstance['observers'].size).toBe(0);
+  });
 });
