@@ -247,6 +247,13 @@ export class Launcher extends Observable implements DefaultLauncher {
     if (localParticipant && !isEqual(this.participant, localParticipant)) {
       this.activeComponents = localParticipant.activeComponents ?? [];
       this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+        /**
+         * @NOTE - Prevents removing all components when
+         * in the first update, activeComponents is undefined.
+         * It means we should keep all instances
+         */
+        if (!localParticipant.activeComponents) return true;
+
         return this.activeComponents.includes(component.name);
       });
       this.participant = localParticipant;
