@@ -1,3 +1,5 @@
+import Ably from 'ably';
+
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { Logger } from '../../common/utils';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
@@ -53,7 +55,7 @@ export class WhoIsOnline extends BaseComponent {
 
   /**
    * @function subscribeToRealtimeEvents
-   * @description Initializes the Who Is Online component
+   * @description Subscribes to realtime events
    * @returns {void}
    */
   private subscribeToRealtimeEvents(): void {
@@ -63,7 +65,13 @@ export class WhoIsOnline extends BaseComponent {
     this.realtime.whoIsOnlineObserver.subscribe(this.onWhoIsOnlineUpdate);
   }
 
-  private onParticipantJoined = (participant): void => {
+  /**
+   * @function onParticipantJoined
+   * @description Updates the participants list when a new participant joins the meeting
+   * @param {Ably.Types.PresenceMessage} participant
+   * @returns {void}
+   */
+  private onParticipantJoined = (participant: Ably.Types.PresenceMessage): void => {
     const alreadyJoined = this.participants?.find((element) => {
       return element.id === participant.data.id;
     });
@@ -84,6 +92,12 @@ export class WhoIsOnline extends BaseComponent {
     this.element.participants = this.participants;
   };
 
+  /**
+   * @function onSlotChange
+   * @description Changes participant color when new slot is assigned to them
+   * @param {Participant} participant
+   * @returns {void}
+   */
   private onSlotChange = ({ id, slotIndex }): void => {
     const color = MeetingColorsHex[slotIndex];
     this.color = color;
@@ -103,6 +117,11 @@ export class WhoIsOnline extends BaseComponent {
     this.element.participants = this.participants;
   };
 
+  /**
+   * @function positionWhoIsOnline
+   * @description Positions the Who Is Online component on the screen
+   * @returns {void}
+   */
   private positionWhoIsOnline(): void {
     this.element = document.createElement('superviz-who-is-online') as WhoIsOnlineElement;
     let { location } = this;
@@ -130,6 +149,12 @@ export class WhoIsOnline extends BaseComponent {
     this.element.position = `${vertical}: 20px; ${horizontal}: 20px;`;
   }
 
+  /**
+   * @function onWhoIsOnlineUpdate
+   * @param {Ably.Types.PresenceMessage} participants
+   * @description Updates the participants list when changes are published in Who Is Online channel
+   * @returns {void}
+   */
   private onWhoIsOnlineUpdate = (participants): void => {
     const { clientId } = participants;
     if (clientId === this.localParticipant.id) return;
