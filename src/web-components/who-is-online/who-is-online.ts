@@ -63,11 +63,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const excess = this.participants.length - 4;
     if (excess <= 0) return html``;
 
-    const participants = this.participants.slice(4).map(({ name, color, id }) => {
+    const participants = this.participants.slice(4).map(({ name, color, id, slotIndex }) => {
       return {
         name,
         color,
         id,
+        slotIndex,
       };
     });
 
