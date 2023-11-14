@@ -3,11 +3,9 @@ import { TextEncoder } from 'util';
 import Ably from 'ably';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { TranscriptState } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { sleep } from '../../../common/utils';
 
 import { AblyParticipant, AblyRealtimeData } from './types';
 
@@ -1737,76 +1735,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['clientSyncChannel']).toBe(null);
       expect(AblyRealtimeServiceInstance['client']).toBe(null);
       expect(AblyRealtimeServiceInstance['left']).toBe(true);
-    });
-  });
-
-  describe('who is online channel', () => {
-    beforeEach(() => {
-      const participantId = '123';
-
-      AblyRealtimeServiceInstance['myParticipant'] = {
-        action: 'enter',
-        clientId: participantId,
-        data: {
-          participantId,
-          slotIndex: 0,
-          type: ParticipantType.HOST,
-        },
-        id: 'unit-test-id',
-        connectionId: 'unit-test-connection-id',
-        encoding: '',
-        timestamp: new Date().getTime(),
-        extras: {},
-      };
-      AblyRealtimeServiceInstance['buildClient']();
-      AblyRealtimeServiceInstance.start({
-        apiKey: 'unit-test-api-key',
-        participant: MOCK_LOCAL_PARTICIPANT,
-        roomId: 'unit-test-room-id',
-      });
-    });
-
-    afterEach(() => {
-      AblyRealtimeServiceInstance.leave();
-    });
-
-    test('should publish as soon as user enters the channel', () => {
-      AblyRealtimeServiceInstance['onWhoIsOnlineChannelEnter'] = jest.fn();
-
-      const ablyParticipant = AblyRealtimeServiceInstance['myParticipant'];
-      AblyRealtimeServiceInstance.enterWhoIsOnlineChannel(ablyParticipant);
-
-      expect(AblyRealtimeServiceInstance['whoIsOnlineChannel'].presence.enter).toBeCalledWith([
-        AblyRealtimeServiceInstance['myParticipant'],
-      ]);
-    });
-
-    test('should publish message when participant enters the channel', () => {
-      AblyRealtimeServiceInstance['whoIsOnlineObserver'].publish = jest.fn();
-
-      const ablyParticipant = AblyRealtimeServiceInstance['myParticipant'];
-      AblyRealtimeServiceInstance['onWhoIsOnlineChannelEnter'](ablyParticipant);
-
-      expect(AblyRealtimeServiceInstance['whoIsOnlineObserver'].publish).toBeCalledWith(
-        ablyParticipant,
-      );
-    });
-
-    test('should publish message when there is an update in participants', () => {
-      AblyRealtimeServiceInstance['whoIsOnlineObserver'].publish = jest.fn();
-
-      const ablyParticipant = AblyRealtimeServiceInstance['myParticipant'];
-      AblyRealtimeServiceInstance.enterWhoIsOnlineChannel(ablyParticipant);
-
-      AblyRealtimeServiceInstance['whoIsOnlineChannel'].presence.update = jest.fn(() => {
-        AblyRealtimeServiceInstance['publishWhoIsOnlineUpdate'](ablyParticipant);
-      });
-
-      AblyRealtimeServiceInstance.updateWhoIsOnline([ablyParticipant.data]);
-
-      expect(AblyRealtimeServiceInstance['whoIsOnlineObserver'].publish).toBeCalledWith(
-        ablyParticipant,
-      );
     });
   });
 });

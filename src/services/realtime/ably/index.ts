@@ -2,13 +2,11 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
-import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { Annotation } from '../../../components/comments/types';
 import { ParticipantMouse } from '../../../components/presence-mouse/types';
 import { ComponentNames } from '../../../components/types';
-import { Participant as WhoIsOnlineParticipant } from '../../../components/who-is-online/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -37,7 +35,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private myParticipant: AblyParticipant = null;
 
   private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private whoIsOnlineChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
@@ -1282,8 +1279,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leavePresenceMouseChannel = (): void => {
     if (!this.presenceMouseChannel) return;
 
-    this.presenceMouseChannel = null;
     this.presenceMouseChannel.presence.leave();
+    this.presenceMouseChannel = null;
   };
 
   public updatePresenceMouse = throttle((data: Partial<ParticipantMouse>): void => {
@@ -1318,31 +1315,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.presenceMouseObserver.publish(this.participantsMouse);
   };
 
-  /** Who Is Online * */
-  public enterWhoIsOnlineChannel = (participant: Participant): void => {
-    if (!this.whoIsOnlineChannel) {
-      this.whoIsOnlineChannel = this.client.channels.get(
-        `${this.roomId.toLowerCase()}-who-is-online`,
-      );
-      this.whoIsOnlineChannel.attach();
-      this.whoIsOnlineChannel.presence.subscribe('enter', this.onWhoIsOnlineChannelEnter);
-      this.whoIsOnlineChannel.presence.subscribe('update', this.publishWhoIsOnlineUpdate);
-    }
-
-    this.whoIsOnlineChannel.presence.enter([participant]);
-  };
-
-  private publishWhoIsOnlineUpdate = (message: Ably.Types.PresenceMessage): void => {
-    this.whoIsOnlineObserver.publish(message);
-  };
-
-  private onWhoIsOnlineChannelEnter = (message: Ably.Types.PresenceMessage): void => {
-    this.whoIsOnlineObserver.publish(message);
-  };
-
-  public updateWhoIsOnline(participants: WhoIsOnlineParticipant[]) {
-    this.whoIsOnlineChannel.presence.update(participants);
-  }
   /** Presence 3D */
 
   public enterPresence3DChannel(participant: Participant) {
@@ -1374,8 +1346,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leavePresence3DChannel = (): void => {
     if (!this.presence3DChannel) return;
 
-    this.presence3DChannel = null;
     this.presence3DChannel.presence.leave();
+    this.presence3DChannel = null;
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {
