@@ -10,13 +10,14 @@ import {
 } from './common/types/events.types';
 import { ParticipantType } from './common/types/participant.types';
 import {
-  VideoComponent,
+  VideoConference,
   MousePointers,
   Realtime,
   Comments,
   CanvasPin,
   WhoIsOnline,
 } from './components';
+import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import init from './core';
 import './web-components';
 import './common/styles/global.css';
@@ -36,10 +37,16 @@ export { BrowserStats } from './services/browser/types';
 export { RealtimeMessage } from './services/realtime/ably/types';
 export { LauncherFacade } from './core/launcher/types';
 export { Observer } from './common/utils/observer';
-export { Annotation, Comment, PinAdapter, PinCoordinates } from './components/comments/types';
+export {
+  Annotation,
+  Comment,
+  PinAdapter,
+  PinCoordinates,
+  AnnotationPositionInfo,
+} from './components/comments/types';
 
 if (window) {
-  window.SuperVizSdk = {
+  window.SuperVizRoom = {
     init,
     MeetingEvent,
     DeviceEvent,
@@ -50,7 +57,7 @@ if (window) {
     ParticipantEvent,
     FrameEvent,
     LayoutMode,
-    VideoComponent,
+    VideoConference,
     MousePointers,
     Realtime,
     Comments,
@@ -59,6 +66,8 @@ if (window) {
     ParticipantType,
     LayoutPosition,
     CamerasPosition,
+    RealtimeComponentState,
+    RealtimeComponentEvent,
   };
 }
 
@@ -75,6 +84,8 @@ export {
   ParticipantType,
   LayoutPosition,
   CamerasPosition,
+  RealtimeComponentState,
+  RealtimeComponentEvent,
 };
 
 export default init;

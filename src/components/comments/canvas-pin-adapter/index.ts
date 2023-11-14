@@ -1,6 +1,6 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, AnnotationPositionInfo, PinAdapter, PinCoordinates } from '../types';
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
@@ -118,9 +118,9 @@ export class CanvasPin implements PinAdapter {
    * @description
           creates a temporary pin with the id
           temporary-pin to mark where the annotation is being created
-   * @param {PinCoordinates} coordinates  - The coordinates of the pin to be created.
+   * @param {AnnotationPositionInfo} coordinates  - The coordinates of the pin to be created.
    */
-  public createTemporaryPin(coordinates: PinCoordinates): void {
+  public createTemporaryPin(coordinates: AnnotationPositionInfo): void {
     let temporaryPin = document.getElementById('superviz-temporary-pin');
 
     if (!temporaryPin) {

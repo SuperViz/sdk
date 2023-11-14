@@ -23,7 +23,7 @@ import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
-import { VideoComponent } from '.';
+import { VideoConference } from '.';
 
 const VIDEO_MANAGER_MOCK = {
   start: jest.fn(),
@@ -65,17 +65,17 @@ jest.mock('../../services/event-bus', () => {
   return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
 });
 
-describe('VideoComponent', () => {
-  let VideoComponentInstance: VideoComponent;
+describe('VideoConference', () => {
+  let VideoConferenceInstance: VideoConference;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    VideoComponentInstance = new VideoComponent({
+    VideoConferenceInstance = new VideoConference({
       userType: 'host',
     });
 
-    VideoComponentInstance.attach({
+    VideoConferenceInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, {
         isJoinedRoom: true,
         participant: {
@@ -100,17 +100,17 @@ describe('VideoComponent', () => {
   });
 
   afterEach(() => {
-    VideoComponentInstance.detach();
+    VideoConferenceInstance.detach();
   });
 
   test('should not show avatar settings if local participant has avatar', () => {
-    VideoComponentInstance.detach();
+    VideoConferenceInstance.detach();
 
-    VideoComponentInstance = new VideoComponent({
+    VideoConferenceInstance = new VideoConference({
       defaultAvatars: true,
     });
 
-    VideoComponentInstance.attach({
+    VideoConferenceInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: {
         ...MOCK_LOCAL_PARTICIPANT,
@@ -121,7 +121,7 @@ describe('VideoComponent', () => {
       eventBus: EVENT_BUS_MOCK,
     });
 
-    expect(VideoComponentInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();
+    expect(VideoConferenceInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();
   });
 
   test('should subscribe to realtime events', () => {
@@ -142,7 +142,7 @@ describe('VideoComponent', () => {
 
   describe('detach', () => {
     beforeEach(() => {
-      VideoComponentInstance.detach();
+      VideoConferenceInstance.detach();
     });
 
     test('should unsubscribe from realtime events', () => {
@@ -164,15 +164,16 @@ describe('VideoComponent', () => {
 
   describe('connection events', () => {
     test('should freeze sync if the connection status is bad', () => {
-      VideoComponentInstance['onConnectionStatusChange'](MeetingConnectionStatus.BAD);
+      VideoConferenceInstance['onConnectionStatusChange'](MeetingConnectionStatus.BAD);
 
       expect(ABLY_REALTIME_MOCK.freezeSync).toBeCalledWith(true);
     });
 
     test('should enable sync if the connection status becomes good', () => {
-      VideoComponentInstance['connectionService'].oldConnectionStatus = MeetingConnectionStatus.BAD;
+      VideoConferenceInstance['connectionService'].oldConnectionStatus =
+        MeetingConnectionStatus.BAD;
 
-      VideoComponentInstance['onConnectionStatusChange'](MeetingConnectionStatus.GOOD);
+      VideoConferenceInstance['onConnectionStatusChange'](MeetingConnectionStatus.GOOD);
 
       expect(ABLY_REALTIME_MOCK.freezeSync).toBeCalledWith(false);
     });
@@ -180,23 +181,23 @@ describe('VideoComponent', () => {
 
   describe('video events', () => {
     test('should initialize video when frame is initialized', () => {
-      VideoComponentInstance['onFrameStateChange'](VideoFrameState.INITIALIZED);
+      VideoConferenceInstance['onFrameStateChange'](VideoFrameState.INITIALIZED);
 
       expect(VIDEO_MANAGER_MOCK.start).toHaveBeenCalledWith({
-        participant: VideoComponentInstance['localParticipant'],
-        group: VideoComponentInstance['group'],
+        participant: VideoConferenceInstance['localParticipant'],
+        group: VideoConferenceInstance['group'],
         roomId: MOCK_CONFIG.roomId,
       });
     });
 
     test('should not initialize video when frame is not initialized', () => {
-      VideoComponentInstance['onFrameStateChange'](VideoFrameState.INITIALIZING);
+      VideoConferenceInstance['onFrameStateChange'](VideoFrameState.INITIALIZING);
 
       expect(VIDEO_MANAGER_MOCK.start).not.toHaveBeenCalled();
     });
 
     test('should change host from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_HOST_CHANGE,
         data: MOCK_LOCAL_PARTICIPANT.id,
       });
@@ -205,7 +206,7 @@ describe('VideoComponent', () => {
     });
 
     test('should change grid mode from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
         data: true,
       });
@@ -214,7 +215,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set gather from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_GATHER,
         data: true,
       });
@@ -223,7 +224,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set go to from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
         data: MOCK_LOCAL_PARTICIPANT.id,
       });
@@ -235,7 +236,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set draw data from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_DRAWING_CHANGE,
         data: MOCK_DRAW_DATA,
       });
@@ -244,7 +245,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set follow participant from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
         data: MOCK_LOCAL_PARTICIPANT.id,
       });
@@ -253,7 +254,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set follow participant from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: MeetingEvent.MEETING_KICK_PARTICIPANT,
         data: MOCK_LOCAL_PARTICIPANT.id,
       });
@@ -262,7 +263,7 @@ describe('VideoComponent', () => {
     });
 
     test('should set follow participant from video frame', () => {
-      VideoComponentInstance['onRealtimeEventFromFrame']({
+      VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE,
         data: TranscriptState.TRANSCRIPT_START,
       });
@@ -276,7 +277,7 @@ describe('VideoComponent', () => {
         name: 'John Doe',
       };
 
-      VideoComponentInstance['onParticipantJoined'](participant);
+      VideoConferenceInstance['onParticipantJoined'](participant);
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         name: 'John Doe',
@@ -291,8 +292,8 @@ describe('VideoComponent', () => {
         avatar: MOCK_AVATAR,
       };
 
-      VideoComponentInstance['videoConfig'].canUseDefaultAvatars = true;
-      VideoComponentInstance['onParticipantJoined'](participant);
+      VideoConferenceInstance['videoConfig'].canUseDefaultAvatars = true;
+      VideoConferenceInstance['onParticipantJoined'](participant);
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         name: 'John Doe',
@@ -302,34 +303,34 @@ describe('VideoComponent', () => {
     });
 
     test('should publish message to client when my participant left', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
-      VideoComponentInstance['onParticipantLeft'](MOCK_LOCAL_PARTICIPANT);
+      VideoConferenceInstance['onParticipantLeft'](MOCK_LOCAL_PARTICIPANT);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MY_PARTICIPANT_LEFT,
         MOCK_LOCAL_PARTICIPANT,
       );
     });
 
     test('should publish message to client when meeting state changed', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
-      VideoComponentInstance['onMeetingStateChange'](MeetingState.MEETING_CONNECTED);
+      VideoConferenceInstance['onMeetingStateChange'](MeetingState.MEETING_CONNECTED);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_STATE_UPDATE,
         MeetingState.MEETING_CONNECTED,
       );
     });
 
     test('should publish message to client and detach when same account error happened', () => {
-      VideoComponentInstance['publish'] = jest.fn();
-      VideoComponentInstance['detach'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
+      VideoConferenceInstance['detach'] = jest.fn();
 
-      VideoComponentInstance['onSameAccountError']('same-account-error');
+      VideoConferenceInstance['onSameAccountError']('same-account-error');
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR,
         'same-account-error',
       );
@@ -338,76 +339,79 @@ describe('VideoComponent', () => {
         type: ParticipantType.GUEST,
       });
       expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
-      expect(VideoComponentInstance['detach']).toBeCalled();
+      expect(VideoConferenceInstance['detach']).toBeCalled();
     });
 
     test('should publish a message to client when devices change', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
-      VideoComponentInstance['onDevicesChange'](DeviceEvent.DEVICES_BLOCKED);
+      VideoConferenceInstance['onDevicesChange'](DeviceEvent.DEVICES_BLOCKED);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_DEVICES_CHANGE,
         DeviceEvent.DEVICES_BLOCKED,
       );
     });
 
     test('should publish a message to client when waiting for host', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
-      VideoComponentInstance['onWaitingForHost'](true);
+      VideoConferenceInstance['onWaitingForHost'](true);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_WAITING_FOR_HOST,
         true,
       );
     });
 
     test('should publish a message to client when frame size change', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
-      VideoComponentInstance['onFrameSizeDidChange']({
+      VideoConferenceInstance['onFrameSizeDidChange']({
         height: 100,
         width: 100,
       });
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(FrameEvent.FRAME_DIMENSIONS_UPDATE, {
-        height: 100,
-        width: 100,
-      });
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
+        FrameEvent.FRAME_DIMENSIONS_UPDATE,
+        {
+          height: 100,
+          width: 100,
+        },
+      );
     });
 
     test('should update participant list', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
       const participants = [MOCK_LOCAL_PARTICIPANT];
 
-      VideoComponentInstance['onParticipantListUpdate'](participants);
+      VideoConferenceInstance['onParticipantListUpdate'](participants);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
         participants,
       );
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE,
         participants.length,
       );
     });
 
     test('should not update participant list if new list is equal to old list', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
       const participants = [MOCK_LOCAL_PARTICIPANT];
 
-      VideoComponentInstance['onParticipantListUpdate'](participants);
-      VideoComponentInstance['onParticipantListUpdate'](participants);
+      VideoConferenceInstance['onParticipantListUpdate'](participants);
+      VideoConferenceInstance['onParticipantListUpdate'](participants);
 
-      expect(VideoComponentInstance['publish']).toBeCalledTimes(2);
+      expect(VideoConferenceInstance['publish']).toBeCalledTimes(2);
     });
   });
 
   describe('realtime events', () => {
     test('should update host participant', () => {
-      VideoComponentInstance['onHostParticipantDidChange']({
+      VideoConferenceInstance['onHostParticipantDidChange']({
         oldHostParticipantId: '',
         newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
       });
@@ -429,14 +433,14 @@ describe('VideoComponent', () => {
         timestamp: new Date().getTime(),
         data: {
           avatar: MOCK_LOCAL_PARTICIPANT.avatar,
-          isHost: VideoComponentInstance['realtime'].hostClientId === MOCK_LOCAL_PARTICIPANT.id,
+          isHost: VideoConferenceInstance['realtime'].hostClientId === MOCK_LOCAL_PARTICIPANT.id,
           type: MOCK_LOCAL_PARTICIPANT.type,
           participantId: MOCK_LOCAL_PARTICIPANT.id,
           slotIndex: 0,
         },
       };
 
-      VideoComponentInstance['onRealtimeParticipantsDidChange']({
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
         [MOCK_LOCAL_PARTICIPANT.id]: ablyParticipant,
       });
 
@@ -467,8 +471,8 @@ describe('VideoComponent', () => {
       };
 
       // @ts-ignore
-      VideoComponentInstance['realtime'].hostClientId = MOCK_LOCAL_PARTICIPANT.id;
-      VideoComponentInstance['onRoomInfoUpdated'](realtimeData);
+      VideoConferenceInstance['realtime'].hostClientId = MOCK_LOCAL_PARTICIPANT.id;
+      VideoConferenceInstance['onRoomInfoUpdated'](realtimeData);
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
@@ -510,13 +514,13 @@ describe('VideoComponent', () => {
         isGridModeEnable: true,
       };
 
-      VideoComponentInstance['onRoomInfoUpdated'](realtimeData);
+      VideoConferenceInstance['onRoomInfoUpdated'](realtimeData);
 
       expect(ABLY_REALTIME_MOCK.setGather).not.toHaveBeenCalled();
     });
 
     test('should publish message to client when participant joined', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
       const ablyParticipant: AblyParticipant = {
         extras: null,
@@ -534,16 +538,16 @@ describe('VideoComponent', () => {
         },
       };
 
-      VideoComponentInstance['onParticipantJoinedOnRealtime'](ablyParticipant);
+      VideoConferenceInstance['onParticipantJoinedOnRealtime'](ablyParticipant);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_PARTICIPANT_JOINED,
-        VideoComponentInstance['createParticipantFromAblyPresence'](ablyParticipant),
+        VideoConferenceInstance['createParticipantFromAblyPresence'](ablyParticipant),
       );
     });
 
     test('should publish message to client when participant left', () => {
-      VideoComponentInstance['publish'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
 
       const ablyParticipant: AblyParticipant = {
         extras: null,
@@ -561,21 +565,21 @@ describe('VideoComponent', () => {
         },
       };
 
-      VideoComponentInstance['onParticipantLeftOnRealtime'](ablyParticipant);
+      VideoConferenceInstance['onParticipantLeftOnRealtime'](ablyParticipant);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_PARTICIPANT_LEFT,
-        VideoComponentInstance['createParticipantFromAblyPresence'](ablyParticipant),
+        VideoConferenceInstance['createParticipantFromAblyPresence'](ablyParticipant),
       );
     });
 
     test('should publish a message to client and detach when kick participants happend', () => {
-      VideoComponentInstance['publish'] = jest.fn();
-      VideoComponentInstance['detach'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
+      VideoConferenceInstance['detach'] = jest.fn();
 
-      VideoComponentInstance['onKickAllParticipantsDidChange'](true);
+      VideoConferenceInstance['onKickAllParticipantsDidChange'](true);
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_KICK_PARTICIPANTS,
         true,
       );
@@ -584,31 +588,31 @@ describe('VideoComponent', () => {
         type: ParticipantType.GUEST,
       });
       expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
-      expect(VideoComponentInstance['detach']).toBeCalled();
+      expect(VideoConferenceInstance['detach']).toBeCalled();
     });
 
     test('should publish a message to client and detach when kick local participant happend', () => {
-      VideoComponentInstance['publish'] = jest.fn();
-      VideoComponentInstance['detach'] = jest.fn();
+      VideoConferenceInstance['publish'] = jest.fn();
+      VideoConferenceInstance['detach'] = jest.fn();
 
-      VideoComponentInstance['onKickLocalParticipant']();
+      VideoConferenceInstance['onKickLocalParticipant']();
 
-      expect(VideoComponentInstance['publish']).toBeCalledWith(
+      expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_KICK_PARTICIPANT,
-        VideoComponentInstance['localParticipant'],
+        VideoConferenceInstance['localParticipant'],
       );
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         activeComponents: [],
         type: ParticipantType.GUEST,
       });
-      expect(VideoComponentInstance['detach']).toBeCalled();
+      expect(VideoConferenceInstance['detach']).toBeCalled();
     });
   });
 
   describe('toolbar controls', () => {
     test('should toggle chat', () => {
-      VideoComponentInstance['toggleChat']();
+      VideoConferenceInstance['toggleChat']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_MEETING_CHAT,
@@ -616,7 +620,7 @@ describe('VideoComponent', () => {
     });
 
     test('should toggle meeting setup', () => {
-      VideoComponentInstance['toggleMeetingSetup']();
+      VideoConferenceInstance['toggleMeetingSetup']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_MEETING_SETUP,
@@ -624,7 +628,7 @@ describe('VideoComponent', () => {
     });
 
     test('should toggle user`s cam', () => {
-      VideoComponentInstance['toggleCam']();
+      VideoConferenceInstance['toggleCam']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_CAM,
@@ -632,7 +636,7 @@ describe('VideoComponent', () => {
     });
 
     test('should toggle user`s mic', () => {
-      VideoComponentInstance['toggleMicrophone']();
+      VideoConferenceInstance['toggleMicrophone']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_MICROPHONE,
@@ -640,7 +644,7 @@ describe('VideoComponent', () => {
     });
 
     test('should toggle screenshare', () => {
-      VideoComponentInstance['toggleScreenShare']();
+      VideoConferenceInstance['toggleScreenShare']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_SCREENSHARE,
@@ -648,7 +652,7 @@ describe('VideoComponent', () => {
     });
 
     test('should toggle transcript', () => {
-      VideoComponentInstance['toggleTranscript']();
+      VideoConferenceInstance['toggleTranscript']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         MeetingControlsEvent.TOGGLE_TRANSCRIPT,
@@ -656,7 +660,7 @@ describe('VideoComponent', () => {
     });
 
     test('should hang up', () => {
-      VideoComponentInstance['hangUp']();
+      VideoConferenceInstance['hangUp']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(MeetingControlsEvent.HANG_UP);
     });

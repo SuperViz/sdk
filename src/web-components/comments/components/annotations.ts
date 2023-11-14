@@ -85,9 +85,9 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
 
     return html`
       <div class="annotations">
-        <span class="text text-big text-bold annotations--add-comment-btn"
-          >Click anywhere to add a comment</span
-        >
+        <span class="text text-big text-bold annotations--add-comment-btn">
+          Click anywhere to add a comment
+        </span>
         <div class=${classMap(commentInputClasses)}>
           <superviz-comments-comment-input
             @create-annotation=${this.createComment}

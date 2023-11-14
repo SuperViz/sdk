@@ -3,9 +3,10 @@ import {
   Comments,
   MousePointers,
   Realtime,
-  VideoComponent,
+  VideoConference,
   WhoIsOnline,
 } from '../../components';
+import { RealtimeComponentEvent, RealtimeComponentState } from '../../components/realtime/types';
 import { LauncherFacade } from '../../core/launcher/types';
 import {
   CamerasPosition,
@@ -40,10 +41,12 @@ export interface SuperVizCdn {
   ParticipantType: typeof ParticipantType;
   LayoutPosition: typeof LayoutPosition;
   CamerasPosition: typeof CamerasPosition;
-  VideoComponent: typeof VideoComponent;
+  VideoConference: typeof VideoConference;
   MousePointers: typeof MousePointers;
   Realtime: typeof Realtime;
   Comments: typeof Comments;
   CanvasPin: typeof CanvasPin;
   WhoIsOnline: typeof WhoIsOnline;
+  RealtimeComponentState: typeof RealtimeComponentState;
+  RealtimeComponentEvent: typeof RealtimeComponentEvent;
 }

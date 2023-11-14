@@ -18,6 +18,8 @@ jest.mock('../../services/pubsub', () => ({
   PubSub: jest.fn().mockImplementation(() => PUB_SUB_MOCK),
 }));
 
+jest.useFakeTimers();
+
 describe('realtime component', () => {
   let RealtimeComponentInstance: Realtime;
 
@@ -66,5 +68,71 @@ describe('realtime component', () => {
     RealtimeComponentInstance.detach();
 
     expect(PUB_SUB_MOCK.destroy).toHaveBeenCalled();
+  });
+
+  test('when realtime is not joined room should store callback to subscribe', () => {
+    const callback = jest.fn();
+    const RealtimeComponentInstance = new Realtime();
+
+    RealtimeComponentInstance.attach({
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    RealtimeComponentInstance.subscribe('test', callback);
+
+    expect(PUB_SUB_MOCK.subscribe).not.toHaveBeenCalled();
+    expect(RealtimeComponentInstance['callbacksToSubscribeWhenJoined']).toEqual([
+      { event: 'test', callback },
+    ]);
+  });
+
+  test('should subscribe to events when joined room', async () => {
+    const callback = jest.fn();
+    const RealtimeComponentInstance = new Realtime();
+
+    RealtimeComponentInstance.attach({
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    RealtimeComponentInstance.subscribe('test', callback);
+
+    expect(PUB_SUB_MOCK.subscribe).not.toHaveBeenCalled();
+
+    RealtimeComponentInstance['realtime'] = Object.assign({}, ABLY_REALTIME_MOCK, {
+      isJoinedRoom: true,
+    });
+
+    // mock start call
+    RealtimeComponentInstance['start']();
+
+    expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith('test', callback);
+  });
+
+  test('should not publish event when realtime is not started', () => {
+    console.error = jest.fn();
+    const RealtimeComponentInstance = new Realtime();
+
+    RealtimeComponentInstance.attach({
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
+      localParticipant: MOCK_LOCAL_PARTICIPANT,
+      group: MOCK_GROUP,
+      config: MOCK_CONFIG,
+      eventBus: EVENT_BUS_MOCK,
+    });
+
+    RealtimeComponentInstance.publish('test', 'test');
+
+    expect(console.error).toHaveBeenCalledWith(
+      "Realtime component is not started yet. You can't publish event test before start",
+    );
+    expect(PUB_SUB_MOCK.publish).not.toHaveBeenCalled();
   });
 });

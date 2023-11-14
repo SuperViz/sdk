@@ -1,11 +1,13 @@
 import { MeetingEvent, RealtimeEvent } from '../../common/types/events.types';
 import type { Avatar } from '../../common/types/participant.types';
 import { BrowserService } from '../browser';
+import { ComponentLimits } from '../limits/types';
 
 export interface VideoManagerOptions {
   language?: string;
   canUseChat: boolean;
   canUseCams: boolean;
+  canUseTranscription: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
   canUseGather: boolean;
@@ -52,10 +54,12 @@ export interface FrameConfig {
   ablyKey: string;
   roomId: string;
   debug: boolean;
+  limits: ComponentLimits;
   canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
+  canUseTranscription: boolean;
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseGather: boolean;
