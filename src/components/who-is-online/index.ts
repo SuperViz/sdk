@@ -4,7 +4,7 @@ import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlinePosition, Position, Participant, WhoIsOnlineOptions } from './types';
+import { WhoIsOnlinePosition, Position, Participant } from './types';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 export class WhoIsOnline extends BaseComponent {
@@ -12,17 +12,12 @@ export class WhoIsOnline extends BaseComponent {
   protected logger: Logger;
   private element: WhoIsOnlineElement;
   private position: WhoIsOnlinePosition;
-  private breakLayout: boolean = false;
-
   private participants: Participant[] = [];
 
-  constructor(options?: WhoIsOnlineOptions) {
+  constructor(position?: WhoIsOnlinePosition) {
     super();
     this.name = ComponentNames.WHO_IS_ONLINE;
-
-    const { position, breakLayout } = options ?? {};
     this.position = position ?? Position.TOP_RIGHT;
-    this.breakLayout = breakLayout ?? false;
     this.logger = new Logger('@superviz/sdk/who-is-online-component');
   }
 
@@ -219,22 +214,19 @@ export class WhoIsOnline extends BaseComponent {
     if (isUsingDefaultPosition) {
       document.body.appendChild(this.element);
       const [vertical, horizontal] = this.position.split('-');
-      this.element.position = `${vertical}: 20px; ${horizontal}: 20px;`;
+      this.element.position = `${vertical}: 20px; ${horizontal}: 40px;`;
       return;
     }
 
     const container = document.getElementById(this.position);
 
     if (!container) {
-      this.element.position = 'top: 20px; right: 20px;';
+      this.element.position = 'top: 20px; right: 40px;';
       document.body.appendChild(this.element);
       return;
     }
 
     container.appendChild(this.element);
-
-    if (this.breakLayout) {
-      this.element.position = 'position: relative;';
-    }
+    this.element.position = 'position: relative;';
   }
 }

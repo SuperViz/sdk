@@ -27,7 +27,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   constructor() {
     super();
-    this.position = 'top: 20px; right: 20px;';
+    this.position = 'top: 20px; right: 40px;';
     this.open = false;
 
     // should match presence-mouse textColorValues property
@@ -47,6 +47,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   };
 
   private dropdownPosition(index: number) {
+    if (this.participants.length === 1) return 'bottom-center';
+
     if (index === 0) return 'bottom-left';
 
     const thereAreExtraParticipants = this.participants.length > 4;

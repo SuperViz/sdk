@@ -58,18 +58,18 @@ describe('Who Is Online', () => {
     const participants = element?.shadowRoot?.querySelector(
       '.superviz-who-is-online',
     ) as HTMLElement;
-    expect(participants.getAttribute('style')).toBe('top: 20px; right: 20px;');
+    expect(participants.getAttribute('style')).toBe('top: 20px; right: 40px;');
   });
 
   test('should update position style', async () => {
     const participants = element?.shadowRoot?.querySelector(
       '.superviz-who-is-online',
     ) as HTMLElement;
-    element['position'] = 'top: 20px; left: 20px;';
+    element['position'] = 'top: 20px; left: 40px;';
 
     await sleep();
 
-    expect(participants.getAttribute('style')).toBe('top: 20px; left: 20px;');
+    expect(participants.getAttribute('style')).toBe('top: 20px; left: 40px;');
   });
 
   test('should not update position style if does not find participants', async () => {
@@ -78,11 +78,11 @@ describe('Who Is Online', () => {
     ) as HTMLElement;
     participants.classList.remove('superviz-who-is-online');
 
-    element['position'] = 'top: 20px; left: 20px;';
+    element['position'] = 'top: 20px; left: 40px;';
 
     await sleep();
     expect(participants.classList.contains('superviz-who-is-online')).toBeFalsy();
-    expect(participants.getAttribute('style')).toBe('top: 20px; right: 20px;');
+    expect(participants.getAttribute('style')).toBe('top: 20px; right: 40px;');
   });
 
   test('should update participants list', async () => {

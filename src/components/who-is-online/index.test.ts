@@ -105,7 +105,7 @@ describe('Who Is Online', () => {
 
   test('should position at top-right if no id is provided', async () => {
     expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
-    expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 20px;');
+    expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 40px;');
   });
 
   test('should position at top-right if invalid id is provided', async () => {
@@ -115,7 +115,7 @@ describe('Who Is Online', () => {
     whoIsOnlineComponent['positionWhoIsOnline']();
 
     expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
-    expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 20px;');
+    expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 40px;');
   });
 
   test('should correctly update list when participant join even if participant already in the list', () => {
