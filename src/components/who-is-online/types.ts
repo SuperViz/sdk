@@ -1,6 +1,6 @@
 import { Participant as GeneralParticipant } from '../../common/types/participant.types';
 
-export enum LOCATION {
+export enum Location {
   TOP_LEFT = 'top-left',
   TOP_RIGHT = 'top-right',
   BOTTOM_LEFT = 'bottom-left',
@@ -11,4 +11,4 @@ export interface Participant extends GeneralParticipant {
   slotIndex: number;
 }
 
-export type WhoIsOnlineLocation = LOCATION | `${LOCATION}` | string;
+export type WhoIsOnlineLocation = Location | `${Location}` | string;

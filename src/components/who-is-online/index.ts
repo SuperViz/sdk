@@ -4,7 +4,7 @@ import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlineLocation, LOCATION, Participant } from './types';
+import { WhoIsOnlineLocation, Location, Participant } from './types';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 export class WhoIsOnline extends BaseComponent {
@@ -17,7 +17,7 @@ export class WhoIsOnline extends BaseComponent {
   constructor(location?: WhoIsOnlineLocation) {
     super();
     this.name = ComponentNames.WHO_IS_ONLINE;
-    this.location = location ?? LOCATION.TOP_LEFT;
+    this.location = location ?? Location.TOP_RIGHT;
     this.logger = new Logger('@superviz/sdk/who-is-online-component');
   }
 
@@ -207,28 +207,26 @@ export class WhoIsOnline extends BaseComponent {
    */
   private positionWhoIsOnline(): void {
     this.element = document.createElement('superviz-who-is-online') as WhoIsOnlineElement;
-    let { location } = this;
-
-    const positionsOptions = Object.values(location);
-
-    const positionById = !positionsOptions.includes(
-      location.toLocaleLowerCase() as WhoIsOnlineLocation,
+    const isUsingDefaultPosition = Object.values(Location).includes(
+      this.location.toLowerCase() as Location,
     );
 
-    if (positionById) {
-      const container = window.document.body.querySelector(`#${location}`);
-
-      if (container) {
-        container.appendChild(this.element);
-        this.element.position = 'position: relative;';
-        return;
-      }
-
-      location = LOCATION.TOP_RIGHT;
+    if (isUsingDefaultPosition) {
+      document.body.appendChild(this.element);
+      const [vertical, horizontal] = this.location.split('-');
+      this.element.position = `${vertical}: 20px; ${horizontal}: 20px;`;
+      return;
     }
 
-    document.body.appendChild(this.element);
-    const [vertical, horizontal] = location.split('-');
-    this.element.position = `${vertical}: 20px; ${horizontal}: 20px;`;
+    const container = document.getElementById(this.location);
+
+    if (!container) {
+      this.element.position = 'top: 20px; right: 20px;';
+      document.body.appendChild(this.element);
+      return;
+    }
+
+    container.appendChild(this.element);
+    this.element.position = 'position: relative;';
   }
 }
