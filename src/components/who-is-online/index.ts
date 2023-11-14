@@ -80,11 +80,9 @@ export class WhoIsOnline extends BaseComponent {
   private compareParticipants() {
     const realtimeParticipants = this.realtime.getParticipants;
 
-    for (let i = 0; i < this.participants.length; i++) {
-      if (!realtimeParticipants[this.participants[i].id]) return false;
-    }
-
-    return true;
+    return this.participants.every((participant) => {
+      return realtimeParticipants[participant.id];
+    });
   }
 
   /**
@@ -126,7 +124,7 @@ export class WhoIsOnline extends BaseComponent {
     const participant = this.realtime.getParticipants[data.id]?.data;
 
     const alreadyInList = participant
-      ? this.participants?.find((element) => {
+      ? this.participants?.some((element) => {
           return element.id === participant.id;
         })
       : false;
