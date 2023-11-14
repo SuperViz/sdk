@@ -86,7 +86,7 @@ export class WhoIsOnline extends BaseComponent {
   }
 
   /**
-   * @function subscribeToRealtimeEvents
+   * @function onParticipantListUpdate
    * @description Receives data about participants in the room who were not loaded when the component was initialized
    * @param {Record<string, AblyParticipant>} data
    * @returns {void}
