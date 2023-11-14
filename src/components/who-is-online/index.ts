@@ -4,17 +4,17 @@ import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { whoIsOnlineLocation, LOCATION, Participant } from './types';
+import { WhoIsOnlineLocation, LOCATION, Participant } from './types';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private element: WhoIsOnlineElement;
-  private location: whoIsOnlineLocation;
+  private location: WhoIsOnlineLocation;
   private participants: Participant[] = [];
 
-  constructor(location?: whoIsOnlineLocation) {
+  constructor(location?: WhoIsOnlineLocation) {
     super();
     this.name = ComponentNames.WHO_IS_ONLINE;
     this.location = location ?? LOCATION.TOP_LEFT;
@@ -50,6 +50,9 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected destroy(): void {
     this.unsubscribeToRealtimeEvents();
+    this.element.remove();
+    this.element = null;
+    this.participants = null;
   }
 
   /**
@@ -209,7 +212,7 @@ export class WhoIsOnline extends BaseComponent {
     const positionsOptions = Object.values(location);
 
     const positionById = !positionsOptions.includes(
-      location.toLocaleLowerCase() as whoIsOnlineLocation,
+      location.toLocaleLowerCase() as WhoIsOnlineLocation,
     );
 
     if (positionById) {
