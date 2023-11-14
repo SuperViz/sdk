@@ -39,14 +39,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (changedProperties.has('open')) {
-      if (this.open) {
-        document.addEventListener('click', this.onClickOutDropdown);
-      }
-
-      if (!this.open) {
-        document.removeEventListener('click', this.onClickOutDropdown);
-        this.close();
-      }
+      this.open
+        ? document.addEventListener('click', this.onClickOutDropdown)
+        : (document.removeEventListener('click', this.onClickOutDropdown), this.close());
     }
   }
 

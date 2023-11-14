@@ -98,18 +98,17 @@ export class WhoIsOnline extends BaseComponent {
 
     const currentParticipants: string[] = this.participants.map((participant) => participant.id);
 
-    this.participants = [
-      ...this.participants,
-      ...updatedParticipants
-        .filter((participant: AblyParticipant) => {
-          return !currentParticipants.includes(participant.data.id);
-        })
-        .map((participant: AblyParticipant) => {
-          const { slotIndex } = participant.data;
-          const color = MeetingColorsHex[slotIndex];
-          return { ...participant.data, color };
-        }),
-    ] as Participant[];
+    const rawNewParticipants = updatedParticipants.filter(
+      ({ data: { id } }) => !currentParticipants.includes(id),
+    );
+
+    const newParticipants = rawNewParticipants.map((participant) => {
+      const { slotIndex } = participant.data;
+      const color = MeetingColorsHex[slotIndex];
+      return { ...participant.data, color };
+    });
+
+    this.participants = [...this.participants, ...newParticipants] as Participant[];
 
     this.element.participants = this.participants;
   };
@@ -124,28 +123,20 @@ export class WhoIsOnline extends BaseComponent {
     const participant = this.realtime.getParticipants[data.id]?.data;
 
     const alreadyInList = participant
-      ? this.participants?.some((element) => {
-          return element.id === participant.id;
-        })
+      ? this.participants?.some((element) => element.id === participant.id)
       : false;
 
     const color = MeetingColorsHex[participant?.slotIndex];
     data.slotIndex = participant?.slotIndex;
 
     if (alreadyInList) {
-      this.participants = this.participants.map((participant) => {
-        if (participant.id === data.id) {
-          return {
-            ...participant,
-            ...data,
-            color,
-          };
-        }
-        return participant;
-      });
+      this.participants = this.participants.map((participant) =>
+        participant.id === data.id ? { ...participant, ...data, color } : participant,
+      );
     } else {
       this.participants.push({ ...this.realtime.getParticipants[data.id]?.data, ...data, color });
     }
+
     if (!color) this.getColorAfterDelay(data.id);
 
     this.element.participants = this.participants;
@@ -174,14 +165,12 @@ export class WhoIsOnline extends BaseComponent {
     }
 
     this.participants = this.participants.map((participant) => {
-      if (participant.id === id) {
-        return {
-          ...participant,
-          ...data,
-        };
-      }
-
-      return participant;
+      return participant.id === id
+        ? {
+            ...participant,
+            ...data,
+          }
+        : participant;
     });
 
     this.element.participants = this.participants;
