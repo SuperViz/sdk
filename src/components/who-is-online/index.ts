@@ -67,7 +67,7 @@ export class WhoIsOnline extends BaseComponent {
   }
 
   /**
-   * @function subscribeToRealtimeEvents
+   * @function unsubscribeToRealtimeEvents
    * @description Unsubscribes to realtime events
    * @returns {void}
    */

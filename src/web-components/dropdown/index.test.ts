@@ -8,7 +8,7 @@ interface elementProps {
   align: string;
   label?: string;
   returnTo?: string;
-  options?: any;
+  options?: Record<string, unknown>;
   name?: string;
   icons?: string[];
 }

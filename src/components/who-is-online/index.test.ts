@@ -26,14 +26,9 @@ const MOCK_PARTICIPANT: Participant & { participantId: string } = {
 
 describe('Who Is Online', () => {
   let whoIsOnlineComponent: WhoIsOnline;
-  let AblyRealtimeServiceInstance: AblyRealtimeService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    AblyRealtimeServiceInstance = new AblyRealtimeService(
-      'unit-test-api-key',
-      'unit-test-ably-key',
-    );
 
     whoIsOnlineComponent = new WhoIsOnline();
     whoIsOnlineComponent.attach({
