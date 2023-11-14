@@ -4,20 +4,25 @@ import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlineLocation, Location, Participant } from './types';
+import { WhoIsOnlinePosition, Position, Participant, WhoIsOnlineOptions } from './types';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private element: WhoIsOnlineElement;
-  private location: WhoIsOnlineLocation;
+  private position: WhoIsOnlinePosition;
+  private breakLayout: boolean = false;
+
   private participants: Participant[] = [];
 
-  constructor(location?: WhoIsOnlineLocation) {
+  constructor(options?: WhoIsOnlineOptions) {
     super();
     this.name = ComponentNames.WHO_IS_ONLINE;
-    this.location = location ?? Location.TOP_RIGHT;
+
+    const { position, breakLayout } = options ?? {};
+    this.position = position ?? Position.TOP_RIGHT;
+    this.breakLayout = breakLayout ?? false;
     this.logger = new Logger('@superviz/sdk/who-is-online-component');
   }
 
@@ -207,18 +212,18 @@ export class WhoIsOnline extends BaseComponent {
    */
   private positionWhoIsOnline(): void {
     this.element = document.createElement('superviz-who-is-online') as WhoIsOnlineElement;
-    const isUsingDefaultPosition = Object.values(Location).includes(
-      this.location.toLowerCase() as Location,
+    const isUsingDefaultPosition = Object.values(Position).includes(
+      this.position.toLowerCase() as Position,
     );
 
     if (isUsingDefaultPosition) {
       document.body.appendChild(this.element);
-      const [vertical, horizontal] = this.location.split('-');
+      const [vertical, horizontal] = this.position.split('-');
       this.element.position = `${vertical}: 20px; ${horizontal}: 20px;`;
       return;
     }
 
-    const container = document.getElementById(this.location);
+    const container = document.getElementById(this.position);
 
     if (!container) {
       this.element.position = 'top: 20px; right: 20px;';
@@ -227,6 +232,9 @@ export class WhoIsOnline extends BaseComponent {
     }
 
     container.appendChild(this.element);
-    this.element.position = 'position: relative;';
+
+    if (this.breakLayout) {
+      this.element.position = 'position: relative;';
+    }
   }
 }

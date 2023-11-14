@@ -89,11 +89,13 @@ describe('Who Is Online', () => {
 
   test('should position component inside div if id is provided', async () => {
     whoIsOnlineComponent['element'].remove();
+    whoIsOnlineComponent['breakLayout'] = true;
+
     const div = document.createElement('div');
 
     div.id = 'unit-test-div';
     document.body.appendChild(div);
-    whoIsOnlineComponent['location'] = 'unit-test-div';
+    whoIsOnlineComponent['position'] = 'unit-test-div';
     whoIsOnlineComponent['positionWhoIsOnline']();
 
     expect(div.parentElement).toBe(document.body);
@@ -109,7 +111,7 @@ describe('Who Is Online', () => {
   test('should position at top-right if invalid id is provided', async () => {
     whoIsOnlineComponent['element'].remove();
     const randomIdNumber = Math.ceil(Math.random() * 100);
-    whoIsOnlineComponent['location'] = `random-id${randomIdNumber}`;
+    whoIsOnlineComponent['position'] = `random-id${randomIdNumber}`;
     whoIsOnlineComponent['positionWhoIsOnline']();
 
     expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
