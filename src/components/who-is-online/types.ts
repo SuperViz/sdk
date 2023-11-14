@@ -12,3 +12,8 @@ export interface Participant extends GeneralParticipant {
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string;
+
+export interface WhoIsOnlineOptions {
+  position?: WhoIsOnlinePosition;
+  affectLayout?: boolean;
+}
