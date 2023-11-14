@@ -153,12 +153,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   protected render() {
-    return html` <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;700&display=swap"
-        rel="stylesheet"
-      />
-      <div class="superviz-who-is-online">${this.renderParticipants()}</div>`;
+    return html` <div class="superviz-who-is-online">${this.renderParticipants()}</div>`;
   }
 }
