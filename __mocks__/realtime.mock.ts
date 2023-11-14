@@ -4,7 +4,11 @@ import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-col
 import { AblyRealtimeService } from '../src/services/realtime';
 
 import { MOCK_OBSERVER_HELPER } from './observer-helper.mock';
-import { MOCK_ABLY_PARTICIPANT, MOCK_ABLY_PARTICIPANT_DATA_2 } from './participants.mock';
+import {
+  MOCK_ABLY_PARTICIPANT,
+  MOCK_ABLY_PARTICIPANT_DATA_2,
+  MOCK_ABLY_PARTICIPANT_DATA_1,
+} from './participants.mock';
 
 export const createRealtimeMessage = (messageName: string) => ({
   name: messageName,
@@ -30,7 +34,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   setSyncProperty: jest.fn(),
   setKickParticipant: jest.fn(),
   setTranscript: jest.fn(),
-  updateWhoIsOnline: jest.fn(),
   start: jest.fn(),
   join: jest.fn(),
   leave: jest.fn(),
@@ -48,13 +51,13 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
     color: MeetingColorsHex[0],
     name: MeetingColors[0],
   }),
-  getParticipants: [
-    MOCK_ABLY_PARTICIPANT,
-    {
+  getParticipants: {
+    'unit-test-participant1-id': { ...MOCK_ABLY_PARTICIPANT },
+    'unit-test-participant2-id': {
       ...MOCK_ABLY_PARTICIPANT,
       data: MOCK_ABLY_PARTICIPANT_DATA_2,
     },
-  ],
+  },
   roomInfoUpdatedObserver: MOCK_OBSERVER_HELPER,
   participantsObserver: MOCK_OBSERVER_HELPER,
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
@@ -71,8 +74,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   presenceMouseObserver: MOCK_OBSERVER_HELPER,
   domainRefusedObserver: MOCK_OBSERVER_HELPER,
   presenceSlotsInfosObserver: MOCK_OBSERVER_HELPER,
-  whoIsOnlineObserver: MOCK_OBSERVER_HELPER,
-  enterWhoIsOnlineChannel: jest.fn(),
   subscribeToParticipantUpdate: jest.fn(),
   unsubscribeFromParticipantUpdate: jest.fn(),
   updateMyProperties: jest.fn(),

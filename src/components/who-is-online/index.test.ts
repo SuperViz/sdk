@@ -1,23 +1,14 @@
-import Ably from 'ably';
-
-import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
-import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import {
-  MOCK_ABLY_PARTICIPANT_DATA_1,
   MOCK_AVATAR,
   MOCK_GROUP,
   MOCK_LOCAL_PARTICIPANT,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { MeetingColors, MeetingColorsHex } from '../../common/types/meeting-colors.types';
-import { ParticipantType } from '../../common/types/participant.types';
+import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import sleep from '../../common/utils/sleep';
-import { Launcher } from '../../core/launcher';
-import { LauncherOptions } from '../../core/launcher/types';
 import { AblyRealtimeService } from '../../services/realtime';
-import { AblyParticipant } from '../../services/realtime/ably/types';
 
 import { Participant } from './types';
 
@@ -37,7 +28,7 @@ describe('Who Is Online', () => {
   let whoIsOnlineComponent: WhoIsOnline;
   let AblyRealtimeServiceInstance: AblyRealtimeService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     AblyRealtimeServiceInstance = new AblyRealtimeService(
       'unit-test-api-key',
@@ -67,40 +58,24 @@ describe('Who Is Online', () => {
     expect(whoIsOnlineComponent).toBeInstanceOf(WhoIsOnline);
   });
 
-  test('should update participants when participant joins', () => {
-    const gray = MeetingColorsHex[16];
-
-    const presenceData: Ably.Types.PresenceMessage = {
-      extras: null,
-      action: 'enter',
-      clientId: 'participant2',
-      connectionId: 'connection2',
-      encoding: 'h264',
-      data: {
-        id: 'participant2',
-        name: 'participant2',
-        color: gray,
-        avatar: '',
-      },
-      id: 'unit-test-participant-ably-id',
-      timestamp: new Date().getTime(),
+  test('should update participants when participant joins', async () => {
+    const presenceData: Participant = {
+      id: 'participant2',
+      name: 'participant2',
+      color: undefined,
+      slotIndex: 3,
     };
 
     const currentParticipants = [...whoIsOnlineComponent['participants']];
 
     whoIsOnlineComponent['onParticipantJoined'](presenceData);
     expect(whoIsOnlineComponent['participants'].length).toBe(3);
-    expect(whoIsOnlineComponent['participants']).toEqual([
-      ...currentParticipants,
-      presenceData.data,
-    ]);
+    expect(whoIsOnlineComponent['participants']).toEqual([...currentParticipants, presenceData]);
   });
 
   test('should remove participant from participants list on leave', () => {
     const presenceData = {
-      data: {
-        ...MOCK_PARTICIPANT,
-      },
+      ...MOCK_PARTICIPANT,
     };
 
     expect(whoIsOnlineComponent['participants'].length).toBe(2);
@@ -112,28 +87,9 @@ describe('Who Is Online', () => {
     expect(whoIsOnlineComponent['participants'][0]).not.toEqual(MOCK_PARTICIPANT);
   });
 
-  test('should change slot color', () => {
-    const { id, color, slotIndex } = whoIsOnlineComponent['participants'][0];
-
-    expect(color).toBe(MOCK_PARTICIPANT.color);
-
-    const numberOfColors = Object.keys(MeetingColorsHex).length / 2;
-    let newSlot = slotIndex;
-    while (slotIndex === newSlot) {
-      newSlot = (newSlot + 1) % numberOfColors;
-    }
-
-    whoIsOnlineComponent['onSlotChange']({ id, slotIndex: newSlot });
-
-    expect(whoIsOnlineComponent['participants'][0].color).not.toBe(color);
-    expect(whoIsOnlineComponent['participants'][0].color).toBe(MeetingColorsHex[newSlot]);
-  });
-
   test('should position component inside div if id is provided', async () => {
     whoIsOnlineComponent['element'].remove();
     const div = document.createElement('div');
-
-    sleep();
 
     div.id = 'unit-test-div';
     document.body.appendChild(div);
@@ -160,53 +116,129 @@ describe('Who Is Online', () => {
     expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 20px;');
   });
 
-  test('should update participants when update occurs', () => {
-    const oldParticipants = [...whoIsOnlineComponent['participants']];
-    const newParticipants = oldParticipants.map((participant) => {
-      return {
-        ...participant,
-        color: MeetingColorsHex[participant.slotIndex + 1],
-      };
+  test('should correctly update list when participant join even if participant already in the list', () => {
+    jest.useFakeTimers();
+    const presenceData = {
+      ...MOCK_PARTICIPANT,
+      color: undefined,
+    };
+
+    whoIsOnlineComponent['participants'][0] = presenceData;
+
+    expect(whoIsOnlineComponent['participants'].length).toBe(2);
+    whoIsOnlineComponent['onParticipantJoined'](presenceData);
+    jest.advanceTimersByTime(1000);
+    expect(whoIsOnlineComponent['participants'].length).toBe(2);
+    expect(whoIsOnlineComponent['participants'][0]).toEqual({
+      ...presenceData,
+      color: MeetingColorsHex[presenceData.slotIndex],
     });
-
-    newParticipants.push(MOCK_ABLY_PARTICIPANT_DATA_1);
-
-    expect(whoIsOnlineComponent['participants']).toEqual(oldParticipants);
-
-    const onUpdate = whoIsOnlineComponent['onWhoIsOnlineUpdate'];
-    whoIsOnlineComponent['onWhoIsOnlineUpdate'] = jest.fn(onUpdate);
-    whoIsOnlineComponent['onWhoIsOnlineUpdate']({
-      clientId: 'unit-test-remote-participant-id',
-      data: newParticipants,
-    });
-
-    expect(whoIsOnlineComponent['onWhoIsOnlineUpdate']).toHaveBeenCalledTimes(1);
-    expect(whoIsOnlineComponent['participants']).not.toEqual(oldParticipants);
-    expect(whoIsOnlineComponent['participants']).toEqual(newParticipants);
+    jest.useRealTimers();
   });
 
-  test('should not update participantes when update occurs if local user published the update', () => {
-    const oldParticipants = [...whoIsOnlineComponent['participants']];
-    const newParticipants = oldParticipants.map((participant) => {
+  test("should correctly update user color if it isn't right initially", async () => {
+    const fakeId = 'fake-id';
+    whoIsOnlineComponent['getColorAfterDelay'](fakeId);
+    await sleep(200);
+    expect(whoIsOnlineComponent['participants'].map((participant) => participant.id)).not.toContain(
+      'fake-id',
+    );
+
+    whoIsOnlineComponent['onParticipantJoined']({ name: 'fake', id: 'fake-id', slotIndex: 3 });
+    whoIsOnlineComponent['realtime'] = Object.assign({}, ABLY_REALTIME_MOCK, {
+      getParticipants: {
+        ...whoIsOnlineComponent['realtime'].getParticipants,
+        'fake-id': {
+          data: {
+            name: 'fake',
+            slotIndex: 3,
+            id: 'fake-id',
+          },
+        },
+      },
+    });
+
+    await sleep(500);
+
+    expect(whoIsOnlineComponent['participants'].map((participant) => participant.id)).toContain(
+      'fake-id',
+    );
+  });
+
+  test('should update list of participants already in the room if initial list is incomplete', () => {
+    whoIsOnlineComponent['participants'] = [
+      { name: 'participant', id: 'random-participant', slotIndex: 3 },
+    ];
+    whoIsOnlineComponent['onParticipantListUpdate'](
+      whoIsOnlineComponent['realtime'].getParticipants,
+    );
+
+    expect(whoIsOnlineComponent['participants'].length).toBe(3); // 2 from real list + 1 from mock
+
+    const expected = [
+      { name: 'participant', id: 'random-participant', slotIndex: 3 },
+      ...Object.values(whoIsOnlineComponent['realtime'].getParticipants).map((participant) => {
+        const { color, avatar, id, name, participantId, slotIndex } = participant.data;
+        return { color, avatar, id, name, participantId, slotIndex };
+      }),
+    ];
+
+    expect(whoIsOnlineComponent['participants']).toStrictEqual(expected);
+  });
+
+  test('should interrupt update if participants list is equal to realtime participants list', () => {
+    whoIsOnlineComponent['compareParticipants'] = jest.fn(
+      whoIsOnlineComponent['compareParticipants'],
+    );
+
+    whoIsOnlineComponent['participants'] = Object.values(
+      whoIsOnlineComponent['realtime'].getParticipants,
+    ).map((participant) => {
+      const { slotIndex } = participant.data;
+      const color = MeetingColorsHex[slotIndex];
+
       return {
-        ...participant,
-        color: MeetingColorsHex[participant.slotIndex + 1],
+        ...participant.data,
+        participantId: participant.id,
+        color,
+        slotIndex,
       };
     });
 
-    newParticipants.push(MOCK_ABLY_PARTICIPANT_DATA_1);
+    whoIsOnlineComponent['onParticipantListUpdate'](
+      whoIsOnlineComponent['realtime'].getParticipants,
+    );
 
-    expect(whoIsOnlineComponent['participants']).toEqual(oldParticipants);
+    expect(whoIsOnlineComponent['compareParticipants']).toBeCalled();
+    expect(whoIsOnlineComponent['compareParticipants']).toHaveReturnedWith(true);
+  });
 
-    const onUpdate = whoIsOnlineComponent['onWhoIsOnlineUpdate'];
-    whoIsOnlineComponent['onWhoIsOnlineUpdate'] = jest.fn(onUpdate);
-    whoIsOnlineComponent['onWhoIsOnlineUpdate']({
-      clientId: whoIsOnlineComponent['localParticipant'].id,
-      data: newParticipants,
+  test('should update users correctly if lists having same size is a coincidence', () => {
+    whoIsOnlineComponent['compareParticipants'] = jest.fn(
+      whoIsOnlineComponent['compareParticipants'],
+    );
+
+    whoIsOnlineComponent['participants'] = Object.values(
+      whoIsOnlineComponent['realtime'].getParticipants,
+    ).map((participant) => {
+      const { slotIndex } = participant.data;
+      const color = MeetingColorsHex[slotIndex + 4];
+
+      return {
+        ...participant.data,
+        id: participant.id + 'random',
+        participantId: participant.id + 'random',
+        color,
+        slotIndex,
+      };
     });
 
-    expect(whoIsOnlineComponent['onWhoIsOnlineUpdate']).toHaveBeenCalledTimes(1);
-    expect(whoIsOnlineComponent['participants']).toEqual(oldParticipants);
-    expect(whoIsOnlineComponent['participants']).not.toEqual(newParticipants);
+    whoIsOnlineComponent['onParticipantListUpdate'](
+      whoIsOnlineComponent['realtime'].getParticipants,
+    );
+
+    expect(whoIsOnlineComponent['compareParticipants']).toBeCalled();
+    expect(whoIsOnlineComponent['compareParticipants']).toHaveReturnedWith(false);
+    expect(whoIsOnlineComponent['participants'].length).toBe(4);
   });
 });

@@ -1,4 +1,4 @@
-import { Avatar } from '../../common/types/participant.types';
+import { Participant as GeneralParticipant } from '../../common/types/participant.types';
 
 export enum LOCATION {
   TOP_LEFT = 'top-left',
@@ -7,12 +7,8 @@ export enum LOCATION {
   BOTTOM_RIGHT = 'bottom-right',
 }
 
-export interface Participant {
-  name: string;
-  avatar: Avatar;
-  color: string;
-  id: string;
+export interface Participant extends GeneralParticipant {
   slotIndex: number;
 }
 
-export type whoIsOnlineLocation = LOCATION | `${LOCATION}` | string;
+export type WhoIsOnlineLocation = LOCATION | `${LOCATION}` | string;
