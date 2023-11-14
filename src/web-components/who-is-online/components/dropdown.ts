@@ -1,7 +1,3 @@
-/* eslint-disable indent */
-// eslint was pointing indentation errors for a few lines
-// even though eslint was the one to format the code
-
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -41,8 +37,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.selected = '';
   }
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('open')) {
+  protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (changedProperties.has('open')) {
       if (this.open) {
         document.addEventListener('click', this.onClickOutDropdown);
       }
@@ -144,8 +140,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     });
   }
 
-  protected render() {
-    const menuClasses = {
+  private toggleOpen() {
+    this.open = !this.open;
+    this.selected = '';
+  }
+
+  private get menuClasses() {
+    return {
       menu: true,
       'menu--bottom-left': this.position === 'bottom-left',
       'menu--bottom-center': this.position === 'bottom-center',
@@ -154,20 +155,16 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       'menu-left': this.align === 'left',
       'menu-right': this.align === 'right',
     };
-
-    const toggle = () => {
-      this.open = !this.open;
-      this.selected = '';
-    };
-
+  }
+  protected render() {
     return html`
       <div class="dropdown">
-        <div class="dropdown-content" @click=${() => toggle()}>
+        <div class="dropdown-content" @click=${this.toggleOpen}>
           <slot name="dropdown"></slot>
         </div>
       </div>
       <div class="dropdown-list">
-        <div class=${classMap(menuClasses)}>${this.renderParticipants()}</div>
+        <div class=${classMap(this.menuClasses)}>${this.renderParticipants()}</div>
       </div>
     `;
   }

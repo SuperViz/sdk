@@ -39,50 +39,14 @@ const createEl = ({
 }: elementProps): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-who-is-online-dropdown');
 
-  if (label) {
-    element.setAttribute('label', label);
-  }
+  label && element.setAttribute('label', label);
+  returnTo && element.setAttribute('returnTo', returnTo);
+  name && element.setAttribute('name', name);
+  icons && element.setAttribute('icons', JSON.stringify(icons));
+  !!participants?.length && element.setAttribute('participants', JSON.stringify(participants));
 
-  if (returnTo) {
-    element.setAttribute('returnTo', returnTo);
-  }
-
-  if (name) {
-    element.setAttribute('name', name);
-  }
-
-  if (icons) {
-    element.setAttribute('icons', JSON.stringify(icons));
-  }
-
-  if (participants?.length) {
-    element.setAttribute('participants', JSON.stringify(participants));
-  }
-
-  if (options) {
-    element.setAttribute('options', JSON.stringify(options));
-  }
-
-  if (!options) {
-    const defaultOptions = [
-      {
-        name: 'EDIT',
-        value: {
-          uuid: 'any_uuid',
-        },
-      },
-      {
-        name: 'DELETE',
-        value: {
-          uuid: 'any_uuid',
-        },
-      },
-    ];
-
-    element.setAttribute('position', position);
-    element.setAttribute('align', align);
-    element.setAttribute('options', JSON.stringify(defaultOptions));
-  }
+  element.setAttribute('position', position);
+  element.setAttribute('align', align);
 
   const elementSlot = document.createElement('div');
   elementSlot.setAttribute('slot', 'dropdown');

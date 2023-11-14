@@ -227,7 +227,7 @@ describe('dropdown', () => {
     await sleep();
 
     const header = dropdownMenu()?.querySelector('.header');
-    expect(header?.children.length).toBe(0);
+    expect(header).toBeFalsy();
   });
 
   test('should render header with a name if name is specified', async () => {

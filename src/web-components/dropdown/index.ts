@@ -76,7 +76,7 @@ export class Dropdown extends WebComponentsBaseElement {
     });
   };
 
-  private callbackSelected = (option: any) => {
+  private callbackSelected = (option) => {
     this.open = false;
 
     const returnTo = this.returnTo ? option[this.returnTo] : option;
@@ -102,14 +102,17 @@ export class Dropdown extends WebComponentsBaseElement {
     const header = () => {
       if (!this.name) return html``;
 
-      return html`<span class="text">${this.name}</span> <span class="sv-hr"></span>`;
+      return html` <div class="header">
+        <span class="text">${this.name}</span>
+        <span class="sv-hr"></span>
+      </div>`;
     };
 
     const icons = this.icons?.map((icon) => {
       return html`<superviz-icon name="${icon}" size="sm"></superviz-icon>`;
     });
 
-    const options = this.options.map((option: any, index) => {
+    const options = this.options.map((option, index) => {
       const liClasses = {
         text: true,
         'text-bold': true,
@@ -133,7 +136,7 @@ export class Dropdown extends WebComponentsBaseElement {
       </div>
       <div class="dropdown-list">
         <div class=${classMap(menuClasses)}>
-          <div class="header">${header()}</div>
+          ${header()}
           <ul class="items">
             ${options}
           </ul>
