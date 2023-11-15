@@ -30,7 +30,7 @@ describe('Who Is Online', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    whoIsOnlineComponent = new WhoIsOnline({ affectLayout: true });
+    whoIsOnlineComponent = new WhoIsOnline();
     whoIsOnlineComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       localParticipant: MOCK_LOCAL_PARTICIPANT,

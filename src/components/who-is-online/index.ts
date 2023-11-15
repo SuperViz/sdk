@@ -4,7 +4,7 @@ import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlinePosition, Position, Participant, WhoIsOnlineOptions } from './types';
+import { WhoIsOnlinePosition, Position, Participant } from './types';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 
 export class WhoIsOnline extends BaseComponent {
@@ -13,14 +13,11 @@ export class WhoIsOnline extends BaseComponent {
   private element: WhoIsOnlineElement;
   private position: WhoIsOnlinePosition;
   private participants: Participant[] = [];
-  private affectLayout: boolean;
 
-  constructor(options?: WhoIsOnlineOptions) {
+  constructor(position?: WhoIsOnlinePosition) {
     super();
 
-    this.affectLayout = options?.affectLayout;
-    this.position = options?.position ?? Position.TOP_RIGHT;
-
+    this.position = position ?? Position.TOP_RIGHT;
     this.name = ComponentNames.WHO_IS_ONLINE;
     this.logger = new Logger('@superviz/sdk/who-is-online-component');
   }
@@ -218,7 +215,6 @@ export class WhoIsOnline extends BaseComponent {
     }
 
     container.appendChild(this.element);
-    this.element.position = 'position: absolute;';
-    if (this.affectLayout) this.element.position = 'position: relative;';
+    this.element.position = 'position: relative;';
   }
 }
