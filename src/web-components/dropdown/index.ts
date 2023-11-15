@@ -37,12 +37,16 @@ export class Dropdown extends WebComponentsBaseElement {
     name: { type: String },
   };
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('open')) {
-      return this.open
-        ? document.addEventListener('click', this.onClickOutDropdown)
-        : (document.removeEventListener('click', this.onClickOutDropdown), this.close());
+  protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (!changedProperties.has('open')) return;
+
+    if (this.open) {
+      document.addEventListener('click', this.onClickOutDropdown);
+      return;
     }
+
+    document.removeEventListener('click', this.onClickOutDropdown);
+    this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
