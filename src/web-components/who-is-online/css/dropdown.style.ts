@@ -23,13 +23,15 @@ export const dropdownStyle = css`
   }
 
   .who-is-online-dropdown__participant {
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: 2px solid #878291;
-    border-radius: 50%;
+    border: 2px solid #aea9b8;
+    cursor: pointer;
   }
 
   .who-is-online-dropdown__avatar {
@@ -44,6 +46,7 @@ export const dropdownStyle = css`
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
+    object-fit: contain;
   }
 
   .dropdown-list {
@@ -57,7 +60,7 @@ export const dropdownStyle = css`
   }
 
   .dropdown-list > div {
-    padding: 5px;
+    padding: 4px;
     min-width: 216px;
   }
 
@@ -115,6 +118,15 @@ export const dropdownStyle = css`
     .who-is-online-dropdown__participant {
       width: 32px;
       height: 32px;
+    }
+
+    .who-is-online-dropdown__avatar {
+      width: 24px;
+      height: 24px;
+    }
+
+    .dropdown-list > div {
+      min-width: 192px;
     }
   }
 `;

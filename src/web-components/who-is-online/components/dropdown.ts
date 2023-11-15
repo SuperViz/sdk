@@ -87,6 +87,26 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   };
 
+  private getAvatar(participant: Participant) {
+    if (participant.avatar?.imageUrl) {
+      return html` <img
+        class="who-is-online-dropdown__avatar"
+        src=${participant.avatar.imageUrl}
+      />`;
+    }
+
+    const letterColor = this.textColorValues.includes(participant.slotIndex)
+      ? '#FFFFFF'
+      : '#000000';
+
+    return html`<div
+      class="who-is-online-dropdown__avatar"
+      style="background-color: ${participant.color}; color: ${letterColor}"
+    >
+      ${participant.name?.at(0)}
+    </div>`;
+  }
+
   private renderParticipants() {
     if (!this.participants) return;
 
@@ -97,10 +117,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#000000';
-
       const contentClasses = {
         'who-is-online-dropdown__content': true,
         'who-is-online-dropdown__content--selected': this.selected === participant.id,
@@ -120,11 +136,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       )} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${participant.color}">
-              <div class="who-is-online-dropdown__avatar" style="background-color: ${
-                participant.color
-              }; color: ${letterColor}">
-                ${participant.name?.at(0)}
-              </div>
+              ${this.getAvatar(participant)}
             </div>
             <span class="user-name">${participant.name}</span>
             <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>

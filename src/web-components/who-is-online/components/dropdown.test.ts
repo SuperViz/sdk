@@ -219,6 +219,23 @@ describe('dropdown', () => {
     expect(element()?.['selected']).toBe(mockParticipants[0].id);
   });
 
+  test('should correctly display either name letter or image', () => {
+    const element = createEl({ position: 'bottom-right', align: 'left' });
+    const letter = element['getAvatar'](mockParticipants[0]);
+    expect(letter.strings[0]).not.toContain('img');
+
+    const participant = {
+      ...mockParticipants[0],
+      avatar: {
+        imageUrl: 'https://link.com/image',
+        model3DUrl: '',
+      },
+    };
+
+    const avatar = element['getAvatar'](participant);
+    expect(avatar.strings[0]).toContain('img');
+  });
+
   // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
   test('', async () => {
     const event = new CustomEvent('selected');

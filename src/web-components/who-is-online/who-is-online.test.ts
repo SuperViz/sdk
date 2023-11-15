@@ -22,9 +22,9 @@ const MOCK_PARTICIPANTS: Participant[] = [
       imageUrl: '',
       model3DUrl: '',
     },
-    color: MeetingColorsHex[0],
-    id: '1',
-    slotIndex: 0,
+    color: MeetingColorsHex[1],
+    id: '2',
+    slotIndex: 1,
   },
   {
     name: 'John Doe',
@@ -32,9 +32,9 @@ const MOCK_PARTICIPANTS: Participant[] = [
       imageUrl: '',
       model3DUrl: '',
     },
-    color: MeetingColorsHex[0],
-    id: '1',
-    slotIndex: 0,
+    color: MeetingColorsHex[2],
+    id: '3',
+    slotIndex: 2,
   },
 ];
 
@@ -179,6 +179,22 @@ describe('Who Is Online', () => {
 
     dropdown.dispatchEvent(event);
     expect(element['open']).toBeFalsy();
+  });
+
+  test('should correctly display either name letter or image', () => {
+    const letter = element['getAvatar'](MOCK_PARTICIPANTS[0]);
+    expect(letter.strings[0]).not.toContain('img');
+
+    const participant = {
+      ...MOCK_PARTICIPANTS[0],
+      avatar: {
+        imageUrl: 'https://link.com/image',
+        model3DUrl: '',
+      },
+    };
+
+    const avatar = element['getAvatar'](participant);
+    expect(avatar.strings[0]).toContain('img');
   });
 
   // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
