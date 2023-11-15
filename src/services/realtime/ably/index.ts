@@ -41,7 +41,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presenceMouseChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
-
   private clientRoomState: Record<string, RealtimeMessage> = {};
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
   // private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
@@ -721,6 +720,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       members.forEach((member) => {
         participants[member.clientId] = { ...member };
       });
+
       this.participants = participants;
       this.participantsObserver.publish(this.participants);
     });
@@ -970,6 +970,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
+
     let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
 
     this.supervizChannel.presence.get((error, members) => {
@@ -1031,6 +1032,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
           }
         });
       });
+
       if (
         this.myParticipant.data.slotIndex === undefined ||
         usedSlots.includes(this.myParticipant.data.slotIndex)
@@ -1312,8 +1314,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leavePresenceMouseChannel = (): void => {
     if (!this.presenceMouseChannel) return;
 
-    this.presenceMouseChannel = null;
     this.presenceMouseChannel.presence.leave();
+    this.presenceMouseChannel = null;
   };
 
   public updatePresenceMouse = throttle((data: Partial<ParticipantMouse>): void => {
@@ -1379,8 +1381,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leavePresence3DChannel = (): void => {
     if (!this.presence3DChannel) return;
 
-    this.presence3DChannel = null;
     this.presence3DChannel.presence.leave();
+    this.presence3DChannel = null;
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {

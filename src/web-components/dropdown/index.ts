@@ -21,6 +21,8 @@ export class Dropdown extends WebComponentsBaseElement {
   declare label: string;
   declare returnTo: string;
   declare active: string | object;
+  declare icons?: string[];
+  declare name?: string;
 
   static properties = {
     open: { type: Boolean },
@@ -31,19 +33,20 @@ export class Dropdown extends WebComponentsBaseElement {
     label: { type: String },
     returnTo: { type: String },
     active: { type: [String, Object] },
+    icons: { type: Array },
+    name: { type: String },
   };
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('open')) {
-      if (this.open) {
-        document.addEventListener('click', this.onClickOutDropdown);
-      }
+  protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (!changedProperties.has('open')) return;
 
-      if (!this.open) {
-        document.removeEventListener('click', this.onClickOutDropdown);
-        this.close();
-      }
+    if (this.open) {
+      document.addEventListener('click', this.onClickOutDropdown);
+      return;
     }
+
+    document.removeEventListener('click', this.onClickOutDropdown);
+    this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -72,21 +75,15 @@ export class Dropdown extends WebComponentsBaseElement {
     });
   };
 
-  private callbackSelected = (option: any) => {
+  private callbackSelected = (option) => {
     this.open = false;
 
-    const returnTo = this.returnTo
-      ? option[this.returnTo]
-      : option;
+    const returnTo = this.returnTo ? option[this.returnTo] : option;
 
-    this.emitEvent(
-      'selected',
-      returnTo,
-      {
-        bubbles: false,
-        composed: false,
-      },
-    );
+    this.emitEvent('selected', returnTo, {
+      bubbles: false,
+      composed: false,
+    });
   };
 
   protected render() {
@@ -98,15 +95,32 @@ export class Dropdown extends WebComponentsBaseElement {
       'menu-open': this.open,
       'menu-left': this.align === 'left',
       'menu-right': this.align === 'right',
+      'who-is-online-dropdown': this.name,
     };
 
-    const options = this.options.map((option: any) => {
+    const header = () => {
+      if (!this.name) return html``;
+
+      return html` <div class="header">
+        <span class="text">${this.name}</span>
+        <span class="sv-hr"></span>
+      </div>`;
+    };
+
+    const icons = this.icons?.map((icon) => {
+      return html`<superviz-icon name="${icon}" size="sm"></superviz-icon>`;
+    });
+
+    const options = this.options.map((option, index) => {
       const liClasses = {
         text: true,
         'text-bold': true,
         active: this.active === option?.[this.returnTo],
       };
-      return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>${option[this.label]}</li>`;
+
+      return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
+        ${icons?.at(index)} ${option[this.label]}
+      </li>`;
     });
 
     const toggle = () => {
@@ -120,9 +134,12 @@ export class Dropdown extends WebComponentsBaseElement {
         </div>
       </div>
       <div class="dropdown-list">
-        <ul class=${classMap(menuClasses)}>
-          ${options}
-        </ul>
+        <div class=${classMap(menuClasses)}>
+          ${header()}
+          <ul class="items">
+            ${options}
+          </ul>
+        </div>
       </div>
     `;
   }

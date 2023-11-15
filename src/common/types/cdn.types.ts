@@ -1,4 +1,11 @@
-import { CanvasPin, Comments, MousePointers, Realtime, VideoConference } from '../../components';
+import {
+  CanvasPin,
+  Comments,
+  MousePointers,
+  Realtime,
+  VideoConference,
+  WhoIsOnline,
+} from '../../components';
 import { RealtimeComponentEvent, RealtimeComponentState } from '../../components/realtime/types';
 import { LauncherFacade } from '../../core/launcher/types';
 import {
@@ -39,6 +46,7 @@ export interface SuperVizCdn {
   Realtime: typeof Realtime;
   Comments: typeof Comments;
   CanvasPin: typeof CanvasPin;
+  WhoIsOnline: typeof WhoIsOnline;
   RealtimeComponentState: typeof RealtimeComponentState;
   RealtimeComponentEvent: typeof RealtimeComponentEvent;
 }
