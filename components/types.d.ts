@@ -3,6 +3,7 @@ export declare enum ComponentNames {
     PRESENCE = "presence",
     VIDEO_CONFERENCE = "videoConference",
     COMMENTS = "comments",
+    WHO_IS_ONLINE = "whoIsOnline",
     PRESENCE_MATTERPORT = "presence3dMatterport",
     PRESENCE_AUTODESK = "presence3dAutodesk",
     PRESENCE_THREEJS = "presence3dThreejs",
@@ -14,7 +15,8 @@ export declare enum PresenceMap {
     'presence3dMatterport' = "presence",
     'presence3dAutodesk' = "presence",
     'presence3dThreejs' = "presence",
-    'realtime' = "presence"
+    'realtime' = "presence",
+    'whoIsOnline' = "presence"
 }
 export declare enum Comments3d {
     'comments3dMatterport' = "comments3d",

@@ -10,6 +10,8 @@ export declare class Dropdown extends WebComponentsBaseElement {
     label: string;
     returnTo: string;
     active: string | object;
+    icons?: string[];
+    name?: string;
     static properties: {
         open: {
             type: BooleanConstructor;
@@ -35,8 +37,14 @@ export declare class Dropdown extends WebComponentsBaseElement {
         active: {
             type: (ObjectConstructor | StringConstructor)[];
         };
+        icons: {
+            type: ArrayConstructor;
+        };
+        name: {
+            type: StringConstructor;
+        };
     };
-    protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
+    protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
     private onClickOutDropdown;
     private close;
     private callbackSelected;
