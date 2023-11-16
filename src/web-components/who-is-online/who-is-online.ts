@@ -112,7 +112,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     return html`${this.participants.slice(0, 4).map((participant, index) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
         ? '#FFFFFF'
-        : '#000000';
+        : '#26242A';
 
       const position = this.dropdownPosition(index);
       return html`

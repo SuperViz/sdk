@@ -99,7 +99,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     return this.participants.map((participant) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
         ? '#FFFFFF'
-        : '#000000';
+        : '#26242A';
 
       const contentClasses = {
         'who-is-online-dropdown__content': true,
