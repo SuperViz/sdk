@@ -58,7 +58,7 @@ export class PresenceMouse extends LitElement {
       if (mouseUser) {
         mouseUser.style.color = this.textColorValues.includes(externalParticipant.slotIndex)
           ? '#FFFFFF'
-          : '#000000';
+          : '#26242A';
         mouseUser.style.backgroundColor = externalParticipant.color;
         mouseUser.innerHTML = externalParticipant.name;
       }

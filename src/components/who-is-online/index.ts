@@ -42,6 +42,8 @@ export class WhoIsOnline extends BaseComponent {
         slotIndex,
       };
     });
+
+    this.element.participants = this.participants;
   }
 
   /**
@@ -105,7 +107,7 @@ export class WhoIsOnline extends BaseComponent {
 
     const newParticipants = rawNewParticipants.map((participant) => {
       const { slotIndex } = participant.data;
-      const color = MeetingColorsHex[slotIndex];
+      const color = MeetingColorsHex[slotIndex ?? 16];
       return { ...participant.data, color };
     });
 
