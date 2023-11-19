@@ -33,9 +33,9 @@ describe('ConfigurationService', () => {
       expect(result).toBe('defaultValue');
     });
 
-    test('should throw an error if configuration is not set', () => {
+    test('should return the default value if the config is no avaliable', () => {
       configService.setConfig(null as unknown as Configuration);
-      expect(() => configService.get('ablyKey')).toThrowError('configs is not available');
+      expect(configService.get('ablyKey')).toBeUndefined();
     });
   });
 });
