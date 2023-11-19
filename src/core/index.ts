@@ -82,6 +82,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     debug: options.debug,
     limits,
     waterMark,
+    colors: options.customColors,
   });
 
   return LauncherFacade(options);
