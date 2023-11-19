@@ -14,7 +14,7 @@ export const floatButtonStyle = css`
     gap: 4px;
     border: none;
 
-    background-color: white;
+    background-color: rgba(var(--sv-white));
     box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.2);
     color: rgb(var(--sv-gray-600));
     transition: all 300ms;
