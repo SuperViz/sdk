@@ -1357,8 +1357,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   private onPresenceMouseChannelLeave = (presence: Ably.Types.PresenceMessage): void => {
-    delete this.participantsMouse[presence.clientId];
     this.presenceMouseParticipantLeaveObserver.publish(this.participantsMouse[presence.clientId]);
+    delete this.participantsMouse[presence.clientId];
   };
 
   /**
