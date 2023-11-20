@@ -21,7 +21,6 @@ export const floatButtonStyle = css`
 
   button.float-button p {
     visibility: hidden;
-    display: block;
   }
 
   .hide-button {
@@ -36,9 +35,5 @@ export const floatButtonStyle = css`
   button.float-button:hover p {
     visibility: visible;
     animation: expand 300ms ease-in-out;
-  }
-
-  // keyframe that expands the button without moving the icon
-  @keyframes expand {
   }
 `;
