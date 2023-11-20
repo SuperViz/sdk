@@ -73,7 +73,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   private onParticipantListUpdate = (data: Record<string, AblyParticipant>) => {
     const updatedParticipants = Object.values(data).filter(({ data }) => {
-      return data.activeComponents.includes('whoIsOnline');
+      return data.activeComponents?.includes('whoIsOnline');
     });
 
     const compare = updatedParticipants.map(({ data: { slotIndex, id } }) => {
@@ -86,6 +86,8 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     if (isEqual(compare, participants)) return;
+
+    console.log(compare, participants);
 
     const currentParticipants: string[] = this.participants
       .filter((participant) => participant.color)
