@@ -87,8 +87,6 @@ export class WhoIsOnline extends BaseComponent {
 
     if (isEqual(compare, participants)) return;
 
-    console.log(compare, participants);
-
     const currentParticipants: string[] = this.participants
       .filter((participant) => participant.color)
       .map((participant) => participant.id);
