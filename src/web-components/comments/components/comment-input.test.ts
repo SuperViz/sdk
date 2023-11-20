@@ -68,6 +68,21 @@ describe('CommentsCommentInput', () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
+  test('emits an event when enter is pressed', async () => {
+    const textarea = element.shadowRoot!.querySelector(
+      '#comment-input--textarea',
+    ) as HTMLTextAreaElement;
+    textarea.value = 'test';
+
+    const spy = jest.fn();
+    element.setAttribute('eventType', 'send');
+    element.addEventListener('send', spy);
+
+    element.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
   test('test custom props with text', async () => {
     element.setAttribute('text', 'test');
 
