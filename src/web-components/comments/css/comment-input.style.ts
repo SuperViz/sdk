@@ -4,10 +4,13 @@ export const commentInputStyle = css`
   .comment-input {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 288px;
     background: rgb(var(--sv-white));
     border-radius: 4px;
     border: 1px solid rgb(var(--sv-gray-300));
+    position: relative;
+    min-height: 40px;
+    box-sizing: border-box;
   }
 
   .comment-input:focus-within {
@@ -15,7 +18,7 @@ export const commentInputStyle = css`
   }
 
   .comment-input:focus-within > .sv-hr {
-    background: rgb(var(--sv-gray-500))
+    background: rgb(var(--sv-gray-500));
   }
 
   #comment-input--textarea {
@@ -23,7 +26,7 @@ export const commentInputStyle = css`
     border: 0px;
     border-radius: 4px;
     outline: none;
-    height: 13px;
+    height: 39.5px;
     font-size: 14px;
     color: rgb(var(--sv-gray-700));
     padding: 12px 11px !important;
@@ -33,7 +36,8 @@ export const commentInputStyle = css`
     overflow: hidden;
     resize: none;
     appearance: none;
-    width: 90%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   #comment-input--textarea::placeholder {
@@ -44,11 +48,42 @@ export const commentInputStyle = css`
   .comment-input--options {
     display: flex;
     justify-content: space-between;
+    box-sizing: border-box;
+    overflow: hidden;
+    height: 0;
+    transition: 0.25s;
+  }
+
+  .active-textarea {
+    height: 39.5px;
     padding: 4px 8px;
+  }
+  .sv-hr {
+    width: 100%;
+    min-height: 1px;
+    background: rgb(var(--sv-gray-300));
+    padding: 0px;
+    margin: 0px;
+    display: none;
+  }
+
+  .active-hr {
+    display: block;
   }
 
   .mention {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    border-radius: 100%;
+    color: rgb(var(--sv-gray-600));
+  }
+
+  .mention > superviz-icon {
+    height: 16px;
+    width: 16px;
   }
 
   .comment-input--send-btn {
@@ -61,12 +96,13 @@ export const commentInputStyle = css`
     height: 32px;
     color: rgba(var(--sv-white), 1);
     border: 0px;
-    cursor: pointer;
   }
 
-  .align-send-btn > superviz-icon {
+  .align-send-btn > superviz-icon,
+  .mention > superviz-icon {
     margin-right: 2px;
     margin-top: 4px;
+    cursor: pointer;
   }
 
   .comment-input--send-btn:disabled {
@@ -77,20 +113,19 @@ export const commentInputStyle = css`
     border-radius: 100%;
     width: 32px;
     height: 32px;
-    color: rgb(var(--sv-gray-400));
+    color: rgb(var(--sv-gray-600));
     border: 0px;
-  }
-
-  .sv-hr {
-    width: 100%;
-    height: 1px;
-    background: rgb(var(--sv-gray-300));
-    padding: 0px;
-    margin: 0px;
   }
 
   .comment-input-options {
     display: flex;
     gap: 4px;
+    position: absolute;
+    right: 8px;
+    bottom: 3px;
+  }
+
+  #comment-input--textarea:focus::placeholder {
+    color: transparent;
   }
 `;

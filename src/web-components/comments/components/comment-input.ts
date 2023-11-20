@@ -45,6 +45,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
   };
 
+  private get optionsContainer() {
+    return this.shadowRoot!.querySelector('.comment-input--options') as HTMLTextAreaElement;
+  }
+
+  private get horizontalRule() {
+    return this.shadowRoot!.querySelector('.sv-hr') as HTMLDivElement;
+  }
+
   private commentInputFocus = ({ detail }: CustomEvent) => {
     this.pinCoordinates = detail;
     this.getCommentInput().focus();
@@ -56,6 +64,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
     this.addEventListener('keyup', this.sendEnter);
+    const input = this.getCommentInput();
   }
 
   disconnectedCallback(): void {
@@ -80,6 +89,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private updateHeight() {
     const commentsInput = this.getCommentInput();
+
     const commentsInputContainer = this.getCommentInputContainer();
 
     commentsInput.style.height = '0px';
@@ -151,6 +161,25 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.emitEvent('close-edit-mode', {}, { composed: false, bubbles: false });
   };
 
+  private onTextareaFocus = () => {
+    const options = this.optionsContainer;
+    const rule = this.horizontalRule;
+
+    options.classList.add('active-textarea');
+    rule.classList.add('active-hr');
+  };
+
+  private onTextareaLoseFocus = () => {
+    const options = this.optionsContainer;
+    const rule = this.horizontalRule;
+    const textarea = this.getCommentInput();
+
+    if (!textarea.value.length) {
+      options.classList.remove('active-textarea');
+      rule.classList.remove('active-hr');
+    }
+  };
+
   protected render() {
     const commentInputEditableOptions = () => {
       if (!this.editable) return;
@@ -187,6 +216,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             id="comment-input--textarea"
             placeholder="Add comment..."
             @input=${this.updateHeight}
+            @focus=${this.onTextareaFocus}
+            @blur=${this.onTextareaLoseFocus}
           ></textarea>
         </div>
         <div class="sv-hr"></div>
