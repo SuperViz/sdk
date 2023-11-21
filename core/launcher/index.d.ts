@@ -4,11 +4,13 @@ import { BaseComponent } from '../../components/base';
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 export declare class Launcher extends Observable implements DefaultLauncher {
     protected readonly logger: Logger;
+    private isDestroyed;
     private activeComponents;
+    private activeComponentsInstances;
     private participant;
     private group;
-    private readonly realtime;
-    private readonly eventBus;
+    private realtime;
+    private eventBus;
     private participants;
     constructor({ participant, group }: LauncherOptions);
     /**
@@ -25,6 +27,12 @@ export declare class Launcher extends Observable implements DefaultLauncher {
      * @returns {void}
      */
     removeComponent: (component: BaseComponent) => void;
+    /**
+     * @function destroy
+     * @description destroy launcher and all components
+     * @returns {void}
+     */
+    destroy: () => void;
     /**
      * @function canAddComponent
      * @description verifies if component can be added
