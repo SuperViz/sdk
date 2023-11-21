@@ -58,4 +58,14 @@ export class EventBus {
 
     this.observers.get(event).publish(data);
   };
+
+  public destroy = (): void => {
+    this.logger.log('event bus service @ destroy');
+
+    this.observers.forEach((observer) => {
+      observer.reset();
+      observer.destroy();
+    });
+    this.observers.clear();
+  };
 }

@@ -7,4 +7,5 @@ export const EVENT_BUS_MOCK = {
   subscribe: jest.fn(),
   unsubscribe: jest.fn(),
   publish: jest.fn(),
+  destroy: jest.fn(),
 } as unknown as EventBus;
