@@ -58,7 +58,7 @@ export const dropdownStyle = css`
 
   .dropdown-list > div {
     padding: 5px;
-    min-width: 216px;
+    width: 216px;
   }
 
   .menu {
@@ -115,6 +115,15 @@ export const dropdownStyle = css`
     .who-is-online-dropdown__participant {
       width: 32px;
       height: 32px;
+    }
+
+    .who-is-online-dropdown__avatar {
+      width: 24px;
+      height: 24px;
+    }
+
+    .dropdown-list > div {
+      width: 192px;
     }
   }
 `;
