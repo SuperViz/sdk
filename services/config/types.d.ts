@@ -1,3 +1,4 @@
+import { ColorsVariables } from '../../common/types/colors.types';
 import { EnvironmentTypes } from '../../common/types/sdk-options.types';
 import { ComponentLimits } from '../limits/types';
 export interface Configuration {
@@ -10,4 +11,5 @@ export interface Configuration {
     debug: boolean;
     limits: ComponentLimits;
     waterMark: boolean;
+    colors?: ColorsVariables;
 }
