@@ -6,6 +6,7 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     btnActive: boolean;
     editable: boolean;
     commentsInput: HTMLTextAreaElement;
+    placeholder: string;
     private pinCoordinates;
     constructor();
     static styles: CSSResultGroup[];
@@ -21,6 +22,9 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
         };
         editable: {
             type: BooleanConstructor;
+        };
+        placeholder: {
+            type: StringConstructor;
         };
     };
     private getCommentInput;
