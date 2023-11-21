@@ -3,13 +3,10 @@ import { css } from 'lit';
 export const floatButtonStyle = css`
   button.float-button {
     position: fixed;
-
     border-radius: 50%;
     width: 38px;
     height: 38px;
-
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: 4px;
     border: none;
@@ -19,10 +16,12 @@ export const floatButtonStyle = css`
     color: rgb(var(--sv-gray-600));
     transition: all 300ms;
     cursor: pointer;
+    overflow: hidden;
+    padding-left: 12px;
   }
 
   button.float-button p {
-    display: none;
+    visibility: hidden;
   }
 
   .hide-button {
@@ -35,6 +34,7 @@ export const floatButtonStyle = css`
   }
 
   button.float-button:hover p {
-    display: block;
+    visibility: visible;
+    animation: expand 300ms ease-in-out;
   }
 `;

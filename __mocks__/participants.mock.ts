@@ -19,6 +19,7 @@ export const MOCK_GROUP: Group = {
 };
 
 export const MOCK_ABLY_PARTICIPANT_DATA_1 = {
+  activeComponents: ['whoIsOnline'],
   name: 'unit-test-participant1-name',
   id: 'unit-test-participant1-id',
   avatar: MOCK_AVATAR,
@@ -28,6 +29,7 @@ export const MOCK_ABLY_PARTICIPANT_DATA_1 = {
 };
 
 export const MOCK_ABLY_PARTICIPANT_DATA_2 = {
+  activeComponents: ['whoIsOnline'],
   name: 'unit-test-participant2-name',
   id: 'unit-test-participant2-id',
   avatar: MOCK_AVATAR,
