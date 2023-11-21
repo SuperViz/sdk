@@ -39,11 +39,9 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
-    top: 7px;
   }
 
   .who-is-online-dropdown {
-    top: 4px;
     padding: 4px;
   }
 
@@ -58,6 +56,7 @@ export const dropdownStyle = css`
     min-width: 103px;
     position: absolute;
     left: 0;
+    top: 4px;
   }
 
   .menu--bottom-center {
@@ -65,12 +64,36 @@ export const dropdownStyle = css`
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    top: 4px;
   }
 
   .menu--bottom-right {
     min-width: 103px;
     position: absolute;
     right: 0;
+    top: 4px;
+  }
+
+  .menu--top-left {
+    min-width: 103px;
+    position: absolute;
+    left: 0;
+    bottom: 44px;
+  }
+
+  .menu--top-center {
+    min-width: 103px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 44px;
+  }
+
+  .menu--top-right {
+    min-width: 103px;
+    position: absolute;
+    right: 0;
+    bottom: 44px;
   }
 
   .items li {
@@ -111,5 +134,13 @@ export const dropdownStyle = css`
     background: rgb(var(--sv-gray-300));
     padding: 0px;
     margin: 0px;
+  }
+
+  @media (max-width: 780px) {
+    .menu--top-left,
+    .menu--top-center,
+    .menu--top-right {
+      bottom: 36px;
+    }
   }
 `;
