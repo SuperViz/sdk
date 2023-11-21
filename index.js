@@ -327,22 +327,22 @@ function print() { __p += __j.call(arguments, '') }
       bottom: 36px;
     }
   }
-`;var Vm=Ge(Re),$T=[Vm.styles,zm],Gr=class extends Vm{constructor(){super(...arguments);this.onClickOutDropdown=e=>{if(e.stopPropagation(),!this.open)return;let r=e.composedPath(),i=this.shadowRoot.querySelector(".dropdown-content"),a=this.shadowRoot.querySelector(".dropdown-list"),u=this.shadowRoot.querySelector('slot[name="dropdown"]').assignedElements()[0],f=r.includes(i),m=r.includes(a),y=r.includes(u);f||m||y||(this.open=!1)};this.close=()=>{this.emitEvent("close",{bubbles:!1,composed:!1})};this.callbackSelected=e=>{this.open=!1;let r=this.returnTo?e[this.returnTo]:e;this.emitEvent("selected",r,{bubbles:!1,composed:!1})}}updated(e){if(!!e.has("open")){if(this.open){document.addEventListener("click",this.onClickOutDropdown);return}document.removeEventListener("click",this.onClickOutDropdown),this.close()}}render(){var u;let e={menu:!0,"menu--bottom-left":this.position==="bottom-left","menu--bottom-center":this.position==="bottom-center","menu--bottom-right":this.position==="bottom-right","menu-open":this.open,"menu-left":this.align==="left","menu-right":this.align==="right","who-is-online-dropdown":this.name},r=()=>this.name?ge` <div class="header">
-        <span class="text">${this.name}</span>
-        <span class="sv-hr"></span>
-      </div>`:ge``,i=(u=this.icons)==null?void 0:u.map(f=>ge`<superviz-icon name="${f}" size="sm"></superviz-icon>`),a=this.options.map((f,m)=>{let y={text:!0,"text-bold":!0,active:this.active===(f==null?void 0:f[this.returnTo])};return ge`<li @click=${()=>this.callbackSelected(f)} class=${it(y)}>
-        ${i==null?void 0:i.at(m)} ${f[this.label]}
-      </li>`}),l=()=>{this.open=!this.open};return ge`
+`;D();var Vm=Ge(Re),$T=[Vm.styles,zm],Gr=class extends Vm{constructor(){super(...arguments);this.menu=void 0;this.onClickOutDropdown=e=>{if(e.stopPropagation(),!this.open)return;let r=e.composedPath(),i=this.shadowRoot.querySelector(".dropdown-content"),a=this.shadowRoot.querySelector(".dropdown-list"),u=this.shadowRoot.querySelector('slot[name="dropdown"]').assignedElements()[0],f=r.includes(i),m=r.includes(a),y=r.includes(u);f||m||y||(this.open=!1)};this.close=()=>{this.emitEvent("close",{bubbles:!1,composed:!1})};this.callbackSelected=e=>{this.open=!1;let r=this.returnTo?e[this.returnTo]:e;this.emitEvent("selected",r,{bubbles:!1,composed:!1})};this.adjustPosition=()=>{this.adjustPositionVertical(),this.adjustPositionHorizontal()}}updated(e){if(e.has("position")&&!this.originalPosition&&(this.originalPosition=e.get("position")),!!e.has("open")){if(this.open){document.addEventListener("click",this.onClickOutDropdown);return}document.removeEventListener("click",this.onClickOutDropdown),this.close()}}get dropdownBounds(){this.menu||(this.menu=this.shadowRoot.querySelector(".menu"));let{y:e,height:r,x:i,width:a}=this.menu.getBoundingClientRect(),l=this.position.includes("bottom")?4:0;return{top:e,bottom:e+r+l,left:i,right:i+a}}adjustPositionVertical(){let{top:e,bottom:r}=this.dropdownBounds,{innerHeight:i}=window,a=r>i,l=e<0;if(!(a||l))return;let u=i-r>e?"bottom":"top",f=this.position.split("-")[0],m=this.position.replace(f,u);this.position=m}adjustPositionHorizontal(){let{left:e,right:r}=this.dropdownBounds,i=e<0,a=r>window.innerWidth;if(!(i||a))return;if(this.position.includes("center")){let E=i?"left":"right",w=this.position.replace("center",E);this.position=w;return}let u=i?e:r,f=r-e,m=(i?f:-f)/2,y=u+m;if(i=y<0,a=y+f>window.innerWidth,!(i||a)){let E=this.position.replace(/left|right/,"center");this.position=E;return}let C=i?"left":"right",h=this.position.replace(this.position.split("-")[1],C);this.position=h}setMenu(){if(!this.menu){this.menu=this.shadowRoot.querySelector(".menu");let e={rootMargin:"0px",threshold:1},r=new IntersectionObserver(this.adjustPosition,e),i=this.menu;r.observe(i)}}get renderHeader(){return this.name?ge` <div class="header">
+      <span class="text">${this.name}</span>
+      <span class="sv-hr"></span>
+    </div>`:ge``}render(){var l;let e={menu:!0,"menu--bottom-left":this.position==="bottom-left","menu--bottom-center":this.position==="bottom-center","menu--bottom-right":this.position==="bottom-right","menu--top-left":this.position==="top-left","menu--top-center":this.position==="top-center","menu--top-right":this.position==="top-right","menu-open":this.open,"menu-left":this.align==="left","menu-right":this.align==="right","who-is-online-dropdown":this.name},r=(l=this.icons)==null?void 0:l.map(u=>ge`<superviz-icon name="${u}" size="sm"></superviz-icon>`),i=this.options.map((u,f)=>{let m={text:!0,"text-bold":!0,active:this.active===(u==null?void 0:u[this.returnTo])};return ge`<li @click=${()=>this.callbackSelected(u)} class=${it(m)}>
+        ${r==null?void 0:r.at(f)} ${u[this.label]}
+      </li>`});return ge`
       <div class="dropdown">
-        <div class="dropdown-content" @click=${()=>l()}>
+        <div class="dropdown-content" @click=${()=>{this.setMenu(),this.open=!this.open,setTimeout(()=>this.adjustPosition())}}>
           <slot name="dropdown"></slot>
         </div>
       </div>
       <div class="dropdown-list">
         <div class=${it(e)}>
-          ${r()}
+          ${this.renderHeader}
           <ul class="items">
-            ${a}
+            ${i}
           </ul>
         </div>
       </div>
@@ -1310,7 +1310,8 @@ function print() { __p += __j.call(arguments, '') }
     align-items: center;
     justify-content: center;
     border: 2px solid #aea9b8;
-    cursor: pointer;
+    user-select: none;
+    // cursor: pointer;
   }
 
   .superviz-who-is-online__avatar {
@@ -1340,6 +1341,7 @@ function print() { __p += __j.call(arguments, '') }
     text-align: center;
     font-weight: bold;
     color: #26242a;
+    cursor: pointer;
   }
 
   .excess_participants:hover,
@@ -1397,6 +1399,7 @@ function print() { __p += __j.call(arguments, '') }
     height: 40px;
     border: 2px solid #878291;
     border-radius: 50%;
+    flex: 1 0 40px;
   }
 
   .who-is-online-dropdown__avatar {
@@ -1425,7 +1428,7 @@ function print() { __p += __j.call(arguments, '') }
 
   .dropdown-list > div {
     padding: 5px;
-    width: 216px;
+    min-width: 216px;
   }
 
   .menu {
@@ -1475,6 +1478,7 @@ function print() { __p += __j.call(arguments, '') }
     flex: 1;
     justify-content: flex-end;
     display: flex;
+    visibility: hidden;
   }
 
   @media (max-width: 780px) {
@@ -1482,15 +1486,12 @@ function print() { __p += __j.call(arguments, '') }
     .who-is-online-dropdown__participant {
       width: 32px;
       height: 32px;
+      flex: 1 0 32px;
     }
 
     .who-is-online-dropdown__avatar {
       width: 24px;
       height: 24px;
-    }
-
-    .dropdown-list > div {
-      width: 192px;
     }
   }
 `;var yv=Ge(Re),x1=[yv.styles,yf],si=class extends yv{constructor(){super();this.onClickOutDropdown=({detail:e})=>{this.open=e.open};this.dropdownOptionsHandler=({detail:e})=>{};this.position="top: 20px; right: 40px;",this.open=!1,this.textColorValues=[2,4,5,7,8,16]}updateParticipants(e){this.participants=e}toggleOpen(){this.open=!this.open}dropdownPosition(e){if(this.participants.length===1)return"bottom-center";if(e===0)return"bottom-left";let r=this.participants.length>4,i=e+1===this.participants.length;return r||!i?"bottom-center":"bottom-right"}renderExcessParticipants(){let e=this.participants.length-4;if(e<=0)return ge``;let r=this.participants.slice(4).map(({name:l,color:u,id:f,slotIndex:m})=>({name:l,color:u,id:f,slotIndex:m})),i={"superviz-who-is-online__participant":!0,excess_participants:!0,"excess_participants--open":this.open};return ge`
@@ -1507,7 +1508,7 @@ function print() { __p += __j.call(arguments, '') }
         </div>
       </superviz-who-is-online-dropdown>
     `}renderParticipants(){if(!this.participants)return ge``;let e=Object.values(gs).map(i=>({label:i})),r=["place","send"];return ge`${this.participants.slice(0,4).map((i,a)=>{var f;let l=this.textColorValues.includes(i.slotIndex)?"#FFFFFF":"#26242A",u=this.dropdownPosition(a);return ge`
-        <superviz-dropdown
+        <!-- <superviz-dropdown
           options=${JSON.stringify(e)}
           label="label"
           returnTo="label"
@@ -1515,30 +1516,30 @@ function print() { __p += __j.call(arguments, '') }
           @selected=${this.dropdownOptionsHandler}
           icons="${JSON.stringify(r)}"
           name="${i.name}"
+        > -->
+        <div
+          slot="dropdown"
+          class="superviz-who-is-online__participant"
+          style="border-color: ${i.color}"
         >
           <div
-            slot="dropdown"
-            class="superviz-who-is-online__participant"
-            style="border-color: ${i.color}"
+            class="superviz-who-is-online__avatar"
+            style="background-color: ${i.color}; color: ${l}"
           >
-            <div
-              class="superviz-who-is-online__avatar"
-              style="background-color: ${i.color}; color: ${l}"
-            >
-              ${(f=i.name)==null?void 0:f.at(0)}
-            </div>
+            ${(f=i.name)==null?void 0:f.at(0)}
           </div>
-        </superviz-dropdown>
+        </div>
+        <!-- </superviz-dropdown> -->
       `})}
-    ${this.renderExcessParticipants()} `}updated(e){super.updated(e),this.updateComplete.then(()=>{let r=this.shadowRoot.querySelector(".superviz-who-is-online");!r||r.setAttribute("style",this.position)})}render(){return ge` <div class="superviz-who-is-online">${this.renderParticipants()}</div>`}};si.styles=x1,si.properties={position:{type:String},participants:{type:Object},open:{type:Boolean}},si=Ue([Be("superviz-who-is-online")],si);D();D();var bv=Ge(Re),I1=[bv.styles,bf],ai=class extends bv{constructor(){super();this.onClickOutDropdown=e=>{if(e.stopPropagation(),!this.open)return;let r=e.composedPath(),i=this.shadowRoot.querySelector(".dropdown-content"),a=this.shadowRoot.querySelector(".dropdown-list"),u=this.shadowRoot.querySelector('slot[name="dropdown"]').assignedElements()[0],f=r.includes(i),m=r.includes(a),y=r.includes(u);f||m||y||(this.open=!1,this.selected="",this.emitEvent("clickout",{detail:{open:this.open},bubbles:!1,composed:!1}))};this.close=()=>{this.emitEvent("close",{bubbles:!1,composed:!1})};this.dropdownOptionsHandler=({detail:e})=>{};this.selectParticipant=e=>()=>{this.selected=e};this.textColorValues=[2,4,5,7,8,16],this.selected=""}updated(e){e.has("open")&&(this.open?document.addEventListener("click",this.onClickOutDropdown):(document.removeEventListener("click",this.onClickOutDropdown),this.close()))}renderParticipants(){if(!this.participants)return;let e=Object.values(gs).map(i=>({label:i})),r=["place","send"];return this.participants.map(i=>{var u;let a=this.textColorValues.includes(i.slotIndex)?"#FFFFFF":"#26242A",l={"who-is-online-dropdown__content":!0,"who-is-online-dropdown__content--selected":this.selected===i.id};return ge`
-        <superviz-dropdown
+    ${this.renderExcessParticipants()} `}updated(e){super.updated(e),this.updateComplete.then(()=>{let r=this.shadowRoot.querySelector(".superviz-who-is-online");!r||r.setAttribute("style",this.position)})}render(){return ge` <div class="superviz-who-is-online">${this.renderParticipants()}</div>`}};si.styles=x1,si.properties={position:{type:String},participants:{type:Object},open:{type:Boolean}},si=Ue([Be("superviz-who-is-online")],si);D();D();var bv=Ge(Re),I1=[bv.styles,bf],ai=class extends bv{constructor(){super();this.onClickOutDropdown=e=>{if(e.stopPropagation(),!this.open)return;let r=e.composedPath(),i=this.shadowRoot.querySelector(".dropdown-content"),a=this.shadowRoot.querySelector(".dropdown-list"),u=this.shadowRoot.querySelector('slot[name="dropdown"]').assignedElements()[0],f=r.includes(i),m=r.includes(a),y=r.includes(u);f||m||y||(this.open=!1,this.selected="",this.emitEvent("clickout",{detail:{open:this.open},bubbles:!1,composed:!1}))};this.close=()=>{this.emitEvent("close",{bubbles:!1,composed:!1})};this.dropdownOptionsHandler=({detail:e})=>{};this.selectParticipant=e=>()=>{this.selected=e};this.textColorValues=[2,4,5,7,8,16],this.selected=""}updated(e){if(e.has("open")){if(this.open){document.addEventListener("click",this.onClickOutDropdown);return}document.removeEventListener("click",this.onClickOutDropdown),this.close()}}renderParticipants(){if(!this.participants)return;let e=Object.values(gs).map(i=>({label:i})),r=["place","send"];return this.participants.map(i=>{var u;let a=this.textColorValues.includes(i.slotIndex)?"#FFFFFF":"#26242A",l={"who-is-online-dropdown__content":!0,"who-is-online-dropdown__content--selected":this.selected===i.id};return ge`
+        <!-- <superviz-dropdown
         options=${JSON.stringify(e)}
         label="label"
         returnTo="label"
         position="bottom-right"
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(r)}"
-        >
+        > -->
         <div class=${it(l)} @click=${this.selectParticipant(i.id)} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${i.color}">
@@ -1550,7 +1551,7 @@ function print() { __p += __j.call(arguments, '') }
             <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>
           </div>
         </div>
-      </superviz-dropdown>
+      <!-- </superviz-dropdown> -->
       `})}toggleOpen(){this.open=!this.open,this.selected=""}get menuClasses(){return{menu:!0,"menu--bottom-left":this.position==="bottom-left","menu--bottom-center":this.position==="bottom-center","menu--bottom-right":this.position==="bottom-right","menu-open":this.open,"menu-left":this.align==="left","menu-right":this.align==="right"}}render(){return ge`
       <div class="dropdown">
         <div class="dropdown-content" @click=${this.toggleOpen}>
@@ -1561,7 +1562,7 @@ function print() { __p += __j.call(arguments, '') }
         <div class=${it(this.menuClasses)}>${this.renderParticipants()}</div>
       </div>
     `}};ai.styles=I1,ai.properties={open:{type:Boolean},align:{type:String},position:{type:String},participants:{type:Array},selected:{type:String}},ai=Ue([Be("superviz-who-is-online-dropdown")],ai);D();D();function Ev(s){if(typeof document!="undefined"){let t=document.createElement("style");t.id="superviz-style";let e=document.createTextNode(s);t.appendChild(e),document.head.appendChild(t)}}var Av=`@import"https://unpkg.com/@superviz/sv-icons@0.8.7/css/style.css";@import"https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap";html,body{width:100%;height:100%;overflow:hidden}#sv-video-wrapper iframe{position:fixed;border:none;margin:0;padding:0;overflow:hidden;z-index:5}#sv-video-wrapper iframe.sv-video-frame--right{top:var(--superviz-offset-top);right:var(--superviz-offset-right)}#sv-video-wrapper iframe.sv-video-frame--left{top:var(--superviz-offset-top);left:var(--superviz-offset-left)}#sv-video-wrapper iframe.sv-video-frame--bottom{bottom:var(--superviz-offset-bottom);right:var(--superviz-offset-right);width:100%}#sv-video-wrapper iframe.sv-video-frame--top{top:var(--superviz-offset-top);right:var(--superviz-offset-right);width:100%}#sv-video-wrapper iframe.sv-video-frame--no-overlay{display:none}
-`;Ev(Av);D();D();D();window&&(window.SuperVizRoom={init:Yu,MeetingEvent:mo,DeviceEvent:Iu,RealtimeEvent:Ar,MeetingState:aa,MeetingConnectionStatus:vo,MeetingControlsEvent:sa,ParticipantEvent:la,FrameEvent:go,LayoutMode:va,VideoConference:wo,MousePointers:xo,Realtime:Io,Comments:Ao,CanvasPin:Co,WhoIsOnline:Ro,ParticipantType:Ai,LayoutPosition:ga,CamerasPosition:ya,RealtimeComponentState:Ea,RealtimeComponentEvent:Aa});var tU=Yu;export{Oo as BrowserService,ya as CamerasPosition,Iu as DeviceEvent,go as FrameEvent,va as LayoutMode,ga as LayoutPosition,vo as MeetingConnectionStatus,sa as MeetingControlsEvent,mo as MeetingEvent,aa as MeetingState,Ae as Observer,la as ParticipantEvent,Ai as ParticipantType,da as PinMode,Aa as RealtimeComponentEvent,Ea as RealtimeComponentState,Ar as RealtimeEvent,tU as default};
+`;Ev(Av);D();D();D();window&&(window.SuperVizRoom={init:Yu,MeetingEvent:mo,DeviceEvent:Iu,RealtimeEvent:Ar,MeetingState:aa,MeetingConnectionStatus:vo,MeetingControlsEvent:sa,ParticipantEvent:la,FrameEvent:go,LayoutMode:va,VideoConference:wo,MousePointers:xo,Realtime:Io,Comments:Ao,CanvasPin:Co,WhoIsOnline:Ro,ParticipantType:Ai,LayoutPosition:ga,CamerasPosition:ya,RealtimeComponentState:Ea,RealtimeComponentEvent:Aa});var oU=Yu;export{Oo as BrowserService,ya as CamerasPosition,Iu as DeviceEvent,go as FrameEvent,va as LayoutMode,ga as LayoutPosition,vo as MeetingConnectionStatus,sa as MeetingControlsEvent,mo as MeetingEvent,aa as MeetingState,Ae as Observer,la as ParticipantEvent,Ai as ParticipantType,da as PinMode,Aa as RealtimeComponentEvent,Ea as RealtimeComponentState,Ar as RealtimeEvent,oU as default};
 /*!
  * @license Copyright 2015-2022 Ably Real-time Ltd (ably.com)
  * 
