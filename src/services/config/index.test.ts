@@ -33,7 +33,7 @@ describe('ConfigurationService', () => {
       expect(result).toBe('defaultValue');
     });
 
-    test('should return the default value if the config is no avaliable', () => {
+    test('should return the default value if the config is not available', () => {
       configService.setConfig(null as unknown as Configuration);
       expect(configService.get('ablyKey')).toBeUndefined();
     });
