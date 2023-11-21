@@ -223,11 +223,9 @@ function print() { __p += __j.call(arguments, '') }
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
-    top: 7px;
   }
 
   .who-is-online-dropdown {
-    top: 4px;
     padding: 4px;
   }
 
@@ -242,6 +240,7 @@ function print() { __p += __j.call(arguments, '') }
     min-width: 103px;
     position: absolute;
     left: 0;
+    top: 4px;
   }
 
   .menu--bottom-center {
@@ -249,12 +248,36 @@ function print() { __p += __j.call(arguments, '') }
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    top: 4px;
   }
 
   .menu--bottom-right {
     min-width: 103px;
     position: absolute;
     right: 0;
+    top: 4px;
+  }
+
+  .menu--top-left {
+    min-width: 103px;
+    position: absolute;
+    left: 0;
+    bottom: 44px;
+  }
+
+  .menu--top-center {
+    min-width: 103px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 44px;
+  }
+
+  .menu--top-right {
+    min-width: 103px;
+    position: absolute;
+    right: 0;
+    bottom: 44px;
   }
 
   .items li {
@@ -295,6 +318,14 @@ function print() { __p += __j.call(arguments, '') }
     background: rgb(var(--sv-gray-300));
     padding: 0px;
     margin: 0px;
+  }
+
+  @media (max-width: 780px) {
+    .menu--top-left,
+    .menu--top-center,
+    .menu--top-right {
+      bottom: 36px;
+    }
   }
 `;var Vm=Ge(Re),$T=[Vm.styles,zm],Gr=class extends Vm{constructor(){super(...arguments);this.onClickOutDropdown=e=>{if(e.stopPropagation(),!this.open)return;let r=e.composedPath(),i=this.shadowRoot.querySelector(".dropdown-content"),a=this.shadowRoot.querySelector(".dropdown-list"),u=this.shadowRoot.querySelector('slot[name="dropdown"]').assignedElements()[0],f=r.includes(i),m=r.includes(a),y=r.includes(u);f||m||y||(this.open=!1)};this.close=()=>{this.emitEvent("close",{bubbles:!1,composed:!1})};this.callbackSelected=e=>{this.open=!1;let r=this.returnTo?e[this.returnTo]:e;this.emitEvent("selected",r,{bubbles:!1,composed:!1})}}updated(e){if(!!e.has("open")){if(this.open){document.addEventListener("click",this.onClickOutDropdown);return}document.removeEventListener("click",this.onClickOutDropdown),this.close()}}render(){var u;let e={menu:!0,"menu--bottom-left":this.position==="bottom-left","menu--bottom-center":this.position==="bottom-center","menu--bottom-right":this.position==="bottom-right","menu-open":this.open,"menu-left":this.align==="left","menu-right":this.align==="right","who-is-online-dropdown":this.name},r=()=>this.name?ge` <div class="header">
         <span class="text">${this.name}</span>
@@ -1394,7 +1425,7 @@ function print() { __p += __j.call(arguments, '') }
 
   .dropdown-list > div {
     padding: 5px;
-    min-width: 216px;
+    width: 216px;
   }
 
   .menu {
@@ -1451,6 +1482,15 @@ function print() { __p += __j.call(arguments, '') }
     .who-is-online-dropdown__participant {
       width: 32px;
       height: 32px;
+    }
+
+    .who-is-online-dropdown__avatar {
+      width: 24px;
+      height: 24px;
+    }
+
+    .dropdown-list > div {
+      width: 192px;
     }
   }
 `;var yv=Ge(Re),x1=[yv.styles,yf],si=class extends yv{constructor(){super();this.onClickOutDropdown=({detail:e})=>{this.open=e.open};this.dropdownOptionsHandler=({detail:e})=>{};this.position="top: 20px; right: 40px;",this.open=!1,this.textColorValues=[2,4,5,7,8,16]}updateParticipants(e){this.participants=e}toggleOpen(){this.open=!this.open}dropdownPosition(e){if(this.participants.length===1)return"bottom-center";if(e===0)return"bottom-left";let r=this.participants.length>4,i=e+1===this.participants.length;return r||!i?"bottom-center":"bottom-right"}renderExcessParticipants(){let e=this.participants.length-4;if(e<=0)return ge``;let r=this.participants.slice(4).map(({name:l,color:u,id:f,slotIndex:m})=>({name:l,color:u,id:f,slotIndex:m})),i={"superviz-who-is-online__participant":!0,excess_participants:!0,"excess_participants--open":this.open};return ge`
