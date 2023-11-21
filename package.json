@@ -52,6 +52,7 @@
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
     "@web/dev-server-esbuild": "^0.4.3",
+    "@web/dev-server-import-maps": "^0.2.0",
     "@web/dev-server-legacy": "^2.0.3",
     "@web/test-runner": "^0.17.2",
     "@web/test-runner-playwright": "^0.10.2",
