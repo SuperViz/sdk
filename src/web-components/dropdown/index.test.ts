@@ -69,6 +69,11 @@ export const createEl = ({
   elementSlot.setAttribute('slot', 'dropdown');
   elementSlot.innerHTML = 'X';
   element.appendChild(elementSlot);
+  element.style.position = 'absolute';
+
+  element.style.left = '-10px';
+  element.style.top = '0px';
+
   document.body.appendChild(element);
   return element;
 };
@@ -286,5 +291,43 @@ describe('dropdown', () => {
         composed: false,
       },
     );
+  });
+
+  test('should reposition dropdown to bottom-left if top, center and right are out of screen', async () => {
+    const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
+    await sleep();
+
+    const oldLeft = Number(el.style.left.slice(0, 2));
+    const { left, right } = el['dropdownBounds'];
+
+    el.style.left = 'auto';
+    el.style.right = (window.innerWidth + oldLeft - (right - left)).toString();
+
+    await sleep();
+
+    dropdownContent()?.click();
+
+    await sleep();
+
+    expect(el['position']).toBe('bottom-left');
+  });
+
+  test('should reposition dropdown to top-left if top, center and right are out of screen', async () => {
+    const el = createEl({ position: 'bottom-right', align: 'left', icons: ['left', 'right'] });
+    await sleep();
+
+    const oldLeft = Number(el.style.left.slice(0, 2));
+    const { left, right } = el['dropdownBounds'];
+
+    el.style.left = 'auto';
+    el.style.right = (window.innerWidth + oldLeft - (right - left)).toString();
+
+    await sleep();
+
+    dropdownContent()?.click();
+
+    await sleep();
+
+    expect(el['position']).toBe('bottom-left');
   });
 });
