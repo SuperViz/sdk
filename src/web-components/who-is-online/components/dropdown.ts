@@ -39,9 +39,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (changedProperties.has('open')) {
-      this.open
-        ? document.addEventListener('click', this.onClickOutDropdown)
-        : (document.removeEventListener('click', this.onClickOutDropdown), this.close());
+      if (this.open) {
+        document.addEventListener('click', this.onClickOutDropdown);
+        return;
+      }
+
+      document.removeEventListener('click', this.onClickOutDropdown);
+      this.close();
     }
   }
 
@@ -107,14 +111,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       };
 
       return html`
-        <superviz-dropdown
+        <!-- <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
         returnTo="label"
         position="bottom-right"
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(icons)}"
-        >
+        > -->
         <div class=${classMap(contentClasses)} @click=${this.selectParticipant(
         participant.id,
       )} slot="dropdown">
@@ -130,7 +134,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
             <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>
           </div>
         </div>
-      </superviz-dropdown>
+      <!-- </superviz-dropdown> -->
       `;
     });
   }

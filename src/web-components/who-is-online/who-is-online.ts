@@ -116,7 +116,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
       const position = this.dropdownPosition(index);
       return html`
-        <superviz-dropdown
+        <!-- <superviz-dropdown
           options=${JSON.stringify(options)}
           label="label"
           returnTo="label"
@@ -124,20 +124,20 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           @selected=${this.dropdownOptionsHandler}
           icons="${JSON.stringify(icons)}"
           name="${participant.name}"
+        > -->
+        <div
+          slot="dropdown"
+          class="superviz-who-is-online__participant"
+          style="border-color: ${participant.color}"
         >
           <div
-            slot="dropdown"
-            class="superviz-who-is-online__participant"
-            style="border-color: ${participant.color}"
+            class="superviz-who-is-online__avatar"
+            style="background-color: ${participant.color}; color: ${letterColor}"
           >
-            <div
-              class="superviz-who-is-online__avatar"
-              style="background-color: ${participant.color}; color: ${letterColor}"
-            >
-              ${participant.name?.at(0)}
-            </div>
+            ${participant.name?.at(0)}
           </div>
-        </superviz-dropdown>
+        </div>
+        <!-- </superviz-dropdown> -->
       `;
     })}
     ${this.renderExcessParticipants()} `;

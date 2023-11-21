@@ -109,6 +109,7 @@ export const dropdownStyle = css`
     flex: 1;
     justify-content: flex-end;
     display: flex;
+    visibility: hidden;
   }
 
   @media (max-width: 780px) {
