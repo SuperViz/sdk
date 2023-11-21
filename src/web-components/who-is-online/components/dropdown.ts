@@ -151,6 +151,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       'menu-right': this.align === 'right',
     };
   }
+
   protected render() {
     return html`
       <div class="dropdown">
