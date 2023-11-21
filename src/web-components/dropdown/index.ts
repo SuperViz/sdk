@@ -126,7 +126,6 @@ export class Dropdown extends WebComponentsBaseElement {
 
   private adjustPositionHorizontal() {
     const { left, right } = this.dropdownBounds;
-    console.log(this.getBoundingClientRect());
     let isOutsideWindowLeft = left < 0;
     let isOutsideWindowRight = right > window.innerWidth;
 
