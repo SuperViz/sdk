@@ -1,5 +1,6 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
+import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { Group, Participant } from '../../common/types/participant.types';
@@ -32,6 +33,10 @@ class DummyComponent extends BaseComponent {
 }
 
 const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
+
+jest.mock('../../common/utils/observer', () => ({
+  Observer: jest.fn().mockImplementation(() => MOCK_OBSERVER_HELPER),
+}));
 
 jest.useFakeTimers();
 global.fetch = jest.fn();
@@ -145,6 +150,7 @@ describe('BaseComponent', () => {
 
     test('should unsubscribe from all events', () => {
       const callback = jest.fn();
+
       DummyComponentInstance['destroy'] = jest.fn();
 
       DummyComponentInstance.attach({
@@ -159,9 +165,14 @@ describe('BaseComponent', () => {
 
       expect(DummyComponentInstance['observers']['test']).toBeDefined();
 
+      const spyDestroy = jest.spyOn(DummyComponentInstance['observers']['test'], 'destroy');
+      const spyReset = jest.spyOn(DummyComponentInstance['observers']['test'], 'reset');
+
       DummyComponentInstance.detach();
 
-      expect(DummyComponentInstance['observers']['test']).toBeUndefined();
+      expect(spyDestroy).toBeCalled();
+      expect(spyReset).toBeCalled();
+      expect(DummyComponentInstance['observers']).toBeUndefined();
     });
 
     test('should not detach the component if it is not attached', () => {

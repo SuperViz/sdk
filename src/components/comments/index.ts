@@ -70,9 +70,11 @@ export class Comments extends BaseComponent {
    * @returns {void}
    */
   protected destroy(): void {
+    this.logger.log('comments component @ destroy');
     this.destroyListeners();
 
-    document.body.querySelector('superviz-comments').remove();
+    this.button.remove();
+    this.element.remove();
     this.element = undefined;
     this.pinAdapter.destroy();
   }
