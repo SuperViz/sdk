@@ -1503,7 +1503,7 @@ function print() { __p += __j.call(arguments, '') }
             class="superviz-who-is-online__avatar"
             style="background-color: ${a.color}; color: ${l}"
           >
-            ${(m=a.name)==null?void 0:m.at(0)}
+            ${(m=a.name)==null?void 0:m.at(0).toUpperCase()}
           </div>
         </div>
         <!-- </superviz-dropdown> -->
