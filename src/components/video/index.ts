@@ -53,7 +53,7 @@ export class VideoConference extends BaseComponent {
 
     this.params = {
       ...params,
-      userType: params?.userType ?? ParticipantType.GUEST,
+      userType: params?.participantType ?? params?.userType ?? ParticipantType.GUEST,
     };
 
     this.name = ComponentNames.VIDEO_CONFERENCE;

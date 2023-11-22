@@ -26,6 +26,7 @@ export interface VideoComponentOptions {
   skipMeetingSettings?: boolean;
   allowGuests?: boolean;
   userType?: ParticipantType | `${ParticipantType}`;
+  participantType?: ParticipantType | `${ParticipantType}`;
   collaborationMode?: {
     position?: CamerasPosition | `${CamerasPosition}`;
     modalPosition?: LayoutPosition | `${LayoutPosition}`;
