@@ -43,6 +43,8 @@ describe('Launcher', () => {
     jest.clearAllMocks();
 
     LauncherInstance = new Launcher(DEFAULT_INITIALIZATION_MOCK);
+    console.error = jest.fn();
+    console.log = jest.fn();
   });
 
   test('should be defined', () => {
@@ -66,6 +68,7 @@ describe('Launcher', () => {
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
       });
+
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
         activeComponents: [MOCK_COMPONENT.name],
       });
@@ -104,6 +107,14 @@ describe('Launcher', () => {
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
+    });
+
+    test('should show a console message if the laucher is destroyed', () => {
+      LauncherInstance.destroy();
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.attach).not.toBeCalled();
     });
   });
 
@@ -347,6 +358,75 @@ describe('Launcher', () => {
         RealtimeEvent.REALTIME_NO_HOST_AVAILABLE,
       );
     });
+
+    test('should update activeComponentsInstances when participant list is updated', () => {
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      LauncherInstance['onParticipantListUpdate']({
+        participant1: {
+          extras: null,
+          clientId: MOCK_LOCAL_PARTICIPANT.id,
+          action: 'present',
+          connectionId: 'connection1',
+          encoding: 'h264',
+          id: 'unit-test-participant-ably-id',
+          timestamp: new Date().getTime(),
+          data: {
+            participantId: MOCK_LOCAL_PARTICIPANT.id,
+            activeComponents: [MOCK_COMPONENT.name],
+          },
+        },
+      });
+
+      expect(LauncherInstance['activeComponentsInstances'].length).toBe(1);
+    });
+
+    test('should remove component when participant is not usign it anymore', () => {
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      LauncherInstance['onParticipantListUpdate']({
+        participant1: {
+          extras: null,
+          clientId: MOCK_LOCAL_PARTICIPANT.id,
+          action: 'present',
+          connectionId: 'connection1',
+          encoding: 'h264',
+          id: 'unit-test-participant-ably-id',
+          timestamp: new Date().getTime(),
+          data: {
+            ...MOCK_LOCAL_PARTICIPANT,
+            participantId: MOCK_LOCAL_PARTICIPANT.id,
+            activeComponents: [],
+          },
+        },
+      });
+
+      expect(LauncherInstance['activeComponentsInstances'].length).toBe(0);
+    });
+  });
+
+  test('should destroy the instance', () => {
+    LauncherInstance.destroy();
+
+    expect(ABLY_REALTIME_MOCK.leave).toHaveBeenCalled();
+    expect(EVENT_BUS_MOCK.destroy).toHaveBeenCalled();
+  });
+
+  test('should unsubscribe from realtime events', () => {
+    LauncherInstance.destroy();
+
+    expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
+    expect(ABLY_REALTIME_MOCK.hostAvailabilityObserver.unsubscribe).toHaveBeenCalled();
+  });
+
+  test('should remove all components', () => {
+    LauncherInstance.addComponent(MOCK_COMPONENT);
+    LauncherInstance.destroy();
+
+    expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
   });
 });
 
@@ -363,6 +443,7 @@ describe('Launcher Facade', () => {
   });
 
   test('should be return a facade with the correct methods', () => {
+    expect(LauncherFacadeInstance).toHaveProperty('destroy');
     expect(LauncherFacadeInstance).toHaveProperty('subscribe');
     expect(LauncherFacadeInstance).toHaveProperty('unsubscribe');
     expect(LauncherFacadeInstance).toHaveProperty('addComponent');

@@ -1,3 +1,4 @@
+import { ColorsVariables } from '../../common/types/colors.types';
 import {
   DeviceEvent,
   MeetingConnectionStatus,
@@ -25,7 +26,6 @@ import {
   Offset,
   FrameLocale,
   FrameConfig,
-  ColorsVariables,
   LayoutPosition,
   CamerasPosition,
   LayoutModalsAndCameras,

@@ -1,3 +1,4 @@
+import { ColorsVariables } from './colors.types';
 import type { Group, Avatar, ParticipantType } from './participant.types';
 
 export enum EnvironmentTypes {
@@ -14,6 +15,7 @@ export interface SuperVizSdkOptions {
     avatar?: Avatar;
   };
   group: Group;
+  customColors?: ColorsVariables;
 
   // internal
   debug?: boolean;

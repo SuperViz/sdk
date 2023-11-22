@@ -1,5 +1,4 @@
 import { Participant } from '../../common/types/participant.types';
-import { SlotColor } from '../../services/realtime/base/types';
 
 export interface ParticipantMouse extends Participant {
   containerId?: string;

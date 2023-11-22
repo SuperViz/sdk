@@ -41,7 +41,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presenceMouseChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
-
   private clientRoomState: Record<string, RealtimeMessage> = {};
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
   // private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
@@ -741,6 +740,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       members.forEach((member) => {
         participants[member.clientId] = { ...member };
       });
+
       this.participants = participants;
       this.participantsObserver.publish(this.participants);
     });
@@ -990,6 +990,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
+
     let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
 
     this.supervizChannel.presence.get((error, members) => {
@@ -1051,6 +1052,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
           }
         });
       });
+
       if (
         this.myParticipant.data.slotIndex === undefined ||
         usedSlots.includes(this.myParticipant.data.slotIndex)
@@ -1332,8 +1334,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leavePresenceMouseChannel = (): void => {
     if (!this.presenceMouseChannel) return;
 
-    this.presenceMouseChannel = null;
     this.presenceMouseChannel.presence.leave();
+    this.presenceMouseChannel = null;
   };
 
   public updatePresenceMouse = throttle((data: Partial<ParticipantMouse>): void => {
@@ -1342,12 +1344,21 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.presenceMouseChannel.presence.update(participant);
   }, SYNC_PROPERTY_INTERVAL);
 
-  private onPresenceMouseChannelEnter = (message: Ably.Types.PresenceMessage): void => {
-    this.presenceMouseParticipantJoinedObserver.publish(message.data);
+  private onPresenceMouseChannelEnter = (presence: Ably.Types.PresenceMessage): void => {
+    const slot = this.getParticipantSlot(presence.clientId);
+
+    this.participantsMouse[presence.clientId] = {
+      ...presence.data,
+      slotIndex: slot,
+      color: this.getSlotColor(slot).color,
+    };
+
+    this.presenceMouseParticipantJoinedObserver.publish(this.participantsMouse[presence.clientId]);
   };
 
-  private onPresenceMouseChannelLeave = (message: Ably.Types.PresenceMessage): void => {
-    this.presenceMouseParticipantLeaveObserver.publish(message.data);
+  private onPresenceMouseChannelLeave = (presence: Ably.Types.PresenceMessage): void => {
+    this.presenceMouseParticipantLeaveObserver.publish(this.participantsMouse[presence.clientId]);
+    delete this.participantsMouse[presence.clientId];
   };
 
   /**
@@ -1356,11 +1367,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description publish a participant's changes to observer
    * @returns {void}
    */
-  private publishPresenceMouseUpdate = (participant: Ably.Types.PresenceMessage): void => {
-    const slot = this.getParticipantSlot(participant.clientId);
+  private publishPresenceMouseUpdate = (presence: Ably.Types.PresenceMessage): void => {
+    const slot = this.getParticipantSlot(presence.clientId);
 
-    this.participantsMouse[participant.clientId] = {
-      ...participant.data,
+    this.participantsMouse[presence.clientId] = {
+      ...presence.data,
       slotIndex: slot,
       color: this.getSlotColor(slot).color,
     };
@@ -1399,8 +1410,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leavePresence3DChannel = (): void => {
     if (!this.presence3DChannel) return;
 
-    this.presence3DChannel = null;
     this.presence3DChannel.presence.leave();
+    this.presence3DChannel = null;
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {

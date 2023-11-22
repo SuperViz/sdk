@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
 
+import { ColorsVariables } from '../../common/types/colors.types';
 import {
   DeviceEvent,
   Dimensions,
@@ -52,7 +53,7 @@ export class VideoConference extends BaseComponent {
 
     this.params = {
       ...params,
-      userType: params?.userType ?? ParticipantType.GUEST,
+      userType: params?.participantType ?? params?.userType ?? ParticipantType.GUEST,
     };
 
     this.name = ComponentNames.VIDEO_CONFERENCE;
@@ -191,7 +192,7 @@ export class VideoConference extends BaseComponent {
       offset: this.params?.offset,
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
-      customColors: this.params?.customColors,
+      customColors: config.get<ColorsVariables>('colors'),
       layoutPosition: this.params?.collaborationMode?.modalPosition as LayoutPosition,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
       waterMark: this.showWaterMarkType,

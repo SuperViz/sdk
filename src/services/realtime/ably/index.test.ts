@@ -3,7 +3,6 @@ import { TextEncoder } from 'util';
 import Ably from 'ably';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { TranscriptState } from '../../../common/types/events.types';
 import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -1436,6 +1435,7 @@ describe('AblyRealtimeService', () => {
     /**
      * findSlotIndex
      */
+    jest.useFakeTimers();
 
     test('should return the first empty slot', async () => {
       // @ts-ignore
@@ -1487,7 +1487,7 @@ describe('AblyRealtimeService', () => {
         });
 
       AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
-
+      jest.advanceTimersByTime(5000);
       expect(AblyRealtimeServiceInstance['updateMyProperties']).toBeCalledWith({ slotIndex: 2 });
     });
 

@@ -1,4 +1,5 @@
-import { Avatar, Group, Participant, ParticipantType } from '../src';
+import { Avatar, Group, Participant } from '../src';
+import { MeetingColorsHex } from '../src/common/types/meeting-colors.types';
 import { AblyParticipant } from '../src/services/realtime/ably/types';
 
 export const MOCK_AVATAR: Avatar = {
@@ -17,6 +18,26 @@ export const MOCK_GROUP: Group = {
   name: 'unit-test-group-name',
 };
 
+export const MOCK_ABLY_PARTICIPANT_DATA_1 = {
+  activeComponents: ['whoIsOnline'],
+  name: 'unit-test-participant1-name',
+  id: 'unit-test-participant1-id',
+  avatar: MOCK_AVATAR,
+  participantId: MOCK_LOCAL_PARTICIPANT.id,
+  slotIndex: 0,
+  color: MeetingColorsHex[0],
+};
+
+export const MOCK_ABLY_PARTICIPANT_DATA_2 = {
+  activeComponents: ['whoIsOnline'],
+  name: 'unit-test-participant2-name',
+  id: 'unit-test-participant2-id',
+  avatar: MOCK_AVATAR,
+  participantId: MOCK_LOCAL_PARTICIPANT.id,
+  slotIndex: 1,
+  color: MeetingColorsHex[1],
+};
+
 export const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
   extras: null,
   clientId: MOCK_LOCAL_PARTICIPANT.id,
@@ -25,8 +46,5 @@ export const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
   encoding: 'h264',
   id: 'unit-test-participant1-ably-id',
   timestamp: new Date().getTime(),
-  data: {
-    participantId: MOCK_LOCAL_PARTICIPANT.id,
-    slotIndex: 0,
-  },
+  data: MOCK_ABLY_PARTICIPANT_DATA_1,
 };

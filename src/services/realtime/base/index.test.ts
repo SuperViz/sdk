@@ -82,4 +82,25 @@ describe('RealtimeService', () => {
     expect(slotColor.color).toEqual('#878291');
     expect(slotColor.name).toEqual('gray');
   });
+
+  test('should subscribe to participant 3d update and call callback on update', () => {
+    const callback = jest.fn();
+    expect(RealtimeServiceInstance.participants3DObservers['123']).toBeUndefined();
+    RealtimeServiceInstance.subscribeToParticipant3DUpdate('123', callback);
+    expect(RealtimeServiceInstance.participants3DObservers['123']).toBeDefined();
+    RealtimeServiceInstance.participants3DObservers['123'].publish('test');
+    expect(callback).toBeCalled();
+  });
+
+  test('should unsubscribe from participant 3d update', () => {
+    const callback = jest.fn();
+    RealtimeServiceInstance.subscribeToParticipant3DUpdate('123', callback);
+    RealtimeServiceInstance.participants3DObservers['123'].publish('test');
+    expect(callback).toBeCalledTimes(1);
+
+    RealtimeServiceInstance.unsubscribeFromParticipant3DUpdate('123', callback);
+
+    RealtimeServiceInstance.participants3DObservers['123'].publish('test');
+    expect(callback).toBeCalledTimes(1);
+  });
 });
