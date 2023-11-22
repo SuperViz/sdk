@@ -134,7 +134,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
             class="superviz-who-is-online__avatar"
             style="background-color: ${participant.color}; color: ${letterColor}"
           >
-            ${participant.name?.at(0)}
+            ${participant.name?.at(0).toUpperCase()}
           </div>
         </div>
         <!-- </superviz-dropdown> -->
