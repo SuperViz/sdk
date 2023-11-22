@@ -18,7 +18,7 @@ export const commentInputStyle = css`
   }
 
   .comment-input:focus-within > .sv-hr {
-    background: rgb(var(--sv-gray-500));
+    background: rgb(var(--sv-gray-300));
   }
 
   #comment-input--textarea {
@@ -58,17 +58,35 @@ export const commentInputStyle = css`
     height: 39.5px;
     padding: 4px 8px;
   }
+
   .sv-hr {
     width: 100%;
     min-height: 1px;
     background: rgb(var(--sv-gray-300));
     padding: 0px;
     margin: 0px;
-    display: none;
+    opacity: 0;
+    transition: 0.25s opacity linear, 0.25s visibility;
+    visibility: hidden;
   }
 
   .active-hr {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .comment-actions {
+    position: absolute;
+    left: 8px;
+    bottom: 3px;
+    opacity: 0;
+    transition: 0.25s opacity linear, 0.25s visibility;
+    visibility: hidden;
+  }
+
+  .active-textarea > .comment-actions {
+    opacity: 1;
+    visibility: visible;
   }
 
   .mention {
@@ -79,11 +97,12 @@ export const commentInputStyle = css`
     width: 32px;
     border-radius: 100%;
     color: rgb(var(--sv-gray-600));
+    cursor: pointer;
+    transition: 0.25s background-color ease-in;
   }
 
-  .mention > superviz-icon {
-    height: 16px;
-    width: 16px;
+  .mention:hover {
+    background-color: rgb(var(--sv-gray-200));
   }
 
   .comment-input--send-btn {
@@ -98,8 +117,7 @@ export const commentInputStyle = css`
     border: 0px;
   }
 
-  .align-send-btn > superviz-icon,
-  .mention > superviz-icon {
+  .align-send-btn > superviz-icon {
     margin-right: 2px;
     margin-top: 4px;
     cursor: pointer;
