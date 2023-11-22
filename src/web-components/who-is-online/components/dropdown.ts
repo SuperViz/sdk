@@ -119,14 +119,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(icons)}"
         > -->
-        <div class=${classMap(contentClasses)} @click=${this.selectParticipant(
-        participant.id,
-      )} slot="dropdown">
+        <div 
+          class=${classMap(contentClasses)} 
+          @click=${this.selectParticipant(participant.id)} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${participant.color}">
-              <div class="who-is-online-dropdown__avatar" style="background-color: ${
-                participant.color
-              }; color: ${letterColor}">
+              <div 
+                class="who-is-online-dropdown__avatar" 
+                style="background-color: ${participant.color}; color: ${letterColor}">
                 ${participant.name?.at(0)}
               </div>
             </div>
