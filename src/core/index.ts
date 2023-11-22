@@ -1,5 +1,6 @@
 import { debug } from 'debug';
 
+import { ColorsVariables, ColorsVariablesNames } from '../common/types/colors.types';
 import { ParticipantType } from '../common/types/participant.types';
 import { SuperVizSdkOptions } from '../common/types/sdk-options.types';
 import ApiService from '../services/api';
@@ -16,7 +17,16 @@ import { LauncherFacade as LauncherFacadeType } from './launcher/types';
  * @param {SuperVizSdkOptions} param
  * @returns {void}
  */
-const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions): void => {
+const validateOptions = ({
+  group,
+  participant,
+  roomId,
+  customColors,
+}: SuperVizSdkOptions): void => {
+  if (customColors) {
+    validadeColorsVariablesNames(customColors);
+  }
+
   if (!group || !group.name || !group.id) {
     throw new Error('Group fields is required');
   }
@@ -28,6 +38,27 @@ const validateOptions = ({ group, participant, roomId }: SuperVizSdkOptions): vo
   if (!roomId) {
     throw new Error('Room id is required');
   }
+};
+
+/**
+ * @function validadeColorsVariablesNames
+ * @description validade if the custom colors variables names are valid
+ * @param colors {ColorsVariables}
+ */
+const validadeColorsVariablesNames = (colors: ColorsVariables) => {
+  Object.entries(colors).forEach(([key, value]) => {
+    if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
+      throw new Error(
+        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
+      );
+    }
+
+    if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
+      throw new Error(
+        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
+      );
+    }
+  });
 };
 
 /**
@@ -82,6 +113,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     debug: options.debug,
     limits,
     waterMark,
+    colors: options.customColors,
   });
 
   return LauncherFacade(options);

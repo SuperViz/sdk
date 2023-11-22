@@ -19,12 +19,14 @@ import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 export class Launcher extends Observable implements DefaultLauncher {
   protected readonly logger: Logger;
 
+  private isDestroyed = false;
   private activeComponents: ComponentNames[] = [];
+  private activeComponentsInstances: BaseComponent[] = [];
   private participant: Participant;
   private group: Group;
 
-  private readonly realtime: AblyRealtimeService;
-  private readonly eventBus: EventBus = new EventBus();
+  private realtime: AblyRealtimeService;
+  private eventBus: EventBus = new EventBus();
 
   private participants: Participant[] = [];
   constructor({ participant, group }: LauncherOptions) {
@@ -69,6 +71,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     });
 
     this.activeComponents.push(component.name);
+    this.activeComponentsInstances.push(component);
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
 
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
@@ -93,8 +96,42 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     component.detach();
+
+    this.activeComponentsInstances = this.activeComponentsInstances.filter((c) => {
+      return c.name !== component.name;
+    });
     this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
+  };
+
+  /**
+   * @function destroy
+   * @description destroy launcher and all components
+   * @returns {void}
+   */
+  public destroy = (): void => {
+    this.logger.log('launcher service @ destroy');
+
+    this.activeComponentsInstances.forEach((component: BaseComponent) => {
+      this.logger.log('launcher service @ destroy - removing component', component.name);
+      this.removeComponent(component);
+    });
+
+    this.activeComponents = [];
+    this.activeComponentsInstances = [];
+    this.participant = undefined;
+
+    this.eventBus.destroy();
+    this.eventBus = undefined;
+
+    this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
+    this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
+    this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
+    this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
+    this.realtime.hostAvailabilityObserver.unsubscribe(this.onHostAvailabilityChange);
+    this.realtime.leave();
+    this.realtime = undefined;
+    this.isDestroyed = true;
   };
 
   /**
@@ -104,11 +141,16 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {boolean}
    */
   private canAddComponent = (component: BaseComponent): boolean => {
-    const isWhitelisted = this.realtime.isDomainWhitelisted;
+    const isWhitelisted = this.realtime?.isDomainWhitelisted;
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
 
     const verifications = [
+      {
+        isValid: !this.isDestroyed,
+        message:
+          'Component can not be added because the superviz room is destroyed. Initialize a new room to add and use components.',
+      },
       {
         isValid: isWhitelisted,
         message: `Component ${component.name} can't be used because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dev-dashboard.superviz.com/developer`,
@@ -204,6 +246,16 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     if (localParticipant && !isEqual(this.participant, localParticipant)) {
       this.activeComponents = localParticipant.activeComponents ?? [];
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+        /**
+         * @NOTE - Prevents removing all components when
+         * in the first update, activeComponents is undefined.
+         * It means we should keep all instances
+         */
+        if (!localParticipant.activeComponents) return true;
+
+        return this.activeComponents.includes(component.name);
+      });
       this.participant = localParticipant;
       this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
@@ -308,6 +360,7 @@ export default (options: LauncherOptions): LauncherFacade => {
   const launcher = new Launcher(options);
 
   return {
+    destroy: launcher.destroy,
     subscribe: launcher.subscribe,
     unsubscribe: launcher.unsubscribe,
     addComponent: launcher.addComponent,

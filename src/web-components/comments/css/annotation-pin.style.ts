@@ -14,11 +14,11 @@ export const annotationPinStyles = css`
     width: 32px;
     height: 32px;
 
-    background-color: white;
+    background-color: rgb(var(--sv-white));
     border-radius: 50%;
     border-bottom-left-radius: 2px;
 
-    border: 2px solid white;
+    border: 2px solid rgb(var(--sv-white));
     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.25);
     transition: border-color 0.2s ease-in-out opacity 0.2s ease-in-out;
     padding: 2px;
@@ -38,13 +38,13 @@ export const annotationPinStyles = css`
     background-color: rgb(var(--sv-gray-400));
     border-radius: 50%;
 
-    color: white;
+    color: rgb(var(--sv-white));
   }
 
   .annotation-pin__avatar--add {
     font-size: 24px;
     color: rgb(var(--sv-gray-700));
-    background-color: white;
+    background-color: rgb(var(--sv-white));
   }
 
   .annotation-pin__avatar img {

@@ -44,7 +44,15 @@ export class CanvasPin implements PinAdapter {
    * */
   public destroy(): void {
     this.removeListeners();
+    this.removeAnnotationsPins();
     this.mouseElement = null;
+    this.pins = new Map();
+    this.divWrapper.remove();
+    this.onPinFixedObserver.destroy();
+    this.onPinFixedObserver = null;
+    this.canvas.style.cursor = 'default';
+    this.annotations = [];
+
     document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
 

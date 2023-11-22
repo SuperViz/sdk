@@ -9,7 +9,14 @@ import {
   FrameEvent,
 } from './common/types/events.types';
 import { ParticipantType } from './common/types/participant.types';
-import { VideoConference, MousePointers, Realtime, Comments, CanvasPin } from './components';
+import {
+  VideoConference,
+  MousePointers,
+  Realtime,
+  Comments,
+  CanvasPin,
+  WhoIsOnline,
+} from './components';
 import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import init from './core';
 import './web-components';
@@ -55,6 +62,7 @@ if (window) {
     Realtime,
     Comments,
     CanvasPin,
+    WhoIsOnline,
     ParticipantType,
     LayoutPosition,
     CamerasPosition,

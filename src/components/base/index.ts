@@ -77,11 +77,15 @@ export abstract class BaseComponent extends Observable {
     this.logger.log('detached');
     this.destroy();
 
+    Object.values(this.observers).forEach((observer) => {
+      observer.reset();
+      observer.destroy();
+    });
+
+    this.observers = undefined;
     this.realtime = undefined;
     this.localParticipant = undefined;
     this.isAttached = false;
-
-    Object.keys(this.observers).forEach((type) => this.unsubscribe(type));
   };
 
   protected abstract destroy(): void;
