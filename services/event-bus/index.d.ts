@@ -26,4 +26,5 @@ export declare class EventBus {
      * @returns {void}
      */
     publish: (event: string, data: unknown) => void;
+    destroy: () => void;
 }

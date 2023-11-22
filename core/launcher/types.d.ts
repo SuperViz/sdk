@@ -8,6 +8,7 @@ export interface LauncherOptions extends Omit<SuperVizSdkOptions, 'environment' 
 export interface LauncherFacade {
     subscribe: typeof Observable.prototype.subscribe;
     unsubscribe: typeof Observable.prototype.unsubscribe;
+    destroy: () => void;
     addComponent: (component: BaseComponent) => void;
     removeComponent: (component: BaseComponent) => void;
 }

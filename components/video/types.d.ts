@@ -1,6 +1,6 @@
 import { Avatar, ParticipantType } from '../../common/types/participant.types';
 import { DevicesOptions } from '../../common/types/sdk-options.types';
-import { CamerasPosition, ColorsVariables, LayoutMode, LayoutPosition, Locale, Offset } from '../../services/video-conference-manager/types';
+import { CamerasPosition, LayoutMode, LayoutPosition, Locale, Offset } from '../../services/video-conference-manager/types';
 export interface VideoComponentOptions {
     camsOff?: boolean;
     screenshareOff?: boolean;
@@ -16,10 +16,10 @@ export interface VideoComponentOptions {
     language?: string;
     locales?: Locale[];
     avatars?: Avatar[];
-    customColors?: ColorsVariables;
     skipMeetingSettings?: boolean;
     allowGuests?: boolean;
     userType?: ParticipantType | `${ParticipantType}`;
+    participantType?: ParticipantType | `${ParticipantType}`;
     collaborationMode?: {
         position?: CamerasPosition | `${CamerasPosition}`;
         modalPosition?: LayoutPosition | `${LayoutPosition}`;
