@@ -15,7 +15,7 @@ export interface SuperVizSdkOptions {
     group: Group;
     customColors?: ColorsVariables;
     debug?: boolean;
-    environment?: EnvironmentTypes;
+    environment?: EnvironmentTypes | `${EnvironmentTypes}`;
 }
 export interface DevicesOptions {
     audioInput: boolean;
