@@ -30,6 +30,7 @@ export const dropdownStyle = css`
     height: 40px;
     border: 2px solid #878291;
     border-radius: 50%;
+    max-width: 40px;
     flex: 1 0 40px;
   }
 
@@ -117,12 +118,20 @@ export const dropdownStyle = css`
     .who-is-online-dropdown__participant {
       width: 32px;
       height: 32px;
+    }
+
+    .who-is-online-dropdown__participant {
       flex: 1 0 32px;
+      max-width: 32px;
     }
 
     .who-is-online-dropdown__avatar {
       width: 24px;
       height: 24px;
+    }
+
+    .dropdown-list > div {
+      min-width: 192px;
     }
   }
 `;
