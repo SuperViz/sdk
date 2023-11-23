@@ -2,7 +2,7 @@ import { debug } from 'debug';
 
 import { ColorsVariables, ColorsVariablesNames } from '../common/types/colors.types';
 import { ParticipantType } from '../common/types/participant.types';
-import { SuperVizSdkOptions } from '../common/types/sdk-options.types';
+import { EnvironmentTypes, SuperVizSdkOptions } from '../common/types/sdk-options.types';
 import ApiService from '../services/api';
 import AuthService from '../services/auth-service';
 import config from '../services/config';
@@ -84,7 +84,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   }
 
   const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
-    options.environment,
+    options.environment as EnvironmentTypes,
   );
 
   const isValid = await AuthService(apiUrl, apiKey);
