@@ -1376,6 +1376,7 @@ function print() { __p += __j.call(arguments, '') }
     height: 40px;
     border: 2px solid #878291;
     border-radius: 50%;
+    max-width: 40px;
     flex: 1 0 40px;
   }
 
@@ -1463,12 +1464,20 @@ function print() { __p += __j.call(arguments, '') }
     .who-is-online-dropdown__participant {
       width: 32px;
       height: 32px;
+    }
+
+    .who-is-online-dropdown__participant {
       flex: 1 0 32px;
+      max-width: 32px;
     }
 
     .who-is-online-dropdown__avatar {
       width: 24px;
       height: 24px;
+    }
+
+    .dropdown-list > div {
+      min-width: 192px;
     }
   }
 `;var kp=et(V),q1=[kp.styles,Ol],cr=class extends kp{constructor(){super();this.onClickOutDropdown=({detail:r})=>{this.open=r.open};this.dropdownOptionsHandler=({detail:r})=>{};this.position="top: 20px; right: 40px;",this.open=!1,this.textColorValues=[2,4,5,7,8,16]}updateParticipants(r){this.participants=r}toggleOpen(){this.open=!this.open}dropdownPosition(r){if(this.participants.length===1)return"bottom-center";if(r===0)return"bottom-left";let o=this.participants.length>4,a=r+1===this.participants.length;return o||!a?"bottom-center":"bottom-right"}renderExcessParticipants(){let r=this.participants.length-4;if(r<=0)return D``;let o=this.participants.slice(4).map(({name:l,color:p,id:m,slotIndex:x})=>({name:l,color:p,id:m,slotIndex:x})),a={"superviz-who-is-online__participant":!0,excess_participants:!0,"excess_participants--open":this.open};return D`
@@ -1517,10 +1526,14 @@ function print() { __p += __j.call(arguments, '') }
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(o)}"
         > -->
-        <div class=${ht(l)} @click=${this.selectParticipant(a.id)} slot="dropdown">
+        <div 
+          class=${ht(l)} 
+          @click=${this.selectParticipant(a.id)} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${a.color}">
-              <div class="who-is-online-dropdown__avatar" style="background-color: ${a.color}; color: ${c}">
+              <div 
+                class="who-is-online-dropdown__avatar" 
+                style="background-color: ${a.color}; color: ${c}">
                 ${(p=a.name)==null?void 0:p.at(0)}
               </div>
             </div>
