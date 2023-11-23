@@ -1,5 +1,5 @@
 import { ColorsVariables } from './colors.types';
-import type { Group, Avatar, ParticipantType } from './participant.types';
+import type { Group, Avatar } from './participant.types';
 
 export enum EnvironmentTypes {
   LOCAL = 'local',
@@ -19,7 +19,7 @@ export interface SuperVizSdkOptions {
 
   // internal
   debug?: boolean;
-  environment?: EnvironmentTypes;
+  environment?: EnvironmentTypes | `${EnvironmentTypes}`;
 }
 
 export interface DevicesOptions {
