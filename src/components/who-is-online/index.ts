@@ -1,6 +1,5 @@
 import { isEqual } from 'lodash';
 
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
@@ -71,40 +70,20 @@ export class WhoIsOnline extends BaseComponent {
    * @param {Record<string, AblyParticipant>} data
    * @returns {void}
    */
-  private onParticipantListUpdate = (data: Record<string, AblyParticipant>) => {
+  private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
     const updatedParticipants = Object.values(data).filter(({ data }) => {
       return data.activeComponents?.includes('whoIsOnline');
     });
 
-    const compare = updatedParticipants.map(({ data: { slotIndex, id } }) => {
+    const participants = updatedParticipants.map(({ data }) => {
+      const { slotIndex, id, name } = data;
       const { color } = this.realtime.getSlotColor(slotIndex);
-      return { id, color };
+      return { name, id, slotIndex, color };
     });
 
-    const participants = this.participants.map(({ id, color }) => {
-      return { color, id };
-    });
+    if (isEqual(participants, this.participants)) return;
 
-    if (isEqual(compare, participants)) return;
-
-    const currentParticipants: string[] = this.participants
-      .filter((participant) => participant.color)
-      .map((participant) => participant.id);
-
-    const newParticipants = updatedParticipants
-      .filter(({ id }) => {
-        return !currentParticipants.includes(id);
-      })
-      .map(({ data: { name, id, slotIndex } }) => {
-        const { color } = this.realtime.getSlotColor(slotIndex);
-        return { name, id, slotIndex, color };
-      });
-
-    this.participants = [
-      ...this.participants.filter(({ id }) => !currentParticipants.includes(id)),
-      ...newParticipants,
-    ];
-
+    this.participants = participants;
     this.element.participants = this.participants;
   };
 
