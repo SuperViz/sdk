@@ -13,7 +13,6 @@ import { WhoIsOnline } from './index';
 
 describe('Who Is Online', () => {
   let whoIsOnlineComponent: WhoIsOnline;
-
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -113,5 +112,12 @@ describe('Who Is Online', () => {
     });
 
     expect(whoIsOnlineComponent['participants'].length).toBe(1);
+  });
+
+  test('should publish in eventBus when listens to go-to-mouse-pointer', () => {
+    whoIsOnlineComponent['element'].dispatchEvent(
+      new CustomEvent('go-to-mouse-pointer', { detail: { id: 'unit-test-id' } }),
+    );
+    expect(EVENT_BUS_MOCK.publish).toHaveBeenCalledWith('go-to-mouse-pointer', 'unit-test-id');
   });
 });

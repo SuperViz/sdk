@@ -17,6 +17,10 @@ export const dropdownStyle = css`
     position: relative;
   }
 
+  .who-is-online-dropdown__content:not(.local) {
+    cursor: pointer;
+  }
+
   .who-is-online-dropdown__content:hover,
   .who-is-online-dropdown__content--selected {
     background-color: rgb(var(--sv-gray-200));

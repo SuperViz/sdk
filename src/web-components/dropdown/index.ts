@@ -90,7 +90,7 @@ export class Dropdown extends WebComponentsBaseElement {
 
     this.emitEvent('selected', returnTo, {
       bubbles: false,
-      composed: false,
+      composed: true,
     });
   };
 
@@ -218,6 +218,8 @@ export class Dropdown extends WebComponentsBaseElement {
     });
 
     const toggle = () => {
+      if (this.disabled) return;
+
       this.setMenu();
       this.open = !this.open;
       setTimeout(() => this.adjustPosition());

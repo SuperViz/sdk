@@ -9,6 +9,7 @@ export enum Position {
 
 export interface Participant extends GeneralParticipant {
   slotIndex: number;
+  isLocal?: boolean;
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string;

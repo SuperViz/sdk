@@ -11,6 +11,7 @@ interface elementProps {
   options?: Record<string, unknown>;
   name?: string;
   icons?: string[];
+  disabled?: boolean;
 }
 
 export const createEl = ({
@@ -21,6 +22,7 @@ export const createEl = ({
   options,
   name,
   icons,
+  disabled,
 }: elementProps): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-dropdown');
 
@@ -42,6 +44,10 @@ export const createEl = ({
 
   if (icons) {
     element.setAttribute('icons', JSON.stringify(icons));
+  }
+
+  if (disabled) {
+    element.setAttribute('disabled', 'true');
   }
 
   if (!options) {
@@ -110,6 +116,18 @@ describe('dropdown', () => {
     await sleep();
     const isOpen = dropdownMenu()?.classList.contains('menu-open');
     expect(isOpen).toBeTruthy();
+  });
+
+  test('should not open dropdown when click on it if disabled is true', async () => {
+    createEl({ position: 'bottom-right', align: 'left', disabled: true });
+
+    await sleep();
+
+    dropdownContent()?.click();
+
+    await sleep();
+    const isOpen = dropdownMenu()?.classList.contains('menu-open');
+    expect(isOpen).toBeFalsy();
   });
 
   test('should close dropdown when click on it', async () => {
@@ -288,7 +306,7 @@ describe('dropdown', () => {
       },
       {
         bubbles: false,
-        composed: false,
+        composed: true,
       },
     );
   });

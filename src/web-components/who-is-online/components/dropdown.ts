@@ -83,7 +83,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     });
   };
 
-  public dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
+  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
+    this.emitEvent('selected', detail);
+  };
 
   private selectParticipant = (participantId: string) => {
     return () => {
@@ -94,11 +96,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return;
 
-    const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => {
-      return { label };
-    });
-
-    const icons = ['place', 'send'];
+    const icons = ['place'];
+    // const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
@@ -108,17 +107,24 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       const contentClasses = {
         'who-is-online-dropdown__content': true,
         'who-is-online-dropdown__content--selected': this.selected === participant.id,
+        local: participant.isLocal,
       };
 
+      const options = Object.values(WhoIsOnlineDropdownOptions)
+        .map((label) => {
+          return { label, id: participant.id };
+        })
+        .splice(0, 1);
+
       return html`
-        <!-- <superviz-dropdown
+        <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
-        returnTo="label"
         position="bottom-right"
-        @selected=${this.dropdownOptionsHandler}
+        
         icons="${JSON.stringify(icons)}"
-        > -->
+        ?disabled=${participant.isLocal}
+        >
         <div 
           class=${classMap(contentClasses)} 
           @click=${this.selectParticipant(participant.id)} slot="dropdown">
@@ -134,7 +140,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
             <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>
           </div>
         </div>
-      <!-- </superviz-dropdown> -->
+      </superviz-dropdown>
       `;
     });
   }

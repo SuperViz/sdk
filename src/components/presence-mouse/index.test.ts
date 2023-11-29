@@ -2,10 +2,9 @@ import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { MeetingEvent } from '../../common/types/events.types';
 import { sleep } from '../../common/utils';
-import { AblyParticipant } from '../../services/realtime/ably/types';
 import type { PresenceMouse } from '../../web-components';
+import { styles } from '../../web-components/presence-mouse/styles';
 
 import { ParticipantMouse } from './types';
 
@@ -13,7 +12,6 @@ import { MousePointers } from './index';
 
 const createMousePointers = (containerId?: string): MousePointers => {
   const presenceMouseComponent = new MousePointers('canvas');
-
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
     localParticipant: MOCK_LOCAL_PARTICIPANT,
@@ -25,6 +23,7 @@ const createMousePointers = (containerId?: string): MousePointers => {
   presenceMouseComponent['presenceMouseElement'] = document.createElement(
     'superviz-presence-mouse',
   ) as PresenceMouse;
+
   presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'] = jest.fn();
   presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'] = jest.fn();
   presenceMouseComponent['divWrapper'].appendChild(presenceMouseComponent['presenceMouseElement']);
@@ -34,15 +33,21 @@ const createMousePointers = (containerId?: string): MousePointers => {
 
 describe('MousePointers', () => {
   let presenceMouseComponent: MousePointers;
-
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    const canvas = document.createElement('canvas') as HTMLCanvasElement;
+    const div = document.createElement('div') as HTMLDivElement;
+    div.id = 'teste-div';
+    canvas.id = 'canvas';
+    div.style.width = '100px';
+    div.style.height = '100px';
+    div.style.overflow = 'scroll';
+    div.appendChild(canvas);
+    document.body.appendChild(div);
+  });
 
-    document.body.innerHTML = `
-      <div>
-        <canvas id="canvas"></canvas>
-      </div>  
-      `;
+  afterEach(() => {
+    document.body.removeChild(document.body.children[0] as HTMLDivElement);
   });
 
   test('should throw an error if no container is found', () => {
@@ -174,6 +179,85 @@ describe('MousePointers', () => {
       expect(
         presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'],
       ).toHaveBeenCalledWith(MOCK_MOUSE.id);
+    });
+  });
+
+  describe('goToMousePointer', () => {
+    test('should not scroll if element is null', async () => {
+      const a = createMousePointers();
+      a['positions'] = {
+        'unit-test-local-participant-id': {
+          x: 1000,
+          y: 1000,
+        },
+      };
+
+      const wrapper = a['divWrapper'];
+      a['divWrapper'] = null as unknown as HTMLDivElement;
+      a['goToMousePointer']('unit-test-local-participant-id');
+      expect(wrapper.scrollTop).toEqual(0);
+      expect(wrapper.scrollLeft).toEqual(0);
+    });
+
+    test('should not scroll if pointer is already in view', () => {
+      presenceMouseComponent = createMousePointers();
+
+      presenceMouseComponent['positions']['random-id'] = {
+        x: 10,
+        y: 10,
+      };
+
+      presenceMouseComponent['goToMousePointer']('random-id');
+      expect(presenceMouseComponent['divWrapper'].scrollTop).toEqual(0);
+      expect(presenceMouseComponent['divWrapper'].scrollLeft).toEqual(0);
+    });
+
+    test('should scroll to element if it is larger than its parent', () => {
+      presenceMouseComponent = createMousePointers();
+
+      presenceMouseComponent['divWrapper'].parentElement!.scrollTo = jest.fn();
+
+      jest.spyOn(presenceMouseComponent['divWrapper'], 'clientWidth', 'get').mockReturnValue(100);
+      jest.spyOn(presenceMouseComponent['divWrapper'], 'clientHeight', 'get').mockReturnValue(100);
+
+      jest
+        .spyOn(
+          presenceMouseComponent['divWrapper'].parentElement as HTMLElement,
+          'clientWidth',
+          'get',
+        )
+        .mockReturnValue(10);
+      jest
+        .spyOn(
+          presenceMouseComponent['divWrapper'].parentElement as HTMLElement,
+          'clientHeight',
+          'get',
+        )
+        .mockReturnValue(10);
+      jest
+        .spyOn(
+          presenceMouseComponent['divWrapper'].parentElement as HTMLElement,
+          'scrollHeight',
+          'get',
+        )
+        .mockReturnValue(1000);
+
+      const element = document.createElement('div');
+      element.setAttribute('position', JSON.stringify({ x: 40, y: 40 }));
+      presenceMouseComponent['divWrapper'].appendChild(element);
+      presenceMouseComponent['positions']['random-id'] = {
+        x: 150,
+        y: 150,
+      };
+
+      presenceMouseComponent['goToMousePointer']('random-id');
+
+      expect(presenceMouseComponent['divWrapper'].parentElement!.scrollTo).toHaveBeenCalledTimes(1);
+      expect(presenceMouseComponent['divWrapper'].parentElement!.scrollTo).toHaveBeenCalledWith({
+        left: 150,
+        top: 150,
+        behavior: 'smooth',
+      });
     });
   });
 });
