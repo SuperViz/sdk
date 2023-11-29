@@ -113,7 +113,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const letterColor = this.textColorValues.includes(participant.slotIndex)
       ? '#FFFFFF'
-      : '#000000';
+      : '#26242A';
 
     return html`<div
       class="superviz-who-is-online__avatar"
@@ -133,9 +133,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const icons = ['place', 'send'];
 
     return html`${this.participants.slice(0, 4).map((participant, index) => {
+      const letterColor = this.textColorValues.includes(participant.slotIndex)
+        ? '#FFFFFF'
+        : '#26242A';
       const position = this.dropdownPosition(index);
       return html`
-        <superviz-dropdown
+        <!-- <superviz-dropdown
           options=${JSON.stringify(options)}
           label="label"
           returnTo="label"
@@ -143,15 +146,15 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           @selected=${this.dropdownOptionsHandler}
           icons="${JSON.stringify(icons)}"
           name="${participant.name}"
+        > -->
+        <div
+          slot="dropdown"
+          class="superviz-who-is-online__participant"
+          style="border-color: ${participant.color}"
         >
-          <div
-            slot="dropdown"
-            class="superviz-who-is-online__participant"
-            style="border-color: ${participant.color}"
-          >
-            ${this.getAvatar(participant)}
-          </div>
-        </superviz-dropdown>
+          ${this.getAvatar(participant)}
+        </div>
+        <!-- </superviz-dropdown> -->
       `;
     })}
     ${this.renderExcessParticipants()} `;

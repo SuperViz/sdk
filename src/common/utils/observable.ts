@@ -33,8 +33,13 @@ export abstract class Observable {
 
     if (!this.observers[type]) return;
 
-    this.observers[type].reset();
-    delete this.observers[type];
+    if (!callback) {
+      this.observers[type].destroy();
+      delete this.observers[type];
+      return;
+    }
+
+    this.observers[type].unsubscribe(callback);
   };
 
   /**

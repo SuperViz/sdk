@@ -39,9 +39,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (changedProperties.has('open')) {
-      this.open
-        ? document.addEventListener('click', this.onClickOutDropdown)
-        : (document.removeEventListener('click', this.onClickOutDropdown), this.close());
+      if (this.open) {
+        document.addEventListener('click', this.onClickOutDropdown);
+        return;
+      }
+
+      document.removeEventListener('click', this.onClickOutDropdown);
+      this.close();
     }
   }
 
@@ -97,7 +101,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     const letterColor = this.textColorValues.includes(participant.slotIndex)
       ? '#FFFFFF'
-      : '#000000';
+      : '#26242A';
 
     return html`<div
       class="who-is-online-dropdown__avatar"
@@ -117,23 +121,27 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
+      const letterColor = this.textColorValues.includes(participant.slotIndex)
+        ? '#FFFFFF'
+        : '#26242A';
+
       const contentClasses = {
         'who-is-online-dropdown__content': true,
         'who-is-online-dropdown__content--selected': this.selected === participant.id,
       };
 
       return html`
-        <superviz-dropdown
+        <!-- <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
         returnTo="label"
         position="bottom-right"
         @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(icons)}"
-        >
-        <div class=${classMap(contentClasses)} @click=${this.selectParticipant(
-        participant.id,
-      )} slot="dropdown">
+        > -->
+        <div 
+          class=${classMap(contentClasses)} 
+          @click=${this.selectParticipant(participant.id)} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
           ${participant.color}">
               ${this.getAvatar(participant)}
@@ -142,7 +150,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
             <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>
           </div>
         </div>
-      </superviz-dropdown>
+      <!-- </superviz-dropdown> -->
       `;
     });
   }
@@ -163,6 +171,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       'menu-right': this.align === 'right',
     };
   }
+
   protected render() {
     return html`
       <div class="dropdown">

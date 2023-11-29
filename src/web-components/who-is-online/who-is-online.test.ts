@@ -131,7 +131,7 @@ describe('Who Is Online', () => {
 
     const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex];
     expect(letter?.getAttribute('style')).toBe(
-      `background-color: ${backgroundColor}; color: #000000`,
+      `background-color: ${backgroundColor}; color: #26242A`,
     );
   });
 

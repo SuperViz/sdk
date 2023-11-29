@@ -17,7 +17,8 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     border: 2px solid #aea9b8;
-    cursor: pointer;
+    user-select: none;
+    // cursor: pointer;
   }
 
   .superviz-who-is-online__avatar {
@@ -48,6 +49,7 @@ export const whoIsOnlineStyle = css`
     text-align: center;
     font-weight: bold;
     color: #26242a;
+    cursor: pointer;
   }
 
   .excess_participants:hover,

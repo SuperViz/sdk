@@ -600,6 +600,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
     this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
+
     const hasAnyParticipantInTheVideoConference = Object.values(this.participants).some(
       (participant) => {
         return (
@@ -609,19 +610,38 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       },
     );
 
+    if (data.hostClientId && hasAnyParticipantInTheVideoConference && KICK_PARTICIPANTS_TIMEOUT) {
+      clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
+
+      KICK_PARTICIPANTS_TIMEOUT = null;
+
+      this.hostAvailabilityObserver.publish(true);
+    }
+
     if (!data.hostClientId && hasAnyParticipantInTheVideoConference) {
       this.hostParticipantId = null;
+
       this.hostPassingHandle();
     } else if (!!data?.hostClientId && data?.hostClientId !== this.hostParticipantId) {
       this.updateHostInfo(data.hostClientId);
     } else if (!hasAnyParticipantInTheVideoConference && !!data?.hostClientId) {
       this.updateHostInfo(null);
+    } else if (
+      !data.hostClientId &&
+      !KICK_PARTICIPANTS_TIMEOUT &&
+      !hasAnyParticipantInTheVideoConference &&
+      this.hostParticipantId
+    ) {
+      this.hostParticipantId = null;
+
+      this.hostPassingHandle();
     }
 
     this.updateParticipants();
 
     if (data.kickParticipant && data.kickParticipant.clientId === this.myParticipant.clientId) {
       this.updateRoomProperties({ kickParticipant: null });
+
       this.kickParticipantObserver.publish(this.myParticipant.clientId);
     }
   };
@@ -1324,12 +1344,21 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.presenceMouseChannel.presence.update(participant);
   }, SYNC_PROPERTY_INTERVAL);
 
-  private onPresenceMouseChannelEnter = (message: Ably.Types.PresenceMessage): void => {
-    this.presenceMouseParticipantJoinedObserver.publish(message.data);
+  private onPresenceMouseChannelEnter = (presence: Ably.Types.PresenceMessage): void => {
+    const slot = this.getParticipantSlot(presence.clientId);
+
+    this.participantsMouse[presence.clientId] = {
+      ...presence.data,
+      slotIndex: slot,
+      color: this.getSlotColor(slot).color,
+    };
+
+    this.presenceMouseParticipantJoinedObserver.publish(this.participantsMouse[presence.clientId]);
   };
 
-  private onPresenceMouseChannelLeave = (message: Ably.Types.PresenceMessage): void => {
-    this.presenceMouseParticipantLeaveObserver.publish(message.data);
+  private onPresenceMouseChannelLeave = (presence: Ably.Types.PresenceMessage): void => {
+    this.presenceMouseParticipantLeaveObserver.publish(this.participantsMouse[presence.clientId]);
+    delete this.participantsMouse[presence.clientId];
   };
 
   /**
@@ -1338,11 +1367,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description publish a participant's changes to observer
    * @returns {void}
    */
-  private publishPresenceMouseUpdate = (participant: Ably.Types.PresenceMessage): void => {
-    const slot = this.getParticipantSlot(participant.clientId);
+  private publishPresenceMouseUpdate = (presence: Ably.Types.PresenceMessage): void => {
+    const slot = this.getParticipantSlot(presence.clientId);
 
-    this.participantsMouse[participant.clientId] = {
-      ...participant.data,
+    this.participantsMouse[presence.clientId] = {
+      ...presence.data,
       slotIndex: slot,
       color: this.getSlotColor(slot).color,
     };

@@ -34,18 +34,39 @@ describe('observer class', () => {
     const callback = jest.fn();
 
     expect(DummyObserverClassInstance.subscribe).toBeDefined();
-
     DummyObserverClassInstance.subscribe('test', callback);
 
     DummyObserverClassInstance['publish']('test', 'test');
 
     expect(callback).toBeCalledWith('test');
 
+    DummyObserverClassInstance['observers']['test'].unsubscribe = jest.fn();
+    DummyObserverClassInstance.unsubscribe('test', callback);
+
+    DummyObserverClassInstance['publish']('test', 'test');
+
+    expect(DummyObserverClassInstance['observers']['test'].unsubscribe).toBeCalledWith(callback);
+  });
+
+  test('should destroy the observer when callback is not passed', () => {
+    const callback = jest.fn();
+
+    expect(DummyObserverClassInstance.subscribe).toBeDefined();
+    DummyObserverClassInstance.subscribe('test', callback);
+
+    DummyObserverClassInstance['publish']('test', 'test');
+
+    expect(callback).toBeCalledWith('test');
+
+    DummyObserverClassInstance['observers']['test'].destroy = jest.fn();
+    const spy = jest.spyOn(DummyObserverClassInstance['observers']['test'], 'destroy');
+
     DummyObserverClassInstance.unsubscribe('test');
 
     DummyObserverClassInstance['publish']('test', 'test');
 
-    expect(callback).toBeCalledTimes(1);
+    expect(DummyObserverClassInstance['observers']['test']).toBeUndefined();
+    expect(spy).toBeCalled();
   });
 
   test('should skip unsubscribe if the event is not subscribed', () => {

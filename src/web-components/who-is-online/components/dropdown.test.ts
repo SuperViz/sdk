@@ -161,7 +161,7 @@ describe('dropdown', () => {
 
     const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex];
     expect(letter?.getAttribute('style')).toBe(
-      `background-color: ${backgroundColor}; color: #000000`,
+      `background-color: ${backgroundColor}; color: #26242A`,
     );
   });
 
@@ -237,18 +237,18 @@ describe('dropdown', () => {
   });
 
   // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
-  test('', async () => {
-    const event = new CustomEvent('selected');
-    createEl({
-      position: 'bottom-right',
-      align: 'left',
-      participants: mockParticipants,
-    });
+  // test('', async () => {
+  //   const event = new CustomEvent('selected');
+  //   createEl({
+  //     position: 'bottom-right',
+  //     align: 'left',
+  //     participants: mockParticipants,
+  //   });
 
-    await sleep();
+  //   await sleep();
 
-    const dropdown = element()?.shadowRoot?.querySelector('superviz-dropdown') as HTMLElement;
+  //   const dropdown = element()?.shadowRoot?.querySelector('superviz-dropdown') as HTMLElement;
 
-    dropdown.dispatchEvent(event);
-  });
+  //   dropdown.dispatchEvent(event);
+  // });
 });

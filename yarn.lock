@@ -1608,6 +1608,11 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-2.0.1.tgz#e5211452df060fa8522b55c7b3c0c4d1981cb044"
   integrity sha512-dvuCeX5fC9dXgJn9t+X5atfmgQAzUOWqS1254Gh0m6i8wKd10ebXkfNKiRK+1GWi/yTvvLDHpoxLr0xxxeslWw==
 
+"@import-maps/resolve@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@import-maps/resolve/-/resolve-1.0.1.tgz#1e9fcadcf23aa0822256a329aabca241879d37c9"
+  integrity sha512-tWZNBIS1CoekcwlMuyG2mr0a1Wo5lb5lEHwwWvZo+5GLgr3e9LLDTtmgtCWEwBpXMkxn9D+2W9j2FY6eZQq0tA==
+
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
   resolved "https://registry.yarnpkg.com/@isaacs/cliui/-/cliui-8.0.2.tgz#b37667b7bc181c168782259bab42474fbf52b550"
@@ -3097,6 +3102,30 @@
     picomatch "^2.2.2"
     ws "^7.4.2"
 
+"@web/dev-server-core@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@web/dev-server-core/-/dev-server-core-0.7.0.tgz#ffe71dd272ecb73a2b0c1ee23f3fad812780b998"
+  integrity sha512-1FJe6cJ3r0x0ZmxY/FnXVduQD4lKX7QgYhyS6N+VmIpV+tBU4sGRbcrmeoYeY+nlnPa6p2oNuonk3X5ln/W95g==
+  dependencies:
+    "@types/koa" "^2.11.6"
+    "@types/ws" "^7.4.0"
+    "@web/parse5-utils" "^2.1.0"
+    chokidar "^3.4.3"
+    clone "^2.1.2"
+    es-module-lexer "^1.0.0"
+    get-stream "^6.0.0"
+    is-stream "^2.0.0"
+    isbinaryfile "^5.0.0"
+    koa "^2.13.0"
+    koa-etag "^4.0.0"
+    koa-send "^5.0.1"
+    koa-static "^5.0.0"
+    lru-cache "^8.0.4"
+    mime-types "^2.1.27"
+    parse5 "^6.0.1"
+    picomatch "^2.2.2"
+    ws "^7.4.2"
+
 "@web/dev-server-esbuild@^0.4.3":
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/@web/dev-server-esbuild/-/dev-server-esbuild-0.4.3.tgz#7fd163ca8693ec49fe83c30c06ad2ae6508ddf0e"
@@ -3107,6 +3136,18 @@
     esbuild "^0.16 || ^0.17"
     parse5 "^6.0.1"
     ua-parser-js "^1.0.33"
+
+"@web/dev-server-import-maps@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@web/dev-server-import-maps/-/dev-server-import-maps-0.2.0.tgz#b49201198bcbbd4052b1731acc933644a887bec2"
+  integrity sha512-+Z4mNGJqHo370ZFmPl83O4BqpPzQDjprfLO3AwsOZck9x94LcAVmVsC7fnet1DQRR11x9M7FNliS6mmkZv26TQ==
+  dependencies:
+    "@import-maps/resolve" "^1.0.1"
+    "@types/parse5" "^6.0.1"
+    "@web/dev-server-core" "^0.7.0"
+    "@web/parse5-utils" "^2.1.0"
+    parse5 "^6.0.1"
+    picomatch "^2.2.2"
 
 "@web/dev-server-legacy@^2.0.3":
   version "2.0.3"
@@ -3174,6 +3215,14 @@
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@web/parse5-utils/-/parse5-utils-2.0.2.tgz#263df67fb4262738c891314199b666f5bd96781b"
   integrity sha512-TogrPNt36zOSjbEd8zoDmUGsN2dqMbk4U+2DrxsnbVxtUIBRCNPIuZ+XeoGF8gpxe2/Yf0dIVz+HW5+wEnqkCg==
+  dependencies:
+    "@types/parse5" "^6.0.1"
+    parse5 "^6.0.1"
+
+"@web/parse5-utils@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@web/parse5-utils/-/parse5-utils-2.1.0.tgz#3d33aca62c66773492f2fba89d23a45f8b57ba4a"
+  integrity sha512-GzfK5disEJ6wEjoPwx8AVNwUe9gYIiwc+x//QYxYDAFKUp4Xb1OJAGLc2l2gVrSQmtPGLKrTRcW90Hv4pEq1qA==
   dependencies:
     "@types/parse5" "^6.0.1"
     parse5 "^6.0.1"
