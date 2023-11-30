@@ -97,7 +97,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (!this.participants) return;
 
     const icons = ['place'];
-    // const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
