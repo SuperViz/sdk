@@ -5,7 +5,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { WebComponentsBase } from '../base';
 
 import { dropdownStyle } from './index.style';
-import { Positions, PositionsEnum } from './types';
+import { PositionOptions, Positions, PositionsEnum } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -24,6 +24,9 @@ export class Dropdown extends WebComponentsBaseElement {
   declare active: string | object;
   declare icons?: string[];
   declare name?: string;
+  private dropdownContent: HTMLElement;
+  private originalPosition: Positions;
+  private menu: HTMLElement = undefined;
 
   static properties = {
     open: { type: Boolean },
@@ -38,14 +41,7 @@ export class Dropdown extends WebComponentsBaseElement {
     name: { type: String },
   };
 
-  private originalPosition: Positions;
-  private menu: HTMLElement = undefined;
-
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('position') && !this.originalPosition) {
-      this.originalPosition = changedProperties.get('position');
-    }
-
     if (!changedProperties.has('open')) return;
 
     if (this.open) {
@@ -99,62 +95,209 @@ export class Dropdown extends WebComponentsBaseElement {
       this.menu = this.shadowRoot.querySelector('.menu');
     }
 
-    const { y, height, x, width } = this.menu.getBoundingClientRect();
-    const aditionalHeight = this.position.includes('bottom') ? 4 : 0;
+    if (!this.dropdownContent) {
+      this.dropdownContent = this.shadowRoot.querySelector('.dropdown-content');
+    }
 
+    const bounds = this.dropdownContent.getBoundingClientRect();
+
+    const { y, height, x, width } = this.menu.getBoundingClientRect();
     return {
       top: y,
-      bottom: y + height + aditionalHeight,
+      bottom: y + height + 4,
       left: x,
       right: x + width,
+      height: height + 4,
+      width,
+      contentX: bounds.x,
+      contentY: bounds.y,
+      contentWidth: bounds.width,
     };
+  }
+
+  private positionVerticalAction(): PositionOptions {
+    const { top, bottom } = this.dropdownBounds;
+    const { innerHeight } = window;
+
+    const isOutsideWindowBottom = bottom > innerHeight;
+    const isOutsideWindowTop = top < 0;
+
+    if (
+      (isOutsideWindowBottom && this.position.includes('bottom')) ||
+      (isOutsideWindowTop && this.position.includes('top'))
+    ) {
+      return PositionOptions['CALCULATE-NEW'];
+    }
+
+    if (!isOutsideWindowBottom && !isOutsideWindowTop && this.shouldUseOriginalVertical()) {
+      return PositionOptions['USE-ORIGINAL'];
+    }
+
+    return PositionOptions['DO-NOTHING'];
+  }
+
+  private positionHorizontalAction(): PositionOptions {
+    if (this.dropdownCovered()) {
+      return PositionOptions['DO-NOTHING'];
+    }
+
+    const { right, left, contentX, contentWidth, width } = this.dropdownBounds;
+    const { innerWidth } = window;
+
+    const isOutsideWindowRight = right > innerWidth;
+    const isOutsideWindowLeft = left < 0;
+    const isOutside = isOutsideWindowLeft || isOutsideWindowRight;
+    if (isOutside && !this.position.includes('center')) {
+      return PositionOptions['CALCULATE-NEW'];
+    }
+
+    if (this.position.includes('center')) {
+      const midX = contentX + contentWidth / 2;
+      const isOutsideWindowLeft = midX - width / 2 < 0;
+      const isOutsideWindowRight = midX + width / 2 > innerWidth;
+
+      const isOutside = isOutsideWindowLeft || isOutsideWindowRight;
+      if (isOutside) {
+        return PositionOptions['CALCULATE-NEW'];
+      }
+    }
+
+    if (!isOutside && this.shouldUseOriginalHorizontal()) {
+      return PositionOptions['USE-ORIGINAL'];
+    }
+
+    if (
+      this.shouldCenter() &&
+      this.position !== this.originalPosition &&
+      !this.position.includes('center')
+    ) {
+      return PositionOptions['CENTER'];
+    }
+
+    return PositionOptions['DO-NOTHING'];
+  }
+
+  private dropdownCovered() {
+    const { left, right } = this.dropdownBounds;
+    const { innerWidth } = window;
+
+    if (this.position.includes('center')) return false;
+    const isOutsideWindowRight = right > innerWidth && this.position.includes('left');
+
+    const isOutsideWindowLeft = left < 0 && this.position.includes('right');
+
+    const isOutside = isOutsideWindowRight || isOutsideWindowLeft;
+
+    return isOutside;
+  }
+
+  private shouldCenter() {
+    const { contentX, contentWidth, width } = this.dropdownBounds;
+    const midX = contentX + contentWidth / 2;
+    const isOutsideWindowLeft = midX - width / 2 < 0;
+    const isOutsideWindowRight = midX + width / 2 > window.innerWidth;
+
+    const isOutside = isOutsideWindowLeft || isOutsideWindowRight;
+    if (isOutside) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private shouldUseOriginalVertical() {
+    const { height, contentY } = this.dropdownBounds;
+    const { innerHeight } = window;
+    const bottom = contentY + height;
+
+    if (this.originalPosition.includes('bottom')) {
+      return height + bottom < innerHeight;
+    }
+
+    return contentY - height > 0;
+  }
+
+  private shouldUseOriginalHorizontal() {
+    const { width, contentX } = this.dropdownBounds;
+    const { innerWidth } = window;
+    const right = contentX + width;
+
+    if (this.position === this.originalPosition) return false;
+
+    if (this.originalPosition.includes('center')) {
+      return right < innerWidth && contentX - width > 0;
+    }
+
+    if (this.originalPosition.includes('left')) {
+      return contentX - width > 0;
+    }
+
+    return right < innerWidth;
   }
 
   private adjustPositionVertical() {
     const { top, bottom } = this.dropdownBounds;
     const { innerHeight } = window;
 
-    const isOutsideWindowBottom = bottom > innerHeight;
-    const isOutsideWindowTop = top < 0;
-    if (!(isOutsideWindowBottom || isOutsideWindowTop)) return;
+    const action = this.positionVerticalAction();
+
+    if (action === PositionOptions['DO-NOTHING']) return;
+
+    if (action === PositionOptions['USE-ORIGINAL']) {
+      const originalVertical = this.originalPosition.split('-')[0];
+      this.position = this.position.replace(/top|bottom/, originalVertical) as Positions;
+      return;
+    }
 
     const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
     const previousSide = this.position.split('-')[0];
     const newPosition = this.position.replace(previousSide, newSide) as Positions;
+
     this.position = newPosition;
   }
 
   private adjustPositionHorizontal() {
-    const { left, right } = this.dropdownBounds;
+    const { left, right, width } = this.dropdownBounds;
     let isOutsideWindowLeft = left < 0;
     let isOutsideWindowRight = right > window.innerWidth;
 
-    if (!(isOutsideWindowLeft || isOutsideWindowRight)) return;
-
-    const isCentered = this.position.includes('center');
-    if (isCentered) {
-      const replace = isOutsideWindowLeft ? 'left' : 'right';
-      const newPosition = this.position.replace('center', replace) as Positions;
-      this.position = newPosition;
+    const action = this.positionHorizontalAction();
+    if (action === PositionOptions['DO-NOTHING']) {
       return;
     }
 
-    const previousSide = isOutsideWindowLeft ? left : right;
-    const width = right - left;
-    const offset = (isOutsideWindowLeft ? width : -width) / 2;
+    if (action === PositionOptions['USE-ORIGINAL']) {
+      const originalHorizontal = this.originalPosition.split('-')[1];
+      this.position = this.position.replace(/left|center|right/, originalHorizontal) as Positions;
+      return;
+    }
+
+    const previousSide = isOutsideWindowLeft ? right : left;
+    const offset = (isOutsideWindowLeft ? width : -width) / 2 - 20;
 
     const newX = previousSide + offset;
     isOutsideWindowLeft = newX < 0;
     isOutsideWindowRight = newX + width > window.innerWidth;
+    const isOutside = isOutsideWindowLeft || isOutsideWindowRight;
 
-    if (!(isOutsideWindowLeft || isOutsideWindowRight)) {
+    if (
+      (!isOutside && action === PositionOptions['CENTER']) ||
+      action === PositionOptions['CENTER']
+    ) {
       const newPosition = this.position.replace(/left|right/, 'center') as Positions;
       this.position = newPosition;
       return;
     }
 
-    const replace = isOutsideWindowLeft ? 'left' : 'right';
-    const newPosition = this.position.replace(this.position.split('-')[1], replace) as Positions;
+    const isCentered = this.position.includes('center');
+    if (isCentered) {
+      const replace = isOutsideWindowLeft ? 'right' : 'left';
+      const newPosition = this.position.replace('center', replace) as Positions;
+      this.position = newPosition;
+      return;
+    }
+
+    const newPosition = this.position.replace(/left|right/, 'center') as Positions;
     this.position = newPosition;
   }
 
@@ -171,11 +314,47 @@ export class Dropdown extends WebComponentsBaseElement {
         threshold: 1.0,
       };
 
-      const observer = new IntersectionObserver(this.adjustPosition, options);
-
+      const intersectionObserver = new IntersectionObserver(this.adjustPosition, options);
+      const resizeObserver = new ResizeObserver(this.adjustPosition);
       const target = this.menu;
-      observer.observe(target);
+
+      intersectionObserver.observe(target);
+      resizeObserver.observe(this.scrollableParent ?? document.body);
     }
+  }
+
+  private get scrollableParent() {
+    let elementWithOverflow: HTMLElement;
+    let nextElement = (this.getRootNode() as ShadowRoot).host;
+
+    while (!elementWithOverflow) {
+      const parent = nextElement?.parentElement;
+
+      const hasOverflow = this.isScrollable(parent);
+
+      if (hasOverflow) {
+        elementWithOverflow = parent;
+        break;
+      }
+
+      nextElement = parent;
+
+      if (!nextElement) break;
+    }
+
+    return elementWithOverflow;
+  }
+
+  private isScrollable(element: HTMLElement): boolean {
+    if (!element) return false;
+
+    const hasScrollableContent = element.scrollHeight > element.clientHeight;
+    const overflowYStyle = window.getComputedStyle(element).overflowY;
+    const overflowXStyle = window.getComputedStyle(element).overflowX;
+    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
+    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
+
+    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
   }
 
   private get renderHeader() {
@@ -184,6 +363,15 @@ export class Dropdown extends WebComponentsBaseElement {
       <span class="text">${this.name}</span>
       <span class="sv-hr"></span>
     </div>`;
+  }
+
+  private toggle() {
+    if (this.disabled) return;
+    if (!this.originalPosition) this.originalPosition = this.position;
+    this.setMenu();
+    this.open = !this.open;
+    if (!this.open) return;
+    setTimeout(() => this.adjustPosition());
   }
 
   protected render() {
@@ -217,17 +405,9 @@ export class Dropdown extends WebComponentsBaseElement {
       </li>`;
     });
 
-    const toggle = () => {
-      if (this.disabled) return;
-
-      this.setMenu();
-      this.open = !this.open;
-      setTimeout(() => this.adjustPosition());
-    };
-
     return html`
       <div class="dropdown">
-        <div class="dropdown-content" @click=${toggle}>
+        <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
       </div>
