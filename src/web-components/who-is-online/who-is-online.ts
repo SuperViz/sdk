@@ -67,15 +67,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, avatar }) => {
-        return {
-          name,
-          color,
-          id,
-          slotIndex,
-          avatar,
-        };
-      });
+      .map(({ name, color, id, slotIndex, avatar }) => ({
+        name,
+        color,
+        id,
+        slotIndex,
+        avatar,
+      }));
 
     const classes = {
       'superviz-who-is-online__participant': true,
@@ -126,9 +124,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => {
-      return { label };
-    });
+    const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => ({ label }));
 
     const icons = ['place', 'send'];
 
