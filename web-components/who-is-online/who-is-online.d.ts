@@ -25,6 +25,7 @@ export declare class WhoIsOnline extends WebComponentsBaseElement {
     private dropdownPosition;
     private renderExcessParticipants;
     private dropdownOptionsHandler;
+    private getAvatar;
     private renderParticipants;
     updated(changedProperties: any): void;
     protected render(): import("lit").TemplateResult<1>;

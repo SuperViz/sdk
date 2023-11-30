@@ -32,6 +32,7 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     private close;
     dropdownOptionsHandler: ({ detail }: CustomEvent) => void;
     private selectParticipant;
+    private getAvatar;
     private renderParticipants;
     private toggleOpen;
     private get menuClasses();
