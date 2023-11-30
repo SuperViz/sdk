@@ -111,9 +111,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       };
 
       const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => {
-          return { label, id: participant.id };
-        })
+        .map((label) => ({ label, id: participant.id }))
         .splice(0, 1);
 
       return html`

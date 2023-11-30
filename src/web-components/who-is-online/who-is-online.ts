@@ -67,15 +67,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, isLocal }) => {
-        return {
-          name,
-          color,
-          id,
-          slotIndex,
-          isLocal,
-        };
-      });
+      .map(({ name, color, id, slotIndex, isLocal }) => ({
+        name,
+        color,
+        id,
+        slotIndex,
+        isLocal,
+      }));
 
     const classes = {
       'superviz-who-is-online__participant': true,
@@ -102,15 +100,14 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
-    switch (detail.label) {
-      case WhoIsOnlineDropdownOptions.GOTO:
-        this.emitEvent('go-to-mouse-pointer', { id: detail.id });
-        break;
-      case WhoIsOnlineDropdownOptions.FOLLOW:
-        this.emitEvent('follow-mouse-pointer', { id: detail.id });
-        break;
-      default:
-        break;
+    const { id, label } = detail;
+
+    if (label === WhoIsOnlineDropdownOptions.GOTO) {
+      this.emitEvent('go-to-mouse-pointer', { id });
+    }
+
+    if (label === WhoIsOnlineDropdownOptions.FOLLOW) {
+      this.emitEvent('follow-mouse-pointer', { id });
     }
   };
 
@@ -118,7 +115,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     if (!this.participants) return html``;
 
     const icons = ['place'];
-    // const icons = ['place', 'send'];
 
     return html`${this.participants.slice(0, 4).map((participant, index) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
@@ -126,9 +122,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         : '#26242A';
 
       const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => {
-          return { label, id: participant.id };
-        })
+        .map((label) => ({ label, id: participant.id }))
         .splice(0, 1);
 
       const classList = {
