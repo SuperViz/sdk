@@ -76,9 +76,9 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name } = data;
+      const { slotIndex, id, name, avatar } = data;
       const { color } = this.realtime.getSlotColor(slotIndex);
-      return { name, id, slotIndex, color };
+      return { name, id, slotIndex, color, avatar };
     });
 
     if (isEqual(participants, this.participants)) return;

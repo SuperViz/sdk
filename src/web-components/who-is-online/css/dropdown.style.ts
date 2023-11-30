@@ -23,6 +23,10 @@ export const dropdownStyle = css`
   }
 
   .who-is-online-dropdown__participant {
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,6 +50,7 @@ export const dropdownStyle = css`
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
+    object-fit: contain;
   }
 
   .dropdown-list {
@@ -59,7 +64,7 @@ export const dropdownStyle = css`
   }
 
   .dropdown-list > div {
-    padding: 5px;
+    padding: 4px;
     min-width: 216px;
   }
 
