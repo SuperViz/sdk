@@ -379,20 +379,30 @@ export class CanvasPin implements PinAdapter {
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive) return;
 
-    const { x, y } = event;
-    const rect = this.divWrapper.getBoundingClientRect();
+    const context = this.canvas.getContext('2d');
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const transform = context.getTransform();
 
-    const xToSave = x - rect.x;
-    const yToSave = y - rect.y;
+    const invertedMatrix = transform.inverse();
+    const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
+
+    const widthHalf = this.divWrapper.clientWidth / 2;
+    const heightHalf = this.divWrapper.clientHeight / 2;
+
+    const divWrapperX = transformedPoint.x + widthHalf;
+    const divWrapperY = transformedPoint.y + heightHalf;
 
     this.onPinFixedObserver.publish({
-      x: xToSave,
-      y: yToSave,
+      x: divWrapperX,
+      y: divWrapperY,
       type: 'canvas',
     });
 
     this.resetSelectedPin();
-    this.createTemporaryPin({ x: xToSave, y: yToSave, type: 'canvas' });
+
+    this.createTemporaryPin({ x: divWrapperX, y: divWrapperY, type: 'canvas' });
 
     if (this.selectedPin) return;
 
