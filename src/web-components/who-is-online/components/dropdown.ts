@@ -6,7 +6,7 @@ import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { WhoIsOnlineDropdownOptions } from './types';
+import { PositionOptions, WhoIsOnlineDropdownOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -17,10 +17,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   declare open: boolean;
   declare align: 'left' | 'right';
-  declare position: 'bottom-left' | 'bottom-center' | 'bottom-right';
+  declare position: 'top' | 'bottom';
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
+  private originalPosition: 'top' | 'bottom';
+  private menu: HTMLElement;
+  private dropdownContent: HTMLElement;
 
   static properties = {
     open: { type: Boolean },
@@ -145,17 +148,148 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     });
   }
 
-  private toggleOpen() {
+  private setMenu() {
+    if (!this.menu) {
+      this.menu = this.shadowRoot.querySelector('.menu');
+      const options = {
+        rootMargin: '0px',
+        threshold: 1.0,
+      };
+
+      const intersectionObserver = new IntersectionObserver(this.adjustPosition, options);
+      const resizeObserver = new ResizeObserver(this.adjustPosition);
+      const target = this.menu;
+      intersectionObserver.observe(target);
+      resizeObserver.observe(this.scrollableParent ?? document.body);
+    }
+  }
+
+  private get scrollableParent() {
+    let elementWithOverflow: HTMLElement;
+    let nextElement = (this.getRootNode() as ShadowRoot).host;
+
+    while (!elementWithOverflow) {
+      const parent = nextElement?.parentElement;
+
+      const hasOverflow = this.isScrollable(parent);
+
+      if (hasOverflow) {
+        elementWithOverflow = parent;
+        break;
+      }
+
+      nextElement = parent;
+
+      if (!nextElement) break;
+    }
+
+    return elementWithOverflow;
+  }
+
+  private isScrollable(element: HTMLElement): boolean {
+    if (!element) return false;
+
+    const hasScrollableContent = element.scrollHeight > element.clientHeight;
+    const overflowYStyle = window.getComputedStyle(element).overflowY;
+    const overflowXStyle = window.getComputedStyle(element).overflowX;
+    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
+    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
+
+    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
+  }
+
+  private get dropdownBounds() {
+    if (!this.menu) {
+      this.menu = this.shadowRoot.querySelector('.menu');
+    }
+
+    if (!this.dropdownContent) {
+      this.dropdownContent = this.shadowRoot.querySelector('.dropdown-content');
+    }
+
+    const bounds = this.dropdownContent.getBoundingClientRect();
+
+    const { y, height } = this.menu.getBoundingClientRect();
+
+    return {
+      top: y,
+      bottom: y + height + 4,
+      height: height + 4,
+      contentY: bounds.y,
+    };
+  }
+
+  private shouldUseOriginalVertical() {
+    const { height, contentY } = this.dropdownBounds;
+    const { innerHeight } = window;
+    const bottom = contentY + height;
+
+    if (this.originalPosition.includes('bottom')) {
+      return height + bottom < innerHeight;
+    }
+
+    return contentY - height > 0;
+  }
+
+  private positionVerticalAction(): PositionOptions {
+    const { top, bottom } = this.dropdownBounds;
+    const { innerHeight } = window;
+
+    const isOutsideWindowBottom = bottom > innerHeight;
+    const isOutsideWindowTop = top < 0;
+
+    if (
+      (isOutsideWindowBottom && this.position.includes('bottom')) ||
+      (isOutsideWindowTop && this.position.includes('top'))
+    ) {
+      return PositionOptions['CALCULATE-NEW'];
+    }
+
+    if (!isOutsideWindowBottom && !isOutsideWindowTop && this.shouldUseOriginalVertical()) {
+      return PositionOptions['USE-ORIGINAL'];
+    }
+
+    return PositionOptions['DO-NOTHING'];
+  }
+
+  private adjustPositionVertical() {
+    const { top, bottom } = this.dropdownBounds;
+    const { innerHeight } = window;
+
+    const action = this.positionVerticalAction();
+    if (action === PositionOptions['DO-NOTHING']) return;
+
+    if (action === PositionOptions['USE-ORIGINAL']) {
+      const originalVertical = this.originalPosition.split('-')[0];
+      this.position = this.position.replace(/top|bottom/, originalVertical) as 'top' | 'bottom';
+      return;
+    }
+
+    const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
+    const previousSide = this.position.split('-')[0];
+    const newPosition = this.position.replace(previousSide, newSide) as 'top' | 'bottom';
+
+    this.position = newPosition;
+  }
+
+  private adjustPosition = () => {
+    this.adjustPositionVertical();
+  };
+
+  private toggle() {
+    if (!this.originalPosition) this.originalPosition = this.position;
+    this.setMenu();
     this.open = !this.open;
+    if (!this.open) return;
     this.selected = '';
+    setTimeout(() => this.adjustPosition());
   }
 
   private get menuClasses() {
     return {
       menu: true,
-      'menu--bottom-left': this.position === 'bottom-left',
-      'menu--bottom-center': this.position === 'bottom-center',
-      'menu--bottom-right': this.position === 'bottom-right',
+      'menu--bottom': this.position === 'bottom',
+      'menu--top': this.position === 'top',
       'menu-open': this.open,
       'menu-left': this.align === 'left',
       'menu-right': this.align === 'right',
@@ -165,7 +299,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   protected render() {
     return html`
       <div class="dropdown">
-        <div class="dropdown-content" @click=${this.toggleOpen}>
+        <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
       </div>

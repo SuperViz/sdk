@@ -76,26 +76,20 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
+  }
+
+  .menu--bottom {
     top: 4px;
-  }
-
-  .menu--bottom-left {
-    min-width: 103px;
-    position: absolute;
-    left: 0px;
-  }
-
-  .menu--bottom-center {
-    min-width: 103px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .menu--bottom-right {
     min-width: 103px;
     position: absolute;
     right: 0;
+  }
+
+  .menu--top {
+    bottom: 44px;
+    min-width: 103px;
+    position: absolute;
+    right: 0px;
   }
 
   .menu-open {
@@ -136,6 +130,12 @@ export const dropdownStyle = css`
 
     .dropdown-list > div {
       min-width: 192px;
+    }
+  }
+
+  @media (max-width: 780px) {
+    .menu--top {
+      bottom: 36px;
     }
   }
 `;

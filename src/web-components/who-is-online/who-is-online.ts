@@ -49,7 +49,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private dropdownPosition(index: number) {
     if (this.participants.length === 1) return 'bottom-center';
 
-    if (index === 0) return 'bottom-left';
+    if (index === 0) return 'bottom-right';
 
     const thereAreExtraParticipants = this.participants.length > 4;
     const isTheLastParticipantOfList = index + 1 === this.participants.length;
@@ -58,7 +58,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       return 'bottom-center';
     }
 
-    return 'bottom-right';
+    return 'bottom-left';
   }
 
   private renderExcessParticipants() {
@@ -87,7 +87,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       <superviz-who-is-online-dropdown
         label="label"
         returnTo="label"
-        position="bottom-right"
+        position="bottom"
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
