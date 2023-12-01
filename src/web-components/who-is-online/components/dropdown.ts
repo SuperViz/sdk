@@ -87,9 +87,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     });
   };
 
-  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
-    this.emitEvent('selected', detail);
-  };
+  public dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
 
   private selectParticipant = (participantId: string) => {
     return () => {
@@ -100,8 +98,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return;
 
-    const icons = ['place'];
-    // const icons = ['place', 'send'];
+    const icons = ['place', 'send'];
 
     return this.participants.map((participant) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)

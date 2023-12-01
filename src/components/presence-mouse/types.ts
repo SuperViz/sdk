@@ -9,8 +9,3 @@ export interface ParticipantMouse extends Participant {
   mousePositionY: number;
   visible: boolean;
 }
-
-export interface MousePosition {
-  x: number;
-  y: number;
-}

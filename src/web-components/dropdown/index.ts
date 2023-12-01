@@ -87,7 +87,7 @@ export class Dropdown extends WebComponentsBaseElement {
 
     this.emitEvent('selected', returnTo, {
       bubbles: false,
-      composed: true,
+      composed: false,
     });
   };
 
@@ -399,7 +399,7 @@ export class Dropdown extends WebComponentsBaseElement {
       const liClasses = {
         text: true,
         'text-bold': true,
-        active: this.active === option?.[this.returnTo],
+        active: option?.[this.returnTo] && this.active === option?.[this.returnTo],
       };
 
       return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>

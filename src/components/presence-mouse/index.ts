@@ -3,7 +3,7 @@ import { PresenceMouse } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { MousePosition, ParticipantMouse } from './types';
+import { ParticipantMouse } from './types';
 
 export class MousePointers extends BaseComponent {
   public name: ComponentNames;
@@ -11,7 +11,6 @@ export class MousePointers extends BaseComponent {
   private presenceMouseElement: PresenceMouse;
   private containerId: string | null;
   private container: HTMLElement;
-  private positions: Record<string, MousePosition> = {};
   private divWrapper: HTMLElement;
   private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -20,7 +19,7 @@ export class MousePointers extends BaseComponent {
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
     this.containerId = containerId;
-    this.container = document.body.querySelector(`#${containerId}`) as HTMLElement;
+    this.container = document.getElementById(containerId);
 
     if (!this.container) {
       const message = `Container with id ${containerId} not found`;
@@ -80,7 +79,6 @@ export class MousePointers extends BaseComponent {
     this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
 
     this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
-    this.eventBus.subscribe('go-to-mouse-pointer', this.goToMousePointer);
   };
 
   /**
@@ -94,7 +92,6 @@ export class MousePointers extends BaseComponent {
       this.onParticipantLeftOnRealtime,
     );
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
-    this.eventBus.unsubscribe('go-to-mouse-pointer', this.goToMousePointer);
   };
 
   /** Presence Mouse Events */
@@ -138,10 +135,6 @@ export class MousePointers extends BaseComponent {
 
       if (!myParticipant && hasPresenceMouseElement) {
         this.presenceMouseElement.updatePresenceMouseParticipant(participant);
-        this.positions[participant.id] = {
-          x: participant.mousePositionX,
-          y: participant.mousePositionY,
-        };
       }
     });
   };
@@ -162,7 +155,7 @@ export class MousePointers extends BaseComponent {
 
   /**
    * @function createDivWrapper
-   * @description Creates a div wrapper for the mouse.
+   * @description Creates a div wrapper for the pins.
    * @returns {HTMLElement} The newly created div wrapper.
    * */
   private createDivWrapper(): HTMLElement {
@@ -186,58 +179,5 @@ export class MousePointers extends BaseComponent {
     }
 
     return divWrapper;
-  }
-
-  private goToMousePointer = (participantId: string) => {
-    const element = this.divWrapper;
-
-    if (!element) return;
-
-    if (
-      element.clientWidth <= element.parentElement?.clientWidth &&
-      element.clientHeight <= element.parentElement?.clientHeight
-    ) {
-      return;
-    }
-
-    let elementWithOverflow: HTMLElement;
-    let nextElement: HTMLElement = this.divWrapper;
-
-    while (!elementWithOverflow) {
-      const parent = nextElement?.parentElement;
-
-      const hasOverflow = this.isScrollable(parent);
-
-      if (hasOverflow) {
-        elementWithOverflow = parent;
-        break;
-      }
-
-      nextElement = parent;
-
-      if (!nextElement) break;
-    }
-
-    const mouseCoordinates = this.positions[participantId];
-
-    if (!elementWithOverflow) return;
-
-    elementWithOverflow.scrollTo({
-      top: mouseCoordinates.y,
-      left: mouseCoordinates.x,
-      behavior: 'smooth',
-    });
-  };
-
-  private isScrollable(element: HTMLElement): boolean {
-    if (!element) return false;
-
-    const hasScrollableContent = element.scrollHeight > element.clientHeight;
-    const overflowYStyle = window.getComputedStyle(element).overflowY;
-    const overflowXStyle = window.getComputedStyle(element).overflowX;
-    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
-    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
-
-    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
   }
 }
