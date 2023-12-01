@@ -74,7 +74,12 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.activeComponentsInstances.push(component);
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
 
-    ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
+    ApiService.sendActivity(
+      this.participant.id,
+      this.group.id,
+      this.group.name,
+      this.participant.name,
+    );
     ApiService.createOrUpdateParticipant(config.get<string>('apiKey'), {
       name: this.participant?.name,
       participantId: this.participant?.id,

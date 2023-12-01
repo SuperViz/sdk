@@ -67,11 +67,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, isLocal }) => ({
+      .map(({ name, color, id, slotIndex, avatar, isLocal }) => ({
         name,
         color,
         id,
         slotIndex,
+        avatar,
         isLocal,
       }));
 
@@ -100,6 +101,26 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
+
+  private getAvatar(participant: Participant) {
+    if (participant.avatar?.imageUrl) {
+      return html` <img
+        class="superviz-who-is-online__avatar"
+        src=${participant.avatar.imageUrl}
+      />`;
+    }
+
+    const letterColor = this.textColorValues.includes(participant.slotIndex)
+      ? '#FFFFFF'
+      : '#26242A';
+
+    return html`<div
+      class="superviz-who-is-online__avatar"
+      style="background-color: ${participant.color}; color: ${letterColor}"
+    >
+      ${participant.name?.at(0)}
+    </div>`;
+  }
 
   private renderParticipants() {
     if (!this.participants) return html``;
@@ -133,6 +154,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           name="${participant.name}"
           ?disabled=${participant.isLocal}
         >
+          -->
           <div
             slot="dropdown"
             class=${classMap(classList)}

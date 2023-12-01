@@ -36,6 +36,7 @@ export const whoIsOnlineStyle = css`
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
+    object-fit: contain;
   }
 
   .superviz-who-is-online__excess {
