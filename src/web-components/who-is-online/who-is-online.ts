@@ -49,7 +49,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private dropdownPosition(index: number) {
     if (this.participants.length === 1) return 'bottom-center';
 
-    if (index === 0) return 'bottom-left';
+    if (index === 0) return 'bottom-right';
 
     const thereAreExtraParticipants = this.participants.length > 4;
     const isTheLastParticipantOfList = index + 1 === this.participants.length;
@@ -58,7 +58,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       return 'bottom-center';
     }
 
-    return 'bottom-right';
+    return 'bottom-left';
   }
 
   private renderExcessParticipants() {
@@ -67,12 +67,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, avatar }) => ({
+      .map(({ name, color, id, slotIndex, avatar, isLocal }) => ({
         name,
         color,
         id,
         slotIndex,
         avatar,
+        isLocal,
       }));
 
     const classes = {
@@ -85,7 +86,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       <superviz-who-is-online-dropdown
         label="label"
         returnTo="label"
-        position="bottom-right"
+        position="bottom"
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
@@ -124,33 +125,49 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => ({ label }));
-
     const icons = ['place', 'send'];
 
     return html`${this.participants.slice(0, 4).map((participant, index) => {
       const letterColor = this.textColorValues.includes(participant.slotIndex)
         ? '#FFFFFF'
         : '#26242A';
+
+      const options = Object.values(WhoIsOnlineDropdownOptions)
+        .map((label) => {
+          return { label, id: participant.id };
+        })
+        .splice(0, 1);
+
+      const classList = {
+        'superviz-who-is-online__participant': true,
+        local: participant.isLocal,
+      };
+
       const position = this.dropdownPosition(index);
       return html`
-        <!-- <superviz-dropdown
+        <superviz-dropdown
           options=${JSON.stringify(options)}
           label="label"
-          returnTo="label"
           position="${position}"
           @selected=${this.dropdownOptionsHandler}
           icons="${JSON.stringify(icons)}"
           name="${participant.name}"
-        > -->
-        <div
-          slot="dropdown"
-          class="superviz-who-is-online__participant"
-          style="border-color: ${participant.color}"
+          ?disabled=${participant.isLocal}
         >
-          ${this.getAvatar(participant)}
-        </div>
-        <!-- </superviz-dropdown> -->
+          -->
+          <div
+            slot="dropdown"
+            class=${classMap(classList)}
+            style="border-color: ${participant.color}"
+          >
+            <div
+              class="superviz-who-is-online__avatar"
+              style="background-color: ${participant.color}; color: ${letterColor}"
+            >
+              ${participant.name?.at(0).toUpperCase()}
+            </div>
+          </div>
+        </superviz-dropdown>
       `;
     })}
     ${this.renderExcessParticipants()} `;
