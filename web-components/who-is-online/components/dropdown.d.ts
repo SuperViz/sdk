@@ -5,10 +5,14 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     static styles: CSSResultGroup[];
     open: boolean;
     align: 'left' | 'right';
-    position: 'bottom-left' | 'bottom-center' | 'bottom-right';
+    position: 'top' | 'bottom';
     participants: Participant[];
     private textColorValues;
     selected: string;
+    private originalPosition;
+    private menu;
+    private dropdownContent;
+    private host;
     static properties: {
         open: {
             type: BooleanConstructor;
@@ -34,7 +38,14 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     private selectParticipant;
     private getAvatar;
     private renderParticipants;
-    private toggleOpen;
+    private setMenu;
+    private get scrollableParent();
+    private isScrollable;
+    private get dropdownBounds();
+    private shouldUseOriginalVertical;
+    private positionAction;
+    private adjustPosition;
+    private toggle;
     private get menuClasses();
     protected render(): import("lit").TemplateResult<1>;
 }

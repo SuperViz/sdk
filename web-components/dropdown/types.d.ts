@@ -7,3 +7,9 @@ export declare enum PositionsEnum {
     'TOP-RIGHT' = "top-right"
 }
 export type Positions = PositionsEnum | `${PositionsEnum}`;
+export declare enum PositionOptions {
+    'DO-NOTHING' = 0,
+    'USE-ORIGINAL' = 1,
+    'CALCULATE-NEW' = 2,
+    'CENTER' = 3
+}
