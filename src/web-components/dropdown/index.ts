@@ -195,11 +195,8 @@ export class Dropdown extends WebComponentsBaseElement {
     const isOutsideWindowRight = midX + width / 2 > window.innerWidth;
 
     const isOutside = isOutsideWindowLeft || isOutsideWindowRight;
-    if (isOutside) {
-      return false;
-    }
 
-    return true;
+    return !isOutside;
   }
 
   private shouldUseOriginalVertical() {
