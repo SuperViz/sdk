@@ -76,11 +76,25 @@ export const createEl = ({
   elementSlot.innerHTML = 'X';
   element.appendChild(elementSlot);
   element.style.position = 'absolute';
+  element.style.top = '100px';
+  element.style.right = '100px';
 
-  element.style.left = '-10px';
-  element.style.top = '0px';
+  const divWrapper = document.createElement('div');
+  divWrapper.style.height = '500px';
+  divWrapper.style.width = '500px';
 
-  document.body.appendChild(element);
+  const divContainer = document.createElement('div');
+  divContainer.style.height = '300px';
+  divContainer.style.width = '300px';
+  divContainer.style.overflow = 'scroll';
+  divContainer.classList.add('container');
+
+  divWrapper.appendChild(element);
+  divContainer.appendChild(divWrapper);
+
+  document.body.style.height = '1000px';
+  document.body.style.width = '1000px';
+  document.body.appendChild(divContainer);
   return element;
 };
 
@@ -131,24 +145,18 @@ describe('dropdown', () => {
   });
 
   test('should close dropdown when click on it', async () => {
-    createEl({ position: 'bottom-right', align: 'left' });
-
+    const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
     await sleep();
 
     dropdownContent()?.click();
-
-    document.addEventListener('click', jest.fn());
-
     await sleep();
 
-    document.body.click();
+    expect(el['open']).toBe(true);
 
+    dropdownContent()?.click();
     await sleep();
 
-    const isOpen = dropdownMenu()?.classList.contains('menu-open');
-
-    expect(isOpen).toBeFalsy();
-    expect(element()?.['open']).toBeFalsy();
+    expect(el['open']).toBe(false);
   });
 
   test('should close dropdown when click on option', async () => {
@@ -311,41 +319,149 @@ describe('dropdown', () => {
     );
   });
 
-  test('should reposition dropdown to bottom-left if top, center and right are out of screen', async () => {
-    const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
-    await sleep();
+  describe('based on dropdown original position', () => {
+    test('should reposition dropdown to bottom-left if top, center and right are out of screen', async () => {
+      const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
 
-    const oldLeft = Number(el.style.left.slice(0, 2));
-    const { left, right } = el['dropdownBounds'];
+      el.style.top = '0px';
+      el.style.right = '0px';
+      el.style.left = 'auto';
+      el['host'] = element();
 
-    el.style.left = 'auto';
-    el.style.right = (window.innerWidth + oldLeft - (right - left)).toString();
+      await sleep();
 
-    await sleep();
+      dropdownContent()?.click();
+      await sleep();
 
-    dropdownContent()?.click();
+      expect(el['position']).toBe('bottom-left');
+    });
 
-    await sleep();
+    test('should reposition dropdown to bottom-center if top and right are out of screen', async () => {
+      const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
 
-    expect(el['position']).toBe('bottom-left');
-  });
+      el.style.top = '0px';
+      el.style.right = '50px';
+      el.style.left = 'auto';
+      el['host'] = element();
 
-  test('should reposition dropdown to top-left if top, center and right are out of screen', async () => {
-    const el = createEl({ position: 'bottom-right', align: 'left', icons: ['left', 'right'] });
-    await sleep();
+      await sleep();
 
-    const oldLeft = Number(el.style.left.slice(0, 2));
-    const { left, right } = el['dropdownBounds'];
+      dropdownContent()?.click();
+      await sleep();
 
-    el.style.left = 'auto';
-    el.style.right = (window.innerWidth + oldLeft - (right - left)).toString();
+      expect(el['position']).toBe('bottom-center');
+    });
 
-    await sleep();
+    test('should reposition dropdown to bottom-right if top is out of screen', async () => {
+      const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
 
-    dropdownContent()?.click();
+      el.style.top = '0px';
+      el.style.right = '100px';
+      el.style.left = 'auto';
+      el['host'] = element();
 
-    await sleep();
+      await sleep();
 
-    expect(el['position']).toBe('bottom-left');
+      dropdownContent()?.click();
+      await sleep();
+
+      expect(el['position']).toBe('bottom-right');
+    });
+
+    test('should reposition dropdown to top-right if bottom, center and left are out of screen', async () => {
+      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
+
+      el.style.left = '0px';
+      el.style.bottom = '0px';
+      el.style.top = 'auto';
+      el.style.right = 'auto';
+      el['host'] = element();
+
+      await sleep();
+
+      dropdownContent()?.click();
+      await sleep();
+
+      expect(el['position']).toBe('top-right');
+    });
+
+    test('should reposition dropdown to top-center if bottom and left are out of screen', async () => {
+      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
+
+      el.style.left = '50px';
+      el.style.bottom = '0px';
+      el.style.top = 'auto';
+      el.style.right = 'auto';
+      el['host'] = element();
+
+      await sleep();
+
+      dropdownContent()?.click();
+      await sleep();
+
+      expect(el['position']).toBe('top-center');
+    });
+
+    test('should reposition dropdown to top-left if bottom is out of screen', async () => {
+      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
+
+      el.style.left = '150px';
+      el.style.bottom = '0px';
+      el.style.top = 'auto';
+      el.style.right = 'auto';
+      el['host'] = element();
+
+      await sleep();
+
+      dropdownContent()?.click();
+      await sleep();
+
+      expect(el['position']).toBe('top-left');
+    });
+
+    test('should keep dropdown orientation even if outside of screen', async () => {
+      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
+
+      el.style.left = 'auto';
+      el.style.right = '-50px';
+      el['host'] = element();
+
+      await sleep();
+
+      dropdownContent()?.click();
+      await sleep();
+
+      expect(el['position'].includes('left')).toBeTruthy();
+    });
+
+    test('should return to the original position after having more space', async () => {
+      const el = createEl({ position: 'bottom-center', align: 'left', icons: ['left', 'right'] });
+
+      await sleep();
+
+      dropdownContent()?.click();
+
+      await sleep();
+
+      expect(el['originalPosition']).toBe('bottom-center');
+      expect(el['position']).toBe(el['originalPosition']);
+
+      el.style.bottom = '0px';
+      el.style.top = 'auto';
+      el['host'] = element();
+
+      await sleep();
+
+      expect(el['position']).toBe('top-center');
+
+      el.style.bottom = 'auto';
+      el.style.top = '0px';
+      el['host'] = element();
+
+      await sleep();
+
+      expect(el['originalPosition']).toBe('bottom-center');
+      expect(el['position']).toBe(el['originalPosition']);
+    });
   });
 });

@@ -27,6 +27,7 @@ export class Dropdown extends WebComponentsBaseElement {
   private dropdownContent: HTMLElement;
   private originalPosition: Positions;
   private menu: HTMLElement = undefined;
+  private host: HTMLElement;
 
   static properties = {
     open: { type: Boolean },
@@ -91,10 +92,6 @@ export class Dropdown extends WebComponentsBaseElement {
   };
 
   private get dropdownBounds() {
-    if (!this.menu) {
-      this.menu = this.shadowRoot.querySelector('.menu');
-    }
-
     if (!this.dropdownContent) {
       this.dropdownContent = this.shadowRoot.querySelector('.dropdown-content');
     }
@@ -325,7 +322,12 @@ export class Dropdown extends WebComponentsBaseElement {
 
   private get scrollableParent() {
     let elementWithOverflow: HTMLElement;
-    let nextElement = (this.getRootNode() as ShadowRoot).host;
+
+    if (!this.host) {
+      this.host = (this.getRootNode() as ShadowRoot).host as HTMLElement;
+    }
+
+    let nextElement = this.host;
 
     while (!elementWithOverflow) {
       const parent = nextElement?.parentElement;

@@ -5,7 +5,6 @@ import { Participant } from '../../../components/who-is-online/types';
 
 interface elementProps {
   position: string;
-  align: string;
   participants?: Participant[];
   label?: string;
   returnTo?: string;
@@ -29,7 +28,6 @@ const mockParticipants: Participant[] = [
 
 const createEl = ({
   position,
-  align,
   label,
   returnTo,
   options,
@@ -39,20 +37,39 @@ const createEl = ({
 }: elementProps): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-who-is-online-dropdown');
 
+  /* eslint-disable no-unused-expressions */
   label && element.setAttribute('label', label);
   returnTo && element.setAttribute('returnTo', returnTo);
   name && element.setAttribute('name', name);
   icons && element.setAttribute('icons', JSON.stringify(icons));
   !!participants?.length && element.setAttribute('participants', JSON.stringify(participants));
+  /* eslint-enable no-unused-expressions */
 
   element.setAttribute('position', position);
-  element.setAttribute('align', align);
 
   const elementSlot = document.createElement('div');
   elementSlot.setAttribute('slot', 'dropdown');
   elementSlot.innerHTML = 'X';
   element.appendChild(elementSlot);
-  document.body.appendChild(element);
+  element.style.position = 'absolute';
+
+  const divWrapper = document.createElement('div');
+  divWrapper.style.height = '1500px';
+  divWrapper.style.width = '1500px';
+  divWrapper.style.position = 'relative';
+
+  const divContainer = document.createElement('div');
+  divContainer.style.height = '1000px';
+  divContainer.style.width = '1000px';
+  divContainer.style.overflow = 'scroll';
+  divContainer.classList.add('container');
+
+  divWrapper.appendChild(element);
+  divContainer.appendChild(divWrapper);
+
+  document.body.style.height = '1000px';
+  document.body.style.width = '1000px';
+  document.body.appendChild(divContainer);
   return element;
 };
 
@@ -69,18 +86,18 @@ const dropdownMenu = () => {
 
 describe('dropdown', () => {
   afterEach(() => {
-    document.body.querySelector('superviz-who-is-online-dropdown')?.remove();
+    document.body.innerHTML = '';
   });
 
   test('should render dropdown', () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
     const element = document.querySelector('superviz-who-is-online-dropdown');
 
     expect(element).not.toBeNull();
   });
 
   test('should open dropdown when click on it', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
 
@@ -92,7 +109,7 @@ describe('dropdown', () => {
   });
 
   test('should close dropdown when click on it', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
     dropdownContent()?.click();
@@ -112,7 +129,7 @@ describe('dropdown', () => {
   });
 
   test('should open another dropdown when click on participant', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
 
@@ -133,7 +150,7 @@ describe('dropdown', () => {
   });
 
   test('should listen click event when click out', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
 
@@ -153,7 +170,7 @@ describe('dropdown', () => {
   });
 
   test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
 
@@ -172,11 +189,7 @@ describe('dropdown', () => {
       color: MeetingColorsHex[2],
     };
 
-    createEl({
-      position: 'bottom-right',
-      align: 'left',
-      participants: [participant],
-    });
+    createEl({ position: 'bottom', participants: [participant] });
 
     await sleep();
 
@@ -189,14 +202,14 @@ describe('dropdown', () => {
   });
 
   test('should not render participants when there is no participant', async () => {
-    createEl({ position: 'bottom-right', align: 'left' });
+    createEl({ position: 'bottom' });
 
     await sleep();
     expect(dropdownMenu()?.children?.length).toBe(0);
   });
 
   test('should render participants when there is participant', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
 
@@ -204,7 +217,7 @@ describe('dropdown', () => {
   });
 
   test('should change selected participant when click on it', async () => {
-    createEl({ position: 'bottom-right', align: 'left', participants: mockParticipants });
+    createEl({ position: 'bottom', participants: mockParticipants });
 
     await sleep();
 
@@ -219,11 +232,47 @@ describe('dropdown', () => {
     expect(element()?.['selected']).toBe(mockParticipants[0].id);
   });
 
+  describe('based on dropdown original position', () => {
+    test('should reposition dropdown to bottom if top is out of screen', async () => {
+      const el = createEl({ position: 'top', participants: mockParticipants });
+      expect(el['position']).toBe('top');
+
+      el.style.bottom = 'auto';
+      el.style.top = '0px';
+      el['host'] = element();
+
+      await sleep();
+
+      dropdownContent()?.click();
+
+      await sleep();
+
+      expect(el['position']).toBe('bottom');
+    });
+
+    test('should reposition dropdown to top if bottom is out of screen', async () => {
+      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      expect(el['position']).toBe('bottom');
+
+      el.style.top = 'auto';
+      el.style.bottom = '-10px';
+      el['host'] = element();
+
+      await sleep();
+
+      dropdownContent()?.click();
+
+      await sleep();
+
+      expect(el['position']).toBe('top');
+    });
+  });
+
   // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
   // test('', async () => {
   //   const event = new CustomEvent('selected');
   //   createEl({
-  //     position: 'bottom-right',
+  //     position: 'bottom',
   //     align: 'left',
   //     participants: mockParticipants,
   //   });

@@ -24,6 +24,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private originalPosition: 'top' | 'bottom';
   private menu: HTMLElement;
   private dropdownContent: HTMLElement;
+  private host: HTMLElement;
 
   static properties = {
     open: { type: Boolean },
@@ -166,7 +167,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private get scrollableParent() {
     let elementWithOverflow: HTMLElement;
-    let nextElement = (this.getRootNode() as ShadowRoot).host;
+
+    if (!this.host) {
+      this.host = (this.getRootNode() as ShadowRoot).host as HTMLElement;
+    }
+
+    let nextElement = this.host;
 
     while (!elementWithOverflow) {
       const parent = nextElement?.parentElement;
@@ -199,10 +205,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   }
 
   private get dropdownBounds() {
-    if (!this.menu) {
-      this.menu = this.shadowRoot.querySelector('.menu');
-    }
-
     if (!this.dropdownContent) {
       this.dropdownContent = this.shadowRoot.querySelector('.dropdown-content');
     }
@@ -231,7 +233,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     return contentY - height > 0;
   }
 
-  private positionVerticalAction(): PositionOptions {
+  private positionAction(): PositionOptions {
     const { top, bottom } = this.dropdownBounds;
     const { innerHeight } = window;
 
@@ -252,11 +254,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     return PositionOptions['DO-NOTHING'];
   }
 
-  private adjustPositionVertical() {
+  private adjustPosition = () => {
     const { top, bottom } = this.dropdownBounds;
     const { innerHeight } = window;
 
-    const action = this.positionVerticalAction();
+    const action = this.positionAction();
+
     if (action === PositionOptions['DO-NOTHING']) return;
 
     if (action === PositionOptions['USE-ORIGINAL']) {
@@ -270,10 +273,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const newPosition = this.position.replace(previousSide, newSide) as 'top' | 'bottom';
 
     this.position = newPosition;
-  }
-
-  private adjustPosition = () => {
-    this.adjustPositionVertical();
   };
 
   private toggle() {
@@ -291,8 +290,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       'menu--bottom': this.position === 'bottom',
       'menu--top': this.position === 'top',
       'menu-open': this.open,
-      'menu-left': this.align === 'left',
-      'menu-right': this.align === 'right',
     };
   }
 
