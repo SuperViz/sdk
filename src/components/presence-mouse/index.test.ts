@@ -2,10 +2,6 @@ import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { MeetingEvent } from '../../common/types/events.types';
-import { sleep } from '../../common/utils';
-import { AblyParticipant } from '../../services/realtime/ably/types';
-import type { PresenceMouse } from '../../web-components';
 
 import { ParticipantMouse } from './types';
 
@@ -21,13 +17,6 @@ const createMousePointers = (containerId?: string): MousePointers => {
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
   });
-
-  presenceMouseComponent['presenceMouseElement'] = document.createElement(
-    'superviz-presence-mouse',
-  ) as PresenceMouse;
-  presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'] = jest.fn();
-  presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'] = jest.fn();
-  presenceMouseComponent['divWrapper'].appendChild(presenceMouseComponent['presenceMouseElement']);
 
   return presenceMouseComponent;
 };
@@ -115,25 +104,19 @@ describe('MousePointers', () => {
         ...MOCK_LOCAL_PARTICIPANT,
         mousePositionX: event.x,
         mousePositionY: event.y,
-        originalWidth: 0,
-        originalHeight: 0,
-        containerId: 'container',
         visible: true,
-      });
+      } as ParticipantMouse);
     });
   });
 
   describe('onParticipantsDidChange', () => {
     test('should update presence mouse element for external participants', () => {
-      presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'] = jest.fn();
+      presenceMouseComponent['updatePresenceMouseParticipant'] = jest.fn();
       const MOCK_MOUSE: ParticipantMouse = {
         ...MOCK_LOCAL_PARTICIPANT,
         mousePositionX: 1000,
         mousePositionY: 1000,
-        originalWidth: 1000,
-        originalHeight: 1000,
         slotIndex: 0,
-        containerId: presenceMouseComponent['containerId'] as string,
         visible: true,
       };
 
@@ -149,31 +132,28 @@ describe('MousePointers', () => {
 
       presenceMouseComponent['onParticipantsDidChange'](participants);
 
-      expect(
-        presenceMouseComponent['presenceMouseElement']['updatePresenceMouseParticipant'],
-      ).toHaveBeenCalledWith(participant2);
+      expect(presenceMouseComponent['updatePresenceMouseParticipant']).toHaveBeenCalledWith(
+        participant2,
+      );
     });
   });
 
   describe('onParticipantLeftOnRealtime', () => {
     test('should remove presence mouse participant', () => {
-      presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'] = jest.fn();
+      presenceMouseComponent['removePresenceMouseParticipant'] = jest.fn();
       const MOCK_MOUSE: ParticipantMouse = {
         ...MOCK_LOCAL_PARTICIPANT,
         mousePositionX: 1000,
         mousePositionY: 1000,
-        originalWidth: 1000,
-        originalHeight: 1000,
         slotIndex: 0,
-        containerId: presenceMouseComponent['containerId'] as string,
         visible: true,
       };
 
       presenceMouseComponent['onParticipantLeftOnRealtime'](MOCK_MOUSE);
 
-      expect(
-        presenceMouseComponent['presenceMouseElement']['removePresenceMouseParticipant'],
-      ).toHaveBeenCalledWith(MOCK_MOUSE.id);
+      expect(presenceMouseComponent['removePresenceMouseParticipant']).toHaveBeenCalledWith(
+        MOCK_MOUSE.id,
+      );
     });
   });
 });

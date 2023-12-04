@@ -1,5 +1,4 @@
 import { Logger } from '../../common/utils';
-import { PresenceMouse } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
@@ -8,7 +7,6 @@ import { ParticipantMouse } from './types';
 export class MousePointers extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
-  private presenceMouseElement: PresenceMouse;
   private containerId: string | null;
   private container: HTMLElement;
   private divWrapper: HTMLElement;
@@ -30,6 +28,10 @@ export class MousePointers extends BaseComponent {
     this.divWrapper = this.createDivWrapper();
   }
 
+  private get textColorValues(): number[] {
+    return [2, 4, 5, 7, 8, 16];
+  }
+
   /**
    * @function start
    * @description start presence-mouse component
@@ -38,8 +40,6 @@ export class MousePointers extends BaseComponent {
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
 
-    this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
-    this.divWrapper.appendChild(this.presenceMouseElement);
     this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
 
@@ -60,7 +60,6 @@ export class MousePointers extends BaseComponent {
 
     this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
     this.container.removeEventListener('mouseout', this.onMyParticipantMouseOut);
-    this.presenceMouseElement.remove();
     this.divWrapper.remove();
 
     if (this.divWrapperReplacementInterval) {
@@ -108,9 +107,6 @@ export class MousePointers extends BaseComponent {
       ...this.localParticipant,
       mousePositionX: event.x - rect.x,
       mousePositionY: event.y - rect.y,
-      originalWidth: rect.width,
-      originalHeight: rect.height,
-      containerId: this.containerId,
       visible: true,
     });
   };
@@ -125,16 +121,15 @@ export class MousePointers extends BaseComponent {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
     Object.values(participants).forEach((participant: ParticipantMouse) => {
-      const hasPresenceMouseElement = participant?.mousePositionX && this.presenceMouseElement;
       const myParticipant = participant?.id === this.localParticipant?.id;
 
       if (!participant?.visible) {
-        this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
+        this.removePresenceMouseParticipant(participant.id);
         return;
       }
 
-      if (!myParticipant && hasPresenceMouseElement) {
-        this.presenceMouseElement.updatePresenceMouseParticipant(participant);
+      if (!myParticipant) {
+        this.updatePresenceMouseParticipant(participant);
       }
     });
   };
@@ -150,7 +145,7 @@ export class MousePointers extends BaseComponent {
    * @returns {void}
    */
   private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
-    this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
+    this.removePresenceMouseParticipant(participant.id);
   };
 
   /**
@@ -179,5 +174,72 @@ export class MousePointers extends BaseComponent {
     }
 
     return divWrapper;
+  }
+
+  /**
+   * @function updatePresenceMouseParticipant
+   * @description handler for update presence mouse change event
+   * @param {ParticipantMouse} externalParticipant - presence mouse change data
+   * @returns {void}
+   * */
+  private updatePresenceMouseParticipant = (externalParticipant: ParticipantMouse): void => {
+    const userMouseIdExist = document.getElementById(`mouse-${externalParticipant.id}`);
+
+    if (!userMouseIdExist) {
+      const mouseFollower = document.createElement('div');
+      mouseFollower.setAttribute('id', `mouse-${externalParticipant.id}`);
+      mouseFollower.setAttribute('class', 'mouse-follower');
+
+      const pointerMouse = document.createElement('div');
+      pointerMouse.setAttribute('class', 'pointer-mouse');
+
+      const mouseUserName = document.createElement('div');
+      mouseUserName.setAttribute('class', 'mouse-user-name');
+      mouseUserName.innerHTML = externalParticipant.name;
+
+      mouseFollower.appendChild(pointerMouse);
+      mouseFollower.appendChild(mouseUserName);
+      this.divWrapper.appendChild(mouseFollower);
+    }
+    const divMouseFollower = document.getElementById(`mouse-${externalParticipant.id}`);
+
+    if (!divMouseFollower) return;
+
+    const divMouseUser = document.getElementById(`mouse-${externalParticipant.id}`);
+    const divPointer = document.getElementById(`mouse-${externalParticipant.id}`);
+
+    if (!divMouseUser || !divPointer) return;
+
+    const mouseUser = divMouseUser.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
+    const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
+    if (pointerUser) {
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${externalParticipant.slotIndex}.svg)`;
+    }
+    if (mouseUser) {
+      mouseUser.style.color = this.textColorValues.includes(externalParticipant.slotIndex)
+        ? '#FFFFFF'
+        : '#26242A';
+      mouseUser.style.backgroundColor = externalParticipant.color;
+      mouseUser.innerHTML = externalParticipant.name;
+    }
+
+    const adjustedX = externalParticipant.mousePositionX;
+    const adjustedY = externalParticipant.mousePositionY;
+
+    divMouseFollower.style.left = `${adjustedX}px`;
+    divMouseFollower.style.top = `${adjustedY}px`;
+  };
+
+  /**
+   * @function removePresenceMouseParticipant
+   * @description handler remove external participant mouse
+   * @param {string} participantId - external participant id
+   * @returns {void}
+   * */
+  private removePresenceMouseParticipant(participantId: string): void {
+    const userMouseIdExist = document.getElementById(`mouse-${participantId}`);
+    if (userMouseIdExist) {
+      userMouseIdExist.remove();
+    }
   }
 }
