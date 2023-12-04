@@ -2,7 +2,7 @@ import { Participant } from '../../common/types/participant.types';
 
 export interface ParticipantMouse extends Participant {
   slotIndex: number;
-  mousePositionX: number;
-  mousePositionY: number;
+  x: number;
+  y: number;
   visible: boolean;
 }
