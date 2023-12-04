@@ -17,6 +17,10 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     border: 2px solid #aea9b8;
+    user-select: none;
+  }
+
+  .superviz-who-is-online__participant:not(.local) {
     cursor: pointer;
   }
 
@@ -32,6 +36,7 @@ export const whoIsOnlineStyle = css`
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
+    object-fit: contain;
   }
 
   .superviz-who-is-online__excess {
@@ -47,6 +52,7 @@ export const whoIsOnlineStyle = css`
     text-align: center;
     font-weight: bold;
     color: #26242a;
+    cursor: pointer;
   }
 
   .excess_participants:hover,

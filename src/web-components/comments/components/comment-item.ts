@@ -187,7 +187,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
               options=${JSON.stringify(options)}
               label="label"
               returnTo="label"
-              position="bottom-right"
+              position="bottom-left"
               @selected=${dropdownOptionsHandler}
               @click=${(event: Event) => event.stopPropagation()}
             >

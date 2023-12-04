@@ -2,7 +2,34 @@ import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 
 import { CanvasPin } from '.';
 
+const MOCK_CANVAS = {
+  style: {
+    cursor: '',
+  },
+  dispatchEvent: jest.fn(),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+  getBoundingClientRect: jest.fn().mockReturnValue({
+    left: 0,
+    top: 0,
+    width: 100,
+    height: 100,
+  }),
+  getContext: jest.fn().mockImplementation(() => ({
+    getTransform: jest.fn().mockReturnValue({
+      inverse: jest.fn().mockReturnValue({
+        e: 10,
+        f: 20,
+      }),
+      e: 10,
+      f: 20,
+    }),
+  })),
+};
+
 describe('CanvasPinAdapter', () => {
+  let instance: CanvasPin;
+
   beforeEach(() => {
     document.body.innerHTML = `
       <div id="parentElement" style="width: 200px; height: 200px; overflow: auto;">
@@ -11,6 +38,10 @@ describe('CanvasPinAdapter', () => {
         </div>
       </div>
     `;
+
+    instance = new CanvasPin('canvas');
+    instance.setActive(true);
+    instance['canvas'] = { ...instance['canvas'], ...MOCK_CANVAS } as unknown as HTMLCanvasElement;
   });
 
   afterEach(() => {
@@ -30,20 +61,17 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should add event listeners to the canvas element', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-    const addEventListenerSpy = jest.spyOn(canvasPinAdapter['canvas'], 'addEventListener');
-    canvasPinAdapter['addListeners']();
+    const addEventListenerSpy = jest.spyOn(instance['canvas'], 'addEventListener');
+    instance['addListeners']();
     expect(addEventListenerSpy).toHaveBeenCalledTimes(4);
   });
 
   test('should destroy the canvas pin adapter', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    const removeEventListenerSpy = jest.spyOn(canvasPinAdapter['canvas'], 'removeEventListener');
+    const removeEventListenerSpy = jest.spyOn(instance['canvas'], 'removeEventListener');
 
-    canvasPinAdapter.destroy();
+    instance.destroy();
 
-    expect(canvasPinAdapter['mouseElement']).toBeNull();
+    expect(instance['mouseElement']).toBeNull();
     expect(removeEventListenerSpy).toHaveBeenCalledTimes(4);
   });
 
@@ -69,69 +97,55 @@ describe('CanvasPinAdapter', () => {
   });
 
   test('should create temporary pin when mouse clicks canvas', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
 
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
-
-    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+    expect(instance['pins'].has('temporary-pin')).toBeTruthy();
   });
 
   test('should remove annotation pin', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    expect(instance['pins'].size).toEqual(1);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(1);
+    instance.removeAnnotationPin(MOCK_ANNOTATION.uuid);
 
-    canvasPinAdapter.removeAnnotationPin(MOCK_ANNOTATION.uuid);
-
-    expect(canvasPinAdapter['pins'].size).toEqual(0);
+    expect(instance['pins'].size).toEqual(0);
   });
 
   test('should not remove annotation pin if it does not exist', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    expect(instance['pins'].size).toEqual(1);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(1);
+    instance.removeAnnotationPin('not_found_uuid');
 
-    canvasPinAdapter.removeAnnotationPin('not_found_uuid');
-
-    expect(canvasPinAdapter['pins'].size).toEqual(1);
+    expect(instance['pins'].size).toEqual(1);
   });
 
   test('should not render annotations if the adapter is not active and visibility is false', async () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(false);
-    canvasPinAdapter.setPinsVisibility(false);
+    instance.setActive(false);
+    instance.setPinsVisibility(false);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(0);
+    expect(instance['pins'].size).toEqual(0);
   });
 
   test('should remove pins when visibility is false', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setPinsVisibility(true);
+    instance.setPinsVisibility(true);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(1);
+    expect(instance['pins'].size).toEqual(1);
 
-    canvasPinAdapter.setPinsVisibility(false);
+    instance.setPinsVisibility(false);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(0);
+    expect(instance['pins'].size).toEqual(0);
   });
 
   test('should not render annotation if the coordinate type is not canvas', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-
-    canvasPinAdapter.updateAnnotations([
+    instance.updateAnnotations([
       {
         ...MOCK_ANNOTATION,
         uuid: 'not-canvas',
@@ -143,18 +157,15 @@ describe('CanvasPinAdapter', () => {
       },
     ]);
 
-    expect(canvasPinAdapter['pins'].has('not-canvas')).toBeFalsy();
+    expect(instance['pins'].has('not-canvas')).toBeFalsy();
   });
 
   test('should select annotation pin', async () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    expect(instance['selectedPin']).toBeNull();
 
-    expect(canvasPinAdapter['selectedPin']).toBeNull();
-
-    canvasPinAdapter['annotationSelected'](
+    instance['annotationSelected'](
       new CustomEvent('select-annotation', {
         detail: {
           uuid: MOCK_ANNOTATION.uuid,
@@ -162,20 +173,15 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    expect(
-      [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
-    ).toBeTruthy();
+    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeTruthy();
   });
 
   test('should not select annotation pin if uuid is not defined', async () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    expect(instance['selectedPin']).toBeNull();
 
-    expect(canvasPinAdapter['selectedPin']).toBeNull();
-
-    canvasPinAdapter['annotationSelected'](
+    instance['annotationSelected'](
       new CustomEvent('select-annotation', {
         detail: {
           uuid: undefined,
@@ -183,86 +189,68 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    expect(
-      [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
-    ).toBeFalsy();
+    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
   });
 
   test('should reset on KeyBoardEvent if the key is Escape', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
 
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+    expect(instance['pins'].has('temporary-pin')).toBeTruthy();
 
-    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+    instance['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
 
-    canvasPinAdapter['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
-
-    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeFalsy();
+    expect(instance['pins'].has('temporary-pin')).toBeFalsy();
   });
 
   test('should not reset on KeyboardEvent if the key is not Escape', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
 
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+    expect(instance['pins'].has('temporary-pin')).toBeTruthy();
 
-    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+    instance['resetPins']({ key: 'Enter' } as unknown as KeyboardEvent);
 
-    canvasPinAdapter['resetPins']({ key: 'Enter' } as unknown as KeyboardEvent);
-
-    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeTruthy();
+    expect(instance['pins'].has('temporary-pin')).toBeTruthy();
   });
 
   test('should remove active on Escape key', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
     const detail = {
       uuid: MOCK_ANNOTATION.uuid,
     };
 
-    canvasPinAdapter['annotationSelected']({ detail } as unknown as CustomEvent);
+    instance['annotationSelected']({ detail } as unknown as CustomEvent);
 
-    expect(canvasPinAdapter['selectedPin']).not.toBeNull();
+    expect(instance['selectedPin']).not.toBeNull();
 
-    canvasPinAdapter['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
+    instance['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
 
-    expect(canvasPinAdapter['selectedPin']).toBeNull();
+    expect(instance['selectedPin']).toBeNull();
   });
 
   test('should toggle active attribute when click same annotation twice', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-
-    canvasPinAdapter.setActive(true);
     const detail = {
       uuid: MOCK_ANNOTATION.uuid,
     };
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
-    canvasPinAdapter['annotationSelected']({ detail } as unknown as CustomEvent);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    instance['annotationSelected']({ detail } as unknown as CustomEvent);
 
-    expect(canvasPinAdapter['selectedPin']).not.toBeNull();
-    expect(canvasPinAdapter['selectedPin']?.hasAttribute('active')).toBeTruthy();
+    expect(instance['selectedPin']).not.toBeNull();
+    expect(instance['selectedPin']?.hasAttribute('active')).toBeTruthy();
 
-    const ann = canvasPinAdapter['selectedPin'];
-    canvasPinAdapter['annotationSelected']({ detail } as unknown as CustomEvent);
+    instance['annotationSelected']({ detail } as unknown as CustomEvent);
 
-    expect(canvasPinAdapter['selectedPin']).toBeNull();
+    expect(instance['selectedPin']).toBeNull();
   });
 
   test('should not select annotation pin if it does not exist', async () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    expect(instance['selectedPin']).toBeNull();
 
-    expect(canvasPinAdapter['selectedPin']).toBeNull();
-
-    canvasPinAdapter['annotationSelected'](
+    instance['annotationSelected'](
       new CustomEvent('select-annotation', {
         detail: {
           uuid: 'not-found',
@@ -270,19 +258,14 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    expect(
-      [...canvasPinAdapter['pins'].values()].some((pin) => pin.hasAttribute('active')),
-    ).toBeFalsy();
+    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
   });
 
   test('should remove temporary pin when selecting another pin', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
 
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    canvasPinAdapter['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
-
-    canvasPinAdapter['annotationSelected'](
+    instance['annotationSelected'](
       new CustomEvent('select-annotation', {
         detail: {
           uuid: MOCK_ANNOTATION.uuid,
@@ -290,16 +273,12 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    expect(canvasPinAdapter['pins'].has('temporary-pin')).toBeFalsy();
+    expect(instance['pins'].has('temporary-pin')).toBeFalsy();
   });
 
   test('should remove highlight from annotation pin when sibar is closed', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-    canvasPinAdapter.setPinsVisibility(true);
-
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
-    canvasPinAdapter['annotationSelected'](
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    instance['annotationSelected'](
       new CustomEvent('select-annotation', {
         detail: {
           uuid: MOCK_ANNOTATION.uuid,
@@ -307,11 +286,11 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    let pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+    let pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
 
     expect(pin?.hasAttribute('active')).toBeTruthy();
 
-    canvasPinAdapter['onToggleAnnotationSidebar'](
+    instance['onToggleAnnotationSidebar'](
       new CustomEvent('toggle-annotation-sidebar', {
         detail: {
           open: false,
@@ -319,18 +298,14 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+    pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
 
     expect(pin?.hasAttribute('active')).toBeFalsy();
   });
 
   test('should not remove highlight from annotation pin when sibar is opened', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-    canvasPinAdapter.setPinsVisibility(true);
-
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
-    canvasPinAdapter['annotationSelected'](
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    instance['annotationSelected'](
       new CustomEvent('select-annotation', {
         detail: {
           uuid: MOCK_ANNOTATION.uuid,
@@ -338,11 +313,11 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    let pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+    let pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
 
     expect(pin?.hasAttribute('active')).toBeTruthy();
 
-    canvasPinAdapter['onToggleAnnotationSidebar'](
+    instance['onToggleAnnotationSidebar'](
       new CustomEvent('toggle-annotation-sidebar', {
         detail: {
           open: true,
@@ -350,7 +325,7 @@ describe('CanvasPinAdapter', () => {
       }),
     );
 
-    pin = canvasPinAdapter['pins'].get(MOCK_ANNOTATION.uuid);
+    pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
 
     expect(pin?.hasAttribute('active')).toBeTruthy();
   });
@@ -371,49 +346,36 @@ describe('CanvasPinAdapter', () => {
       resolved: false,
     };
 
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-    canvasPinAdapter.updateAnnotations([
+    instance.updateAnnotations([
       { ...annotation, uuid: '000 ' },
       { ...annotation, uuid: '123' },
       { ...annotation, uuid: '321' },
     ]);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(3);
+    expect(instance['pins'].size).toEqual(3);
 
-    const resolvedAnnotation = {
-      ...annotation,
-      resolved: true,
-    };
-
-    canvasPinAdapter.updateAnnotations([
+    instance.updateAnnotations([
       { ...annotation, uuid: '000 ' },
       { ...annotation, uuid: '123', resolved: true },
       { ...annotation, uuid: '321', resolved: true },
     ]);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(1);
+    expect(instance['pins'].size).toEqual(1);
   });
 
   test('should not render annotations if the canvas is hidden', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
+    instance.updateAnnotations([MOCK_ANNOTATION]);
 
-    canvasPinAdapter.updateAnnotations([MOCK_ANNOTATION]);
+    expect(instance['pins'].size).toEqual(1);
 
-    expect(canvasPinAdapter['pins'].size).toEqual(1);
+    instance['canvas'].style.display = 'none';
 
-    canvasPinAdapter['canvas'].style.display = 'none';
+    instance.updateAnnotations([]);
 
-    canvasPinAdapter.updateAnnotations([]);
-
-    expect(canvasPinAdapter['pins'].size).toEqual(0);
+    expect(instance['pins'].size).toEqual(0);
   });
 
   test('should update the position of the mouse element', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-
     const event = new MouseEvent('mousemove', { clientX: 100, clientY: 200 });
     const customEvent = {
       ...event,
@@ -421,64 +383,10 @@ describe('CanvasPinAdapter', () => {
       y: event.clientY,
     };
 
-    canvasPinAdapter['onMouseMove'](customEvent);
+    instance['onMouseMove'](customEvent);
 
-    const element = canvasPinAdapter['mouseElement'];
+    const element = instance['mouseElement'];
     expect(element).toBeDefined();
     expect(element.getAttribute('position')).toBe(JSON.stringify({ x: 100, y: 200 }));
-  });
-
-  test('should not scroll if element is null', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-
-    const divWrapper = document.getElementById('divWrapper')!;
-
-    canvasPinAdapter['scrollIntoView'](null as any);
-    expect(divWrapper.scrollTop).toEqual(0);
-    expect(divWrapper.scrollLeft).toEqual(0);
-  });
-
-  test('should not scroll if canvas is already in view', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-    const divWrapper = document.getElementById('divWrapper')!;
-
-    canvasPinAdapter['scrollIntoView'](document.getElementById('canvas')!);
-    expect(divWrapper.scrollTop).toEqual(0);
-    expect(divWrapper.scrollLeft).toEqual(0);
-  });
-
-  test('should scroll to element if it is larger than its parent', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-
-    canvasPinAdapter['divWrapper'].parentElement!.scrollTo = jest.fn();
-
-    jest.spyOn(canvasPinAdapter['divWrapper'], 'clientWidth', 'get').mockReturnValue(100);
-    jest.spyOn(canvasPinAdapter['divWrapper'], 'clientHeight', 'get').mockReturnValue(100);
-
-    jest
-      .spyOn(canvasPinAdapter['divWrapper'].parentElement as HTMLElement, 'clientWidth', 'get')
-      .mockReturnValue(10);
-    jest
-      .spyOn(canvasPinAdapter['divWrapper'].parentElement as HTMLElement, 'clientHeight', 'get')
-      .mockReturnValue(10);
-    jest
-      .spyOn(canvasPinAdapter['divWrapper'].parentElement as HTMLElement, 'scrollHeight', 'get')
-      .mockReturnValue(1000);
-
-    const element = document.createElement('div');
-    element.setAttribute('position', JSON.stringify({ x: 40, y: 40 }));
-    canvasPinAdapter['divWrapper'].appendChild(element);
-
-    canvasPinAdapter['scrollIntoView'](element);
-
-    expect(canvasPinAdapter['divWrapper'].parentElement!.scrollTo).toHaveBeenCalledTimes(1);
-    expect(canvasPinAdapter['divWrapper'].parentElement!.scrollTo).toHaveBeenCalledWith({
-      left: 40,
-      top: 40,
-      behavior: 'smooth',
-    });
   });
 });

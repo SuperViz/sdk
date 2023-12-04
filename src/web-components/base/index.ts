@@ -1,5 +1,7 @@
 import { LitElement } from 'lit';
 
+import config from '../../services/config';
+
 import { variableStyle, typography, svHr, iconButtonStyle } from './styles';
 import { Constructor, WebComponentsBaseInterface } from './types';
 
@@ -16,13 +18,41 @@ export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass:
     public connectedCallback() {
       setTimeout(() => {
         const rootStyleElement = document.getElementById('superviz-style');
+        const colorsStyleElement = this.createCustomColors();
 
         const style = document.createElement('style');
         style.innerHTML = rootStyleElement?.innerHTML || '';
+
         this.shadowRoot?.appendChild(style);
+
+        if (colorsStyleElement) {
+          this.shadowRoot?.appendChild(colorsStyleElement);
+        }
       });
 
       super.connectedCallback();
+    }
+
+    /**
+     * @function createCustomColors
+     * @description Creates a custom style tag with the colors from the configuration
+     * @returns {HTMLStyleElement} - The style tag with the colors
+     */
+    private createCustomColors(): HTMLStyleElement {
+      if (!config.get('colors')) return;
+
+      const tag = document.createElement('style');
+      const readyColors = Object.entries(config.get('colors'))
+        .map(([key, value]) => `--${key}: ${value} !important;`)
+        .join(' ');
+
+      tag.innerHTML = `
+      * {
+        ${readyColors}
+      }
+    `;
+
+      return tag;
     }
 
     /**

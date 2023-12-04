@@ -1,4 +1,5 @@
 const { esbuildPlugin } = require('@web/dev-server-esbuild');
+const { importMapsPlugin } = require('@web/dev-server-import-maps');
 const { legacyPlugin } = require('@web/dev-server-legacy');
 const { playwrightLauncher } = require('@web/test-runner-playwright');
 
@@ -14,6 +15,15 @@ module.exports = {
     '!**/node_modules/**/*',
   ],
   plugins: [
+    importMapsPlugin({
+      inject: {
+        importMap: {
+          imports: {
+            lodash: '/node_modules/lodash-es/lodash.js',
+          },
+        },
+      },
+    }),
     esbuildPlugin({
       ts: true,
       tsx: true,

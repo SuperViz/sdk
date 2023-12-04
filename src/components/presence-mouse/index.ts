@@ -60,7 +60,8 @@ export class MousePointers extends BaseComponent {
 
     this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
     this.container.removeEventListener('mouseout', this.onMyParticipantMouseOut);
-    this.divWrapper.removeChild(this.presenceMouseElement);
+    this.presenceMouseElement.remove();
+    this.divWrapper.remove();
 
     if (this.divWrapperReplacementInterval) {
       clearInterval(this.divWrapperReplacementInterval);
@@ -158,16 +159,11 @@ export class MousePointers extends BaseComponent {
    * @returns {HTMLElement} The newly created div wrapper.
    * */
   private createDivWrapper(): HTMLElement {
-    const elementRect = this.container.getBoundingClientRect();
     const divWrapper = document.createElement('div');
 
     this.container.parentElement.style.position = 'relative';
 
     divWrapper.style.position = 'fixed';
-    divWrapper.style.top = `${elementRect.top}px`;
-    divWrapper.style.left = `${elementRect.left}px`;
-    divWrapper.style.width = `${elementRect.width}px`;
-    divWrapper.style.height = `${elementRect.height}px`;
     divWrapper.style.pointerEvents = 'none';
 
     this.container.parentElement.appendChild(divWrapper);

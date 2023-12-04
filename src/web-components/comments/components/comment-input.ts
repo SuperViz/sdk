@@ -15,6 +15,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare btnActive: boolean;
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
+  declare placeholder: string;
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
 
@@ -31,6 +32,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     text: { type: String },
     btnActive: { type: Boolean },
     editable: { type: Boolean },
+    placeholder: { type: String },
   };
 
   private get commentInput() {
@@ -214,7 +216,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div id="comment-input--container">
           <textarea
             id="comment-input--textarea"
-            placeholder="Add comment..."
+            placeholder=${this.placeholder ?? 'Add comment...'}
             @input=${this.updateHeight}
             @focus=${this.onTextareaFocus}
             @blur=${this.onTextareaLoseFocus}

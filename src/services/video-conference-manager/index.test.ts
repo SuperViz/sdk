@@ -28,6 +28,7 @@ const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
     canUseFollow: true,
     canUseGather: true,
     canUseGoTo: true,
+    collaborationMode: false,
     devices: {
       audioInput: true,
       audioOutput: true,
