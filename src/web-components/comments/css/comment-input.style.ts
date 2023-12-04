@@ -4,6 +4,7 @@ export const commentInputStyle = css`
   .comment-input {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     width: 288px;
     background: rgb(var(--sv-white));
     border-radius: 4px;
@@ -17,16 +18,12 @@ export const commentInputStyle = css`
     border: 1px solid rgb(var(--sv-gray-500));
   }
 
-  .comment-input:focus-within > .sv-hr {
-    background: rgb(var(--sv-gray-300));
-  }
-
   #comment-input--textarea {
     all: unset;
     border: 0px;
     border-radius: 4px;
     outline: none;
-    height: 39.5px;
+    height: 38px;
     font-size: 14px;
     color: rgb(var(--sv-gray-700));
     padding: 12px 11px !important;
@@ -35,9 +32,14 @@ export const commentInputStyle = css`
     word-wrap: break-word;
     overflow: hidden;
     resize: none;
+    line-height: 16px;
     appearance: none;
     width: 100%;
     box-sizing: border-box;
+  }
+
+  #comment-input--textarea:focus {
+    height: 38.5px;
   }
 
   #comment-input--textarea::placeholder {
@@ -55,22 +57,21 @@ export const commentInputStyle = css`
   }
 
   .active-textarea {
-    height: 39.5px;
+    height: 38.5px;
     padding: 4px 8px;
   }
 
   .sv-hr {
+    border: none;
     width: 100%;
-    min-height: 1px;
-    background: rgb(var(--sv-gray-300));
-    padding: 0px;
-    margin: 0px;
     opacity: 0;
     transition: 0.25s opacity linear, 0.25s visibility;
     visibility: hidden;
+    height: 0;
   }
 
   .active-hr {
+    border-top: 1px solid rgb(var(--sv-gray-300));
     opacity: 1;
     visibility: visible;
   }

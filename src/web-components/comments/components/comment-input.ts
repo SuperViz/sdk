@@ -33,13 +33,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     editable: { type: Boolean },
   };
 
-  private getCommentInput = () => {
+  private get commentInput() {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
-  };
+  }
 
-  private getCommentInputContainer = () => {
+  private get commentInputContainer() {
     return this.shadowRoot!.getElementById('comment-input--container') as HTMLDivElement;
-  };
+  }
 
   private getSendBtn = () => {
     return this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
@@ -55,7 +55,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private commentInputFocus = ({ detail }: CustomEvent) => {
     this.pinCoordinates = detail;
-    this.getCommentInput().focus();
+    this.commentInput.focus();
   };
 
   connectedCallback(): void {
@@ -64,7 +64,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
     this.addEventListener('keyup', this.sendEnter);
-    const input = this.getCommentInput();
+    const input = this.commentInput;
   }
 
   disconnectedCallback(): void {
@@ -76,7 +76,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   updated(changedProperties: Map<string, any>) {
     if (changedProperties.has('text') && this.text.length > 0) {
-      const commentsInput = this.getCommentInput();
+      const commentsInput = this.commentInput;
       commentsInput.value = this.text;
       this.updateHeight();
     }
@@ -88,15 +88,15 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private updateHeight() {
-    const commentsInput = this.getCommentInput();
+    const commentsInput = this.commentInput;
 
-    const commentsInputContainer = this.getCommentInputContainer();
+    const commentsInputContainer = this.commentInputContainer;
 
     commentsInput.style.height = '0px';
     commentsInputContainer.style.height = '0px';
 
-    const textareaHeight = commentsInput.scrollHeight + 4;
-    const textareaContainerHeight = commentsInput.scrollHeight;
+    const textareaHeight = commentsInput.scrollHeight - 1.5;
+    const textareaContainerHeight = commentsInput.scrollHeight - 1.5;
 
     commentsInput.style.height = `${textareaHeight}px`;
     commentsInputContainer.style.height = `${textareaContainerHeight}px`;
@@ -108,7 +108,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private sendEnter = (e: KeyboardEvent) => {
     if (e.key !== 'Enter' || e.shiftKey) return;
 
-    const input = this.getCommentInput();
+    const input = this.commentInput;
     const text = input.value.trim();
 
     if (!text) return;
@@ -135,7 +135,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private send(e: Event) {
     e.preventDefault();
 
-    const input = this.getCommentInput();
+    const input = this.commentInput;
     const sendBtn = this.getSendBtn();
     const text = input.value;
 
@@ -172,7 +172,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private onTextareaLoseFocus = () => {
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
-    const textarea = this.getCommentInput();
+    const textarea = this.commentInput;
 
     if (!textarea.value.length) {
       options.classList.remove('active-textarea');
@@ -220,7 +220,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             @blur=${this.onTextareaLoseFocus}
           ></textarea>
         </div>
-        <div class="sv-hr"></div>
+        <hr class="sv-hr" />
         <div class="comment-input--options">
           <div class="comment-actions">
             <button class="icon-button mention">
