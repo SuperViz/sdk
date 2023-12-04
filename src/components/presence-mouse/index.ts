@@ -44,7 +44,10 @@ export class MousePointers extends BaseComponent {
     this.divWrapper.appendChild(this.presenceMouseElement);
     this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
+
+    this.eventBus.subscribe('go-to-mouse-pointer', this.goToMousePointer);
     this.eventBus.subscribe('follow-mouse-pointer', this.followMousePointer);
+    this.eventBus.subscribe('stop-follow-mouse-pointer', this.stopFollowMousePointer);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -82,7 +85,6 @@ export class MousePointers extends BaseComponent {
     this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
 
     this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
-    this.eventBus.subscribe('go-to-mouse-pointer', this.goToMousePointer);
   };
 
   /**
@@ -98,6 +100,7 @@ export class MousePointers extends BaseComponent {
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
     this.eventBus.unsubscribe('go-to-mouse-pointer', this.goToMousePointer);
     this.eventBus.unsubscribe('follow-mouse-pointer', this.followMousePointer);
+    this.eventBus.subscribe('stop-follow-mouse-pointer', this.stopFollowMousePointer);
   };
 
   /** Presence Mouse Events */
@@ -252,6 +255,13 @@ export class MousePointers extends BaseComponent {
     this.onFollow = {
       isFollowing: true,
       participantId,
+    };
+  };
+
+  private stopFollowMousePointer = (): void => {
+    this.onFollow = {
+      isFollowing: false,
+      participantId: null,
     };
   };
 }

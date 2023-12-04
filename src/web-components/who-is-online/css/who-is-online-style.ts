@@ -8,7 +8,14 @@ export const whoIsOnlineStyle = css`
     gap: 4px;
   }
 
+  .wio-content {
+    display: flex;
+    flex-direction: column;
+  }
+
   .superviz-who-is-online__participant {
+    --border-color: #aea9b8;
+
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -16,13 +23,48 @@ export const whoIsOnlineStyle = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #aea9b8;
     user-select: none;
     cursor: pointer;
   }
 
+  .superviz-who-is-online__participant:before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+  }
+
+  .followed:before {
+    border-style: dashed !important;
+    animation: rotate 5s linear infinite;
+  }
+
+  @keyframes rotate {
+    100% {
+      transform: rotate(1turn);
+    }
+  }
+
   .superviz-who-is-online__participant.disable-dropdown {
     cursor: default;
+  }
+
+  .following {
+    margin-top: 9px;
+    font-size: 12px;
+    padding: 8px 10px;
+    font-family: 'Roboto';
+    border-radius: 4px;
+    align-self: flex-end;
+  }
+
+  .following span {
+    margin-left: 3px;
+    text-decoration: underline;
+    cursor: pointer;
   }
 
   .superviz-who-is-online__avatar {
@@ -66,7 +108,8 @@ export const whoIsOnlineStyle = css`
   }
 
   @media (max-width: 780px) {
-    .superviz-who-is-online__participant {
+    .superviz-who-is-online__participant,
+    .superviz-who-is-online__participant::before {
       width: 32px;
       height: 32px;
     }

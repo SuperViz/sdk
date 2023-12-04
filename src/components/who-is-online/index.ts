@@ -55,6 +55,7 @@ export class WhoIsOnline extends BaseComponent {
   private addListeners(): void {
     this.element.addEventListener('go-to-mouse-pointer', this.goToMousePointer);
     this.element.addEventListener('follow-mouse-pointer', this.followMousePointer);
+    this.element.addEventListener('stop-follow-mouse-pointer', this.stopFollowMousePointer);
   }
 
   /**
@@ -65,6 +66,7 @@ export class WhoIsOnline extends BaseComponent {
   private removeListeners(): void {
     this.element.removeEventListener('go-to-mouse-pointer', this.goToMousePointer);
     this.element.removeEventListener('follow-mouse-pointer', this.followMousePointer);
+    this.element.removeEventListener('stop-follow-mouse-pointer', this.stopFollowMousePointer);
   }
 
   /**
@@ -154,5 +156,9 @@ export class WhoIsOnline extends BaseComponent {
 
   private followMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish('follow-mouse-pointer', detail.id);
+  };
+
+  private stopFollowMousePointer = () => {
+    this.eventBus.publish('stop-follow-mouse-pointer', {});
   };
 }

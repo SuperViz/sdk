@@ -6,7 +6,7 @@ import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { WhoIsOnlineDropdownOptions } from './types';
+import { Following, WhoIsOnlineDropdownOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -22,6 +22,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private textColorValues: number[];
   declare selected: string;
   declare disableDropdown: boolean;
+  declare following: Following;
 
   static properties = {
     open: { type: Boolean },
@@ -30,6 +31,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     participants: { type: Array },
     selected: { type: String },
     disableDropdown: { type: Boolean },
+    following: { type: Object },
   };
 
   constructor() {
@@ -66,27 +68,20 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const hasDropdownCta = elements.includes(dropdownCta);
 
     if (!(hasDropdownContent || hasDropdownList || hasDropdownCta)) {
-      this.open = false;
-      this.selected = '';
-      this.emitEvent('clickout', {
-        detail: {
-          open: this.open,
-        },
-        bubbles: false,
-        composed: false,
-      });
+      this.close();
     }
   };
 
   private close = () => {
-    this.emitEvent('close', {
+    this.open = false;
+    this.selected = '';
+    this.emitEvent('clickout', {
+      detail: {
+        open: this.open,
+      },
       bubbles: false,
       composed: false,
     });
-  };
-
-  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
-    this.emitEvent('selected', detail);
   };
 
   private selectParticipant = (participantId: string) => {
@@ -98,7 +93,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return;
 
-    const icons = ['place'];
+    const icons = ['place', 'send'];
 
     return this.participants.map(({ id, slotIndex, joinedPresence, isLocal, color, name }) => {
       const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
@@ -109,6 +104,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         'who-is-online-dropdown__content': true,
         'who-is-online-dropdown__content--selected': this.selected === id,
         'disable-dropdown': disableDropdown,
+        followed: this.following?.id === id,
       };
 
       const iconClasses = {
@@ -116,14 +112,24 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         'hide-icon': disableDropdown,
       };
 
-      const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => ({ label, id }));
+      const participantIsFollowed = this.following?.id === id;
+
+      const options = Object.values(WhoIsOnlineDropdownOptions)
+        .map((label, index) => ({
+          label: participantIsFollowed && index ? 'UNFOLLOW' : label,
+          id,
+          name,
+          color,
+          slotIndex,
+        }))
+        .slice(0, 2);
 
       return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
         position="bottom-right"
-        @selected=${this.dropdownOptionsHandler}
+        @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
         >
