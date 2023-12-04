@@ -18,11 +18,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare participants: Participant[];
   private textColorValues: number[];
   declare open: boolean;
+  declare disableDropdown: boolean;
 
   static properties = {
     position: { type: String },
     participants: { type: Object },
     open: { type: Boolean },
+    disableDropdown: { type: Boolean },
   };
 
   constructor() {
@@ -67,12 +69,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, isLocal }) => ({
+      .map(({ name, color, id, slotIndex, isLocal, joinedPresence }) => ({
         name,
         color,
         id,
         slotIndex,
         isLocal,
+        joinedPresence,
       }));
 
     const classes = {
@@ -89,6 +92,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
+        ?disableDropdown=${this.disableDropdown}
       >
         <div class=${classMap(classes)} slot="dropdown" @click=${this.toggleOpen}>
           <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
@@ -114,48 +118,43 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    const icons = ['place'];
+    const icons = ['place', 'send'];
 
-    return html`${this.participants.slice(0, 4).map((participant, index) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
+    return html`${this.participants
+      .slice(0, 4)
+      .map(({ joinedPresence, isLocal, id, slotIndex, name, color }, index) => {
+        const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 
-      const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => ({ label, id: participant.id }))
-        .splice(0, 1);
+        const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => ({ label, id }));
 
-      const classList = {
-        'superviz-who-is-online__participant': true,
-        local: participant.isLocal,
-      };
+        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
+        const classList = {
+          'superviz-who-is-online__participant': true,
+          'disable-dropdown': disableDropdown,
+        };
 
-      const position = this.dropdownPosition(index);
-      return html`
-        <superviz-dropdown
-          options=${JSON.stringify(options)}
-          label="label"
-          position="${position}"
-          @selected=${this.dropdownOptionsHandler}
-          icons="${JSON.stringify(icons)}"
-          name="${participant.name}"
-          ?disabled=${participant.isLocal}
-        >
-          <div
-            slot="dropdown"
-            class=${classMap(classList)}
-            style="border-color: ${participant.color}"
+        const position = this.dropdownPosition(index);
+        return html`
+          <superviz-dropdown
+            options=${JSON.stringify(options)}
+            label="label"
+            position="${position}"
+            @selected=${this.dropdownOptionsHandler}
+            icons="${JSON.stringify(icons)}"
+            name="${name}"
+            ?disabled=${disableDropdown}
           >
-            <div
-              class="superviz-who-is-online__avatar"
-              style="background-color: ${participant.color}; color: ${letterColor}"
-            >
-              ${participant.name?.at(0).toUpperCase()}
+            <div slot="dropdown" class=${classMap(classList)} style="border-color: ${color}">
+              <div
+                class="superviz-who-is-online__avatar"
+                style="background-color: ${color}; color: ${letterColor}"
+              >
+                ${name?.at(0).toUpperCase()}
+              </div>
             </div>
-          </div>
-        </superviz-dropdown>
-      `;
-    })}
+          </superviz-dropdown>
+        `;
+      })}
     ${this.renderExcessParticipants()} `;
   }
 

@@ -15,10 +15,11 @@ export const dropdownStyle = css`
     padding: 10px;
     border-radius: 2px;
     position: relative;
+    cursor: pointer;
   }
 
-  .who-is-online-dropdown__content:not(.local) {
-    cursor: pointer;
+  .who-is-online-dropdown__content.disable-dropdown {
+    cursor: default;
   }
 
   .who-is-online-dropdown__content:hover,
@@ -114,7 +115,10 @@ export const dropdownStyle = css`
     flex: 1;
     justify-content: flex-end;
     display: flex;
-    visibility: hidden;
+  }
+
+  .hide-icon {
+    display: none;
   }
 
   @media (max-width: 780px) {

@@ -18,10 +18,11 @@ export const whoIsOnlineStyle = css`
     justify-content: center;
     border: 2px solid #aea9b8;
     user-select: none;
+    cursor: pointer;
   }
 
-  .superviz-who-is-online__participant:not(.local) {
-    cursor: pointer;
+  .superviz-who-is-online__participant.disable-dropdown {
+    cursor: default;
   }
 
   .superviz-who-is-online__avatar {

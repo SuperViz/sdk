@@ -21,6 +21,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
+  declare disableDropdown: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -28,6 +29,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     position: { type: String },
     participants: { type: Array },
     selected: { type: String },
+    disableDropdown: { type: Boolean },
   };
 
   constructor() {
@@ -98,43 +100,50 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     const icons = ['place'];
 
-    return this.participants.map((participant) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
+    return this.participants.map(({ id, slotIndex, joinedPresence, isLocal, color, name }) => {
+      const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
+
+      const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
       const contentClasses = {
         'who-is-online-dropdown__content': true,
-        'who-is-online-dropdown__content--selected': this.selected === participant.id,
-        local: participant.isLocal,
+        'who-is-online-dropdown__content--selected': this.selected === id,
+        'disable-dropdown': disableDropdown,
       };
 
-      const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => ({ label, id: participant.id }))
-        .splice(0, 1);
+      const iconClasses = {
+        icon: true,
+        'hide-icon': disableDropdown,
+      };
+
+      const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => ({ label, id }));
 
       return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
         position="bottom-right"
-        
+        @selected=${this.dropdownOptionsHandler}
         icons="${JSON.stringify(icons)}"
-        ?disabled=${participant.isLocal}
+        ?disabled=${disableDropdown}
         >
         <div 
           class=${classMap(contentClasses)} 
-          @click=${this.selectParticipant(participant.id)} slot="dropdown">
+          @click=${this.selectParticipant(id)} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
-          ${participant.color}">
+          ${color}">
               <div 
                 class="who-is-online-dropdown__avatar" 
-                style="background-color: ${participant.color}; color: ${letterColor}">
-                ${participant.name?.at(0)}
+                style="background-color: ${color}; color: ${letterColor}">
+                ${name?.at(0)}
               </div>
             </div>
-            <span class="user-name">${participant.name}</span>
-            <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>
+            <span class="user-name">${name}</span>
+            <superviz-icon 
+              class=${classMap(iconClasses)} 
+              name="right" 
+              color="var(--sv-gray-600)">
+          </superviz-icon>
           </div>
         </div>
       </superviz-dropdown>

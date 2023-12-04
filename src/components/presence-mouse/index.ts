@@ -14,6 +14,7 @@ export class MousePointers extends BaseComponent {
   private positions: Record<string, MousePosition> = {};
   private divWrapper: HTMLElement;
   private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
+  private onFollow: { isFollowing: boolean; participantId: string };
 
   constructor(containerId?: string) {
     super();
@@ -43,6 +44,7 @@ export class MousePointers extends BaseComponent {
     this.divWrapper.appendChild(this.presenceMouseElement);
     this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.eventBus.subscribe('follow-mouse-pointer', this.followMousePointer);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -95,6 +97,7 @@ export class MousePointers extends BaseComponent {
     );
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
     this.eventBus.unsubscribe('go-to-mouse-pointer', this.goToMousePointer);
+    this.eventBus.unsubscribe('follow-mouse-pointer', this.followMousePointer);
   };
 
   /** Presence Mouse Events */
@@ -144,6 +147,10 @@ export class MousePointers extends BaseComponent {
         };
       }
     });
+
+    if (this.onFollow?.isFollowing) {
+      this.goToMousePointer(this.onFollow?.participantId);
+    }
   };
 
   private onMyParticipantMouseOut = (): void => {
@@ -240,4 +247,11 @@ export class MousePointers extends BaseComponent {
 
     return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
   }
+
+  private followMousePointer = (participantId): void => {
+    this.onFollow = {
+      isFollowing: true,
+      participantId,
+    };
+  };
 }

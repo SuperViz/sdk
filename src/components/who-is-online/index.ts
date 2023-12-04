@@ -1,12 +1,12 @@
 import { isEqual } from 'lodash';
 
 import { Logger } from '../../common/utils';
-import { AblyParticipant } from '../../services/realtime/ably/types';
+import { AblyParticipant, ParticipantDataInput } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlinePosition, Position, Participant } from './types';
+import { WhoIsOnlinePosition, Position, Participant, Data } from './types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
@@ -54,6 +54,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   private addListeners(): void {
     this.element.addEventListener('go-to-mouse-pointer', this.goToMousePointer);
+    this.element.addEventListener('follow-mouse-pointer', this.followMousePointer);
   }
 
   /**
@@ -63,6 +64,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   private removeListeners(): void {
     this.element.removeEventListener('go-to-mouse-pointer', this.goToMousePointer);
+    this.element.removeEventListener('follow-mouse-pointer', this.followMousePointer);
   }
 
   /**
@@ -96,16 +98,24 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name } = data;
+      const { slotIndex, id, name, activeComponents } = data as Data;
       const { color } = this.realtime.getSlotColor(slotIndex);
       const isLocal = this.localParticipant.id === id;
-      return { name, id, slotIndex, color, isLocal };
+      const joinedPresence = activeComponents.includes('presence');
+      // eslint-disable-next-line no-unused-expressions
+      isLocal && this.setDisableDropdown(!joinedPresence);
+
+      return { name, id, slotIndex, color, isLocal, joinedPresence };
     });
 
     if (isEqual(participants, this.participants)) return;
 
     this.participants = participants;
     this.element.participants = this.participants;
+  };
+
+  private setDisableDropdown = (disable: boolean) => {
+    this.element.disableDropdown = disable;
   };
 
   /**
@@ -140,5 +150,9 @@ export class WhoIsOnline extends BaseComponent {
 
   private goToMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish('go-to-mouse-pointer', detail.id);
+  };
+
+  private followMousePointer = ({ detail }: CustomEvent) => {
+    this.eventBus.publish('follow-mouse-pointer', detail.id);
   };
 }
