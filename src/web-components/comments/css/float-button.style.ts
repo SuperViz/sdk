@@ -20,7 +20,17 @@ export const floatButtonStyle = css`
   }
 
   button.float-button p {
-    visibility: hidden;
+    opacity: 0;
+    transition: opacity 100ms linear;
+  }
+
+  button.float-button:hover p {
+    opacity: 1;
+    transition-delay: 200ms;
+  }
+
+  button.float-button:not(:hover) {
+    transition-delay: 100ms;
   }
 
   .hide-button {
@@ -30,10 +40,5 @@ export const floatButtonStyle = css`
   button.float-button:hover {
     width: 110px;
     border-radius: 30px;
-  }
-
-  button.float-button:hover p {
-    visibility: visible;
-    animation: expand 300ms ease-in-out;
   }
 `;
