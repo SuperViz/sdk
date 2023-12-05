@@ -1,34 +1,39 @@
 import { Logger } from '../../common/utils';
-import { PresenceMouse } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { MousePosition, ParticipantMouse } from './types';
+import { ParticipantMouse, PresenceMouseProps } from './types';
 
 export class MousePointers extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
-  private presenceMouseElement: PresenceMouse;
-  private containerId: string | null;
-  private container: HTMLElement;
-  private positions: Record<string, MousePosition> = {};
+  private canvas: HTMLCanvasElement;
   private divWrapper: HTMLElement;
-  private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
+  private presences: Map<string, ParticipantMouse>;
+  private animateFrame: number;
+  private goToMouseCallback: PresenceMouseProps['onGoToPin'];
 
-  constructor(containerId?: string) {
+  constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
-    this.containerId = containerId;
-    this.container = document.body.querySelector(`#${containerId}`) as HTMLElement;
+    this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    this.presences = new Map();
 
-    if (!this.container) {
-      const message = `Container with id ${containerId} not found`;
+    if (!this.canvas) {
+      const message = `Canvas with id ${canvasId} not found`;
       this.logger.log(message);
       throw new Error(message);
     }
 
-    this.divWrapper = this.createDivWrapper();
+    this.divWrapper = this.renderDivWrapper();
+    this.animateFrame = requestAnimationFrame(this.animate);
+
+    this.goToMouseCallback = options?.onGoToPin;
+  }
+
+  private get textColorValues(): number[] {
+    return [2, 4, 5, 7, 8, 16];
   }
 
   /**
@@ -39,10 +44,8 @@ export class MousePointers extends BaseComponent {
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
 
-    this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
-    this.divWrapper.appendChild(this.presenceMouseElement);
-    this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
-    this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
+    this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -59,15 +62,10 @@ export class MousePointers extends BaseComponent {
     this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
 
-    this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    this.container.removeEventListener('mouseout', this.onMyParticipantMouseOut);
-    this.presenceMouseElement.remove();
+    cancelAnimationFrame(this.animateFrame);
+    this.canvas.removeEventListener('mousemove', this.onMyParticipantMouseMove);
+    this.canvas.removeEventListener('mouseout', this.onMyParticipantMouseOut);
     this.divWrapper.remove();
-
-    if (this.divWrapperReplacementInterval) {
-      clearInterval(this.divWrapperReplacementInterval);
-      this.divWrapperReplacementInterval = null;
-    }
   }
 
   /**
@@ -80,7 +78,6 @@ export class MousePointers extends BaseComponent {
     this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
 
     this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
-    this.eventBus.subscribe('go-to-mouse-pointer', this.goToMousePointer);
   };
 
   /**
@@ -94,8 +91,43 @@ export class MousePointers extends BaseComponent {
       this.onParticipantLeftOnRealtime,
     );
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
-    this.eventBus.unsubscribe('go-to-mouse-pointer', this.goToMousePointer);
   };
+
+  /**
+   * @function animate
+   * @description perform animation in presence mouse
+   * @returns {void}
+   */
+  private animate = (): void => {
+    this.renderDivWrapper();
+    this.updateParticipantsMouses();
+
+    requestAnimationFrame(this.animate);
+  };
+
+  /**
+   * @function goToMouse
+   * @description - translate the canvas to the participant position
+   * @param id - participant id
+   */
+  private goToMouse(id: string): void {
+    const mouse = this.presences.get(id);
+
+    if (!mouse) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const { width, height } = rect;
+
+    const { x, y } = mouse;
+
+    const widthHalf = width / 2;
+    const heightHalf = height / 2;
+
+    const translateX = widthHalf - x;
+    const translateY = heightHalf - y;
+
+    if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
+  }
 
   /** Presence Mouse Events */
 
@@ -105,15 +137,19 @@ export class MousePointers extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
-    const rect = this.divWrapper.getBoundingClientRect();
+    const context = this.canvas.getContext('2d');
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.x - rect.left;
+    const y = event.y - rect.top;
+
+    const transform = context?.getTransform();
+    const invertedMatrix = transform.inverse();
+    const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
 
     this.realtime.updatePresenceMouse({
       ...this.localParticipant,
-      mousePositionX: event.x - rect.x,
-      mousePositionY: event.y - rect.y,
-      originalWidth: rect.width,
-      originalHeight: rect.height,
-      containerId: this.containerId,
+      x: transformedPoint.x,
+      y: transformedPoint.y,
       visible: true,
     });
   };
@@ -127,22 +163,12 @@ export class MousePointers extends BaseComponent {
   private onParticipantsDidChange = (participants: Record<string, ParticipantMouse>): void => {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
-    Object.values(participants).forEach((participant: ParticipantMouse) => {
-      const hasPresenceMouseElement = participant?.mousePositionX && this.presenceMouseElement;
-      const myParticipant = participant?.id === this.localParticipant?.id;
+    Object.keys(participants).forEach((participantId) => {
+      const participant = participants[participantId];
 
-      if (!participant?.visible) {
-        this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
-        return;
-      }
+      if (participant.id === this.localParticipant.id) return;
 
-      if (!myParticipant && hasPresenceMouseElement) {
-        this.presenceMouseElement.updatePresenceMouseParticipant(participant);
-        this.positions[participant.id] = {
-          x: participant.mousePositionX,
-          y: participant.mousePositionY,
-        };
-      }
+      this.presences.set(participant.id, participant);
     });
   };
 
@@ -157,87 +183,135 @@ export class MousePointers extends BaseComponent {
    * @returns {void}
    */
   private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
-    this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
+    this.removePresenceMouseParticipant(participant.id);
   };
 
   /**
-   * @function createDivWrapper
-   * @description Creates a div wrapper for the mouse.
+   * @function renderDivWrapper
+   * @description Creates a div wrapper for the pins.
    * @returns {HTMLElement} The newly created div wrapper.
    * */
-  private createDivWrapper(): HTMLElement {
-    const divWrapper = document.createElement('div');
+  private renderDivWrapper(): HTMLElement {
+    const canvasRect = this.canvas.getBoundingClientRect();
+    let divWrapper = document.getElementById('superviz-presence-mouse-wrapper');
 
-    this.container.parentElement.style.position = 'relative';
+    if (!divWrapper) {
+      divWrapper = document.createElement('div');
+      divWrapper.id = 'superviz-presence-mouse-wrapper';
+      this.canvas.parentElement.style.position = 'relative';
+      this.canvas.parentElement.appendChild(divWrapper);
+    }
 
     divWrapper.style.position = 'fixed';
+    divWrapper.style.top = `${canvasRect.top}px`;
+    divWrapper.style.left = `${canvasRect.left}px`;
+    divWrapper.style.width = `${canvasRect.width}px`;
+    divWrapper.style.height = `${canvasRect.height}px`;
     divWrapper.style.pointerEvents = 'none';
-
-    this.container.parentElement.appendChild(divWrapper);
-
-    if (!this.divWrapperReplacementInterval) {
-      this.divWrapperReplacementInterval = setInterval(() => {
-        const elementRect = this.container.getBoundingClientRect();
-        divWrapper.style.top = `${elementRect.top}px`;
-        divWrapper.style.left = `${elementRect.left}px`;
-        divWrapper.style.width = `${elementRect.width}px`;
-        divWrapper.style.height = `${elementRect.height}px`;
-      }, 1);
-    }
+    divWrapper.style.overflow = 'hidden';
+    divWrapper.style.zIndex = '2';
 
     return divWrapper;
   }
 
-  private goToMousePointer = (participantId: string) => {
-    const element = this.divWrapper;
-
-    if (!element) return;
-
-    if (
-      element.clientWidth <= element.parentElement?.clientWidth &&
-      element.clientHeight <= element.parentElement?.clientHeight
-    ) {
-      return;
-    }
-
-    let elementWithOverflow: HTMLElement;
-    let nextElement: HTMLElement = this.divWrapper;
-
-    while (!elementWithOverflow) {
-      const parent = nextElement?.parentElement;
-
-      const hasOverflow = this.isScrollable(parent);
-
-      if (hasOverflow) {
-        elementWithOverflow = parent;
-        break;
+  private updateParticipantsMouses = (): void => {
+    this.presences.forEach((mouse) => {
+      if (!mouse?.visible) {
+        this.removePresenceMouseParticipant(mouse.id);
+        return;
       }
 
-      nextElement = parent;
-
-      if (!nextElement) break;
-    }
-
-    const mouseCoordinates = this.positions[participantId];
-
-    if (!elementWithOverflow) return;
-
-    elementWithOverflow.scrollTo({
-      top: mouseCoordinates.y,
-      left: mouseCoordinates.x,
-      behavior: 'smooth',
+      this.renderPresenMouses(mouse);
     });
   };
 
-  private isScrollable(element: HTMLElement): boolean {
-    if (!element) return false;
+  /**
+   * @function renderPresenMouses
+   * @description add presence mouses to screen
+   * @param {ParticipantMouse} mouse - presence mouse change data
+   * @returns {void}
+   * */
+  private renderPresenMouses = (mouse: ParticipantMouse): void => {
+    const userMouseIdExist = document.getElementById(`mouse-${mouse.id}`);
+    let mouseFollower = userMouseIdExist;
 
-    const hasScrollableContent = element.scrollHeight > element.clientHeight;
-    const overflowYStyle = window.getComputedStyle(element).overflowY;
-    const overflowXStyle = window.getComputedStyle(element).overflowX;
-    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
-    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
+    if (!mouseFollower) {
+      mouseFollower = this.createMouseElement(mouse);
+    }
 
-    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
+    const divMouseUser = document.getElementById(`mouse-${mouse.id}`);
+    const divPointer = document.getElementById(`mouse-${mouse.id}`);
+
+    if (!divMouseUser || !divPointer) return;
+
+    const mouseUser = divMouseUser.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
+    const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
+
+    if (pointerUser) {
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${mouse.slotIndex}.svg)`;
+    }
+
+    if (mouseUser) {
+      mouseUser.style.color = this.textColorValues.includes(mouse.slotIndex)
+        ? '#FFFFFF'
+        : '#26242A';
+      mouseUser.style.backgroundColor = mouse.color;
+      mouseUser.innerHTML = mouse.name;
+    }
+
+    const { x: savedX, y: savedY } = mouse;
+    const context = this.canvas.getContext('2d');
+    const transform = context?.getTransform();
+
+    const currentTranslateX = transform?.e;
+    const currentTranslateY = transform?.f;
+
+    const x = savedX + currentTranslateX;
+    const y = savedY + currentTranslateY;
+
+    const isVisible =
+      this.divWrapper.clientWidth > x && this.divWrapper.clientHeight > y && mouse.visible;
+
+    mouseFollower.style.opacity = isVisible ? '1' : '0';
+    mouseFollower.style.left = `${x}px`;
+    mouseFollower.style.top = `${y}px`;
+  };
+
+  /**
+   * @function removePresenceMouseParticipant
+   * @description handler remove external participant mouse
+   * @param {string} participantId - external participant id
+   * @returns {void}
+   * */
+  private removePresenceMouseParticipant(participantId: string): void {
+    const userMouseIdExist = document.getElementById(`mouse-${participantId}`);
+    if (userMouseIdExist) {
+      userMouseIdExist.remove();
+      this.presences.delete(participantId);
+    }
+  }
+
+  /**
+   * @function createMouseElement
+   * @param mouse - participant mouse
+   * @returns {HTMLDivElement}
+   */
+  private createMouseElement(mouse: ParticipantMouse): HTMLDivElement {
+    const mouseFollower = document.createElement('div');
+    mouseFollower.setAttribute('id', `mouse-${mouse.id}`);
+    mouseFollower.setAttribute('class', 'mouse-follower');
+
+    const pointerMouse = document.createElement('div');
+    pointerMouse.setAttribute('class', 'pointer-mouse');
+
+    const mouseUserName = document.createElement('div');
+    mouseUserName.setAttribute('class', 'mouse-user-name');
+    mouseUserName.innerHTML = mouse.name;
+
+    mouseFollower.appendChild(pointerMouse);
+    mouseFollower.appendChild(mouseUserName);
+    this.divWrapper.appendChild(mouseFollower);
+
+    return mouseFollower;
   }
 }

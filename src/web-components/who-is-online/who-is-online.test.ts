@@ -22,9 +22,9 @@ const MOCK_PARTICIPANTS: Participant[] = [
       imageUrl: '',
       model3DUrl: '',
     },
-    color: MeetingColorsHex[0],
-    id: '1',
-    slotIndex: 0,
+    color: MeetingColorsHex[1],
+    id: '2',
+    slotIndex: 1,
   },
   {
     name: 'John Doe',
@@ -32,9 +32,9 @@ const MOCK_PARTICIPANTS: Participant[] = [
       imageUrl: '',
       model3DUrl: '',
     },
-    color: MeetingColorsHex[0],
-    id: '1',
-    slotIndex: 0,
+    color: MeetingColorsHex[2],
+    id: '3',
+    slotIndex: 2,
   },
 ];
 
@@ -181,20 +181,33 @@ describe('Who Is Online', () => {
     expect(element['open']).toBeFalsy();
   });
 
-  test('should emit go-to-mouse-pointer event when GO TO option is selected', async () => {
+  test('should correctly display either name letter or image', () => {
+    const letter = element['getAvatar'](MOCK_PARTICIPANTS[0]);
+    expect(letter.strings[0]).not.toContain('img');
+
+    const participant = {
+      ...MOCK_PARTICIPANTS[0],
+      avatar: {
+        imageUrl: 'https://link.com/image',
+        model3DUrl: '',
+      },
+    };
+
+    const avatar = element['getAvatar'](participant);
+    expect(avatar.strings[0]).toContain('img');
+  });
+
+  // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
+  test('', async () => {
+    const event = new CustomEvent('selected');
+
     element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
 
     await sleep();
     const dropdown = element.shadowRoot?.querySelector(
       'superviz-who-is-online-dropdown',
-    ) as HTMLElement & { emitEvent: (name: string, detail: object) => void };
+    ) as HTMLElement;
 
-    const spy = jest.fn();
-    element.addEventListener('go-to-mouse-pointer', spy);
-
-    const detail = { label: 'GO TO', id: 'test' };
-    dropdown.emitEvent('selected', detail);
-
-    expect(spy).toHaveBeenCalledWith(new CustomEvent('go-to-mouse-pointer', { detail }));
+    dropdown.dispatchEvent(event);
   });
 });

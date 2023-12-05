@@ -31,7 +31,6 @@ export class WhoIsOnline extends BaseComponent {
   protected start(): void {
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
-    this.addListeners();
   }
 
   /**
@@ -41,28 +40,9 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected destroy(): void {
     this.unsubscribeToRealtimeEvents();
-    this.removeListeners();
     this.element.remove();
     this.element = null;
     this.participants = null;
-  }
-
-  /**
-   * @function addListeners
-   * @description adds event listeners to the who is online element.
-   * @returns {void}
-   */
-  private addListeners(): void {
-    this.element.addEventListener('go-to-mouse-pointer', this.goToMousePointer);
-  }
-
-  /**
-   * @function addListeners
-   * @description adds event listeners from the who is online element.
-   * @returns {void}
-   */
-  private removeListeners(): void {
-    this.element.removeEventListener('go-to-mouse-pointer', this.goToMousePointer);
   }
 
   /**
@@ -96,7 +76,7 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name } = data;
+      const { slotIndex, id, name, avatar } = data;
       const { color } = this.realtime.getSlotColor(slotIndex);
       const isLocal = this.localParticipant.id === id;
       return { name, id, slotIndex, color, isLocal };
@@ -137,8 +117,4 @@ export class WhoIsOnline extends BaseComponent {
     container.appendChild(this.element);
     this.element.position = 'position: relative;';
   }
-
-  private goToMousePointer = ({ detail }: CustomEvent) => {
-    this.eventBus.publish('go-to-mouse-pointer', detail.id);
-  };
 }
