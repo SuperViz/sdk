@@ -46,6 +46,7 @@ export class MousePointers extends BaseComponent {
 
     this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.eventBus.subscribe('go-to-mouse-pointer', this.goToMouse);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -58,6 +59,7 @@ export class MousePointers extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
+    this.eventBus.unsubscribe('go-to-mouse-pointer', this.goToMouse);
 
     this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
@@ -110,7 +112,7 @@ export class MousePointers extends BaseComponent {
    * @description - translate the canvas to the participant position
    * @param id - participant id
    */
-  private goToMouse(id: string): void {
+  private goToMouse = (id: string): void => {
     const mouse = this.presences.get(id);
 
     if (!mouse) return;
@@ -127,7 +129,7 @@ export class MousePointers extends BaseComponent {
     const translateY = heightHalf - y;
 
     if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
-  }
+  };
 
   /** Presence Mouse Events */
 
