@@ -1,6 +1,7 @@
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
+import { PresenceMouseProps } from './types';
 export declare class MousePointers extends BaseComponent {
     name: ComponentNames;
     protected logger: Logger;
@@ -8,7 +9,8 @@ export declare class MousePointers extends BaseComponent {
     private divWrapper;
     private presences;
     private animateFrame;
-    constructor(containerId?: string);
+    private goToMouseCallback;
+    constructor(canvasId: string, options?: PresenceMouseProps);
     private get textColorValues();
     /**
      * @function start
@@ -40,6 +42,12 @@ export declare class MousePointers extends BaseComponent {
      * @returns {void}
      */
     private animate;
+    /**
+     * @function goToMouse
+     * @description - translate the canvas to the participant position
+     * @param id - participant id
+     */
+    private goToMouse;
     /** Presence Mouse Events */
     /**
      * @function onMyParticipantMouseMove
@@ -83,5 +91,10 @@ export declare class MousePointers extends BaseComponent {
      * @returns {void}
      * */
     private removePresenceMouseParticipant;
+    /**
+     * @function createMouseElement
+     * @param mouse - participant mouse
+     * @returns {HTMLDivElement}
+     */
     private createMouseElement;
 }
