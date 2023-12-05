@@ -4,12 +4,12 @@ import { ComponentNames } from '../types';
 export declare class MousePointers extends BaseComponent {
     name: ComponentNames;
     protected logger: Logger;
-    private presenceMouseElement;
-    private containerId;
-    private container;
+    private canvas;
     private divWrapper;
-    private divWrapperReplacementInterval;
+    private presences;
+    private animateFrame;
     constructor(containerId?: string);
+    private get textColorValues();
     /**
      * @function start
      * @description start presence-mouse component
@@ -34,6 +34,12 @@ export declare class MousePointers extends BaseComponent {
      * @returns {void}
      */
     private unsubscribeFromRealtimeEvents;
+    /**
+     * @function animate
+     * @description perform animation in presence mouse
+     * @returns {void}
+     */
+    private animate;
     /** Presence Mouse Events */
     /**
      * @function onMyParticipantMouseMove
@@ -57,9 +63,25 @@ export declare class MousePointers extends BaseComponent {
      */
     private onParticipantLeftOnRealtime;
     /**
-     * @function createDivWrapper
+     * @function renderDivWrapper
      * @description Creates a div wrapper for the pins.
      * @returns {HTMLElement} The newly created div wrapper.
      * */
-    private createDivWrapper;
+    private renderDivWrapper;
+    private updateParticipantsMouses;
+    /**
+     * @function renderPresenMouses
+     * @description add presence mouses to screen
+     * @param {ParticipantMouse} mouse - presence mouse change data
+     * @returns {void}
+     * */
+    private renderPresenMouses;
+    /**
+     * @function removePresenceMouseParticipant
+     * @description handler remove external participant mouse
+     * @param {string} participantId - external participant id
+     * @returns {void}
+     * */
+    private removePresenceMouseParticipant;
+    private createMouseElement;
 }
