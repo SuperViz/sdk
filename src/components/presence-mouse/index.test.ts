@@ -42,7 +42,7 @@ describe('MousePointers', () => {
 
   test('should throw an error if no container is found', () => {
     expect(() => new MousePointers('not-found-container')).toThrowError(
-      'Container with id not-found-container not found',
+      'Canvas with id not-found-container not found',
     );
   });
 

@@ -2,7 +2,7 @@ import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { ParticipantMouse } from './types';
+import { ParticipantMouse, PresenceMouseProps } from './types';
 
 export class MousePointers extends BaseComponent {
   public name: ComponentNames;
@@ -11,22 +11,25 @@ export class MousePointers extends BaseComponent {
   private divWrapper: HTMLElement;
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
+  private goToMouseCallback: PresenceMouseProps['onGoToPin'];
 
-  constructor(containerId?: string) {
+  constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
-    this.canvas = document.getElementById(containerId) as HTMLCanvasElement;
+    this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.presences = new Map();
 
     if (!this.canvas) {
-      const message = `Container with id ${containerId} not found`;
+      const message = `Canvas with id ${canvasId} not found`;
       this.logger.log(message);
       throw new Error(message);
     }
 
     this.divWrapper = this.renderDivWrapper();
     this.animateFrame = requestAnimationFrame(this.animate);
+
+    this.goToMouseCallback = options?.onGoToPin;
   }
 
   private get textColorValues(): number[] {
@@ -101,6 +104,30 @@ export class MousePointers extends BaseComponent {
 
     requestAnimationFrame(this.animate);
   };
+
+  /**
+   * @function goToMouse
+   * @description - translate the canvas to the participant position
+   * @param id - participant id
+   */
+  private goToMouse(id: string): void {
+    const mouse = this.presences.get(id);
+
+    if (!mouse) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const { width, height } = rect;
+
+    const { x, y } = mouse;
+
+    const widthHalf = width / 2;
+    const heightHalf = height / 2;
+
+    const translateX = widthHalf - x;
+    const translateY = heightHalf - y;
+
+    if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
+  }
 
   /** Presence Mouse Events */
 
@@ -260,10 +287,16 @@ export class MousePointers extends BaseComponent {
     const userMouseIdExist = document.getElementById(`mouse-${participantId}`);
     if (userMouseIdExist) {
       userMouseIdExist.remove();
+      this.presences.delete(participantId);
     }
   }
 
-  private createMouseElement(mouse: ParticipantMouse) {
+  /**
+   * @function createMouseElement
+   * @param mouse - participant mouse
+   * @returns {HTMLDivElement}
+   */
+  private createMouseElement(mouse: ParticipantMouse): HTMLDivElement {
     const mouseFollower = document.createElement('div');
     mouseFollower.setAttribute('id', `mouse-${mouse.id}`);
     mouseFollower.setAttribute('class', 'mouse-follower');
