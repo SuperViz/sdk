@@ -6,3 +6,7 @@ export interface ParticipantMouse extends Participant {
   y: number;
   visible: boolean;
 }
+
+export interface PresenceMouseProps {
+  onGoToPin?: (position: { x: number; y: number }) => void;
+}
