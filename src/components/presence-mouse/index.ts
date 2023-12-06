@@ -1,3 +1,4 @@
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
@@ -46,7 +47,7 @@ export class MousePointers extends BaseComponent {
 
     this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
-    this.eventBus.subscribe('go-to-mouse-pointer', this.goToMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -59,7 +60,7 @@ export class MousePointers extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
-    this.eventBus.unsubscribe('go-to-mouse-pointer', this.goToMouse);
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
 
     this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();

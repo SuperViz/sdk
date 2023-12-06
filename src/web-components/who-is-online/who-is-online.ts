@@ -2,6 +2,7 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 
@@ -104,7 +105,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const { id, label } = detail;
 
     if (label === WhoIsOnlineDropdownOptions.GOTO) {
-      this.emitEvent('go-to-mouse-pointer', { id });
+      this.emitEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, { id });
     }
   };
 

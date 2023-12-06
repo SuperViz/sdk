@@ -267,20 +267,4 @@ describe('dropdown', () => {
       expect(el['position']).toBe('top');
     });
   });
-
-  // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
-  // test('', async () => {
-  //   const event = new CustomEvent('selected');
-  //   createEl({
-  //     position: 'bottom',
-  //     align: 'left',
-  //     participants: mockParticipants,
-  //   });
-
-  //   await sleep();
-
-  //   const dropdown = element()?.shadowRoot?.querySelector('superviz-dropdown') as HTMLElement;
-
-  //   dropdown.dispatchEvent(event);
-  // });
 });

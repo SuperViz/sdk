@@ -1,4 +1,5 @@
 import '.';
+import { RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import sleep from '../../common/utils/sleep';
 import { Participant } from '../../components/who-is-online/types';
@@ -199,7 +200,7 @@ describe('Who Is Online', () => {
     expect(avatar.strings[0]).toContain('img');
   });
 
-  test('should ', async () => {
+  test('should emit event when selecting go to option in dropdown', async () => {
     const event = new CustomEvent('selected', {
       detail: { id: 1, label: WhoIsOnlineDropdownOptions.GOTO },
     });
@@ -212,7 +213,7 @@ describe('Who Is Online', () => {
     ) as HTMLElement;
 
     const spy = jest.fn();
-    element.addEventListener('go-to-mouse-pointer', spy);
+    element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, spy);
 
     dropdown.dispatchEvent(event);
 

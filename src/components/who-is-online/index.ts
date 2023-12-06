@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
 
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
@@ -53,7 +54,7 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
-    this.element.addEventListener('go-to-mouse-pointer', this.goToMousePointer);
+    this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
   }
 
   /**
@@ -62,7 +63,10 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private removeListeners(): void {
-    this.element.removeEventListener('go-to-mouse-pointer', this.goToMousePointer);
+    this.element.removeEventListener(
+      RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+      this.goToMousePointer,
+    );
   }
 
   /**
@@ -145,6 +149,6 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private goToMousePointer = ({ detail }: CustomEvent) => {
-    this.eventBus.publish('go-to-mouse-pointer', detail.id);
+    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, detail.id);
   };
 }
