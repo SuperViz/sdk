@@ -106,10 +106,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     if (label === WhoIsOnlineDropdownOptions.GOTO) {
       this.emitEvent('go-to-mouse-pointer', { id });
     }
-
-    if (label === WhoIsOnlineDropdownOptions.FOLLOW) {
-      this.emitEvent('follow-mouse-pointer', { id });
-    }
   };
 
   private getAvatar(participant: Participant) {
@@ -128,7 +124,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       class="superviz-who-is-online__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
-      ${participant.name?.at(0)}
+      ${participant.name?.at(0).toUpperCase()}
     </div>`;
   }
 
@@ -138,13 +134,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const icons = ['place'];
 
     return html`${this.participants.slice(0, 4).map((participant, index) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
-
       const options = Object.values(WhoIsOnlineDropdownOptions)
         .map((label) => ({ label, id: participant.id }))
-        .splice(0, 1);
+        .slice(0, 1);
 
       const classList = {
         'superviz-who-is-online__participant': true,
@@ -162,18 +154,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           name="${participant.name}"
           ?disabled=${participant.isLocal}
         >
-          -->
           <div
             slot="dropdown"
             class=${classMap(classList)}
             style="border-color: ${participant.color}"
           >
-            <div
-              class="superviz-who-is-online__avatar"
-              style="background-color: ${participant.color}; color: ${letterColor}"
-            >
-              ${participant.name?.at(0).toUpperCase()}
-            </div>
+            ${this.getAvatar(participant)}
           </div>
         </superviz-dropdown>
       `;

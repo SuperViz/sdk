@@ -3,6 +3,8 @@ import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import sleep from '../../common/utils/sleep';
 import { Participant } from '../../components/who-is-online/types';
 
+import { WhoIsOnlineDropdownOptions } from './components/types';
+
 let element: HTMLElement;
 
 const MOCK_PARTICIPANTS: Participant[] = [
@@ -19,7 +21,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
   {
     name: 'John Uno',
     avatar: {
-      imageUrl: '',
+      imageUrl: 'https://link.com/image',
       model3DUrl: '',
     },
     color: MeetingColorsHex[1],
@@ -197,9 +199,10 @@ describe('Who Is Online', () => {
     expect(avatar.strings[0]).toContain('img');
   });
 
-  // @TODO: create tests in V2 (dropdownOptionsHandler does not have an implementation yet)
-  test('', async () => {
-    const event = new CustomEvent('selected');
+  test('should ', async () => {
+    const event = new CustomEvent('selected', {
+      detail: { id: 1, label: WhoIsOnlineDropdownOptions.GOTO },
+    });
 
     element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
 
@@ -208,6 +211,11 @@ describe('Who Is Online', () => {
       'superviz-who-is-online-dropdown',
     ) as HTMLElement;
 
+    const spy = jest.fn();
+    element.addEventListener('go-to-mouse-pointer', spy);
+
     dropdown.dispatchEvent(event);
+
+    expect(spy).toHaveBeenCalledWith(event);
   });
 });
