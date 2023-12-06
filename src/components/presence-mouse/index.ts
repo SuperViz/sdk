@@ -110,7 +110,7 @@ export class MousePointers extends BaseComponent {
   /**
    * @function goToMouse
    * @description - translate the canvas to the participant position
-   * @param id - participant id
+   * @param    id - participant id
    */
   private goToMouse = (id: string): void => {
     const mouse = this.presences.get(id);
@@ -223,20 +223,19 @@ export class MousePointers extends BaseComponent {
         return;
       }
 
-      this.renderPresenMouses(mouse);
+      this.renderPresenceMouses(mouse);
     });
   };
 
   /**
-   * @function renderPresenMouses
+   * @function renderPresenceMouses
    * @description add presence mouses to screen
    * @param {ParticipantMouse} mouse - presence mouse change data
    * @returns {void}
    * */
-  private renderPresenMouses = (mouse: ParticipantMouse): void => {
+  private renderPresenceMouses = (mouse: ParticipantMouse): void => {
     const userMouseIdExist = document.getElementById(`mouse-${mouse.id}`);
     let mouseFollower = userMouseIdExist;
-
     if (!mouseFollower) {
       mouseFollower = this.createMouseElement(mouse);
     }
