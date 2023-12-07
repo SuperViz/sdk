@@ -31,7 +31,6 @@ export class WhoIsOnline extends BaseComponent {
   protected start(): void {
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
-    this.addListeners();
   }
 
   /**
@@ -41,7 +40,6 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected destroy(): void {
     this.unsubscribeToRealtimeEvents();
-    this.removeListeners();
     this.element.remove();
     this.element = null;
     this.participants = null;
@@ -100,7 +98,7 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name, activeComponents } = data as Data;
+      const { slotIndex, id, name, avatar, activeComponents } = data as Data;
       const { color } = this.realtime.getSlotColor(slotIndex);
       const isLocal = this.localParticipant.id === id;
       const joinedPresence = activeComponents.includes('presence');

@@ -8,3 +8,10 @@ export enum PositionsEnum {
 }
 
 export type Positions = PositionsEnum | `${PositionsEnum}`;
+
+export enum PositionOptions {
+  'DO-NOTHING',
+  'USE-ORIGINAL',
+  'CALCULATE-NEW',
+  'CENTER',
+}

@@ -18,3 +18,17 @@ config.default.setConfig(MOCK_CONFIG);
     );
   }
 })();
+
+// Mock DOMPoint in the global scope
+global.DOMPoint = class {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  matrixTransform(matrix) {
+    // Implement the matrix transformation logic here
+    // For simplicity, we're just returning the original point
+    return this;
+  }
+};

@@ -1,4 +1,4 @@
-import { Participant as GeneralParticipant } from '../../common/types/participant.types';
+import { Avatar, Participant as GeneralParticipant } from '../../common/types/participant.types';
 import { ComponentNames } from '../types';
 
 export enum Position {
@@ -22,4 +22,5 @@ export type Data = {
   id: string;
   name: string;
   activeComponents: string[];
+  avatar: Avatar;
 };

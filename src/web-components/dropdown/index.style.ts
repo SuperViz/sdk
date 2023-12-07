@@ -55,7 +55,7 @@ export const dropdownStyle = css`
   .menu--bottom-left {
     min-width: 103px;
     position: absolute;
-    left: 0;
+    right: 0;
     top: 4px;
   }
 
@@ -70,14 +70,14 @@ export const dropdownStyle = css`
   .menu--bottom-right {
     min-width: 103px;
     position: absolute;
-    right: 0;
+    left: 0;
     top: 4px;
   }
 
   .menu--top-left {
     min-width: 103px;
     position: absolute;
-    left: 0;
+    right: 0;
     bottom: 44px;
   }
 
@@ -92,7 +92,7 @@ export const dropdownStyle = css`
   .menu--top-right {
     min-width: 103px;
     position: absolute;
-    right: 0;
+    left: 0;
     bottom: 44px;
   }
 

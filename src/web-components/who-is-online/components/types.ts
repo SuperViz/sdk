@@ -18,3 +18,9 @@ export interface Options {
   color: string;
   slotIndex: number;
 }
+
+export enum PositionOptions {
+  'DO-NOTHING',
+  'USE-ORIGINAL',
+  'CALCULATE-NEW',
+}
