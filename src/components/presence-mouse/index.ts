@@ -1,3 +1,4 @@
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
@@ -46,6 +47,7 @@ export class MousePointers extends BaseComponent {
 
     this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -58,6 +60,7 @@ export class MousePointers extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
 
     this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
@@ -108,9 +111,9 @@ export class MousePointers extends BaseComponent {
   /**
    * @function goToMouse
    * @description - translate the canvas to the participant position
-   * @param id - participant id
+   * @param    id - participant id
    */
-  private goToMouse(id: string): void {
+  private goToMouse = (id: string): void => {
     const mouse = this.presences.get(id);
 
     if (!mouse) return;
@@ -127,7 +130,7 @@ export class MousePointers extends BaseComponent {
     const translateY = heightHalf - y;
 
     if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
-  }
+  };
 
   /** Presence Mouse Events */
 
@@ -219,20 +222,19 @@ export class MousePointers extends BaseComponent {
         return;
       }
 
-      this.renderPresenMouses(mouse);
+      this.renderPresenceMouses(mouse);
     });
   };
 
   /**
-   * @function renderPresenMouses
+   * @function renderPresenceMouses
    * @description add presence mouses to screen
    * @param {ParticipantMouse} mouse - presence mouse change data
    * @returns {void}
    * */
-  private renderPresenMouses = (mouse: ParticipantMouse): void => {
+  private renderPresenceMouses = (mouse: ParticipantMouse): void => {
     const userMouseIdExist = document.getElementById(`mouse-${mouse.id}`);
     let mouseFollower = userMouseIdExist;
-
     if (!mouseFollower) {
       mouseFollower = this.createMouseElement(mouse);
     }
