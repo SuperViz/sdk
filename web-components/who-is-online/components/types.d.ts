@@ -1,6 +1,5 @@
 export declare enum WhoIsOnlineDropdownOptions {
-    GOTO = "GO TO",
-    FOLLOW = "FOLLOW"
+    GOTO = "GO TO"
 }
 export declare enum PositionOptions {
     'DO-NOTHING' = 0,

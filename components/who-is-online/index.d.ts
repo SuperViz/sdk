@@ -22,6 +22,18 @@ export declare class WhoIsOnline extends BaseComponent {
      */
     protected destroy(): void;
     /**
+     * @function addListeners
+     * @description adds event listeners to the who is online element.
+     * @returns {void}
+     */
+    private addListeners;
+    /**
+     * @function addListeners
+     * @description adds event listeners from the who is online element.
+     * @returns {void}
+     */
+    private removeListeners;
+    /**
      * @function subscribeToRealtimeEvents
      * @description Subscribes to realtime events
      * @returns {void}
@@ -47,4 +59,11 @@ export declare class WhoIsOnline extends BaseComponent {
      * @returns {void}
      */
     private positionWhoIsOnline;
+    /**
+     * @function goToMousePointer
+     * @description Publishes the event 'go-to-mouse-pointer' to the event bus
+     * @param {CustomEvent} event
+     * @returns {void}
+     */
+    private goToMousePointer;
 }

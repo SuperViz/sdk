@@ -45,7 +45,7 @@ export declare class MousePointers extends BaseComponent {
     /**
      * @function goToMouse
      * @description - translate the canvas to the participant position
-     * @param id - participant id
+     * @param    id - participant id
      */
     private goToMouse;
     /** Presence Mouse Events */
@@ -78,12 +78,12 @@ export declare class MousePointers extends BaseComponent {
     private renderDivWrapper;
     private updateParticipantsMouses;
     /**
-     * @function renderPresenMouses
+     * @function renderPresenceMouses
      * @description add presence mouses to screen
      * @param {ParticipantMouse} mouse - presence mouse change data
      * @returns {void}
      * */
-    private renderPresenMouses;
+    private renderPresenceMouses;
     /**
      * @function removePresenceMouseParticipant
      * @description handler remove external participant mouse
