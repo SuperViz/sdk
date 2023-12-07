@@ -150,14 +150,32 @@ export class WhoIsOnline extends BaseComponent {
     this.element.position = 'position: relative;';
   }
 
+  /**
+   * @function goToMousePointer
+   * @description Publishes the event 'go-to-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
   private goToMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish('go-to-mouse-pointer', detail.id);
   };
 
+  /**
+   * @function followMousePointer
+   * @description Publishes the event 'follow-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
   private followMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish('follow-mouse-pointer', detail.id);
   };
 
+  /**
+   * @function stopFollowMousePointer
+   * @description Publishes the event 'stop-follow-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
   private stopFollowMousePointer = () => {
     this.eventBus.publish('stop-follow-mouse-pointer', {});
   };

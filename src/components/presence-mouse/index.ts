@@ -258,6 +258,11 @@ export class MousePointers extends BaseComponent {
     };
   };
 
+  /**
+   * @function goToMousePointer
+   * @description Resets the properties of the onFollow object
+   * @returns {void}
+   */
   private stopFollowMousePointer = (): void => {
     this.onFollow = {
       isFollowing: false,

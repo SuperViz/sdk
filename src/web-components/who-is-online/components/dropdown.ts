@@ -6,7 +6,7 @@ import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { Following, WhoIsOnlineDropdownOptions } from './types';
+import { Following, WIODropdownOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -114,7 +114,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
       const participantIsFollowed = this.following?.id === id;
 
-      const options = Object.values(WhoIsOnlineDropdownOptions)
+      const options = Object.values(WIODropdownOptions)
         .map((label, index) => ({
           label: participantIsFollowed && index ? 'UNFOLLOW' : label,
           id,

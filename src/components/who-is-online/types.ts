@@ -12,6 +12,7 @@ export interface Participant extends GeneralParticipant {
   slotIndex: number;
   isLocal?: boolean;
   joinedPresence?: boolean | undefined;
+  isPrivate?: boolean;
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string;
