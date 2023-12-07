@@ -33,6 +33,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   constructor() {
     super();
     this.position = 'top: 20px; right: 40px;';
+
     this.open = false;
 
     // should match presence-mouse textColorValues property
@@ -112,7 +113,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const { id, label, name, color, slotIndex } = detail;
 
     if (label === WIODropdownOptions['GOTO']) {
-      this.emitEvent('go-to-mouse-pointer', { id });
+      this.emitEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, { id });
     }
 
     if ([WIODropdownOptions.FOLLOW, WIODropdownOptions.UNFOLLOW].includes(label)) {
@@ -121,9 +122,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         return;
       }
 
-      this.emitEvent('follow-mouse-pointer', { id });
       this.following = { name, id, color, slotIndex };
       this.swapParticipants();
+      this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id });
     }
   };
 
@@ -148,7 +149,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private getOptions(participant: Participant, isBeingFollowed: boolean) {
-    const { isLocal, id, slotIndex, name, color, isPrivate } = participant;
+    const { id, slotIndex, name, color } = participant;
     const baseOption = { id, name, color, slotIndex };
 
     const labels = ['GOTO', isBeingFollowed ? 'UNFOLLOW' : 'FOLLOW'];
@@ -166,12 +167,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private swapParticipants() {
-    const participants = [...this.participants];
-    const a = participants.findIndex(({ id }) => id === this.following?.id);
+    const a = this.participants?.findIndex(({ id }) => id === this.following?.id);
     const b = 0;
 
-    if (a === b) return;
+    if (a < 4 || !a) return;
 
+    const participants = [...this.participants];
     const temp = participants[a];
     participants[a] = participants[b];
     participants[b] = temp;
@@ -180,11 +181,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   private stopFollowing() {
     this.following = undefined;
-    this.emitEvent('stop-follow-mouse-pointer', {});
+    this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id: undefined });
   }
 
   private followingMessage() {
     if (!this.following) return '';
+
     const { slotIndex, name, color } = this.following;
 
     const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
@@ -199,7 +201,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     return html` <div class="superviz-who-is-online">
       ${this.participants.slice(0, 4).map((participant, index) => {
-        const { joinedPresence, isLocal, id, slotIndex, name, color, isPrivate } = participant;
+        const { joinedPresence, isLocal, id, name, color } = participant;
 
         const participantIsFollowed = this.following?.id === id;
         const options = this.getOptions(participant, participantIsFollowed);
@@ -237,10 +239,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     super.updated(changedProperties);
 
     this.updateComplete.then(() => {
-      const element = this.shadowRoot.querySelector('.superviz-who-is-online');
+      const element = this.shadowRoot.querySelector('.wio-content');
       if (!element) return;
 
-      element.setAttribute('style', this.position);
+      const side = this.position.includes('left') ? 'flex-start' : 'flex-end';
+      const style = `${this.position} align-items: ${side};`;
+      element.setAttribute('style', style);
     });
   }
 

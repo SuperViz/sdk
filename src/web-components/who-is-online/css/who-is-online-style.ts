@@ -2,15 +2,16 @@ import { css } from 'lit';
 
 export const whoIsOnlineStyle = css`
   .superviz-who-is-online {
-    position: fixed;
     display: flex;
     align-items: center;
     gap: 4px;
+    position: relative;
   }
 
   .wio-content {
     display: flex;
     flex-direction: column;
+    position: fixed;
   }
 
   .superviz-who-is-online__participant {

@@ -13,6 +13,7 @@ export class MousePointers extends BaseComponent {
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
   private goToMouseCallback: PresenceMouseProps['onGoToPin'];
+  private following: string;
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -48,6 +49,7 @@ export class MousePointers extends BaseComponent {
     this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
     this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.followMouse);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -171,6 +173,14 @@ export class MousePointers extends BaseComponent {
 
       this.presences.set(participant.id, participant);
     });
+
+    if (this.following) {
+      const mouse = this.presences.get(this.following);
+      console.error('tsjfidsfs');
+      if (mouse) {
+        this.goToMouse(this.following);
+      }
+    }
   };
 
   private onMyParticipantMouseOut = (): void => {
@@ -314,4 +324,8 @@ export class MousePointers extends BaseComponent {
 
     return mouseFollower;
   }
+
+  private followMouse = (id: string) => {
+    this.following = id;
+  };
 }

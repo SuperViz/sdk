@@ -54,8 +54,10 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
-    this.element.addEventListener('follow-mouse-pointer', this.followMousePointer);
-    this.element.addEventListener('stop-follow-mouse-pointer', this.stopFollowMousePointer);
+    this.element.addEventListener(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.followMousePointer,
+    );
     this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
   }
 
@@ -65,8 +67,10 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private removeListeners(): void {
-    this.element.removeEventListener('follow-mouse-pointer', this.followMousePointer);
-    this.element.removeEventListener('stop-follow-mouse-pointer', this.stopFollowMousePointer);
+    this.element.removeEventListener(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.followMousePointer,
+    );
     this.element.removeEventListener(
       RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
       this.goToMousePointer,
@@ -171,16 +175,6 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private followMousePointer = ({ detail }: CustomEvent) => {
-    this.eventBus.publish('follow-mouse-pointer', detail.id);
-  };
-
-  /**
-   * @function stopFollowMousePointer
-   * @description Publishes the event 'stop-follow-mouse-pointer' to the event bus
-   * @param {CustomEvent} event
-   * @returns {void}
-   */
-  private stopFollowMousePointer = () => {
-    this.eventBus.publish('stop-follow-mouse-pointer', {});
+    this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
   };
 }

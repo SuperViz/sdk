@@ -4,7 +4,7 @@ import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import sleep from '../../common/utils/sleep';
 import { Participant } from '../../components/who-is-online/types';
 
-import { WhoIsOnlineDropdownOptions } from './components/types';
+import { WIODropdownOptions } from './components/types';
 
 let element: HTMLElement;
 
@@ -18,6 +18,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
     color: MeetingColorsHex[0],
     id: '1',
     slotIndex: 0,
+    joinedPresence: true,
   },
   {
     name: 'John Uno',
@@ -28,6 +29,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
     color: MeetingColorsHex[1],
     id: '2',
     slotIndex: 1,
+    isLocal: true,
   },
   {
     name: 'John Doe',
@@ -52,40 +54,42 @@ describe('Who Is Online', () => {
     element.remove();
   });
 
-  test('should render a participants with class "superviz-who-is-online"', () => {
+  test('should render a participants with class "superviz-who-is-online"', async () => {
+    element['updateParticipants'](MOCK_PARTICIPANTS);
+    await sleep();
     const participants = element?.shadowRoot?.querySelector('.superviz-who-is-online');
     expect(participants).not.toBeFalsy();
   });
 
   test('should have default positioning style', () => {
-    const participants = element?.shadowRoot?.querySelector(
-      '.superviz-who-is-online',
-    ) as HTMLElement;
-    expect(participants.getAttribute('style')).toBe('top: 20px; right: 40px;');
+    const participants = element?.shadowRoot?.querySelector('.wio-content') as HTMLElement;
+    expect(participants.getAttribute('style')).toBe(
+      'top: 20px; right: 40px; align-items: flex-end;',
+    );
   });
 
   test('should update position style', async () => {
-    const participants = element?.shadowRoot?.querySelector(
-      '.superviz-who-is-online',
-    ) as HTMLElement;
+    const participants = element?.shadowRoot?.querySelector('.wio-content') as HTMLElement;
     element['position'] = 'top: 20px; left: 40px;';
 
     await sleep();
 
-    expect(participants.getAttribute('style')).toBe('top: 20px; left: 40px;');
+    expect(participants.getAttribute('style')).toBe(
+      'top: 20px; left: 40px; align-items: flex-start;',
+    );
   });
 
   test('should not update position style if does not find participants', async () => {
-    const participants = element?.shadowRoot?.querySelector(
-      '.superviz-who-is-online',
-    ) as HTMLElement;
-    participants.classList.remove('superviz-who-is-online');
+    const participants = element?.shadowRoot?.querySelector('.wio-content') as HTMLElement;
+    participants.classList.remove('wio-content');
 
     element['position'] = 'top: 20px; left: 40px;';
 
     await sleep();
     expect(participants.classList.contains('superviz-who-is-online')).toBeFalsy();
-    expect(participants.getAttribute('style')).toBe('top: 20px; right: 40px;');
+    expect(participants.getAttribute('style')).toBe(
+      'top: 20px; right: 40px; align-items: flex-end;',
+    );
   });
 
   test('should update participants list', async () => {
@@ -202,7 +206,7 @@ describe('Who Is Online', () => {
 
   test('should emit event when selecting go to option in dropdown', async () => {
     const event = new CustomEvent('selected', {
-      detail: { id: 1, label: WhoIsOnlineDropdownOptions.GOTO },
+      detail: { id: 1, label: WIODropdownOptions.GOTO },
     });
 
     element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
@@ -218,5 +222,68 @@ describe('Who Is Online', () => {
     dropdown.dispatchEvent(event);
 
     expect(spy).toHaveBeenCalledWith(event);
+  });
+
+  test('should emit event when selecting follow option in dropdown', async () => {
+    const event = new CustomEvent('selected', {
+      detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 1 },
+    });
+
+    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
+
+    await sleep();
+    const dropdown = element.shadowRoot?.querySelector(
+      'superviz-who-is-online-dropdown',
+    ) as HTMLElement;
+
+    const spy = jest.fn();
+    element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
+
+    dropdown.dispatchEvent(event);
+
+    expect(spy).toHaveBeenCalledWith(event);
+  });
+
+  test('should stop following if already following', async () => {
+    const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
+      detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 0 },
+    });
+
+    element['dropdownOptionsHandler'](event);
+    expect(element['following']).toBeTruthy();
+
+    element['dropdownOptionsHandler'](event);
+    expect(element['following']).toBeFalsy();
+  });
+
+  test('should bring hidden participant to first position when following them', async () => {
+    const participants = [
+      ...MOCK_PARTICIPANTS,
+      ...MOCK_PARTICIPANTS,
+      {
+        name: 'Test participant',
+        avatar: {
+          imageUrl: '',
+          model3DUrl: '',
+        },
+        color: MeetingColorsHex[10],
+        id: 'test',
+        slotIndex: 10,
+      },
+    ];
+
+    element['updateParticipants'](participants);
+
+    expect(element['participants'].findIndex((participant) => participant.id === 'test')).not.toBe(
+      0,
+    );
+
+    const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
+      detail: { id: 'test', label: WIODropdownOptions.FOLLOW, slotIndex: 2 },
+    });
+
+    element['dropdownOptionsHandler'](event);
+
+    expect(element['participants'].findIndex((participant) => participant.id === 'test')).toBe(0);
   });
 });
