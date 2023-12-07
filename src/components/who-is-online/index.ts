@@ -111,7 +111,7 @@ export class WhoIsOnline extends BaseComponent {
       const { slotIndex, id, name, avatar, activeComponents } = data as Data;
       const { color } = this.realtime.getSlotColor(slotIndex);
       const isLocal = this.localParticipant.id === id;
-      const joinedPresence = activeComponents.includes('presence');
+      const joinedPresence = activeComponents.some((component) => component.includes('presence'));
       // eslint-disable-next-line no-unused-expressions
       isLocal && this.setDisableDropdown(!joinedPresence);
 
@@ -175,6 +175,7 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private followMousePointer = ({ detail }: CustomEvent) => {
+    console.error('teste teste teste');
     this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
   };
 }
