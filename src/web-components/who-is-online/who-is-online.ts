@@ -223,7 +223,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
-      You are in Private Mode <span @click=${this.stopFollowing}>Cancel</span>
+      You are in Private Mode <span @click=${this.cancelPrivate}>Cancel</span>
     </div>`;
   }
 
@@ -244,7 +244,11 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           'superviz-who-is-online__participant': true,
           'disable-dropdown': disableDropdown,
           followed: participantIsFollowed,
+          private: isLocal && this.isPrivate,
         };
+
+        const append = isLocal ? ' (you)' : '';
+        const participantName = name + append;
 
         return html`
           <superviz-dropdown
@@ -253,7 +257,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
             position="${position}"
             @selected=${this.dropdownOptionsHandler}
             icons="${JSON.stringify(icons)}"
-            name="${name}"
+            name="${participantName}"
             ?disabled=${disableDropdown}
           >
             <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">

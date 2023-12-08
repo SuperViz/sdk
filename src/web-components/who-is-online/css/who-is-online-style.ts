@@ -26,6 +26,7 @@ export const whoIsOnlineStyle = css`
     justify-content: center;
     user-select: none;
     cursor: pointer;
+    transition: opacity 0.3s ease-in-out;
   }
 
   .superviz-who-is-online__participant:before {
@@ -41,6 +42,10 @@ export const whoIsOnlineStyle = css`
   .followed:before {
     border-style: dashed !important;
     animation: rotate 5s linear infinite;
+  }
+
+  .private {
+    opacity: 0.3;
   }
 
   @keyframes rotate {
