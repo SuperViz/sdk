@@ -6,6 +6,7 @@ import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 
+import type { LocalParticipantData } from './components/types';
 import { Following, WIODropdownOptions } from './components/types';
 import { whoIsOnlineStyle } from './css/index';
 
@@ -17,10 +18,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   static styles = styles;
   declare position: string;
   declare participants: Participant[];
-  private textColorValues: number[];
   declare open: boolean;
   declare disableDropdown: boolean;
   declare following: Following | undefined;
+  declare LocalParticipantData: LocalParticipantData;
+  declare isPrivate: boolean;
+  private textColorValues: number[];
 
   static properties = {
     position: { type: String },
@@ -28,6 +31,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     open: { type: Boolean },
     disableDropdown: { type: Boolean },
     following: { type: Object },
+    localParticipantColor: { type: String },
+    isPrivate: { type: Boolean },
   };
 
   constructor() {
@@ -126,6 +131,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       this.swapParticipants();
       this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id });
     }
+
+    if ([WIODropdownOptions.PRIVATE, WIODropdownOptions.LEAVE_PRIVATE].includes(label)) {
+      this.isPrivate = label === WIODropdownOptions.PRIVATE;
+      console.error('hahaha');
+      this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id, private: this.isPrivate });
+    }
   };
 
   private getAvatar(participant: Participant) {
@@ -148,11 +159,14 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     </div>`;
   }
 
-  private getOptions(participant: Participant, isBeingFollowed: boolean) {
+  private getOptions(participant: Participant, isBeingFollowed: boolean, isLocal: boolean) {
     const { id, slotIndex, name, color } = participant;
     const baseOption = { id, name, color, slotIndex };
+    const { isPrivate } = this;
 
-    const labels = ['GOTO', isBeingFollowed ? 'UNFOLLOW' : 'FOLLOW'];
+    const labels = isLocal
+      ? [isPrivate ? 'LEAVE_PRIVATE' : 'PRIVATE']
+      : ['GOTO', isBeingFollowed ? 'UNFOLLOW' : 'FOLLOW'];
 
     const options = labels.map((label) => ({
       ...baseOption,
@@ -184,6 +198,11 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id: undefined });
   }
 
+  private cancelPrivate() {
+    this.isPrivate = undefined;
+    this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id: this.LocalParticipantData.id });
+  }
+
   private followingMessage() {
     if (!this.following) return '';
 
@@ -196,6 +215,18 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     </div>`;
   }
 
+  private privateMessage() {
+    if (!this.isPrivate) return '';
+
+    const { color, slotIndex } = this.LocalParticipantData;
+
+    const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
+
+    return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
+      You are in Private Mode <span @click=${this.stopFollowing}>Cancel</span>
+    </div>`;
+  }
+
   private renderParticipants() {
     if (!this.participants) return html``;
 
@@ -204,10 +235,10 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         const { joinedPresence, isLocal, id, name, color } = participant;
 
         const participantIsFollowed = this.following?.id === id;
-        const options = this.getOptions(participant, participantIsFollowed);
+        const options = this.getOptions(participant, participantIsFollowed, isLocal);
         const icons = this.getIcons(participantIsFollowed);
         const position = this.dropdownPosition(index);
-        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
+        const disableDropdown = !joinedPresence || this.disableDropdown;
 
         const classList = {
           'superviz-who-is-online__participant': true,
@@ -250,7 +281,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   protected render() {
     return html`<div class="wio-content">
-      ${this.renderParticipants()} ${this.followingMessage()}
+      ${this.renderParticipants()} ${this.followingMessage()} ${this.privateMessage()}
     </div> `;
   }
 }

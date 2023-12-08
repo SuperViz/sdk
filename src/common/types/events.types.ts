@@ -54,6 +54,7 @@ export enum RealtimeEvent {
   REALTIME_SET_AVATAR = 'realtime.set-avatar',
   REALTIME_DRAWING_CHANGE = 'realtime.drawing-change',
   REALTIME_TRANSCRIPT_CHANGE = 'realtime.transcript-change',
+  REALTIME_PRIVATE_MODE = 'realtime.private-mode',
 }
 
 export enum TranscriptState {

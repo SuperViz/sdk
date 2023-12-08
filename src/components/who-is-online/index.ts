@@ -113,9 +113,9 @@ export class WhoIsOnline extends BaseComponent {
       const isLocal = this.localParticipant.id === id;
       const joinedPresence = activeComponents.some((component) => component.includes('presence'));
       // eslint-disable-next-line no-unused-expressions
-      isLocal && this.setDisableDropdown(!joinedPresence);
+      isLocal && this.setLocalData(!joinedPresence, color, slotIndex);
 
-      return { name, id, slotIndex, color, isLocal, joinedPresence };
+      return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
     });
 
     if (isEqual(participants, this.participants)) return;
@@ -124,8 +124,9 @@ export class WhoIsOnline extends BaseComponent {
     this.element.participants = this.participants;
   };
 
-  private setDisableDropdown = (disable: boolean) => {
+  private setLocalData = (disable: boolean, color: string, slotIndex: number) => {
     this.element.disableDropdown = disable;
+    this.element.LocalParticipantData = { color, slotIndex, id: this.localParticipant.id };
   };
 
   /**
