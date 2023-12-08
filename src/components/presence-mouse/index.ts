@@ -12,7 +12,7 @@ export class MousePointers extends BaseComponent {
   private divWrapper: HTMLElement;
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
-  private goToMouseCallback: PresenceMouseProps['onGoToPin'];
+  private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
   private following: string;
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
@@ -31,7 +31,7 @@ export class MousePointers extends BaseComponent {
     this.divWrapper = this.renderDivWrapper();
     this.animateFrame = requestAnimationFrame(this.animate);
 
-    this.goToMouseCallback = options?.onGoToPin;
+    this.goToMouseCallback = options?.onGoToPresence;
   }
 
   private get textColorValues(): number[] {
@@ -176,7 +176,6 @@ export class MousePointers extends BaseComponent {
 
     if (this.following) {
       const mouse = this.presences.get(this.following);
-      console.error('tsjfidsfs');
       if (mouse) {
         this.goToMouse(this.following);
       }

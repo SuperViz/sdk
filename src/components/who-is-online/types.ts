@@ -11,16 +11,8 @@ export enum Position {
 export interface Participant extends GeneralParticipant {
   slotIndex: number;
   isLocal?: boolean;
-  joinedPresence?: boolean | undefined;
+  joinedPresence?: boolean;
   isPrivate?: boolean;
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string;
-
-export type Data = {
-  slotIndex: number;
-  id: string;
-  name: string;
-  activeComponents: string[];
-  avatar: Avatar;
-};
