@@ -2,12 +2,12 @@ import { isEqual } from 'lodash';
 
 import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
-import { AblyParticipant, ParticipantDataInput } from '../../services/realtime/ably/types';
+import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlinePosition, Position, Participant, Data } from './types';
+import { WhoIsOnlinePosition, Position, Participant } from './types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
@@ -110,12 +110,11 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name, avatar, activeComponents } = data as Data;
+      const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
       const { color } = this.realtime.getSlotColor(slotIndex);
       const isLocal = this.localParticipant.id === id;
       const joinedPresence = activeComponents.some((component) => component.includes('presence'));
-      // eslint-disable-next-line no-unused-expressions
-      isLocal && this.setLocalData(!joinedPresence, color, slotIndex);
+      this.setLocalData(isLocal, !joinedPresence, color, slotIndex);
 
       return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
     });
@@ -126,7 +125,9 @@ export class WhoIsOnline extends BaseComponent {
     this.element.participants = this.participants;
   };
 
-  private setLocalData = (disable: boolean, color: string, slotIndex: number) => {
+  private setLocalData = (local: boolean, disable: boolean, color: string, slotIndex: number) => {
+    if (!local) return;
+
     this.element.disableDropdown = disable;
     this.element.localParticipantData = { color, slotIndex, id: this.localParticipant.id };
   };
