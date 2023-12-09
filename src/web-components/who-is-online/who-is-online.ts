@@ -21,7 +21,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare open: boolean;
   declare disableDropdown: boolean;
   declare following: Following | undefined;
-  declare LocalParticipantData: LocalParticipantData;
+  declare localParticipantData: LocalParticipantData;
   declare isPrivate: boolean;
   private textColorValues: number[];
 
@@ -134,8 +134,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     if ([WIODropdownOptions.PRIVATE, WIODropdownOptions.LEAVE_PRIVATE].includes(label)) {
       this.isPrivate = label === WIODropdownOptions.PRIVATE;
-      console.error('hahaha');
-      this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id, private: this.isPrivate });
+      this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id, isPrivate: this.isPrivate });
     }
   };
 
@@ -200,7 +199,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   private cancelPrivate() {
     this.isPrivate = undefined;
-    this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id: this.LocalParticipantData.id });
+    this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id: this.localParticipantData.id });
   }
 
   private followingMessage() {
@@ -218,7 +217,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private privateMessage() {
     if (!this.isPrivate) return '';
 
-    const { color, slotIndex } = this.LocalParticipantData;
+    const { color, slotIndex } = this.localParticipantData;
 
     const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 

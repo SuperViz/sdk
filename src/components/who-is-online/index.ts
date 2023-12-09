@@ -59,6 +59,7 @@ export class WhoIsOnline extends BaseComponent {
       this.followMousePointer,
     );
     this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
+    this.element.addEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
   }
 
   /**
@@ -75,6 +76,7 @@ export class WhoIsOnline extends BaseComponent {
       RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
       this.goToMousePointer,
     );
+    this.element.removeEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
   }
 
   /**
@@ -126,7 +128,7 @@ export class WhoIsOnline extends BaseComponent {
 
   private setLocalData = (disable: boolean, color: string, slotIndex: number) => {
     this.element.disableDropdown = disable;
-    this.element.LocalParticipantData = { color, slotIndex, id: this.localParticipant.id };
+    this.element.localParticipantData = { color, slotIndex, id: this.localParticipant.id };
   };
 
   /**
@@ -176,7 +178,10 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private followMousePointer = ({ detail }: CustomEvent) => {
-    console.error('teste teste teste');
     this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
+  };
+
+  private setPrivate = ({ detail }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, detail);
   };
 }
