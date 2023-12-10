@@ -2,6 +2,7 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 
@@ -49,7 +50,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private dropdownPosition(index: number) {
     if (this.participants.length === 1) return 'bottom-center';
 
-    if (index === 0) return 'bottom-left';
+    if (index === 0) return 'bottom-right';
 
     const thereAreExtraParticipants = this.participants.length > 4;
     const isTheLastParticipantOfList = index + 1 === this.participants.length;
@@ -58,21 +59,23 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       return 'bottom-center';
     }
 
-    return 'bottom-right';
+    return 'bottom-left';
   }
 
   private renderExcessParticipants() {
     const excess = this.participants.length - 4;
     if (excess <= 0) return html``;
 
-    const participants = this.participants.slice(4).map(({ name, color, id, slotIndex }) => {
-      return {
+    const participants = this.participants
+      .slice(4)
+      .map(({ name, color, id, slotIndex, avatar, isLocal }) => ({
         name,
         color,
         id,
         slotIndex,
-      };
-    });
+        avatar,
+        isLocal,
+      }));
 
     const classes = {
       'superviz-who-is-online__participant': true,
@@ -84,7 +87,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       <superviz-who-is-online-dropdown
         label="label"
         returnTo="label"
-        position="bottom-right"
+        position="bottom"
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
@@ -98,44 +101,66 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     return dropdown;
   }
 
-  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
+  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
+    const { id, label } = detail;
+
+    if (label === WhoIsOnlineDropdownOptions.GOTO) {
+      this.emitEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, { id });
+    }
+  };
+
+  private getAvatar(participant: Participant) {
+    if (participant.avatar?.imageUrl) {
+      return html` <img
+        class="superviz-who-is-online__avatar"
+        src=${participant.avatar.imageUrl}
+      />`;
+    }
+
+    const letterColor = this.textColorValues.includes(participant.slotIndex)
+      ? '#FFFFFF'
+      : '#26242A';
+
+    return html`<div
+      class="superviz-who-is-online__avatar"
+      style="background-color: ${participant.color}; color: ${letterColor}"
+    >
+      ${participant.name?.at(0).toUpperCase()}
+    </div>`;
+  }
 
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    const options = Object.values(WhoIsOnlineDropdownOptions).map((label) => {
-      return { label };
-    });
-
-    const icons = ['place', 'send'];
+    const icons = ['place'];
 
     return html`${this.participants.slice(0, 4).map((participant, index) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
+      const options = Object.values(WhoIsOnlineDropdownOptions)
+        .map((label) => ({ label, id: participant.id }))
+        .slice(0, 1);
+
+      const classList = {
+        'superviz-who-is-online__participant': true,
+        local: participant.isLocal,
+      };
 
       const position = this.dropdownPosition(index);
       return html`
         <superviz-dropdown
           options=${JSON.stringify(options)}
           label="label"
-          returnTo="label"
           position="${position}"
           @selected=${this.dropdownOptionsHandler}
           icons="${JSON.stringify(icons)}"
           name="${participant.name}"
+          ?disabled=${participant.isLocal}
         >
           <div
             slot="dropdown"
-            class="superviz-who-is-online__participant"
+            class=${classMap(classList)}
             style="border-color: ${participant.color}"
           >
-            <div
-              class="superviz-who-is-online__avatar"
-              style="background-color: ${participant.color}; color: ${letterColor}"
-            >
-              ${participant.name?.at(0)}
-            </div>
+            ${this.getAvatar(participant)}
           </div>
         </superviz-dropdown>
       `;

@@ -1,11 +1,13 @@
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { isEqual } from 'lodash';
+
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
+import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { WhoIsOnlinePosition, Position, Participant } from './types';
-import { AblyParticipant } from '../../services/realtime/ably/types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
@@ -30,20 +32,7 @@ export class WhoIsOnline extends BaseComponent {
   protected start(): void {
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
-
-    this.participants = Object.values(this.realtime.getParticipants).map((participant) => {
-      const { slotIndex } = participant.data;
-      const color = MeetingColorsHex[slotIndex];
-
-      return {
-        ...participant.data,
-        participantId: participant.id,
-        color,
-        slotIndex,
-      };
-    });
-
-    this.element.participants = this.participants;
+    this.addListeners();
   }
 
   /**
@@ -53,9 +42,31 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected destroy(): void {
     this.unsubscribeToRealtimeEvents();
+    this.removeListeners();
     this.element.remove();
     this.element = null;
     this.participants = null;
+  }
+
+  /**
+   * @function addListeners
+   * @description adds event listeners to the who is online element.
+   * @returns {void}
+   */
+  private addListeners(): void {
+    this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
+  }
+
+  /**
+   * @function addListeners
+   * @description adds event listeners from the who is online element.
+   * @returns {void}
+   */
+  private removeListeners(): void {
+    this.element.removeEventListener(
+      RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+      this.goToMousePointer,
+    );
   }
 
   /**
@@ -64,8 +75,6 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private subscribeToRealtimeEvents(): void {
-    this.realtime.presenceMouseParticipantJoinedObserver.subscribe(this.onParticipantJoined);
-    this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
   }
 
@@ -75,118 +84,31 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private unsubscribeToRealtimeEvents(): void {
-    this.realtime.presenceMouseParticipantJoinedObserver.unsubscribe(this.onParticipantJoined);
-    this.realtime.presenceMouseParticipantLeaveObserver.unsubscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
-  }
-
-  private compareParticipants() {
-    const realtimeParticipants = this.realtime.getParticipants;
-
-    return this.participants.every((participant) => {
-      return realtimeParticipants[participant.id];
-    });
   }
 
   /**
    * @function onParticipantListUpdate
-   * @description Receives data about participants in the room who were not loaded when the component was initialized
+   * @description Receives data about participants in the room who were not loaded
+   * when the component was initialized
    * @param {Record<string, AblyParticipant>} data
    * @returns {void}
    */
-  private onParticipantListUpdate = (data: Record<string, AblyParticipant>) => {
-    const updatedParticipants = Object.values(data);
-    if (updatedParticipants.length === this.participants.length && this.compareParticipants())
-      return;
-
-    const currentParticipants: string[] = this.participants.map((participant) => participant.id);
-
-    const rawNewParticipants = updatedParticipants.filter(
-      ({ data: { id } }) => !currentParticipants.includes(id),
-    );
-
-    const newParticipants = rawNewParticipants.map((participant) => {
-      const { slotIndex } = participant.data;
-      const color = MeetingColorsHex[slotIndex ?? 16];
-      return { ...participant.data, color };
+  private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
+    const updatedParticipants = Object.values(data).filter(({ data }) => {
+      return data.activeComponents?.includes('whoIsOnline');
     });
 
-    this.participants = [...this.participants, ...newParticipants] as Participant[];
-
-    this.element.participants = this.participants;
-  };
-
-  /**
-   * @function onParticipantJoined
-   * @description Updates the participants list when a new participant joins the meeting
-   * @param {Ably.Types.PresenceMessage} participant
-   * @returns {void}
-   */
-  private onParticipantJoined = (data: Participant) => {
-    const participant = this.realtime.getParticipants[data.id]?.data;
-
-    const alreadyInList = participant
-      ? this.participants?.some((element) => element.id === participant.id)
-      : false;
-
-    const color = MeetingColorsHex[participant?.slotIndex];
-    data.slotIndex = participant?.slotIndex;
-
-    if (alreadyInList) {
-      this.participants = this.participants.map((participant) =>
-        participant.id === data.id ? { ...participant, ...data, color } : participant,
-      );
-    } else {
-      this.participants.push({ ...this.realtime.getParticipants[data.id]?.data, ...data, color });
-    }
-
-    if (!color) this.getColorAfterDelay(data.id);
-
-    this.element.participants = this.participants;
-  };
-
-  /**
-   * @function getColorAfterDelay
-   * @description Gets the color of the participant after realtime is done setting their slotIndex
-   * @param {string} id
-   * @returns {void}
-   */
-  private async getColorAfterDelay(id: string) {
-    const participant = this.realtime?.getParticipants[id]?.data;
-    const color = MeetingColorsHex[participant?.slotIndex];
-
-    const data = {
-      color,
-      slotIndex: participant?.slotIndex,
-    };
-
-    if (!color) {
-      setTimeout(() => {
-        this.getColorAfterDelay(id);
-      }, 100);
-      return;
-    }
-
-    this.participants = this.participants.map((participant) => {
-      return participant.id === id
-        ? {
-            ...participant,
-            ...data,
-          }
-        : participant;
+    const participants = updatedParticipants.map(({ data }) => {
+      const { slotIndex, id, name, avatar } = data;
+      const { color } = this.realtime.getSlotColor(slotIndex);
+      const isLocal = this.localParticipant.id === id;
+      return { name, id, slotIndex, color, isLocal };
     });
 
-    this.element.participants = this.participants;
-  }
+    if (isEqual(participants, this.participants)) return;
 
-  /**
-   * @function onParticipantLeave
-   * @description Removes participant from the participants list when they leave the meeting
-   * @param {Ably.Types.PresenceMessage} participant
-   * @returns {void}
-   */
-  private onParticipantLeave = ({ id }): void => {
-    this.participants = this.participants.filter((participant) => participant.id !== id);
+    this.participants = participants;
     this.element.participants = this.participants;
   };
 
@@ -219,4 +141,14 @@ export class WhoIsOnline extends BaseComponent {
     container.appendChild(this.element);
     this.element.position = 'position: relative;';
   }
+
+  /**
+   * @function goToMousePointer
+   * @description Publishes the event 'go-to-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private goToMousePointer = ({ detail }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, detail.id);
+  };
 }

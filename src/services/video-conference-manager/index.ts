@@ -1,3 +1,4 @@
+import { ColorsVariables } from '../../common/types/colors.types';
 import {
   DeviceEvent,
   MeetingConnectionStatus,
@@ -25,7 +26,6 @@ import {
   Offset,
   FrameLocale,
   FrameConfig,
-  ColorsVariables,
   LayoutPosition,
   CamerasPosition,
   LayoutModalsAndCameras,
@@ -87,6 +87,7 @@ export default class VideoConfereceManager {
       skipMeetingSettings,
       devices,
       layoutMode,
+      collaborationMode,
     } = options;
 
     this.browserService = browserService;
@@ -102,6 +103,7 @@ export default class VideoConfereceManager {
       debug: config.get<boolean>('debug'),
       roomId: config.get<string>('roomId'),
       limits: config.get<ComponentLimits>('limits'),
+      collaborationMode,
       canUseFollow,
       canUseGoTo,
       canUseCams,

@@ -35,13 +35,13 @@ export interface PinCoordinates {
   type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
 }
 
-export interface PinCoordinatesWithCamera {
+// @NOTE - this is used for 3d annotations
+export interface PinCoordinatesIn3D {
   position: PinCoordinates;
   camera: any;
 }
 
-// @NOTE with 3d annotations we need to pass camera position
-export type AnnotationPositionInfo = PinCoordinates | PinCoordinatesWithCamera;
+export type AnnotationPositionInfo = PinCoordinates | PinCoordinatesIn3D;
 
 export enum CommentsSide {
   LEFT = 'left',

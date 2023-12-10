@@ -40,9 +40,7 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
 
   protected render() {
     const selectedLabel =
-      this.filter === AnnotationFilter.ALL
-        ? options[0].label
-        : options[1].label;
+      this.filter === AnnotationFilter.ALL ? options[0].label : options[1].label;
 
     const dropdownOptionsHandler = ({ detail }: CustomEvent) => {
       this.emitEvent('select', { filter: detail });
@@ -66,7 +64,7 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
     return html`
       <div class="select">
         <div class="select-container">
-          <superviz-dropdown 
+          <superviz-dropdown
             options=${JSON.stringify(options)}
             active=${active}
             label="label"

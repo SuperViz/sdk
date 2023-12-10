@@ -1,9 +1,23 @@
+import { ColorsVariables } from '../common/types/colors.types';
 import { Group, Participant } from '../common/types/participant.types';
 import { SuperVizSdkOptions } from '../common/types/sdk-options.types';
 import ApiService from '../services/api';
 import RemoteConfigService from '../services/remote-config-service';
 
 import sdk from '.';
+
+const COLOR_VARIABLES_MOCK = {
+  'sv-primary-900': '16 29 70',
+  'sv-primary-200': '141 164 239',
+  'sv-primary': '58 92 204',
+  'sv-gray-800': '250 250 252',
+  'sv-gray-700': '233 229 239',
+  'sv-gray-600': '201 196 209',
+  'sv-gray-500': '174 169 184',
+  'sv-gray-400': '126 122 136',
+  'sv-gray-300': '87 83 95',
+  'sv-gray-200': '57 54 62',
+};
 
 const REMOTE_CONFIG_MOCK = {
   apiUrl: 'https://dev.nodeapi.superviz.com',
@@ -109,6 +123,30 @@ describe('initialization errors', () => {
 
     expect(sdk(UNIT_TEST_API_KEY, SIMPLE_INITIALIZATION_MOCK)).rejects.toThrow(
       'Failed to load configuration from server',
+    );
+  });
+
+  test('should throw an error if custom colors variables names are invalid', async () => {
+    const colorKey = 'invalid-color';
+
+    const invalidColorVariables = { ...COLOR_VARIABLES_MOCK, [colorKey]: '0 0 0' };
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        customColors: invalidColorVariables as ColorsVariables,
+      }),
+    ).rejects.toThrow(`Color ${colorKey} is not a valid color variable name`);
+  });
+
+  test('should throw an error if custom colors variables values are invalid', async () => {
+    const invalidColorVariables = { ...COLOR_VARIABLES_MOCK, 'sv-primary-900': 'rr bb gg' };
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        customColors: invalidColorVariables as ColorsVariables,
+      }),
+    ).rejects.toThrow(
+      'Color sv-primary-900 is not a valid color variable value. Please check the documentation for more information.',
     );
   });
 });

@@ -12,16 +12,21 @@ export class CanvasPin implements PinAdapter {
   private isPinsVisible: boolean = true;
   private annotations: Annotation[];
   private pins: Map<string, HTMLElement>;
-  private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
   private selectedPin: HTMLElement | null = null;
+  private animateFrame: number;
+  private goToPinCallback: (position: { x: number; y: number }) => void;
   public onPinFixedObserver: Observer;
 
-  constructor(canvasId: string) {
+  constructor(
+    canvasId: string,
+    options?: { onGoToPin?: (position: { x: number; y: number }) => void },
+  ) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.isActive = false;
     this.pins = new Map();
+    this.goToPinCallback = options?.onGoToPin;
 
     if (!this.canvas) {
       const message = `Canvas with id ${canvasId} not found`;
@@ -33,8 +38,11 @@ export class CanvasPin implements PinAdapter {
     document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
-    this.divWrapper = this.createDivWrapper();
+    this.divWrapper = this.renderDivWrapper();
     this.annotations = [];
+    this.renderAnnotationsPins();
+
+    this.animateFrame = requestAnimationFrame(this.animate);
   }
 
   /**
@@ -44,14 +52,18 @@ export class CanvasPin implements PinAdapter {
    * */
   public destroy(): void {
     this.removeListeners();
+    this.removeAnnotationsPins();
     this.mouseElement = null;
+    this.pins = new Map();
+    this.divWrapper.remove();
+    this.onPinFixedObserver.destroy();
+    this.onPinFixedObserver = null;
+    this.canvas.style.cursor = 'default';
+    this.annotations = [];
+
+    cancelAnimationFrame(this.animateFrame);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
-
-    if (this.divWrapperReplacementInterval) {
-      clearInterval(this.divWrapperReplacementInterval);
-      this.divWrapperReplacementInterval = null;
-    }
   }
 
   public setPinsVisibility(isVisible: boolean): void {
@@ -95,6 +107,7 @@ export class CanvasPin implements PinAdapter {
 
     if (!this.isActive && !this.isPinsVisible) return;
 
+    this.removeAnnotationsPins();
     this.renderAnnotationsPins();
   }
 
@@ -111,6 +124,7 @@ export class CanvasPin implements PinAdapter {
 
     pinElement.remove();
     this.pins.delete(uuid);
+    this.annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
   }
 
   /**
@@ -118,9 +132,9 @@ export class CanvasPin implements PinAdapter {
    * @description
           creates a temporary pin with the id
           temporary-pin to mark where the annotation is being created
-   * @param {AnnotationPositionInfo} coordinates  - The coordinates of the pin to be created.
+   * @param {PinCoordinates} position  - The position of the pin to be created.
    */
-  public createTemporaryPin(coordinates: AnnotationPositionInfo): void {
+  public createTemporaryPin(position: PinCoordinates): void {
     let temporaryPin = document.getElementById('superviz-temporary-pin');
 
     if (!temporaryPin) {
@@ -131,7 +145,7 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttributeNode(document.createAttribute('active'));
     }
 
-    temporaryPin.setAttribute('position', JSON.stringify(coordinates));
+    temporaryPin.setAttribute('position', JSON.stringify(position));
 
     this.divWrapper.appendChild(temporaryPin);
     this.pins.set('temporary-pin', temporaryPin);
@@ -208,13 +222,28 @@ export class CanvasPin implements PinAdapter {
   };
 
   /**
-   * @function createDivWrapper
+   * @function animate
+   * @description animation frame
+   * @returns {void}
+   */
+  private animate = (): void => {
+    if (this.isActive || this.isPinsVisible) {
+      this.renderAnnotationsPins();
+      this.renderDivWrapper();
+    }
+
+    requestAnimationFrame(this.animate);
+  };
+
+  /**
+   * @function renderDivWrapper
    * @description Creates a div wrapper for the pins.
    * @returns {HTMLElement} The newly created div wrapper.
    * */
-  private createDivWrapper(): HTMLElement {
+  private renderDivWrapper(): HTMLElement {
     const canvasRect = this.canvas.getBoundingClientRect();
     const divWrapper = document.createElement('div');
+    divWrapper.id = 'superviz-canvas-wrapper';
 
     this.canvas.parentElement.style.position = 'relative';
 
@@ -226,17 +255,9 @@ export class CanvasPin implements PinAdapter {
     divWrapper.style.pointerEvents = 'none';
     divWrapper.style.overflow = 'hidden';
 
-    if (!this.divWrapperReplacementInterval) {
-      this.divWrapperReplacementInterval = setInterval(() => {
-        const elementRect = this.canvas.getBoundingClientRect();
-        divWrapper.style.top = `${elementRect.top}px`;
-        divWrapper.style.left = `${elementRect.left}px`;
-        divWrapper.style.width = `${elementRect.width}px`;
-        divWrapper.style.height = `${elementRect.height}px`;
-      }, 1);
+    if (!document.getElementById('superviz-canvas-wrapper')) {
+      this.canvas.parentElement.appendChild(divWrapper);
     }
-
-    this.canvas.parentElement.appendChild(divWrapper);
 
     return divWrapper;
   }
@@ -260,16 +281,41 @@ export class CanvasPin implements PinAdapter {
         return;
       }
 
-      if (position.type !== 'canvas' || this.pins.has(annotation.uuid)) {
+      if (position?.type !== 'canvas') return;
+
+      const { x: savedX, y: savedY } = position;
+
+      const context = this.canvas.getContext('2d');
+      const transform = context.getTransform();
+
+      const currentTranslateX = transform.e;
+      const currentTranslateY = transform.f;
+
+      const x = savedX + currentTranslateX;
+      const y = savedY + currentTranslateY;
+
+      if (this.pins.has(annotation.uuid)) {
+        const pin = this.pins.get(annotation.uuid);
+
+        const isVisible = this.divWrapper.clientWidth > x && this.divWrapper.clientHeight > y;
+
+        if (isVisible) {
+          pin.setAttribute('style', 'opacity: 1');
+
+          this.pins.get(annotation.uuid).setAttribute('position', JSON.stringify({ x, y }));
+          return;
+        }
+
+        pin.setAttribute('style', 'opacity: 0');
+
         return;
       }
-
-      const { x, y } = position;
 
       const pinElement = document.createElement('superviz-comments-annotation-pin');
       pinElement.setAttribute('type', PinMode.SHOW);
       pinElement.setAttribute('annotation', JSON.stringify(annotation));
       pinElement.setAttribute('position', JSON.stringify({ x, y }));
+      pinElement.id = annotation.uuid;
 
       this.divWrapper.appendChild(pinElement);
       this.pins.set(annotation.uuid, pinElement);
@@ -306,59 +352,35 @@ export class CanvasPin implements PinAdapter {
     pinElement.setAttribute('active', '');
 
     this.selectedPin = pinElement;
-    this.scrollIntoView(pinElement);
+    this.goToPin(uuid);
   };
 
-  private scrollIntoView(element: HTMLElement): void {
-    if (!element) return;
+  /**
+   * @function goToPin
+   * @description - translate the canvas to the pin position
+   * @param uuid - annotation uuid
+   */
+  private goToPin(uuid: string): void {
+    const annotation = this.annotations.find((annotation) => annotation.uuid === uuid);
 
-    // If the divWrapper is smaller than it's parent, all pins are visible
-    if (
-      this.divWrapper.clientWidth <= this.divWrapper.parentElement.clientWidth &&
-      this.divWrapper.clientHeight <= this.divWrapper.parentElement.clientHeight
-    ) {
-      return;
-    }
+    if (!annotation) return;
 
-    let elementWithOverflow: HTMLElement;
-    let nextElement: HTMLElement = this.divWrapper;
+    const position = JSON.parse(annotation.position) as PinCoordinates;
 
-    while (!elementWithOverflow) {
-      const parent = nextElement?.parentElement;
+    if (position?.type !== 'canvas') return;
 
-      const hasOverflow = this.isScrollable(parent);
+    const rect = this.canvas.getBoundingClientRect();
+    const { width, height } = rect;
 
-      if (hasOverflow) {
-        elementWithOverflow = parent;
-        break;
-      }
+    const { x, y } = position;
 
-      nextElement = parent;
+    const widthHalf = width / 2;
+    const heightHalf = height / 2;
 
-      if (!nextElement) break;
-    }
+    const translateX = widthHalf - x;
+    const translateY = heightHalf - y;
 
-    const pinCoordinates = JSON.parse(element.getAttribute('position')) as PinCoordinates;
-
-    if (!elementWithOverflow) return;
-
-    elementWithOverflow.scrollTo({
-      top: pinCoordinates.y,
-      left: pinCoordinates.x,
-      behavior: 'smooth',
-    });
-  }
-
-  private isScrollable(element: HTMLElement): boolean {
-    if (!element) return false;
-
-    const hasScrollableContent = element.scrollHeight > element.clientHeight;
-    const overflowYStyle = window.getComputedStyle(element).overflowY;
-    const overflowXStyle = window.getComputedStyle(element).overflowX;
-    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
-    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
-
-    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
+    if (this.goToPinCallback) this.goToPinCallback({ x: translateX, y: translateY });
   }
 
   /**
@@ -371,20 +393,35 @@ export class CanvasPin implements PinAdapter {
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive) return;
 
-    const { x, y } = event;
-    const rect = this.divWrapper.getBoundingClientRect();
+    const context = this.canvas.getContext('2d');
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-    const xToSave = x - rect.x;
-    const yToSave = y - rect.y;
+    const transform = context.getTransform();
+
+    const currentTranslateX = transform.e;
+    const currentTranslateY = transform.f;
+
+    const invertedMatrix = transform.inverse();
+    const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
+
+    const divWrapperXConsideringTranslate = transformedPoint.x + currentTranslateX;
+    const divWrapperYConsideringTranslate = transformedPoint.y + currentTranslateY;
 
     this.onPinFixedObserver.publish({
-      x: xToSave,
-      y: yToSave,
+      x: transformedPoint.x,
+      y: transformedPoint.y,
       type: 'canvas',
-    });
+    } as PinCoordinates);
 
     this.resetSelectedPin();
-    this.createTemporaryPin({ x: xToSave, y: yToSave, type: 'canvas' });
+
+    this.createTemporaryPin({
+      x: divWrapperXConsideringTranslate,
+      y: divWrapperYConsideringTranslate,
+      type: 'canvas',
+    });
 
     if (this.selectedPin) return;
 
