@@ -7,6 +7,7 @@ import {
   MOCK_LOCAL_PARTICIPANT,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 
 import { WhoIsOnline } from './index';
@@ -113,5 +114,107 @@ describe('Who Is Online', () => {
     });
 
     expect(whoIsOnlineComponent['participants'].length).toBe(1);
+  });
+
+  test('should not display private participants', () => {
+    whoIsOnlineComponent['onParticipantListUpdate']({
+      'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
+    });
+
+    expect(whoIsOnlineComponent['participants'].length).toBe(1);
+
+    const privateParticipant = {
+      ...MOCK_ABLY_PARTICIPANT,
+      data: {
+        ...MOCK_ABLY_PARTICIPANT.data,
+        isPrivate: true,
+      },
+    };
+
+    whoIsOnlineComponent['onParticipantListUpdate']({
+      'unit-test-participant1-ably-id': privateParticipant,
+    });
+
+    expect(whoIsOnlineComponent['participants'].length).toBe(0);
+  });
+
+  test('should display private local participant', () => {
+    const participantsData = {};
+
+    participantsData[MOCK_LOCAL_PARTICIPANT.id] = {
+      ...MOCK_ABLY_PARTICIPANT,
+      data: {
+        ...MOCK_ABLY_PARTICIPANT.data,
+        id: MOCK_LOCAL_PARTICIPANT.id,
+      },
+    };
+
+    whoIsOnlineComponent['onParticipantListUpdate'](participantsData);
+
+    expect(whoIsOnlineComponent['participants'].length).toBe(1);
+
+    participantsData[MOCK_LOCAL_PARTICIPANT.id].data.isPrivate = true;
+
+    whoIsOnlineComponent['onParticipantListUpdate'](participantsData);
+
+    expect(whoIsOnlineComponent['participants'].length).toBe(1);
+  });
+
+  describe('events', () => {
+    beforeEach(() => {
+      const participants = {};
+      participants[MOCK_LOCAL_PARTICIPANT.id] = MOCK_ABLY_PARTICIPANT;
+      participants[MOCK_ABLY_PARTICIPANT.id] = {
+        ...MOCK_ABLY_PARTICIPANT,
+        data: MOCK_ABLY_PARTICIPANT_DATA_2,
+      };
+
+      whoIsOnlineComponent['onParticipantListUpdate'](participants);
+      whoIsOnlineComponent['element'].addEventListener = jest.fn();
+    });
+
+    test('should publish private to event bus and realtime', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, {
+        detail: { isPrivate: false, id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
+      });
+
+      whoIsOnlineComponent['setPrivate'](event);
+
+      expect(whoIsOnlineComponent['eventBus'].publish).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_PRIVATE_MODE,
+        false,
+      );
+
+      expect(whoIsOnlineComponent['realtime'].updateWIOParticipant).toHaveBeenCalledWith(
+        MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        false,
+      );
+    });
+
+    test('should publish follow to event bus', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
+        detail: { id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
+      });
+
+      whoIsOnlineComponent['followMousePointer'](event);
+
+      expect(whoIsOnlineComponent['eventBus'].publish).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+        MOCK_ABLY_PARTICIPANT_DATA_2.id,
+      );
+    });
+
+    test('should publish go-to to event bus', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, {
+        detail: { id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
+      });
+
+      whoIsOnlineComponent['goToMousePointer'](event);
+
+      expect(whoIsOnlineComponent['eventBus'].publish).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+        MOCK_ABLY_PARTICIPANT_DATA_2.id,
+      );
+    });
   });
 });

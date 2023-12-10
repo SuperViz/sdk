@@ -2,6 +2,7 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
+import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { Annotation } from '../../../components/comments/types';
@@ -29,16 +30,17 @@ let KICK_PARTICIPANTS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
   private participants: Record<string, AblyParticipant> = {};
+  private participantsWIO: Record<string, AblyParticipant> = {};
   private participantsMouse: Record<string, ParticipantMouse> = {};
   private participantsOn3d: Record<string, AblyParticipant> = {};
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
-
   private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private presenceWIOChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presenceMouseChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomState: Record<string, RealtimeMessage> = {};
@@ -386,7 +388,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         return this.participants[participantId]?.data?.slotIndex;
       }
     }
-    return 16; // GRAY COLOR
+    return MeetingColors['gray'];
   }
 
   /**
@@ -1377,6 +1379,28 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     this.presenceMouseObserver.publish(this.participantsMouse);
+  };
+
+  /** Who Is Online */
+
+  public enterWIOChannel = (participant: Participant): void => {
+    if (!this.presenceWIOChannel) {
+      this.presenceWIOChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-wio`);
+      this.presenceWIOChannel.attach();
+
+      this.presenceWIOChannel.subscribe('update', this.onWIOChannelUpdate);
+    }
+
+    this.presenceWIOChannel.publish('update', participant);
+  };
+
+  private onWIOChannelUpdate = ({ data: { id, isPrivate } }): void => {
+    this.participants[id].data.isPrivate = isPrivate;
+    this.presenceWIOObserver.publish(this.participants);
+  };
+
+  public updateWIOParticipant = (id: string, isPrivate: boolean): void => {
+    this.presenceWIOChannel.publish('update', { id, isPrivate });
   };
 
   /** Presence 3D */

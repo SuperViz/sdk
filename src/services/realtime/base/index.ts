@@ -23,6 +23,7 @@ export class RealtimeService implements DefaultRealtimeService {
   public authenticationObserver: Observer;
   public commentsObserver: Observer;
   public presenceMouseObserver: Observer;
+  public presenceWIOObserver: Observer;
   public presenceMouseParticipantLeaveObserver: Observer;
   public presenceMouseParticipantJoinedObserver: Observer;
   public presenceSlotsInfosObserver: Observer;
@@ -59,6 +60,8 @@ export class RealtimeService implements DefaultRealtimeService {
 
     // presence mouse
     this.presenceMouseObserver = new Observer({ logger: this.logger });
+    this.presenceWIOObserver = new Observer({ logger: this.logger });
+
     this.presenceMouseParticipantLeaveObserver = new Observer({ logger: this.logger });
     this.presenceMouseParticipantJoinedObserver = new Observer({ logger: this.logger });
     this.presenceSlotsInfosObserver = new Observer({ logger: this.logger });
@@ -99,7 +102,7 @@ export class RealtimeService implements DefaultRealtimeService {
   }
 
   /**
-   * @function subscribeToParticipantUpdate
+   * @function subscribeToParticipant3DUpdate
    * @description subscribe to a participant's events
    * @param {string} participantId
    * @param {Function} callback

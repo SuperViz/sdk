@@ -296,4 +296,24 @@ describe('MousePointers', () => {
       expect(presenceMouseComponent['divWrapper'].hasChildNodes()).toBeTruthy();
     });
   });
+
+  describe('setParticipantPrivate', () => {
+    test('should update isPrivate property', () => {
+      presenceMouseComponent['setParticipantPrivate'](true);
+      expect(presenceMouseComponent['isPrivate']).toBe(true);
+
+      presenceMouseComponent['setParticipantPrivate'](false);
+      expect(presenceMouseComponent['isPrivate']).toBe(false);
+    });
+
+    test('should update presenceMouse in realtime', () => {
+      const isPrivate = true;
+
+      presenceMouseComponent['setParticipantPrivate'](isPrivate);
+      expect(presenceMouseComponent['realtime'].updatePresenceMouse).toBeCalledWith({
+        ...presenceMouseComponent['localParticipant'],
+        visible: !isPrivate,
+      });
+    });
+  });
 });

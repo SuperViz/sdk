@@ -86,6 +86,8 @@ export class WhoIsOnline extends BaseComponent {
    */
   private subscribeToRealtimeEvents(): void {
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
+    this.realtime.enterWIOChannel(this.localParticipant);
+    this.realtime.presenceWIOObserver.subscribe(this.onParticipantListUpdate);
   }
 
   /**
@@ -109,20 +111,24 @@ export class WhoIsOnline extends BaseComponent {
       return data.activeComponents?.includes('whoIsOnline');
     });
 
-    const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
-      const { color } = this.realtime.getSlotColor(slotIndex);
-      const isLocal = this.localParticipant.id === id;
-      const joinedPresence = activeComponents.some((component) => component.includes('presence'));
-      this.setLocalData(isLocal, !joinedPresence, color, slotIndex);
+    const participants = updatedParticipants
+      .filter(({ data: { isPrivate, id } }) => {
+        return !isPrivate || (isPrivate && id === this.localParticipant.id);
+      })
+      .map(({ data }) => {
+        const { slotIndex, id, name, avatar, activeComponents, isPrivate } = data as Participant;
+        const { color } = this.realtime.getSlotColor(slotIndex);
+        const isLocal = this.localParticipant.id === id;
+        const joinedPresence = activeComponents.some((component) => component.includes('presence'));
+        this.setLocalData(isLocal, !joinedPresence, color, slotIndex);
 
-      return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
-    });
+        return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
+      });
 
     if (isEqual(participants, this.participants)) return;
 
     this.participants = participants;
-    this.element.participants = this.participants;
+    this.element.updateParticipants(this.participants);
   };
 
   private setLocalData = (local: boolean, disable: boolean, color: string, slotIndex: number) => {
@@ -164,7 +170,7 @@ export class WhoIsOnline extends BaseComponent {
 
   /**
    * @function goToMousePointer
-   * @description Publishes the event 'go-to-mouse-pointer' to the event bus
+   * @description Publishes the go to event to the event bus
    * @param {CustomEvent} event
    * @returns {void}
    */
@@ -174,7 +180,7 @@ export class WhoIsOnline extends BaseComponent {
 
   /**
    * @function followMousePointer
-   * @description Publishes the event 'follow-mouse-pointer' to the event bus
+   * @description Publishes the follow event to the event bus
    * @param {CustomEvent} event
    * @returns {void}
    */
@@ -182,7 +188,14 @@ export class WhoIsOnline extends BaseComponent {
     this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
   };
 
-  private setPrivate = ({ detail }: CustomEvent) => {
-    this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, detail);
+  /**
+   * @function setPrivate
+   * @description Publishes the private event to realtime and the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private setPrivate = ({ detail: { isPrivate, id } }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, isPrivate);
+    this.realtime.updateWIOParticipant(id, isPrivate);
   };
 }

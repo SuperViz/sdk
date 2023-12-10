@@ -105,8 +105,7 @@ export class MousePointers extends BaseComponent {
    * @description perform animation in presence mouse
    * @returns {void}
    */
-  private setParticipantPrivate = ({ detail: { id, isPrivate } }: CustomEvent): void => {
-    console.error('hehe');
+  private setParticipantPrivate = (isPrivate: boolean): void => {
     this.isPrivate = isPrivate;
     this.realtime.updatePresenceMouse({ ...this.localParticipant, visible: !isPrivate });
   };
