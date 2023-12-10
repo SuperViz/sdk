@@ -170,6 +170,7 @@ export class MousePointers extends BaseComponent {
 
     Object.values(participants).forEach((participant: ParticipantMouse) => {
       if (participant.id === this.localParticipant.id) return;
+      if (this.following && participant.id !== this.following) return;
 
       this.presences.set(participant.id, participant);
     });
