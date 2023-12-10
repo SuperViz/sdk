@@ -123,7 +123,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       }
 
       this.following = { name, id, color, slotIndex };
-      this.swapParticipants();
+      this.swapParticipantBeingFollowedPosition();
       this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id });
     }
   };
@@ -166,7 +166,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     return isBeingFollowed ? ['place', 'send-off'] : ['place', 'send'];
   }
 
-  private swapParticipants() {
+  private swapParticipantBeingFollowedPosition() {
     const a = this.participants?.findIndex(({ id }) => id === this.following?.id);
     const b = 0;
 
@@ -199,7 +199,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    this.swapParticipants();
+    this.swapParticipantBeingFollowedPosition();
 
     return html` <div class="superviz-who-is-online">
       ${this.participants.slice(0, 4).map((participant, index) => {
