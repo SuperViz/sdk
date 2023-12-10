@@ -199,6 +199,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return html``;
 
+    this.swapParticipants();
+
     return html` <div class="superviz-who-is-online">
       ${this.participants.slice(0, 4).map((participant, index) => {
         const { joinedPresence, isLocal, id, name, color } = participant;
