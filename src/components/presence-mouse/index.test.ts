@@ -19,10 +19,9 @@ const MOCK_MOUSE: ParticipantMouse = {
 const participant2 = MOCK_MOUSE;
 participant2.id = 'unit-test-participant2-ably-id';
 
-const participants: Record<string, ParticipantMouse> = {
-  participant: MOCK_MOUSE,
-  participant2,
-};
+const participants: Record<string, ParticipantMouse> = {};
+participants[MOCK_LOCAL_PARTICIPANT.id] = MOCK_MOUSE;
+participants[participant2.id] = participant2;
 
 const { getElementById } = document;
 
@@ -134,8 +133,12 @@ describe('MousePointers', () => {
   });
 
   describe('onParticipantsDidChange', () => {
-    afterEach(() => {
+    beforeEach(() => {
       presenceMouseComponent['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
+      presenceMouseComponent['presences'] = new Map();
+
+      participants[MOCK_LOCAL_PARTICIPANT.id] = MOCK_MOUSE;
+      participants[participant2.id] = participant2;
     });
 
     test('should update presence mouse element for external participants', () => {
@@ -168,6 +171,16 @@ describe('MousePointers', () => {
       expected.set(participant2.id, participant2);
 
       expect(presenceMouseComponent['presences']).toEqual(expected);
+    });
+
+    test('should go to participant if following', () => {
+      presenceMouseComponent['goToMouse'] = jest
+        .fn()
+        .mockImplementation(presenceMouseComponent['goToMouse']);
+      presenceMouseComponent['following'] = participant2.id;
+      presenceMouseComponent['onParticipantsDidChange'](participants);
+
+      expect(presenceMouseComponent['goToMouse']).toHaveBeenCalledWith(participant2.id);
     });
   });
 
@@ -214,7 +227,7 @@ describe('MousePointers', () => {
       expect(presenceMouseComponent['goToMouseCallback']).not.toHaveBeenCalled();
     });
 
-    test('should call callback if user id is not found', () => {
+    test('should call callback if user id is found', () => {
       presenceMouseComponent['onParticipantsDidChange'](participants);
 
       presenceMouseComponent['goToMouseCallback'] = jest.fn();

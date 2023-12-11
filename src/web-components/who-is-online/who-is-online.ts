@@ -128,7 +128,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       }
 
       this.following = { name, id, color, slotIndex };
-      this.swapParticipants();
+      this.swapParticipantBeingFollowedPosition();
       this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id });
     }
 
@@ -179,9 +179,22 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     return isBeingFollowed ? ['place', 'send-off'] : ['place', 'send'];
   }
 
-  private swapParticipants() {
+  private putLocalParticipationFirst() {
+    if (this.participants[0].isLocal) return;
+
+    const localParticipant = this.participants?.find(({ isLocal }) => isLocal);
+    if (!localParticipant) return;
+
+    const participants = [...this.participants];
+    const localParticipantIndex = participants.indexOf(localParticipant);
+    participants.splice(localParticipantIndex, 1);
+    participants.unshift(localParticipant);
+    this.participants = participants;
+  }
+
+  private swapParticipantBeingFollowedPosition() {
     const a = this.participants?.findIndex(({ id }) => id === this.following?.id);
-    const b = 0;
+    const b = 1;
 
     if (a < 4 || !a) return;
 
@@ -228,6 +241,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   private renderParticipants() {
     if (!this.participants) return html``;
+
+    this.putLocalParticipationFirst();
+    this.swapParticipantBeingFollowedPosition();
 
     return html` <div class="superviz-who-is-online">
       ${this.participants.slice(0, 4).map((participant, index) => {

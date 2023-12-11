@@ -87,7 +87,7 @@ export class Dropdown extends WebComponentsBaseElement {
 
     this.emitEvent('selected', returnTo, {
       bubbles: false,
-      composed: false,
+      composed: true,
     });
   };
 

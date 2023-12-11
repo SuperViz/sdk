@@ -25,7 +25,7 @@ SuperViz offers a comprehensive suite of components, all synchronized with an ad
   - [Presence in ThreeJS](https://docs.superviz.com/components/presence/presence3d/ThreeJsPresence)
   - [Real-time Mouse Pointers](https://docs.superviz.com/components/presence/mouse-pointers)
   - [Real-time Data Engine](https://docs.superviz.com/components/presence/real-time-data-engine)
-  - Who-is-Online [Coming soon]
+  - [Who-is-Online](https://docs.superviz.com/components/presence/who-is-online)
 - [Video Conference](https://docs.superviz.com/components/video/video-conference)
 
 You can also combine components to create a custom solution for your application.
@@ -103,7 +103,7 @@ module.exports = {
 };
 ```
 
-And add into inicialization of SDK
+And add into initialization of SDK
 
 ```javascript
 environment: 'local';
