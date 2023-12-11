@@ -890,7 +890,17 @@ function print() { __p += __j.call(arguments, '') }
   }
 
   button.float-button p {
-    visibility: hidden;
+    opacity: 0;
+    transition: opacity 100ms linear;
+  }
+
+  button.float-button:hover p {
+    opacity: 1;
+    transition-delay: 200ms;
+  }
+
+  button.float-button:not(:hover) {
+    transition-delay: 100ms;
   }
 
   .hide-button {
@@ -900,11 +910,6 @@ function print() { __p += __j.call(arguments, '') }
   button.float-button:hover {
     width: 110px;
     border-radius: 30px;
-  }
-
-  button.float-button:hover p {
-    visibility: visible;
-    animation: expand 300ms ease-in-out;
   }
 `;v();var Bl=B`
 .footer {
