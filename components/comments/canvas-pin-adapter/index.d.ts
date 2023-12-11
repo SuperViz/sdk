@@ -1,5 +1,5 @@
 import { Observer } from '../../../common/utils';
-import { Annotation, AnnotationPositionInfo, PinAdapter } from '../types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
 export declare class CanvasPin implements PinAdapter {
     private logger;
     private canvasId;
@@ -10,10 +10,16 @@ export declare class CanvasPin implements PinAdapter {
     private isPinsVisible;
     private annotations;
     private pins;
-    private divWrapperReplacementInterval;
     private selectedPin;
+    private animateFrame;
+    private goToPinCallback;
     onPinFixedObserver: Observer;
-    constructor(canvasId: string);
+    constructor(canvasId: string, options?: {
+        onGoToPin?: (position: {
+            x: number;
+            y: number;
+        }) => void;
+    });
     /**
      * @function destroy
      * @description destroys the canvas pin adapter.
@@ -46,9 +52,9 @@ export declare class CanvasPin implements PinAdapter {
      * @description
             creates a temporary pin with the id
             temporary-pin to mark where the annotation is being created
-     * @param {AnnotationPositionInfo} coordinates  - The coordinates of the pin to be created.
+     * @param {PinCoordinates} position  - The position of the pin to be created.
      */
-    createTemporaryPin(coordinates: AnnotationPositionInfo): void;
+    createTemporaryPin(position: PinCoordinates): void;
     /**
      * @function addListeners
      * @description adds event listeners to the canvas element.
@@ -82,11 +88,17 @@ export declare class CanvasPin implements PinAdapter {
      * */
     private resetPins;
     /**
-     * @function createDivWrapper
+     * @function animate
+     * @description animation frame
+     * @returns {void}
+     */
+    private animate;
+    /**
+     * @function renderDivWrapper
      * @description Creates a div wrapper for the pins.
      * @returns {HTMLElement} The newly created div wrapper.
      * */
-    private createDivWrapper;
+    private renderDivWrapper;
     /**
      * @function renderAnnotationsPins
      * @description Renders the annotations on the canvas.
@@ -96,8 +108,12 @@ export declare class CanvasPin implements PinAdapter {
     private removeAnnotationsPins;
     /** Callbacks  */
     private annotationSelected;
-    private scrollIntoView;
-    private isScrollable;
+    /**
+     * @function goToPin
+     * @description - translate the canvas to the pin position
+     * @param uuid - annotation uuid
+     */
+    private goToPin;
     /**
      * @function onClick
      * @description
