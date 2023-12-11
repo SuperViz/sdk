@@ -21,7 +21,6 @@ export interface VideoComponentOptions {
     userType?: ParticipantType | `${ParticipantType}`;
     participantType?: ParticipantType | `${ParticipantType}`;
     collaborationMode?: {
-        enabled?: boolean;
         position?: CamerasPosition | `${CamerasPosition}`;
         modalPosition?: LayoutPosition | `${LayoutPosition}`;
         initialView?: LayoutMode | `${LayoutMode}`;
