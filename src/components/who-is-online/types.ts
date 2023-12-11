@@ -1,4 +1,5 @@
-import { Participant as GeneralParticipant } from '../../common/types/participant.types';
+import { Avatar, Participant as GeneralParticipant } from '../../common/types/participant.types';
+import { ComponentNames } from '../types';
 
 export enum Position {
   TOP_LEFT = 'top-left',
@@ -9,6 +10,9 @@ export enum Position {
 
 export interface Participant extends GeneralParticipant {
   slotIndex: number;
+  isLocal?: boolean;
+  joinedPresence?: boolean;
+  isPrivate?: boolean;
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string;

@@ -15,6 +15,11 @@ export const dropdownStyle = css`
     padding: 10px;
     border-radius: 2px;
     position: relative;
+    cursor: pointer;
+  }
+
+  .who-is-online-dropdown__content.disable-dropdown {
+    cursor: default;
   }
 
   .who-is-online-dropdown__content:hover,
@@ -23,6 +28,10 @@ export const dropdownStyle = css`
   }
 
   .who-is-online-dropdown__participant {
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,6 +55,7 @@ export const dropdownStyle = css`
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
+    object-fit: contain;
   }
 
   .dropdown-list {
@@ -59,7 +69,7 @@ export const dropdownStyle = css`
   }
 
   .dropdown-list > div {
-    padding: 5px;
+    padding: 4px;
     min-width: 216px;
   }
 
@@ -72,26 +82,20 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
+  }
+
+  .menu--bottom {
     top: 4px;
-  }
-
-  .menu--bottom-left {
-    min-width: 103px;
-    position: absolute;
-    left: 0px;
-  }
-
-  .menu--bottom-center {
-    min-width: 103px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .menu--bottom-right {
     min-width: 103px;
     position: absolute;
     right: 0;
+  }
+
+  .menu--top {
+    bottom: 44px;
+    min-width: 103px;
+    position: absolute;
+    right: 0px;
   }
 
   .menu-open {
@@ -110,7 +114,10 @@ export const dropdownStyle = css`
     flex: 1;
     justify-content: flex-end;
     display: flex;
-    visibility: hidden;
+  }
+
+  .hide-icon {
+    display: none;
   }
 
   @media (max-width: 780px) {
@@ -132,6 +139,12 @@ export const dropdownStyle = css`
 
     .dropdown-list > div {
       min-width: 192px;
+    }
+  }
+
+  @media (max-width: 780px) {
+    .menu--top {
+      bottom: 36px;
     }
   }
 `;

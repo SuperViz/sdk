@@ -4,11 +4,7 @@ import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-col
 import { AblyRealtimeService } from '../src/services/realtime';
 
 import { MOCK_OBSERVER_HELPER } from './observer-helper.mock';
-import {
-  MOCK_ABLY_PARTICIPANT,
-  MOCK_ABLY_PARTICIPANT_DATA_2,
-  MOCK_ABLY_PARTICIPANT_DATA_1,
-} from './participants.mock';
+import { MOCK_ABLY_PARTICIPANT, MOCK_ABLY_PARTICIPANT_DATA_2 } from './participants.mock';
 
 export const createRealtimeMessage = (messageName: string) => ({
   name: messageName,

@@ -193,7 +193,9 @@ export class VideoConference extends BaseComponent {
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
       customColors: config.get<ColorsVariables>('colors'),
-      layoutPosition: this.params?.collaborationMode?.modalPosition as LayoutPosition,
+      collaborationMode: true,
+      layoutPosition:
+        (this.params?.collaborationMode?.modalPosition as LayoutPosition) ?? LayoutPosition.CENTER,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
       waterMark: this.showWaterMarkType,
     };

@@ -1,6 +1,6 @@
 import { isEqual } from 'lodash';
 
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
@@ -32,6 +32,7 @@ export class WhoIsOnline extends BaseComponent {
   protected start(): void {
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
+    this.addListeners();
   }
 
   /**
@@ -41,9 +42,39 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected destroy(): void {
     this.unsubscribeToRealtimeEvents();
+    this.removeListeners();
     this.element.remove();
     this.element = null;
     this.participants = null;
+  }
+
+  /**
+   * @function addListeners
+   * @description adds event listeners to the who is online element.
+   * @returns {void}
+   */
+  private addListeners(): void {
+    this.element.addEventListener(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.followMousePointer,
+    );
+    this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
+  }
+
+  /**
+   * @function addListeners
+   * @description adds event listeners from the who is online element.
+   * @returns {void}
+   */
+  private removeListeners(): void {
+    this.element.removeEventListener(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.followMousePointer,
+    );
+    this.element.removeEventListener(
+      RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+      this.goToMousePointer,
+    );
   }
 
   /**
@@ -71,41 +102,32 @@ export class WhoIsOnline extends BaseComponent {
    * @param {Record<string, AblyParticipant>} data
    * @returns {void}
    */
-  private onParticipantListUpdate = (data: Record<string, AblyParticipant>) => {
+  private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
     const updatedParticipants = Object.values(data).filter(({ data }) => {
       return data.activeComponents?.includes('whoIsOnline');
     });
 
-    const compare = updatedParticipants.map(({ data: { slotIndex, id } }) => {
+    const participants = updatedParticipants.map(({ data }) => {
+      const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
       const { color } = this.realtime.getSlotColor(slotIndex);
-      return { id, color };
+      const isLocal = this.localParticipant.id === id;
+      const joinedPresence = activeComponents.some((component) => component.includes('presence'));
+
+      this.setDisableDropdown(isLocal, !joinedPresence);
+
+      return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
     });
 
-    const participants = this.participants.map(({ id, color }) => {
-      return { color, id };
-    });
+    if (isEqual(participants, this.participants)) return;
 
-    if (isEqual(compare, participants)) return;
-
-    const currentParticipants: string[] = this.participants
-      .filter((participant) => participant.color)
-      .map((participant) => participant.id);
-
-    const newParticipants = updatedParticipants
-      .filter(({ id }) => {
-        return !currentParticipants.includes(id);
-      })
-      .map(({ data: { name, id, slotIndex } }) => {
-        const { color } = this.realtime.getSlotColor(slotIndex);
-        return { name, id, slotIndex, color };
-      });
-
-    this.participants = [
-      ...this.participants.filter(({ id }) => !currentParticipants.includes(id)),
-      ...newParticipants,
-    ];
-
+    this.participants = participants;
     this.element.participants = this.participants;
+  };
+
+  private setDisableDropdown = (local: boolean, disable: boolean) => {
+    if (!local) return;
+
+    this.element.disableDropdown = disable;
   };
 
   /**
@@ -137,4 +159,24 @@ export class WhoIsOnline extends BaseComponent {
     container.appendChild(this.element);
     this.element.position = 'position: relative;';
   }
+
+  /**
+   * @function goToMousePointer
+   * @description Publishes the event 'go-to-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private goToMousePointer = ({ detail }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, detail.id);
+  };
+
+  /**
+   * @function followMousePointer
+   * @description Publishes the event 'follow-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private followMousePointer = ({ detail }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
+  };
 }

@@ -1,33 +1,41 @@
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
-import { PresenceMouse } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { ParticipantMouse } from './types';
+import { ParticipantMouse, PresenceMouseProps } from './types';
 
 export class MousePointers extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
-  private presenceMouseElement: PresenceMouse;
-  private containerId: string | null;
-  private container: HTMLElement;
+  private canvas: HTMLCanvasElement;
   private divWrapper: HTMLElement;
-  private divWrapperReplacementInterval: ReturnType<typeof setInterval> | null = null;
+  private presences: Map<string, ParticipantMouse>;
+  private animateFrame: number;
+  private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
+  private following: string;
 
-  constructor(containerId?: string) {
+  constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
-    this.containerId = containerId;
-    this.container = document.getElementById(containerId);
+    this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    this.presences = new Map();
 
-    if (!this.container) {
-      const message = `Container with id ${containerId} not found`;
+    if (!this.canvas) {
+      const message = `Canvas with id ${canvasId} not found`;
       this.logger.log(message);
       throw new Error(message);
     }
 
-    this.divWrapper = this.createDivWrapper();
+    this.divWrapper = this.renderDivWrapper();
+    this.animateFrame = requestAnimationFrame(this.animate);
+
+    this.goToMouseCallback = options?.onGoToPresence;
+  }
+
+  private get textColorValues(): number[] {
+    return [2, 4, 5, 7, 8, 16];
   }
 
   /**
@@ -38,10 +46,10 @@ export class MousePointers extends BaseComponent {
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
 
-    this.presenceMouseElement = document.createElement('superviz-presence-mouse') as PresenceMouse;
-    this.divWrapper.appendChild(this.presenceMouseElement);
-    this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
-    this.container.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
+    this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.followMouse);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -54,19 +62,15 @@ export class MousePointers extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
 
     this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
 
-    this.container.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    this.container.removeEventListener('mouseout', this.onMyParticipantMouseOut);
-    this.presenceMouseElement.remove();
+    cancelAnimationFrame(this.animateFrame);
+    this.canvas.removeEventListener('mousemove', this.onMyParticipantMouseMove);
+    this.canvas.removeEventListener('mouseout', this.onMyParticipantMouseOut);
     this.divWrapper.remove();
-
-    if (this.divWrapperReplacementInterval) {
-      clearInterval(this.divWrapperReplacementInterval);
-      this.divWrapperReplacementInterval = null;
-    }
   }
 
   /**
@@ -94,6 +98,42 @@ export class MousePointers extends BaseComponent {
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
   };
 
+  /**
+   * @function animate
+   * @description perform animation in presence mouse
+   * @returns {void}
+   */
+  private animate = (): void => {
+    this.renderDivWrapper();
+    this.updateParticipantsMouses();
+
+    requestAnimationFrame(this.animate);
+  };
+
+  /**
+   * @function goToMouse
+   * @description - translate the canvas to the participant position
+   * @param    id - participant id
+   */
+  private goToMouse = (id: string): void => {
+    const mouse = this.presences.get(id);
+
+    if (!mouse) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const { width, height } = rect;
+
+    const { x, y } = mouse;
+
+    const widthHalf = width / 2;
+    const heightHalf = height / 2;
+
+    const translateX = widthHalf - x;
+    const translateY = heightHalf - y;
+
+    if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
+  };
+
   /** Presence Mouse Events */
 
   /**
@@ -102,15 +142,19 @@ export class MousePointers extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
-    const rect = this.divWrapper.getBoundingClientRect();
+    const context = this.canvas.getContext('2d');
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.x - rect.left;
+    const y = event.y - rect.top;
+
+    const transform = context?.getTransform();
+    const invertedMatrix = transform.inverse();
+    const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
 
     this.realtime.updatePresenceMouse({
       ...this.localParticipant,
-      mousePositionX: event.x - rect.x,
-      mousePositionY: event.y - rect.y,
-      originalWidth: rect.width,
-      originalHeight: rect.height,
-      containerId: this.containerId,
+      x: transformedPoint.x,
+      y: transformedPoint.y,
       visible: true,
     });
   };
@@ -125,18 +169,18 @@ export class MousePointers extends BaseComponent {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
     Object.values(participants).forEach((participant: ParticipantMouse) => {
-      const hasPresenceMouseElement = participant?.mousePositionX && this.presenceMouseElement;
-      const myParticipant = participant?.id === this.localParticipant?.id;
+      if (participant.id === this.localParticipant.id) return;
+      if (this.following && participant.id !== this.following) return;
 
-      if (!participant?.visible) {
-        this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
-        return;
-      }
-
-      if (!myParticipant && hasPresenceMouseElement) {
-        this.presenceMouseElement.updatePresenceMouseParticipant(participant);
-      }
+      this.presences.set(participant.id, participant);
     });
+
+    if (this.following) {
+      const mouse = this.presences.get(this.following);
+      if (mouse) {
+        this.goToMouse(this.following);
+      }
+    }
   };
 
   private onMyParticipantMouseOut = (): void => {
@@ -150,34 +194,138 @@ export class MousePointers extends BaseComponent {
    * @returns {void}
    */
   private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
-    this.presenceMouseElement.removePresenceMouseParticipant(participant.id);
+    this.removePresenceMouseParticipant(participant.id);
   };
 
   /**
-   * @function createDivWrapper
+   * @function renderDivWrapper
    * @description Creates a div wrapper for the pins.
    * @returns {HTMLElement} The newly created div wrapper.
    * */
-  private createDivWrapper(): HTMLElement {
-    const divWrapper = document.createElement('div');
+  private renderDivWrapper(): HTMLElement {
+    const canvasRect = this.canvas.getBoundingClientRect();
+    let divWrapper = document.getElementById('superviz-presence-mouse-wrapper');
 
-    this.container.parentElement.style.position = 'relative';
+    if (!divWrapper) {
+      divWrapper = document.createElement('div');
+      divWrapper.id = 'superviz-presence-mouse-wrapper';
+      this.canvas.parentElement.style.position = 'relative';
+      this.canvas.parentElement.appendChild(divWrapper);
+    }
 
     divWrapper.style.position = 'fixed';
+    divWrapper.style.top = `${canvasRect.top}px`;
+    divWrapper.style.left = `${canvasRect.left}px`;
+    divWrapper.style.width = `${canvasRect.width}px`;
+    divWrapper.style.height = `${canvasRect.height}px`;
     divWrapper.style.pointerEvents = 'none';
-
-    this.container.parentElement.appendChild(divWrapper);
-
-    if (!this.divWrapperReplacementInterval) {
-      this.divWrapperReplacementInterval = setInterval(() => {
-        const elementRect = this.container.getBoundingClientRect();
-        divWrapper.style.top = `${elementRect.top}px`;
-        divWrapper.style.left = `${elementRect.left}px`;
-        divWrapper.style.width = `${elementRect.width}px`;
-        divWrapper.style.height = `${elementRect.height}px`;
-      }, 1);
-    }
+    divWrapper.style.overflow = 'hidden';
+    divWrapper.style.zIndex = '2';
 
     return divWrapper;
   }
+
+  private updateParticipantsMouses = (): void => {
+    this.presences.forEach((mouse) => {
+      if (!mouse?.visible) {
+        this.removePresenceMouseParticipant(mouse.id);
+        return;
+      }
+
+      this.renderPresenceMouses(mouse);
+    });
+  };
+
+  /**
+   * @function renderPresenceMouses
+   * @description add presence mouses to screen
+   * @param {ParticipantMouse} mouse - presence mouse change data
+   * @returns {void}
+   * */
+  private renderPresenceMouses = (mouse: ParticipantMouse): void => {
+    const userMouseIdExist = document.getElementById(`mouse-${mouse.id}`);
+    let mouseFollower = userMouseIdExist;
+    if (!mouseFollower) {
+      mouseFollower = this.createMouseElement(mouse);
+    }
+
+    const divMouseUser = document.getElementById(`mouse-${mouse.id}`);
+    const divPointer = document.getElementById(`mouse-${mouse.id}`);
+
+    if (!divMouseUser || !divPointer) return;
+
+    const mouseUser = divMouseUser.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
+    const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
+
+    if (pointerUser) {
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${mouse.slotIndex}.svg)`;
+    }
+
+    if (mouseUser) {
+      mouseUser.style.color = this.textColorValues.includes(mouse.slotIndex)
+        ? '#FFFFFF'
+        : '#26242A';
+      mouseUser.style.backgroundColor = mouse.color;
+      mouseUser.innerHTML = mouse.name;
+    }
+
+    const { x: savedX, y: savedY } = mouse;
+    const context = this.canvas.getContext('2d');
+    const transform = context?.getTransform();
+
+    const currentTranslateX = transform?.e;
+    const currentTranslateY = transform?.f;
+
+    const x = savedX + currentTranslateX;
+    const y = savedY + currentTranslateY;
+
+    const isVisible =
+      this.divWrapper.clientWidth > x && this.divWrapper.clientHeight > y && mouse.visible;
+
+    mouseFollower.style.opacity = isVisible ? '1' : '0';
+    mouseFollower.style.left = `${x}px`;
+    mouseFollower.style.top = `${y}px`;
+  };
+
+  /**
+   * @function removePresenceMouseParticipant
+   * @description handler remove external participant mouse
+   * @param {string} participantId - external participant id
+   * @returns {void}
+   * */
+  private removePresenceMouseParticipant(participantId: string): void {
+    const userMouseIdExist = document.getElementById(`mouse-${participantId}`);
+    if (userMouseIdExist) {
+      userMouseIdExist.remove();
+      this.presences.delete(participantId);
+    }
+  }
+
+  /**
+   * @function createMouseElement
+   * @param mouse - participant mouse
+   * @returns {HTMLDivElement}
+   */
+  private createMouseElement(mouse: ParticipantMouse): HTMLDivElement {
+    const mouseFollower = document.createElement('div');
+    mouseFollower.setAttribute('id', `mouse-${mouse.id}`);
+    mouseFollower.setAttribute('class', 'mouse-follower');
+
+    const pointerMouse = document.createElement('div');
+    pointerMouse.setAttribute('class', 'pointer-mouse');
+
+    const mouseUserName = document.createElement('div');
+    mouseUserName.setAttribute('class', 'mouse-user-name');
+    mouseUserName.innerHTML = mouse.name;
+
+    mouseFollower.appendChild(pointerMouse);
+    mouseFollower.appendChild(mouseUserName);
+    this.divWrapper.appendChild(mouseFollower);
+
+    return mouseFollower;
+  }
+
+  private followMouse = (id: string) => {
+    this.following = id;
+  };
 }
