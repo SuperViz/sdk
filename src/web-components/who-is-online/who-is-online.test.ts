@@ -131,12 +131,12 @@ describe('Who Is Online', () => {
   });
 
   test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
-    element['updateParticipants'](MOCK_PARTICIPANTS);
+    element['updateParticipants'](MOCK_PARTICIPANTS.slice(0, 1));
     await sleep();
 
     const letter = element?.shadowRoot?.querySelector('.superviz-who-is-online__avatar');
-
     const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex];
+
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #26242A`,
     );
@@ -256,7 +256,7 @@ describe('Who Is Online', () => {
     expect(element['following']).toBeFalsy();
   });
 
-  test('should bring hidden participant to first position when following them', async () => {
+  test('should bring hidden participant to second position when following them', async () => {
     const participants = [
       ...MOCK_PARTICIPANTS,
       ...MOCK_PARTICIPANTS,
@@ -275,7 +275,7 @@ describe('Who Is Online', () => {
     element['updateParticipants'](participants);
 
     expect(element['participants'].findIndex((participant) => participant.id === 'test')).not.toBe(
-      0,
+      1,
     );
 
     const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
@@ -284,6 +284,6 @@ describe('Who Is Online', () => {
 
     element['dropdownOptionsHandler'](event);
 
-    expect(element['participants'].findIndex((participant) => participant.id === 'test')).toBe(0);
+    expect(element['participants'].findIndex((participant) => participant.id === 'test')).toBe(1);
   });
 });
