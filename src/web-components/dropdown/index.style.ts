@@ -136,6 +136,10 @@ export const dropdownStyle = css`
     margin: 0px;
   }
 
+  .option-label {
+    white-space: nowrap;
+  }
+
   @media (max-width: 780px) {
     .menu--top-left,
     .menu--top-center,

@@ -30,7 +30,6 @@ const createEl = ({
   position,
   label,
   returnTo,
-  options,
   name,
   icons,
   participants,
