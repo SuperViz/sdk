@@ -10,6 +10,7 @@ export declare class MousePointers extends BaseComponent {
     private presences;
     private animateFrame;
     private goToMouseCallback;
+    private following;
     constructor(canvasId: string, options?: PresenceMouseProps);
     private get textColorValues();
     /**
@@ -97,4 +98,5 @@ export declare class MousePointers extends BaseComponent {
      * @returns {HTMLDivElement}
      */
     private createMouseElement;
+    private followMouse;
 }

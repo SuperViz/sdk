@@ -53,6 +53,7 @@ export declare class WhoIsOnline extends BaseComponent {
      * @returns {void}
      */
     private onParticipantListUpdate;
+    private setDisableDropdown;
     /**
      * @function positionWhoIsOnline
      * @description Positions the Who Is Online component on the screen
@@ -66,4 +67,11 @@ export declare class WhoIsOnline extends BaseComponent {
      * @returns {void}
      */
     private goToMousePointer;
+    /**
+     * @function followMousePointer
+     * @description Publishes the event 'follow-mouse-pointer' to the event bus
+     * @param {CustomEvent} event
+     * @returns {void}
+     */
+    private followMousePointer;
 }
