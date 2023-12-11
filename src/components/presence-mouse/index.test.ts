@@ -16,12 +16,16 @@ const MOCK_MOUSE: ParticipantMouse = {
   visible: true,
 };
 
-const participant2 = MOCK_MOUSE;
+const participant1 = { ...MOCK_MOUSE };
+const participant2 = { ...MOCK_MOUSE };
+const participant3 = { ...MOCK_MOUSE };
 participant2.id = 'unit-test-participant2-ably-id';
+participant3.id = 'unit-test-participant3-ably-id';
 
 const participants: Record<string, ParticipantMouse> = {};
-participants[MOCK_LOCAL_PARTICIPANT.id] = MOCK_MOUSE;
-participants[participant2.id] = participant2;
+participants[participant1.id] = { ...participant1 };
+participants[participant2.id] = { ...participant2 };
+participants[participant3.id] = { ...participant3 };
 
 const { getElementById } = document;
 
@@ -136,39 +140,19 @@ describe('MousePointers', () => {
     beforeEach(() => {
       presenceMouseComponent['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
       presenceMouseComponent['presences'] = new Map();
-
-      participants[MOCK_LOCAL_PARTICIPANT.id] = MOCK_MOUSE;
-      participants[participant2.id] = participant2;
+      presenceMouseComponent['following'] = '';
+      participants[MOCK_LOCAL_PARTICIPANT.id] = { ...MOCK_MOUSE };
+      participants[participant2.id] = { ...participant2 };
     });
 
     test('should update presence mouse element for external participants', () => {
       presenceMouseComponent['updatePresenceMouseParticipant'] = jest.fn();
-      const MOCK_MOUSE: ParticipantMouse = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        x: 1000,
-        y: 1000,
-        slotIndex: 0,
-        visible: true,
-      };
-
-      const participant2 = MOCK_MOUSE;
-      participant2.id = 'unit-test-participant2-ably-id';
-
-      const participant3 = MOCK_MOUSE;
-      participant3.id = 'unit-test-local-participant-id';
-
-      const participants: Record<string, ParticipantMouse> = {
-        participant: MOCK_MOUSE,
-        participant2,
-        participant3,
-      };
-
-      presenceMouseComponent['localParticipant'] = { id: 'unit-test-participant1-ably-id' };
-
       presenceMouseComponent['onParticipantsDidChange'](participants);
 
+      // participant1 is local, so we don't want to update it
       const expected = new Map();
       expected.set(participant2.id, participant2);
+      expected.set(participant3.id, participant3);
 
       expect(presenceMouseComponent['presences']).toEqual(expected);
     });
@@ -181,6 +165,23 @@ describe('MousePointers', () => {
       presenceMouseComponent['onParticipantsDidChange'](participants);
 
       expect(presenceMouseComponent['goToMouse']).toHaveBeenCalledWith(participant2.id);
+    });
+
+    test('should only update mouse being followed', () => {
+      const firstExpected = new Map();
+      firstExpected.set(participant2.id, participant2);
+      firstExpected.set(participant3.id, participant3);
+
+      presenceMouseComponent['onParticipantsDidChange'](participants);
+      expect(presenceMouseComponent['presences']).toEqual(firstExpected);
+
+      const secondExpected = new Map();
+      secondExpected.set(participant2.id, participant2);
+      presenceMouseComponent['presences'] = new Map();
+      presenceMouseComponent['following'] = participant2.id;
+
+      presenceMouseComponent['onParticipantsDidChange'](participants);
+      expect(presenceMouseComponent['presences']).toEqual(secondExpected);
     });
   });
 
@@ -327,6 +328,18 @@ describe('MousePointers', () => {
         ...presenceMouseComponent['localParticipant'],
         visible: !isPrivate,
       });
+    });
+  });
+
+  describe('followMouse', () => {
+    afterEach(() => {
+      presenceMouseComponent['following'] = '';
+    });
+
+    test('should update the following property', () => {
+      const randomValue = `random-value-${Math.floor(Math.random() * 100)}`;
+      presenceMouseComponent['followMouse'](randomValue);
+      expect(presenceMouseComponent['following']).toBe(randomValue);
     });
   });
 });
