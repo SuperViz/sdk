@@ -23,6 +23,7 @@ export interface VideoManagerOptions {
   };
   skipMeetingSettings: boolean;
   browserService: BrowserService;
+  collaborationMode: boolean;
   offset?: Offset;
   locales?: Locale[];
   avatars?: Avatar[];
@@ -71,6 +72,7 @@ export interface FrameConfig {
   skipMeetingSettings: boolean;
   layoutPosition: LayoutPosition;
   layoutMode?: LayoutMode;
+  collaborationMode: boolean;
 }
 
 export interface DevicesConfig {

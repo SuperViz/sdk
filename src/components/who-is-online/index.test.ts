@@ -7,6 +7,7 @@ import {
   MOCK_LOCAL_PARTICIPANT,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 
 import { WhoIsOnline } from './index';
@@ -113,5 +114,45 @@ describe('Who Is Online', () => {
     });
 
     expect(whoIsOnlineComponent['participants'].length).toBe(1);
+  });
+
+  describe('events', () => {
+    beforeEach(() => {
+      const participants = {};
+      participants[MOCK_LOCAL_PARTICIPANT.id] = MOCK_ABLY_PARTICIPANT;
+      participants[MOCK_ABLY_PARTICIPANT.id] = {
+        ...MOCK_ABLY_PARTICIPANT,
+        data: MOCK_ABLY_PARTICIPANT_DATA_2,
+      };
+
+      whoIsOnlineComponent['onParticipantListUpdate'](participants);
+      whoIsOnlineComponent['element'].addEventListener = jest.fn();
+    });
+
+    test('should publish follow to event bus', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
+        detail: { id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
+      });
+
+      whoIsOnlineComponent['followMousePointer'](event);
+
+      expect(whoIsOnlineComponent['eventBus'].publish).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+        MOCK_ABLY_PARTICIPANT_DATA_2.id,
+      );
+    });
+
+    test('should publish go-to to event bus', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, {
+        detail: { id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
+      });
+
+      whoIsOnlineComponent['goToMousePointer'](event);
+
+      expect(whoIsOnlineComponent['eventBus'].publish).toHaveBeenCalledWith(
+        RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
+        MOCK_ABLY_PARTICIPANT_DATA_2.id,
+      );
+    });
   });
 });
