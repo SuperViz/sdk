@@ -289,14 +289,15 @@ describe('dropdown', () => {
 
     await sleep();
 
-    expect(element()!['emitEvent']).toHaveBeenCalledWith(
+    expect(element()!['emitEvent']).toHaveBeenNthCalledWith(
+      1,
       'selected',
       {
         uuid: 'any_uuid',
       },
       {
         bubbles: false,
-        composed: false,
+        composed: true,
       },
     );
   });

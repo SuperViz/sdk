@@ -12,7 +12,8 @@ export class MousePointers extends BaseComponent {
   private divWrapper: HTMLElement;
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
-  private goToMouseCallback: PresenceMouseProps['onGoToPin'];
+  private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
+  private following: string;
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -30,7 +31,7 @@ export class MousePointers extends BaseComponent {
     this.divWrapper = this.renderDivWrapper();
     this.animateFrame = requestAnimationFrame(this.animate);
 
-    this.goToMouseCallback = options?.onGoToPin;
+    this.goToMouseCallback = options?.onGoToPresence;
   }
 
   private get textColorValues(): number[] {
@@ -48,6 +49,7 @@ export class MousePointers extends BaseComponent {
     this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
     this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.followMouse);
 
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
@@ -166,13 +168,19 @@ export class MousePointers extends BaseComponent {
   private onParticipantsDidChange = (participants: Record<string, ParticipantMouse>): void => {
     this.logger.log('presence-mouse component @ on participants did change', participants);
 
-    Object.keys(participants).forEach((participantId) => {
-      const participant = participants[participantId];
-
+    Object.values(participants).forEach((participant: ParticipantMouse) => {
       if (participant.id === this.localParticipant.id) return;
+      if (this.following && participant.id !== this.following) return;
 
       this.presences.set(participant.id, participant);
     });
+
+    if (this.following) {
+      const mouse = this.presences.get(this.following);
+      if (mouse) {
+        this.goToMouse(this.following);
+      }
+    }
   };
 
   private onMyParticipantMouseOut = (): void => {
@@ -316,4 +324,8 @@ export class MousePointers extends BaseComponent {
 
     return mouseFollower;
   }
+
+  private followMouse = (id: string) => {
+    this.following = id;
+  };
 }

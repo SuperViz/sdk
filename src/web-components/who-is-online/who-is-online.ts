@@ -6,7 +6,7 @@ import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 
-import { WhoIsOnlineDropdownOptions } from './components/types';
+import { Following, WIODropdownOptions } from './components/types';
 import { whoIsOnlineStyle } from './css/index';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -19,16 +19,21 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare participants: Participant[];
   private textColorValues: number[];
   declare open: boolean;
+  declare disableDropdown: boolean;
+  declare following: Following | undefined;
 
   static properties = {
     position: { type: String },
     participants: { type: Object },
     open: { type: Boolean },
+    disableDropdown: { type: Boolean },
+    following: { type: Object },
   };
 
   constructor() {
     super();
     this.position = 'top: 20px; right: 40px;';
+
     this.open = false;
 
     // should match presence-mouse textColorValues property
@@ -68,13 +73,14 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, avatar, isLocal }) => ({
+      .map(({ name, color, id, slotIndex, isLocal, avatar, joinedPresence }) => ({
         name,
         color,
         id,
         slotIndex,
         avatar,
         isLocal,
+        joinedPresence,
       }));
 
     const classes = {
@@ -91,6 +97,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
+        ?disableDropdown=${this.disableDropdown}
+        following=${JSON.stringify(this.following)}
       >
         <div class=${classMap(classes)} slot="dropdown" @click=${this.toggleOpen}>
           <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
@@ -102,10 +110,21 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
-    const { id, label } = detail;
+    const { id, label, name, color, slotIndex } = detail;
 
-    if (label === WhoIsOnlineDropdownOptions.GOTO) {
+    if (label === WIODropdownOptions['GOTO']) {
       this.emitEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, { id });
+    }
+
+    if ([WIODropdownOptions.FOLLOW, WIODropdownOptions.UNFOLLOW].includes(label)) {
+      if (this.following?.id === id) {
+        this.stopFollowing();
+        return;
+      }
+
+      this.following = { name, id, color, slotIndex };
+      this.swapParticipantBeingFollowedPosition();
+      this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id });
     }
   };
 
@@ -129,57 +148,125 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     </div>`;
   }
 
+  private getOptions(participant: Participant, isBeingFollowed: boolean) {
+    const { id, slotIndex, name, color } = participant;
+    const baseOption = { id, name, color, slotIndex };
+
+    const labels = ['GOTO', isBeingFollowed ? 'UNFOLLOW' : 'FOLLOW'];
+
+    const options = labels.map((label) => ({
+      ...baseOption,
+      label: WIODropdownOptions[label],
+    }));
+
+    return options;
+  }
+
+  private getIcons(isBeingFollowed: boolean) {
+    return isBeingFollowed ? ['place', 'send-off'] : ['place', 'send'];
+  }
+
+  private putLocalParticipationFirst() {
+    if (this.participants[0].isLocal) return;
+
+    const localParticipant = this.participants?.find(({ isLocal }) => isLocal);
+    if (!localParticipant) return;
+
+    const participants = [...this.participants];
+    const localParticipantIndex = participants.indexOf(localParticipant);
+    participants.splice(localParticipantIndex, 1);
+    participants.unshift(localParticipant);
+    this.participants = participants;
+  }
+
+  private swapParticipantBeingFollowedPosition() {
+    const a = this.participants?.findIndex(({ id }) => id === this.following?.id);
+    const b = 1;
+
+    if (a < 4 || !a) return;
+
+    const participants = [...this.participants];
+    const temp = participants[a];
+    participants[a] = participants[b];
+    participants[b] = temp;
+    this.participants = participants;
+  }
+
+  private stopFollowing() {
+    this.following = undefined;
+    this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id: undefined });
+  }
+
+  private followingMessage() {
+    if (!this.following) return '';
+
+    const { slotIndex, name, color } = this.following;
+
+    const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
+
+    return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
+      Following: ${name} <span @click=${this.stopFollowing}>Stop</span>
+    </div>`;
+  }
+
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    const icons = ['place'];
+    this.putLocalParticipationFirst();
+    this.swapParticipantBeingFollowedPosition();
 
-    return html`${this.participants.slice(0, 4).map((participant, index) => {
-      const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => ({ label, id: participant.id }))
-        .slice(0, 1);
+    return html` <div class="superviz-who-is-online">
+      ${this.participants.slice(0, 4).map((participant, index) => {
+        const { joinedPresence, isLocal, id, name, color } = participant;
 
-      const classList = {
-        'superviz-who-is-online__participant': true,
-        local: participant.isLocal,
-      };
+        const participantIsFollowed = this.following?.id === id;
+        const options = this.getOptions(participant, participantIsFollowed);
+        const icons = this.getIcons(participantIsFollowed);
+        const position = this.dropdownPosition(index);
+        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
-      const position = this.dropdownPosition(index);
-      return html`
-        <superviz-dropdown
-          options=${JSON.stringify(options)}
-          label="label"
-          position="${position}"
-          @selected=${this.dropdownOptionsHandler}
-          icons="${JSON.stringify(icons)}"
-          name="${participant.name}"
-          ?disabled=${participant.isLocal}
-        >
-          <div
-            slot="dropdown"
-            class=${classMap(classList)}
-            style="border-color: ${participant.color}"
+        const classList = {
+          'superviz-who-is-online__participant': true,
+          'disable-dropdown': disableDropdown,
+          followed: participantIsFollowed,
+        };
+
+        return html`
+          <superviz-dropdown
+            options=${JSON.stringify(options)}
+            label="label"
+            position="${position}"
+            @selected=${this.dropdownOptionsHandler}
+            icons="${JSON.stringify(icons)}"
+            name="${name}"
+            ?disabled=${disableDropdown}
           >
-            ${this.getAvatar(participant)}
-          </div>
-        </superviz-dropdown>
-      `;
-    })}
-    ${this.renderExcessParticipants()} `;
+            <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
+              ${this.getAvatar(participant)}
+            </div>
+          </superviz-dropdown>
+        `;
+      })}
+      ${this.renderExcessParticipants()}
+    </div>`;
   }
 
   updated(changedProperties) {
     super.updated(changedProperties);
 
     this.updateComplete.then(() => {
-      const element = this.shadowRoot.querySelector('.superviz-who-is-online');
+      const element = this.shadowRoot.querySelector('.wio-content');
       if (!element) return;
 
-      element.setAttribute('style', this.position);
+      const side = this.position.includes('left') ? 'flex-start' : 'flex-end';
+      const style = `${this.position} align-items: ${side};`;
+      element.setAttribute('style', style);
     });
   }
 
   protected render() {
-    return html` <div class="superviz-who-is-online">${this.renderParticipants()}</div>`;
+    return html`<div class="wio-content">
+      ${this.renderParticipants()} ${this.followingMessage()}
+    </div> `;
   }
 }

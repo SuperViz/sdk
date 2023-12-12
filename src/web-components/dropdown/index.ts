@@ -87,7 +87,7 @@ export class Dropdown extends WebComponentsBaseElement {
 
     this.emitEvent('selected', returnTo, {
       bubbles: false,
-      composed: false,
+      composed: true,
     });
   };
 
@@ -400,7 +400,7 @@ export class Dropdown extends WebComponentsBaseElement {
       };
 
       return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
-        ${icons?.at(index)} ${option[this.label]}
+        ${icons?.at(index)} <span class="option-label">${option[this.label]}</span>
       </li>`;
     });
 

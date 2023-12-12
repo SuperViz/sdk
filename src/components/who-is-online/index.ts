@@ -54,6 +54,10 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
+    this.element.addEventListener(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.followMousePointer,
+    );
     this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
   }
 
@@ -63,6 +67,10 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private removeListeners(): void {
+    this.element.removeEventListener(
+      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      this.followMousePointer,
+    );
     this.element.removeEventListener(
       RealtimeEvent.REALTIME_GO_TO_PARTICIPANT,
       this.goToMousePointer,
@@ -100,16 +108,26 @@ export class WhoIsOnline extends BaseComponent {
     });
 
     const participants = updatedParticipants.map(({ data }) => {
-      const { slotIndex, id, name, avatar } = data;
+      const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
       const { color } = this.realtime.getSlotColor(slotIndex);
       const isLocal = this.localParticipant.id === id;
-      return { name, id, slotIndex, color, isLocal };
+      const joinedPresence = activeComponents.some((component) => component.includes('presence'));
+
+      this.setDisableDropdown(isLocal, !joinedPresence);
+
+      return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
     });
 
     if (isEqual(participants, this.participants)) return;
 
     this.participants = participants;
     this.element.participants = this.participants;
+  };
+
+  private setDisableDropdown = (local: boolean, disable: boolean) => {
+    if (!local) return;
+
+    this.element.disableDropdown = disable;
   };
 
   /**
@@ -150,5 +168,15 @@ export class WhoIsOnline extends BaseComponent {
    */
   private goToMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, detail.id);
+  };
+
+  /**
+   * @function followMousePointer
+   * @description Publishes the event 'follow-mouse-pointer' to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private followMousePointer = ({ detail }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
   };
 }
