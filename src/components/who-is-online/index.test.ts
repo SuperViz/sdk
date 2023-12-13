@@ -161,6 +161,23 @@ describe('Who Is Online', () => {
 
       expect(whoIsOnlineComponent['participants'].length).toBe(1);
     });
+
+    test('should call stopFollowing if previously followed participant leaves', () => {
+      whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_1;
+      whoIsOnlineComponent['following'] = MOCK_ABLY_PARTICIPANT_DATA_2.id;
+
+      whoIsOnlineComponent['stopFollowing'] = jest
+        .fn()
+        .mockImplementation(whoIsOnlineComponent['stopFollowing']);
+
+      whoIsOnlineComponent['onParticipantListUpdate']({
+        'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
+      });
+
+      expect(whoIsOnlineComponent['stopFollowing']).toHaveBeenCalledWith({
+        clientId: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+      });
+    });
   });
 
   describe('events', () => {
@@ -283,14 +300,17 @@ describe('Who Is Online', () => {
   describe('stopFollowing', () => {
     test('should do nothing if participant leaving is not being followed', () => {
       whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_2;
+      whoIsOnlineComponent['following'] = 'ably-id';
 
       whoIsOnlineComponent['stopFollowing'](MOCK_ABLY_PARTICIPANT);
 
       expect(whoIsOnlineComponent['element'].following).toBe(MOCK_ABLY_PARTICIPANT_DATA_2);
+      expect(whoIsOnlineComponent['following']).toBe('ably-id');
     });
 
     test('should set element.following to undefined if following the participant who is leaving', () => {
       whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_1;
+      whoIsOnlineComponent['following'] = MOCK_ABLY_PARTICIPANT_DATA_1.id;
 
       whoIsOnlineComponent['stopFollowing']({
         ...MOCK_ABLY_PARTICIPANT,
@@ -298,6 +318,7 @@ describe('Who Is Online', () => {
       });
 
       expect(whoIsOnlineComponent['element'].following).toBe(undefined);
+      expect(whoIsOnlineComponent['following']).toBe(undefined);
     });
   });
 });

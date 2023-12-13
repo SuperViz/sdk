@@ -135,6 +135,11 @@ export class WhoIsOnline extends BaseComponent {
 
     if (isEqual(participants, this.participants)) return;
 
+    if (this.following) {
+      const participantBeingFollowed = participants.find(({ id }) => id === this.following);
+      if (!participantBeingFollowed) this.stopFollowing({ clientId: this.following });
+    }
+
     this.participants = participants;
     this.element.updateParticipants(this.participants);
   };
@@ -217,6 +222,7 @@ export class WhoIsOnline extends BaseComponent {
       return;
     }
 
+    this.following = following.data.id;
     this.element.following = following.data;
   };
 
@@ -224,9 +230,10 @@ export class WhoIsOnline extends BaseComponent {
     this.realtime.setGatherWIOParticipant({ ...data.detail });
   };
 
-  private stopFollowing = (participant: AblyParticipant) => {
+  private stopFollowing = (participant: { clientId: string }) => {
     if (participant.clientId === this.element.following?.id) {
       this.element.following = undefined;
+      this.following = undefined;
     }
   };
 }
