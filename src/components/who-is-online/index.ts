@@ -15,6 +15,7 @@ export class WhoIsOnline extends BaseComponent {
   private element: WhoIsOnlineElement;
   private position: WhoIsOnlinePosition;
   private participants: Participant[] = [];
+  private following: string;
 
   constructor(position?: WhoIsOnlinePosition) {
     super();
@@ -33,6 +34,7 @@ export class WhoIsOnline extends BaseComponent {
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
     this.addListeners();
+    this.realtime.enterWIOChannel(this.localParticipant);
   }
 
   /**
@@ -60,6 +62,7 @@ export class WhoIsOnline extends BaseComponent {
     );
     this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
     this.element.addEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
+    this.element.addEventListener(RealtimeEvent.REALTIME_GATHER, this.gatherAll);
   }
 
   /**
@@ -77,6 +80,7 @@ export class WhoIsOnline extends BaseComponent {
       this.goToMousePointer,
     );
     this.element.removeEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
+    this.element.removeEventListener(RealtimeEvent.REALTIME_GATHER, this.gatherAll);
   }
 
   /**
@@ -86,8 +90,9 @@ export class WhoIsOnline extends BaseComponent {
    */
   private subscribeToRealtimeEvents(): void {
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
-    this.realtime.enterWIOChannel(this.localParticipant);
-    this.realtime.presenceWIOObserver.subscribe(this.onParticipantListUpdate);
+    this.realtime.participantLeaveObserver.subscribe(this.stopFollowing);
+    this.realtime.privateModeWIOObserver.subscribe(this.onParticipantListUpdate);
+    this.realtime.gatherWIOObserver.subscribe(this.setGather);
   }
 
   /**
@@ -97,6 +102,9 @@ export class WhoIsOnline extends BaseComponent {
    */
   private unsubscribeToRealtimeEvents(): void {
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
+    this.realtime.participantLeaveObserver.unsubscribe(this.stopFollowing);
+    this.realtime.privateModeWIOObserver.unsubscribe(this.onParticipantListUpdate);
+    this.realtime.gatherWIOObserver.unsubscribe(this.setGather);
   }
 
   /**
@@ -116,7 +124,7 @@ export class WhoIsOnline extends BaseComponent {
         return !isPrivate || (isPrivate && id === this.localParticipant.id);
       })
       .map(({ data }) => {
-        const { slotIndex, id, name, avatar, activeComponents, isPrivate } = data as Participant;
+        const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
         const { color } = this.realtime.getSlotColor(slotIndex);
         const isLocal = this.localParticipant.id === id;
         const joinedPresence = activeComponents.some((component) => component.includes('presence'));
@@ -196,6 +204,29 @@ export class WhoIsOnline extends BaseComponent {
    */
   private setPrivate = ({ detail: { isPrivate, id } }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, isPrivate);
-    this.realtime.updateWIOParticipant(id, isPrivate);
+    this.realtime.setPrivateWIOParticipant(id, isPrivate);
+  };
+
+  private setGather = (following) => {
+    if (following.clientId === this.localParticipant.id) return;
+
+    this.followMousePointer({ detail: { id: following?.data?.id } } as CustomEvent);
+
+    if (!following.data.id) {
+      this.element.following = undefined;
+      return;
+    }
+
+    this.element.following = following.data;
+  };
+
+  private gatherAll = (data: CustomEvent) => {
+    this.realtime.setGatherWIOParticipant({ ...data.detail });
+  };
+
+  private stopFollowing = (participant: AblyParticipant) => {
+    if (participant.clientId === this.element.following?.id) {
+      this.element.following = undefined;
+    }
   };
 }
