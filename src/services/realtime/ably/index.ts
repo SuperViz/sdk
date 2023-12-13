@@ -1386,21 +1386,28 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public enterWIOChannel = (participant: Participant): void => {
     if (!this.presenceWIOChannel) {
       this.presenceWIOChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-wio`);
-      this.presenceWIOChannel.attach();
-
-      this.presenceWIOChannel.subscribe('update', this.onWIOChannelUpdate);
     }
 
-    this.presenceWIOChannel.publish('update', participant);
+    this.presenceWIOChannel.attach();
+    this.presenceWIOChannel.subscribe('private', this.onSetPrivate);
+    this.presenceWIOChannel.subscribe('gather', this.onSetGather);
   };
 
-  private onWIOChannelUpdate = ({ data: { id, isPrivate } }): void => {
+  private onSetPrivate = ({ data: { id, isPrivate } }): void => {
     this.participants[id].data.isPrivate = isPrivate;
-    this.presenceWIOObserver.publish(this.participants);
+    this.privateModeWIOObserver.publish(this.participants);
   };
 
-  public updateWIOParticipant = (id: string, isPrivate: boolean): void => {
-    this.presenceWIOChannel.publish('update', { id, isPrivate });
+  private onSetGather = (data: Participant): void => {
+    this.gatherWIOObserver.publish(data);
+  };
+
+  public setPrivateWIOParticipant = (id: string, isPrivate: boolean): void => {
+    this.presenceWIOChannel.publish('private', { id, isPrivate });
+  };
+
+  public setGatherWIOParticipant = (data): void => {
+    this.presenceWIOChannel.publish('gather', { ...data });
   };
 
   /** Presence 3D */
