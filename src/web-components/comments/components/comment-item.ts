@@ -10,12 +10,25 @@ import { CommentMode, CommentDropdownOptions, AnnotationFilter } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
-
+type User = {
+  name: string;
+  participantId: string;
+  avatar: string;
+};
 @customElement('superviz-comments-comment-item')
 export class CommentsCommentItem extends WebComponentsBaseElement {
   constructor() {
     super();
     this.resolved = false;
+    // mocked participants uers
+    this.users = [
+      { name: 'Vinicius Afonso', participantId: 'participantIdVinicius', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
+      { name: 'Vitor Vargas', participantId: 'participantIdVitor', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
+      { name: 'Vitor Norton', participantId: 'participantIdNorton', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
+      { name: 'Carlos Peixoto', participantId: 'participantIdCarlos', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
+      { name: 'Gabi Alcoar', participantId: 'participantIdGabi', avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
+      { name: 'Ian Silva', participantId: 'participantIdIanSilva', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
+    ];
   }
 
   static styles = styles;
@@ -32,6 +45,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare primaryComment: boolean;
   declare expandElipsis: boolean;
   declare annotationFilter: string;
+  declare users: User[];
+
 
   static properties = {
     uuid: { type: String },
@@ -92,6 +107,17 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     this.mode = CommentMode.READONLY;
   };
 
+  private convertToDiv() {
+    this.users.forEach(user => {
+      const regex = new RegExp(`{{${user.participantId}}}(&nbsp;|\\s)`, 'g');
+      this.text = this.text.replace(regex, `<div class="mentioned"><strong>@${user.name}</strong></div>$1`);
+    });
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = this.text;
+
+    return tempDiv;
+  }
+
   protected render() {
     const resolveIcon = this.annotationFilter === AnnotationFilter.ALL ? 'resolve' : 'undo';
 
@@ -150,7 +176,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           id="comment-text"
           @click=${expandElipsis}
           class="text text-big sv-gray-700 ${shouldUseElipsis}"
-          >${this.text}</span
+          >${this.convertToDiv()}</span
         >
       `;
     };

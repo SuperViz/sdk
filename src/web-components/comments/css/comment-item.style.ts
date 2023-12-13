@@ -75,4 +75,8 @@ export const commentItemStyle = css`
   .hidden {
     display: none;
   }
+
+  .mentioned{
+    display: inline-block;
+  }
 `;

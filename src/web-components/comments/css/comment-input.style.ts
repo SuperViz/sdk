@@ -19,7 +19,7 @@ export const commentInputStyle = css`
   }
 
   #comment-input--textarea {
-    all: unset;
+    // all: unset;
     border: 0px;
     border-radius: 4px;
     outline: none;
@@ -93,4 +93,45 @@ export const commentInputStyle = css`
     display: flex;
     gap: 4px;
   }
+
+  .mentioned{
+    display: inline-block;
+  }
+
+  #mention-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  #mention-list {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    border: 1px solid #ccc;
+    border-top: none;
+    width: 100%;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: white;
+    display: none;
+  }
+
+  .mention-item {
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .mention-item:hover {
+    background-color: #f0f0f0;
+  }
+
+  .avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+/////
 `;

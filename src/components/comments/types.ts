@@ -17,7 +17,14 @@ export type Comment = {
   resolvable?: boolean;
   resolved?: boolean;
   participant: ParticipantApi;
+
+  mentions: CommentMention[]
 };
+
+export type CommentMention = {
+  userId: string
+  name: string
+}
 
 export interface PinAdapter {
   setPinsVisibility(isVisible: boolean): void;
