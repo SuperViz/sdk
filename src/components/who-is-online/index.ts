@@ -199,6 +199,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   private followMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
+    this.following = detail.id;
   };
 
   /**
@@ -234,6 +235,7 @@ export class WhoIsOnline extends BaseComponent {
     if (participant.clientId === this.element.following?.id) {
       this.element.following = undefined;
       this.following = undefined;
+      this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, undefined);
     }
   };
 }
