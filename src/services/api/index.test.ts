@@ -10,6 +10,14 @@ const CHECK_LIMITS_MOCK = {
   usage: LIMITS_MOCK,
 };
 
+const FETCH_PARTICIPANTS_BY_GROUP_MOCK = [
+  {
+    id: "any_user_id",
+    name: "any_name",
+    avatar: null
+  }
+]
+
 jest.mock('../../common/utils', () => {
   return {
     doRequest: jest.fn((url: string, method: string, body: any) => {
@@ -64,6 +72,14 @@ jest.mock('../../common/utils', () => {
       }
 
       if (url.includes('/comments/any_comment_id') && method === 'DELETE') {
+        return Promise.resolve({});
+      }
+
+      if (url.includes('/groups/participants/any_group_id') && method === 'GET') {
+        return Promise.resolve(FETCH_PARTICIPANTS_BY_GROUP_MOCK);
+      }
+
+      if (url.includes('/mentions') && method === 'POST') {
         return Promise.resolve({});
       }
 
@@ -194,4 +210,23 @@ describe('ApiService', () => {
       expect(response).toEqual(CHECK_LIMITS_MOCK.usage);
     });
   });
+
+  describe('fetchParticipants', () => {
+    test('should return the participants', async () => {
+      const response = await ApiService.fetchParticipantsByGroup('any_group_id');
+
+      expect(response).toEqual({});
+    });
+  });
+
+  describe('Mentions', () => {
+    test('should create a mention', async () => {
+      const response = await ApiService.createMentions({
+        commentId: 'any_comment_id',
+        participants: []
+      });
+
+      expect(response).toEqual({});
+    });
+  })
 });
