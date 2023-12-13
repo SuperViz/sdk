@@ -4,6 +4,8 @@ export enum WIODropdownOptions {
   UNFOLLOW = 'unfollow',
   PRIVATE = 'private mode',
   LEAVE_PRIVATE = 'leave private mode',
+  GATHER = 'gather all',
+  STOP_GATHER = 'stop gather all',
 }
 
 export interface Following {

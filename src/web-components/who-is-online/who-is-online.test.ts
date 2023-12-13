@@ -1,8 +1,12 @@
+import { html } from 'lit';
+
 import '.';
+import { MOCK_ABLY_PARTICIPANT_DATA_1 } from '../../../__mocks__/participants.mock';
 import { RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import sleep from '../../common/utils/sleep';
 import { Participant } from '../../components/who-is-online/types';
+import { Dropdown } from '../dropdown/index';
 
 import { WIODropdownOptions } from './components/types';
 
@@ -46,6 +50,11 @@ const MOCK_PARTICIPANTS: Participant[] = [
 describe('Who Is Online', () => {
   beforeEach(async () => {
     element = document.createElement('superviz-who-is-online');
+    element['localParticipantData'] = {
+      color: '#fff',
+      slotIndex: 2,
+    };
+
     document.body.appendChild(element);
     await sleep();
   });
@@ -204,46 +213,6 @@ describe('Who Is Online', () => {
     expect(avatar.strings[0]).toContain('img');
   });
 
-  test('should emit event when selecting go to option in dropdown', async () => {
-    const event = new CustomEvent('selected', {
-      detail: { id: 1, label: WIODropdownOptions.GOTO },
-    });
-
-    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
-
-    await sleep();
-    const dropdown = element.shadowRoot?.querySelector(
-      'superviz-who-is-online-dropdown',
-    ) as HTMLElement;
-
-    const spy = jest.fn();
-    element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, spy);
-
-    dropdown.dispatchEvent(event);
-
-    expect(spy).toHaveBeenCalledWith(event);
-  });
-
-  test('should emit event when selecting follow option in dropdown', async () => {
-    const event = new CustomEvent('selected', {
-      detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 1 },
-    });
-
-    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
-
-    await sleep();
-    const dropdown = element.shadowRoot?.querySelector(
-      'superviz-who-is-online-dropdown',
-    ) as HTMLElement;
-
-    const spy = jest.fn();
-    element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
-
-    dropdown.dispatchEvent(event);
-
-    expect(spy).toHaveBeenCalledWith(event);
-  });
-
   test('should stop following if already following', async () => {
     const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
       detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 0 },
@@ -285,5 +254,142 @@ describe('Who Is Online', () => {
     element['dropdownOptionsHandler'](event);
 
     expect(element['participants'].findIndex((participant) => participant.id === 'test')).toBe(1);
+  });
+
+  describe('dropdownOptionsHandler', () => {
+    let dropdown: HTMLElement;
+    beforeEach(async () => {
+      element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
+      await sleep();
+      dropdown = element.shadowRoot?.querySelector(
+        'superviz-who-is-online-dropdown',
+      ) as HTMLElement;
+    });
+
+    test('should emit event when selecting go to option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { id: 1, label: WIODropdownOptions.GOTO },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, spy);
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+    });
+
+    test('should emit event when selecting follow option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 1 },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
+
+      expect(element['following']).toBeUndefined();
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['following']).toBeDefined();
+    });
+
+    test('should emit event when selecting unfollow option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { id: 1, label: WIODropdownOptions.UNFOLLOW },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
+
+      element['following'] = { id: 1, slotIndex: 1 };
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['following']).toBeUndefined();
+    });
+
+    test('should emit event when selecting gather option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { id: 1, label: WIODropdownOptions.GATHER, slotIndex: 1 },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_GATHER, spy);
+
+      element['following'] = { id: 1, slotIndex: 1 };
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['isGathering']).toBe(true);
+      expect(element['following']).toBeUndefined();
+    });
+
+    test('should emit event when selecting stop gather option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { id: 1, label: WIODropdownOptions.STOP_GATHER, slotIndex: 1 },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_GATHER, spy);
+      element['isGathering'] = true;
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['isGathering']).toBe(false);
+    });
+
+    test('should emit event when selecting private mode option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { label: WIODropdownOptions.PRIVATE },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, spy);
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['isPrivate']).toBe(true);
+    });
+
+    test('should emit event when selecting leave private mode option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { label: WIODropdownOptions.LEAVE_PRIVATE },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, spy);
+
+      element['isPrivate'] = true;
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['isPrivate']).toBe(false);
+    });
+  });
+
+  describe('cancelPrivate', () => {
+    test('should set isPrivate to undefined and emit event', () => {
+      element['isPrivate'] = true;
+      const event = new CustomEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, {
+        detail: { id: element['localParticipantData'].id },
+      });
+
+      element['cancelPrivate'] = jest.fn().mockImplementation(element['cancelPrivate']);
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, spy);
+
+      element['cancelPrivate']();
+
+      expect(element['isPrivate']).toBeUndefined();
+      expect(spy).toHaveBeenCalledWith(event);
+    });
   });
 });

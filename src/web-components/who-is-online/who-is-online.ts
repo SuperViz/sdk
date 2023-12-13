@@ -24,6 +24,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare localParticipantData: LocalParticipantData;
   declare isPrivate: boolean;
   private textColorValues: number[];
+  declare isGathering: boolean;
 
   static properties = {
     position: { type: String },
@@ -33,6 +34,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     following: { type: Object },
     localParticipantColor: { type: String },
     isPrivate: { type: Boolean },
+    isGathering: { type: Boolean },
   };
 
   constructor() {
@@ -136,7 +138,23 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       this.isPrivate = label === WIODropdownOptions.PRIVATE;
       this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id, isPrivate: this.isPrivate });
     }
+
+    if ([WIODropdownOptions.GATHER, WIODropdownOptions.STOP_GATHER].includes(label)) {
+      if (this.isGathering) {
+        this.stopGathering();
+        return;
+      }
+
+      this.isGathering = true;
+      this.following = undefined;
+      this.emitEvent(RealtimeEvent.REALTIME_GATHER, { id, name, color, slotIndex });
+    }
   };
+
+  private stopGathering() {
+    this.isGathering = false;
+    this.emitEvent(RealtimeEvent.REALTIME_GATHER, undefined);
+  }
 
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
@@ -164,7 +182,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const { isPrivate } = this;
 
     const labels = isLocal
-      ? [isPrivate ? 'LEAVE_PRIVATE' : 'PRIVATE']
+      ? [this.isGathering ? 'STOP_GATHER' : 'GATHER', isPrivate ? 'LEAVE_PRIVATE' : 'PRIVATE']
       : ['GOTO', isBeingFollowed ? 'UNFOLLOW' : 'FOLLOW'];
 
     const options = labels.map((label) => ({
@@ -175,8 +193,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     return options;
   }
 
-  private getIcons(isBeingFollowed: boolean) {
-    return isBeingFollowed ? ['place', 'send-off'] : ['place', 'send'];
+  private getIcons(isLocal: boolean, isBeingFollowed: boolean) {
+    return isLocal ? ['help', 'eye_inative'] : ['place', isBeingFollowed ? 'send-off' : 'send'];
   }
 
   private putLocalParticipationFirst() {
@@ -251,7 +269,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
         const participantIsFollowed = this.following?.id === id;
         const options = this.getOptions(participant, participantIsFollowed, isLocal);
-        const icons = this.getIcons(participantIsFollowed);
+        const icons = this.getIcons(isLocal, participantIsFollowed);
         const position = this.dropdownPosition(index);
         const disableDropdown = !joinedPresence || this.disableDropdown;
 
