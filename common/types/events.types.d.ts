@@ -105,7 +105,8 @@ export declare enum DeviceEvent {
     DEVICES_BLOCKED = "devices.blocked",
     DEVICES_CAM_BLOCKED = "devices.cam-blocked",
     DEVICES_INITIALIZATION_ERROR = "devices.inititalization-error",
-    DEVICES_UNKNOWN_ERROR = "devices.unknown-error"
+    DEVICES_UNKNOWN_ERROR = "devices.unknown-error",
+    DEVICES_ALLOWED = "devices.allowed"
 }
 export type Dimensions = {
     width: number | null;
