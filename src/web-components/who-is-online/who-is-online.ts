@@ -195,7 +195,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private getIcons(isLocal: boolean, isBeingFollowed: boolean) {
-    return isLocal ? ['help', 'eye_inative'] : ['place', isBeingFollowed ? 'send-off' : 'send'];
+    return isLocal ? ['gather', 'eye_inative'] : ['place', isBeingFollowed ? 'send-off' : 'send'];
   }
 
   private putLocalParticipationFirst() {
