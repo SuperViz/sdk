@@ -16,6 +16,7 @@ export class CanvasPin implements PinAdapter {
   private animateFrame: number;
   private goToPinCallback: (position: { x: number; y: number }) => void;
   public onPinFixedObserver: Observer;
+  private mouseDownCoordinates: { x: number; y: number };
 
   constructor(
     canvasId: string,
@@ -158,6 +159,7 @@ export class CanvasPin implements PinAdapter {
    */
   private addListeners(): void {
     this.canvas.addEventListener('click', this.onClick);
+    this.canvas.addEventListener('mousedown', this.setMouseDownCoordinates);
     this.canvas.addEventListener('mousemove', this.onMouseMove);
     this.canvas.addEventListener('mouseout', this.onMouseLeave);
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
@@ -322,6 +324,10 @@ export class CanvasPin implements PinAdapter {
     });
   }
 
+  private setMouseDownCoordinates = ({ x, y }: MouseEvent) => {
+    this.mouseDownCoordinates = { x, y };
+  };
+
   private removeAnnotationsPins(): void {
     this.pins.forEach((pinElement) => {
       pinElement.remove();
@@ -392,11 +398,18 @@ export class CanvasPin implements PinAdapter {
    */
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive) return;
-
-    const context = this.canvas.getContext('2d');
     const rect = this.canvas.getBoundingClientRect();
+
+    const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
+    const originalX = mouseDownX - rect.x;
+    const originalY = mouseDownY - rect.y;
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
+
+    const distance = Math.hypot(x - originalX, y - originalY);
+    if (distance > 10) return;
+
+    const context = this.canvas.getContext('2d');
 
     const transform = context.getTransform();
 
