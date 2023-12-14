@@ -30,6 +30,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     super();
     this.btnActive = false;
     this.text = '';
+    this.mentionList = []
 
     // mockusers change to participants groups
     this.users = [
@@ -44,12 +45,19 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   static styles = styles;
 
+  declare mentionList: []
+
   static properties = {
     eventType: { type: String },
     text: { type: String },
     btnActive: { type: Boolean },
     editable: { type: Boolean },
     placeholder: { type: String },
+    mentionList: { type: Object },
+  };
+
+  private getAddMentionButton = () => {
+    return this.shadowRoot!.getElementById('add-mention-button') as HTMLDivElement;
   };
 
   private getMentionList = () => {
@@ -88,6 +96,18 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   /// NEW MENTION V1
+  private buttonAddMention = () => {
+    // const newElement = document.createElement('div');
+    // newElement.className = 'mentioned';
+    // newElement.innerHTML = `@`;
+    // const selection = this.shadowRoot.getSelection();
+
+    // const range = selection.getRangeAt(0);
+    // range.deleteContents();
+
+    // range.insertNode(newElement);
+    // this.handleInput(e, true)
+  }
 
   private handleInput = (e) => {
     const commentTextarea = this.getCommentInput();
@@ -95,8 +115,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const placeholder = commentTextarea.querySelector('.placeholder');
     if (placeholder) {
       commentTextarea.removeChild(placeholder);
-      commentTextarea.innerText = `${e.data || ''}`;
-      window.getSelection().setPosition(commentTextarea, e.data.length)
+      commentTextarea.innerText = `${e?.data || ''}`;
+      window.getSelection().setPosition(commentTextarea, e?.data?.length)
     }
     commentTextarea.style.height = '45px';
 
@@ -104,28 +124,16 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     mentionHandler.input.removeMentionOnBackspace(e, window.getSelection())
     mentionHandler.input.removeEmptyMentions(this.getCommentInput())
-    mentionHandler.input.matchParticipant(this.getCommentInput(), e, this.users)
+    const { action, mentions } = mentionHandler.input.matchParticipant(this.getCommentInput(), e, this.users)
 
-    const inputValue = commentTextarea.innerHTML;
-    const mentionIndex = inputValue.lastIndexOf('@');
+    if (action === 'show') {
+      this.mentionList = mentions
 
-    const selection = window.getSelection();
-    let range;
-    if (selection.rangeCount > 0) {
-      range = selection.getRangeAt(0);
     }
 
-    if (mentionIndex !== -1) {
-      const mentionPrefix = this.getMentionPrefix(mentionIndex, inputValue, e);
-      const matchedUsers = this.findMatchedUsers(mentionPrefix);
-
-      if (matchedUsers.length > 0) {
-        this.showMentionList(matchedUsers, mentionIndex, range);
-        return
-      }
+    if (action === 'hide') {
+      this.mentionList = []
     }
-
-    this.hideMentionList();
   };
 
   private clickInput = (e) => {
@@ -168,22 +176,15 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     commentDiv.focus();
   }
 
-  private showMentionList = (users, mentionIndex, range) => {
-    const mentionList = this.getMentionList();
-    mentionList.innerHTML = '';
-
-    users.forEach(user => {
-      const mentionItem = document.createElement('div');
-      mentionItem.classList.add('mention-item');
-      mentionItem.innerHTML = `<img src="${user.avatar}" alt="${user.name}" class="avatar">${user.name}`;
-      mentionItem.addEventListener('click', () => {
-        this.insertMention(user.name, mentionIndex, range);
-      });
-
-      mentionList.appendChild(mentionItem);
-    });
-
-    mentionList.style.display = 'block';
+  private setMentionList = (users, mentionIndex, range) => {
+    const mentionList = users.map((user: any) => ({
+      name: user.name,
+      participantId: user.participantId,
+      avatar: user.avatar,
+      index: mentionIndex,
+      range
+    }))
+    this.mentionList = mentionList
   }
 
   private hideMentionList = () => {
@@ -395,12 +396,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             placeholder=${this.placeholder ?? 'Add comment...'}
             @input=${this.updateHeight}
           ></div>
-          <div id="mention-list"></div>
+          <superviz-comments-mention-list .participants=${this.mentionList}></superviz-comments-mention-list>
         </div>
         <div class="sv-hr"></div>
         <div class="comment-input--options">
-          <div>
-            <button class="icon-button mention">
+          <div class="comment-actions">
+            <button id="add-mention-button" @click=${this.buttonAddMention} class="icon-button mention">
               <superviz-icon name="mention" size="sm"></superviz-icon>
             </button>
           </div>

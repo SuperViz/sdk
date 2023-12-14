@@ -1,5 +1,15 @@
 import { Comment } from "../../../components/comments/types";
 
+const MENTION_ACTION = {
+  SHOW: 'show',
+  HIDE: 'hide'
+}
+
+const DEFAULT_HIDE_MENTION_LIST = {
+  action: MENTION_ACTION.HIDE,
+  mentions: []
+}
+
 export const addMention = (comment: Comment): string => {
   const regex = /{{(.*?)}}/g;
   const matches = comment.text.match(regex);
@@ -43,17 +53,28 @@ const matchParticipant = (input: HTMLDivElement, event: any, participantList: an
   const selection = window.getSelection();
   const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
 
-  if (!(mentionIndex !== -1)) return
+  if (!(mentionIndex !== -1)) {
+    return DEFAULT_HIDE_MENTION_LIST
+  }
 
   const mentionName = extractMentionName(inputValue, mentionIndex, event);
-  const mentionList = participantList.filter((participant: any) => participant.name.toLowerCase().startsWith(mentionName.toLowerCase()));
+  
+  const mentionList = participantList
+    .filter((participant: any) => participant.name
+      .toLowerCase()
+      .startsWith(mentionName.toLowerCase())
+    );
 
   if (!(mentionList.length > 0)) {
-    // eslint-disable-next-line no-useless-return
-    return
+    return DEFAULT_HIDE_MENTION_LIST
   }
   
-  // ! WIP !
+  const mentions = prepareMentionList(mentionList, mentionIndex, range);
+
+  return {
+    action: MENTION_ACTION.SHOW,
+    mentions
+  }
 }
 
 const extractMentionName = (input: string, mentionIndex: number, event: any): string => {
@@ -62,6 +83,16 @@ const extractMentionName = (input: string, mentionIndex: number, event: any): st
   const lastItemFind = lastCaracter === '@' || event.data === "@";
 
   return lastItemFind ? '' : input.slice(mentionIndex + 1);
+}
+
+const prepareMentionList = (users: any, mentionIndex: number, range: any): any => {
+  return users.map((user: any) => ({
+    name: user.name,
+    participantId: user.participantId,
+    avatar: user.avatar,
+    index: mentionIndex,
+    range
+  }))
 }
 
 export default {
