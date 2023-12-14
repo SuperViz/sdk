@@ -112,7 +112,6 @@ describe('Who Is Online', () => {
     await sleep();
 
     participants = element.shadowRoot?.querySelectorAll('.superviz-who-is-online__participant');
-
     expect(participants?.length).toBe(3);
 
     element['updateParticipants'](MOCK_PARTICIPANTS.slice(0, 2));

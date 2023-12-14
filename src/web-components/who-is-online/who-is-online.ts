@@ -1,6 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
@@ -264,41 +265,45 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.swapParticipantBeingFollowedPosition();
 
     return html` <div class="superviz-who-is-online">
-      ${this.participants.slice(0, 4).map((participant, index) => {
-        const { joinedPresence, isLocal, id, name, color } = participant;
+      ${repeat(
+        this.participants.slice(0, 4),
+        (participant) => participant.id,
+        (participant, index) => {
+          const { joinedPresence, isLocal, id, name, color } = participant;
 
-        const participantIsFollowed = this.following?.id === id;
-        const options = this.getOptions(participant, participantIsFollowed, isLocal);
-        const icons = this.getIcons(isLocal, participantIsFollowed);
-        const position = this.dropdownPosition(index);
-        const disableDropdown = !joinedPresence || this.disableDropdown;
+          const participantIsFollowed = this.following?.id === id;
+          const options = this.getOptions(participant, participantIsFollowed, isLocal);
+          const icons = this.getIcons(isLocal, participantIsFollowed);
+          const position = this.dropdownPosition(index);
+          const disableDropdown = !joinedPresence || this.disableDropdown;
 
-        const classList = {
-          'superviz-who-is-online__participant': true,
-          'disable-dropdown': disableDropdown,
-          followed: participantIsFollowed,
-          private: isLocal && this.isPrivate,
-        };
+          const classList = {
+            'superviz-who-is-online__participant': true,
+            'disable-dropdown': disableDropdown,
+            followed: participantIsFollowed,
+            private: isLocal && this.isPrivate,
+          };
 
-        const append = isLocal ? ' (you)' : '';
-        const participantName = name + append;
+          const append = isLocal ? ' (you)' : '';
+          const participantName = name + append;
 
-        return html`
-          <superviz-dropdown
-            options=${JSON.stringify(options)}
-            label="label"
-            position="${position}"
-            @selected=${this.dropdownOptionsHandler}
-            icons="${JSON.stringify(icons)}"
-            name="${participantName}"
-            ?disabled=${disableDropdown}
-          >
-            <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
-              ${this.getAvatar(participant)}
-            </div>
-          </superviz-dropdown>
-        `;
-      })}
+          return html`
+            <superviz-dropdown
+              options=${JSON.stringify(options)}
+              label="label"
+              position="${position}"
+              @selected=${this.dropdownOptionsHandler}
+              icons="${JSON.stringify(icons)}"
+              name="${participantName}"
+              ?disabled=${disableDropdown}
+            >
+              <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
+                ${this.getAvatar(participant)}
+              </div>
+            </superviz-dropdown>
+          `;
+        },
+      )}
       ${this.renderExcessParticipants()}
     </div>`;
   }
