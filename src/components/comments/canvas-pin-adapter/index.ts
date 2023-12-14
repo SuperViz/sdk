@@ -232,6 +232,7 @@ export class CanvasPin implements PinAdapter {
 
     this.resetSelectedPin();
     this.removeAnnotationPin('temporary-pin');
+    this.temporaryPinCoordinates = null;
   };
 
   /**
@@ -291,13 +292,11 @@ export class CanvasPin implements PinAdapter {
     }
 
     this.annotations.forEach((annotation) => {
-      const position = JSON.parse(annotation.position) as PinCoordinates;
-
       if (annotation.resolved) {
-        this.removeAnnotationPin(annotation.uuid);
         return;
       }
 
+      const position = JSON.parse(annotation.position) as PinCoordinates;
       if (position?.type !== 'canvas') return;
 
       const { x: savedX, y: savedY } = position;

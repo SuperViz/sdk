@@ -1,5 +1,6 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { sleep } from '../../../common/utils';
 
 import { CanvasPin } from '.';
 
@@ -17,6 +18,7 @@ describe('CanvasPinAdapter', () => {
 
     instance = new CanvasPin('canvas');
     instance.setActive(true);
+    instance['mouseDownCoordinates'] = { x: 100, y: 100 };
     instance['canvas'] = { ...instance['canvas'], ...MOCK_CANVAS } as unknown as HTMLCanvasElement;
   });
 
@@ -39,7 +41,7 @@ describe('CanvasPinAdapter', () => {
   test('should add event listeners to the canvas element', () => {
     const addEventListenerSpy = jest.spyOn(instance['canvas'], 'addEventListener');
     instance['addListeners']();
-    expect(addEventListenerSpy).toHaveBeenCalledTimes(4);
+    expect(addEventListenerSpy).toHaveBeenCalledTimes(5);
   });
 
   test('should destroy the canvas pin adapter', () => {
@@ -364,5 +366,20 @@ describe('CanvasPinAdapter', () => {
     const element = instance['mouseElement'];
     expect(element).toBeDefined();
     expect(element.getAttribute('position')).toBe(JSON.stringify({ x: 100, y: 200 }));
+  });
+
+  test('should update mouse coordinates on mousedown event', () => {
+    const event = new MouseEvent('mousedown', { clientX: 100, clientY: 200 });
+    instance['setMouseDownCoordinates'] = jest
+      .fn()
+      .mockImplementation(instance['setMouseDownCoordinates']);
+    const customEvent = {
+      ...event,
+      x: event.clientX,
+      y: event.clientY,
+    };
+
+    instance['setMouseDownCoordinates'](customEvent);
+    expect(instance['mouseDownCoordinates']).toEqual({ x: 100, y: 200 });
   });
 });
