@@ -1,5 +1,5 @@
 import { Observer } from '../../../common/utils';
-import { Annotation, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, PinAdapter } from '../types';
 export declare class CanvasPin implements PinAdapter {
     private logger;
     private canvasId;
@@ -14,6 +14,8 @@ export declare class CanvasPin implements PinAdapter {
     private animateFrame;
     private goToPinCallback;
     onPinFixedObserver: Observer;
+    private mouseDownCoordinates;
+    private temporaryPinCoordinates;
     constructor(canvasId: string, options?: {
         onGoToPin?: (position: {
             x: number;
@@ -48,13 +50,12 @@ export declare class CanvasPin implements PinAdapter {
      * */
     removeAnnotationPin(uuid: string): void;
     /**
-     * @function createTemporaryPin
+     * @function renderTemporaryPin
      * @description
             creates a temporary pin with the id
             temporary-pin to mark where the annotation is being created
-     * @param {PinCoordinates} position  - The position of the pin to be created.
      */
-    createTemporaryPin(position: PinCoordinates): void;
+    renderTemporaryPin(): void;
     /**
      * @function addListeners
      * @description adds event listeners to the canvas element.
@@ -105,6 +106,7 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private renderAnnotationsPins;
+    private setMouseDownCoordinates;
     private removeAnnotationsPins;
     /** Callbacks  */
     private annotationSelected;
