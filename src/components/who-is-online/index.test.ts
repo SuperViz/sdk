@@ -211,15 +211,15 @@ describe('Who Is Online', () => {
       );
     });
 
-    test('should publish follow to event bus', () => {
-      const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
+    test('should publish local follow to event bus', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
         detail: { id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
       });
 
       whoIsOnlineComponent['followMousePointer'](event);
 
       expect(whoIsOnlineComponent['eventBus'].publish).toHaveBeenCalledWith(
-        RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+        RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT,
         MOCK_ABLY_PARTICIPANT_DATA_2.id,
       );
     });
@@ -238,7 +238,7 @@ describe('Who Is Online', () => {
     });
   });
 
-  describe('setGather', () => {
+  describe('setFollow', () => {
     beforeEach(() => {
       whoIsOnlineComponent['followMousePointer'] = jest
         .fn()
@@ -250,14 +250,14 @@ describe('Who Is Online', () => {
     });
 
     test('should set element.data to following.data', () => {
-      whoIsOnlineComponent['setGather']({ ...MOCK_ABLY_PARTICIPANT, clientId: 'ably-id' });
+      whoIsOnlineComponent['setFollow']({ ...MOCK_ABLY_PARTICIPANT, clientId: 'ably-id' });
       expect(whoIsOnlineComponent['element'].following).toBe(MOCK_ABLY_PARTICIPANT_DATA_1);
     });
 
     test('should early return if following the local participant', () => {
       whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_2;
 
-      whoIsOnlineComponent['setGather'](MOCK_ABLY_PARTICIPANT);
+      whoIsOnlineComponent['setFollow'](MOCK_ABLY_PARTICIPANT);
 
       expect(whoIsOnlineComponent['followMousePointer']).not.toHaveBeenCalled();
       expect(whoIsOnlineComponent['element'].following).toBe(MOCK_ABLY_PARTICIPANT_DATA_2);
@@ -266,7 +266,7 @@ describe('Who Is Online', () => {
     test('should set element.following to undefiend return if no id is passed', () => {
       whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_2;
 
-      whoIsOnlineComponent['setGather']({
+      whoIsOnlineComponent['setFollow']({
         ...MOCK_ABLY_PARTICIPANT,
         clientId: 'ably-id',
         data: { id: '' },
@@ -281,7 +281,7 @@ describe('Who Is Online', () => {
     });
   });
 
-  describe('gatherAll', () => {
+  describe('follow', () => {
     test('should publish detail to realtime', () => {
       const event = new CustomEvent(RealtimeEvent.REALTIME_GATHER, {
         detail: {
@@ -289,9 +289,9 @@ describe('Who Is Online', () => {
         },
       });
 
-      whoIsOnlineComponent['gatherAll'](event);
+      whoIsOnlineComponent['follow'](event);
 
-      expect(whoIsOnlineComponent['realtime'].setGatherWIOParticipant).toHaveBeenCalledWith(
+      expect(whoIsOnlineComponent['realtime'].setFollowWIOParticipant).toHaveBeenCalledWith(
         event.detail,
       );
     });
@@ -319,6 +319,22 @@ describe('Who Is Online', () => {
 
       expect(whoIsOnlineComponent['element'].following).toBe(undefined);
       expect(whoIsOnlineComponent['following']).toBe(undefined);
+    });
+  });
+
+  describe('gather', () => {
+    test('should call setGatherWIOParticipant with detail', () => {
+      const event = new CustomEvent(RealtimeEvent.REALTIME_GATHER, {
+        detail: {
+          ...MOCK_ABLY_PARTICIPANT_DATA_1,
+        },
+      });
+
+      whoIsOnlineComponent['gather'](event);
+
+      expect(whoIsOnlineComponent['realtime'].setGatherWIOParticipant).toHaveBeenCalledWith({
+        ...event.detail,
+      });
     });
   });
 });

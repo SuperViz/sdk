@@ -1745,16 +1745,29 @@ describe('AblyRealtimeService', () => {
       );
     });
 
-    test('should publish to gatherWIOObserver when calling setGather', () => {
+    test('should publish to followWIOObserver when calling setFollow', () => {
       const data = {
         ...MOCK_ABLY_PARTICIPANT_DATA_1,
-        gather: MOCK_ABLY_PARTICIPANT_DATA_1.id,
+        follow: MOCK_ABLY_PARTICIPANT_DATA_1.id,
       } as Participant;
 
-      AblyRealtimeServiceInstance['gatherWIOObserver'].publish = jest.fn();
-      AblyRealtimeServiceInstance['onSetGather'](data);
+      AblyRealtimeServiceInstance['followWIOObserver'].publish = jest.fn();
+      AblyRealtimeServiceInstance['onSetFollow'](data);
 
-      expect(AblyRealtimeServiceInstance['gatherWIOObserver'].publish).toBeCalledWith(data);
+      expect(AblyRealtimeServiceInstance['followWIOObserver'].publish).toBeCalledWith(data);
+    });
+
+    test('should publish to WIO Channel when calling setFollow', () => {
+      const data = {
+        ...MOCK_ABLY_PARTICIPANT_DATA_1,
+        follow: MOCK_ABLY_PARTICIPANT_DATA_1.id,
+      } as Participant;
+
+      AblyRealtimeServiceInstance.setFollowWIOParticipant(data);
+
+      expect(AblyRealtimeServiceInstance['presenceWIOChannel'].publish).toBeCalledWith('follow', {
+        ...data,
+      });
     });
 
     test('should publish to WIO Channel when calling setGather', () => {
@@ -1767,6 +1780,23 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['presenceWIOChannel'].publish).toBeCalledWith('gather', {
         ...data,
+      });
+    });
+
+    test('should call gatherWIOObserver on gather', () => {
+      const mockAblyMessage = {
+        data: {
+          id: '123',
+        },
+      };
+      AblyRealtimeServiceInstance['gatherWIOObserver'].publish = jest.fn();
+
+      AblyRealtimeServiceInstance['onSetGather'](mockAblyMessage as Ably.Types.Message);
+
+      expect(AblyRealtimeServiceInstance['gatherWIOObserver'].publish).toBeCalledWith({
+        detail: {
+          id: mockAblyMessage.data.id,
+        },
       });
     });
   });

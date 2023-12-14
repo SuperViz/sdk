@@ -57,22 +57,23 @@ export class WhoIsOnline extends BaseComponent {
    */
   private addListeners(): void {
     this.element.addEventListener(
-      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT,
       this.followMousePointer,
     );
     this.element.addEventListener(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMousePointer);
     this.element.addEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
-    this.element.addEventListener(RealtimeEvent.REALTIME_GATHER, this.gatherAll);
+    this.element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.follow);
+    this.element.addEventListener(RealtimeEvent.REALTIME_GATHER, this.gather);
   }
 
   /**
-   * @function addListeners
+   * @function removeListeners
    * @description adds event listeners from the who is online element.
    * @returns {void}
    */
   private removeListeners(): void {
     this.element.removeEventListener(
-      RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
+      RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT,
       this.followMousePointer,
     );
     this.element.removeEventListener(
@@ -80,7 +81,8 @@ export class WhoIsOnline extends BaseComponent {
       this.goToMousePointer,
     );
     this.element.removeEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
-    this.element.removeEventListener(RealtimeEvent.REALTIME_GATHER, this.gatherAll);
+    this.element.removeEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.follow);
+    this.element.removeEventListener(RealtimeEvent.REALTIME_GATHER, this.gather);
   }
 
   /**
@@ -92,7 +94,8 @@ export class WhoIsOnline extends BaseComponent {
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
     this.realtime.participantLeaveObserver.subscribe(this.stopFollowing);
     this.realtime.privateModeWIOObserver.subscribe(this.onParticipantListUpdate);
-    this.realtime.gatherWIOObserver.subscribe(this.setGather);
+    this.realtime.followWIOObserver.subscribe(this.setFollow);
+    this.realtime.gatherWIOObserver.subscribe(this.goToMousePointer);
   }
 
   /**
@@ -104,7 +107,7 @@ export class WhoIsOnline extends BaseComponent {
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
     this.realtime.participantLeaveObserver.unsubscribe(this.stopFollowing);
     this.realtime.privateModeWIOObserver.unsubscribe(this.onParticipantListUpdate);
-    this.realtime.gatherWIOObserver.unsubscribe(this.setGather);
+    this.realtime.followWIOObserver.unsubscribe(this.setFollow);
   }
 
   /**
@@ -198,7 +201,7 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private followMousePointer = ({ detail }: CustomEvent) => {
-    this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, detail.id);
+    this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, detail.id);
     this.following = detail.id;
   };
 
@@ -213,7 +216,7 @@ export class WhoIsOnline extends BaseComponent {
     this.realtime.setPrivateWIOParticipant(id, isPrivate);
   };
 
-  private setGather = (following) => {
+  private setFollow = (following) => {
     if (following.clientId === this.localParticipant.id) return;
 
     this.followMousePointer({ detail: { id: following?.data?.id } } as CustomEvent);
@@ -227,15 +230,20 @@ export class WhoIsOnline extends BaseComponent {
     this.element.following = following.data;
   };
 
-  private gatherAll = (data: CustomEvent) => {
-    this.realtime.setGatherWIOParticipant({ ...data.detail });
+  private follow = (data: CustomEvent) => {
+    this.realtime.setFollowWIOParticipant({ ...data.detail });
+    this.following = data.detail?.id;
   };
 
   private stopFollowing = (participant: { clientId: string }) => {
     if (participant.clientId === this.element.following?.id) {
       this.element.following = undefined;
       this.following = undefined;
-      this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, undefined);
+      this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
     }
+  };
+
+  private gather = (data: CustomEvent) => {
+    this.realtime.setGatherWIOParticipant({ ...data.detail });
   };
 }

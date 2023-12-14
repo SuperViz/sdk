@@ -1390,6 +1390,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.presenceWIOChannel.attach();
     this.presenceWIOChannel.subscribe('private', this.onSetPrivate);
+    this.presenceWIOChannel.subscribe('follow', this.onSetFollow);
     this.presenceWIOChannel.subscribe('gather', this.onSetGather);
   };
 
@@ -1398,12 +1399,20 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.privateModeWIOObserver.publish(this.participants);
   };
 
-  private onSetGather = (data: Participant): void => {
-    this.gatherWIOObserver.publish(data);
+  private onSetFollow = (data: Participant): void => {
+    this.followWIOObserver.publish(data);
+  };
+
+  private onSetGather = ({ data }: Ably.Types.Message): void => {
+    this.gatherWIOObserver.publish({ detail: { id: data.id } });
   };
 
   public setPrivateWIOParticipant = (id: string, isPrivate: boolean): void => {
     this.presenceWIOChannel.publish('private', { id, isPrivate });
+  };
+
+  public setFollowWIOParticipant = (data): void => {
+    this.presenceWIOChannel.publish('follow', { ...data });
   };
 
   public setGatherWIOParticipant = (data): void => {

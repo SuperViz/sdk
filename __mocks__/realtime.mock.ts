@@ -21,6 +21,7 @@ export const createRealtimeHistory = () => ({
 
 export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   isLocalParticipantHost: true,
+  setFollow: jest.fn(),
   setGather: jest.fn(),
   setHost: jest.fn(),
   setGridMode: jest.fn(),
@@ -34,6 +35,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   join: jest.fn(),
   leave: jest.fn(),
   setFollowParticipant: jest.fn(),
+  setGatherWIOParticipant: jest.fn(),
   domainWhitelisted: true,
   isDomainWhitelisted: jest.fn().mockReturnValue(true),
   fetchSyncClientProperty: jest.fn((key?: string) => {
@@ -72,6 +74,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   presenceSlotsInfosObserver: MOCK_OBSERVER_HELPER,
   presenceWIOObserver: MOCK_OBSERVER_HELPER,
   privateModeWIOObserver: MOCK_OBSERVER_HELPER,
+  followWIOObserver: MOCK_OBSERVER_HELPER,
   gatherWIOObserver: MOCK_OBSERVER_HELPER,
   subscribeToParticipantUpdate: jest.fn(),
   unsubscribeFromParticipantUpdate: jest.fn(),
@@ -80,7 +83,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   updateComments: jest.fn(),
   updatePresenceMouse: jest.fn(),
   setPrivateWIOParticipant: jest.fn(),
-  setGatherWIOParticipant: jest.fn(),
+  setFollowWIOParticipant: jest.fn(),
   leavePresenceMouseChannel: jest.fn(),
   enterPresenceMouseChannel: jest.fn(),
   enterWIOChannel: jest.fn(),

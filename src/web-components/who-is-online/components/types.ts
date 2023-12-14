@@ -1,7 +1,9 @@
 export enum WIODropdownOptions {
   GOTO = 'go to',
-  FOLLOW = 'follow',
-  UNFOLLOW = 'unfollow',
+  LOCAL_FOLLOW = 'follow',
+  LOCAL_UNFOLLOW = 'unfollow',
+  FOLLOW = 'everyone follows me',
+  UNFOLLOW = 'stop followers',
   PRIVATE = 'private mode',
   LEAVE_PRIVATE = 'leave private mode',
   GATHER = 'gather all',

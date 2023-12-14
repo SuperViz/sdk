@@ -51,6 +51,7 @@ export enum RealtimeEvent {
   REALTIME_GO_TO_PARTICIPANT = 'realtime.go-to-participant',
   REALTIME_GATHER = 'realtime.gather',
   REALTIME_FOLLOW_PARTICIPANT = 'realtime.follow-participant',
+  REALTIME_LOCAL_FOLLOW_PARTICIPANT = 'realtime.local-follow-participant',
   REALTIME_SET_AVATAR = 'realtime.set-avatar',
   REALTIME_DRAWING_CHANGE = 'realtime.drawing-change',
   REALTIME_TRANSCRIPT_CHANGE = 'realtime.transcript-change',
