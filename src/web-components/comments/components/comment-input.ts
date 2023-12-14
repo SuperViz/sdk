@@ -60,10 +60,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.getElementById('add-mention-button') as HTMLDivElement;
   };
 
-  private getMentionList = () => {
-    return this.shadowRoot!.getElementById('mention-list') as HTMLDivElement;
-  };
-
   private getCommentInput = () => {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLDivElement;
   };
@@ -146,21 +142,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   };
 
-  private getMentionPrefix = (mentionIndex, inputValue, e) => {
-    let mentionPrefix = '';
-    const text = e.target.innerText.trim();
-    const lastCaracter = text.slice(-1);
-    const lastItemFind = lastCaracter === '@';
-
-    if (lastItemFind || e.data === "@") {
-      mentionPrefix = "";
-    } else {
-      mentionPrefix = inputValue.slice(mentionIndex + 1);
-    }
-
-    return mentionPrefix;
-  }
-
   private updateMentionInput = (value) => {
     const commentDiv = this.getCommentInput();
     commentDiv.innerHTML = value;
@@ -176,48 +157,26 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     commentDiv.focus();
   }
 
-  private setMentionList = (users, mentionIndex, range) => {
-    const mentionList = users.map((user: any) => ({
-      name: user.name,
-      participantId: user.participantId,
-      avatar: user.avatar,
-      index: mentionIndex,
-      range
-    }))
-    this.mentionList = mentionList
-  }
+  // private insertMention = (participantId, mentionIndex, range) => {
+  //   const commentTextarea = this.getCommentInput();
+  //   const ranges = range;
+  //   const inputValue = commentTextarea.innerHTML;
+  //   commentTextarea.innerHTML = inputValue.slice(0, mentionIndex)
 
-  private hideMentionList = () => {
-    const mentionList = this.getMentionList();
-    mentionList.innerHTML = '';
-    mentionList.style.display = 'none';
-  }
+  //   const mentionText = `@${participantId}`;
+  //   const newElement = document.createElement('div');
+  //   newElement.className = 'mentioned';
+  //   newElement.innerHTML = `<strong>${mentionText}</strong>`;
 
-  private insertMention = (participantId, mentionIndex, range) => {
-    const commentTextarea = this.getCommentInput();
-    const ranges = range;
-    const inputValue = commentTextarea.innerHTML;
-    commentTextarea.innerHTML = inputValue.slice(0, mentionIndex)
+  //   commentTextarea.appendChild(newElement);
 
-    const mentionText = `@${participantId}`;
-    const newElement = document.createElement('div');
-    newElement.className = 'mentioned';
-    newElement.innerHTML = `<strong>${mentionText}</strong>`;
-
-    commentTextarea.appendChild(newElement);
-
-    const spaceNode = document.createTextNode('\u00a0');
-    newElement.parentNode.insertBefore(spaceNode, newElement.nextSibling);
+  //   const spaceNode = document.createTextNode('\u00a0');
+  //   newElement.parentNode.insertBefore(spaceNode, newElement.nextSibling);
     
-    this.hideMentionList();
-    this.updateMentionInput(this.getCommentInput().innerHTML)
-    this.updateHeight();
-  }
-
-  private findMatchedUsers = (prefix) => {
-    const lowercasePrefix = prefix.toLowerCase();
-    return this.users.filter(user => user.name.toLowerCase().startsWith(lowercasePrefix));
-  }
+  //   // this.hideMentionList();
+  //   this.updateMentionInput(this.getCommentInput().innerHTML)
+  //   this.updateHeight();
+  // }
 
   private cursorPosition = () => {
     const selection = window.getSelection();
@@ -396,7 +355,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             placeholder=${this.placeholder ?? 'Add comment...'}
             @input=${this.updateHeight}
           ></div>
-          <superviz-comments-mention-list .participants=${this.mentionList}></superviz-comments-mention-list>
+          <superviz-comments-mention-list
+            .participants=${this.mentionList}
+            @participant-selected=${({ detail }) => console.log(detail)}
+          ></superviz-comments-mention-list>
         </div>
         <div class="sv-hr"></div>
         <div class="comment-input--options">
