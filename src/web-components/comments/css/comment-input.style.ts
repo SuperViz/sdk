@@ -48,7 +48,19 @@ export const commentInputStyle = css`
   }
 
   .mention {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    border-radius: 100%;
+    color: rgb(var(--sv-gray-600));
+    cursor: pointer;
+    transition: 0.25s background-color ease-in;
+  }
+
+  .mention:hover {
+    background-color: rgb(var(--sv-gray-200));
   }
 
   .comment-input--send-btn {
@@ -97,41 +109,4 @@ export const commentInputStyle = css`
   .mentioned{
     display: inline-block;
   }
-
-  #mention-container {
-    position: relative;
-    display: inline-block;
-  }
-
-  #mention-list {
-    position: relative;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    border: 1px solid #ccc;
-    border-top: none;
-    width: 100%;
-    max-height: 150px;
-    overflow-y: auto;
-    background-color: white;
-    display: none;
-  }
-
-  .mention-item {
-    padding: 8px;
-    cursor: pointer;
-  }
-
-  .mention-item:hover {
-    background-color: #f0f0f0;
-  }
-
-  .avatar {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    margin-right: 8px;
-  }
-
-/////
 `;
