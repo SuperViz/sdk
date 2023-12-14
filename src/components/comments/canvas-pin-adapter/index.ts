@@ -16,6 +16,8 @@ export class CanvasPin implements PinAdapter {
   private animateFrame: number;
   private goToPinCallback: (position: { x: number; y: number }) => void;
   public onPinFixedObserver: Observer;
+  private mouseDownCoordinates: { x: number; y: number };
+  private temporaryPinCoordinates: { x: number; y: number } | null = null;
 
   constructor(
     canvasId: string,
@@ -128,13 +130,12 @@ export class CanvasPin implements PinAdapter {
   }
 
   /**
-   * @function createTemporaryPin
+   * @function renderTemporaryPin
    * @description
           creates a temporary pin with the id
           temporary-pin to mark where the annotation is being created
-   * @param {PinCoordinates} position  - The position of the pin to be created.
    */
-  public createTemporaryPin(position: PinCoordinates): void {
+  public renderTemporaryPin(): void {
     let temporaryPin = document.getElementById('superviz-temporary-pin');
 
     if (!temporaryPin) {
@@ -143,11 +144,22 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttributeNode(document.createAttribute('active'));
+      this.divWrapper.appendChild(temporaryPin);
     }
 
-    temporaryPin.setAttribute('position', JSON.stringify(position));
+    const { x: savedX, y: savedY } = this.temporaryPinCoordinates;
 
-    this.divWrapper.appendChild(temporaryPin);
+    const context = this.canvas.getContext('2d');
+    const transform = context.getTransform();
+
+    const currentTranslateX = transform.e;
+    const currentTranslateY = transform.f;
+
+    const x = savedX + currentTranslateX;
+    const y = savedY + currentTranslateY;
+
+    temporaryPin.setAttribute('position', JSON.stringify({ x, y }));
+
     this.pins.set('temporary-pin', temporaryPin);
   }
 
@@ -158,6 +170,7 @@ export class CanvasPin implements PinAdapter {
    */
   private addListeners(): void {
     this.canvas.addEventListener('click', this.onClick);
+    this.canvas.addEventListener('mousedown', this.setMouseDownCoordinates);
     this.canvas.addEventListener('mousemove', this.onMouseMove);
     this.canvas.addEventListener('mouseout', this.onMouseLeave);
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
@@ -230,6 +243,10 @@ export class CanvasPin implements PinAdapter {
     if (this.isActive || this.isPinsVisible) {
       this.renderAnnotationsPins();
       this.renderDivWrapper();
+    }
+
+    if (this.temporaryPinCoordinates) {
+      this.renderTemporaryPin();
     }
 
     requestAnimationFrame(this.animate);
@@ -322,6 +339,10 @@ export class CanvasPin implements PinAdapter {
     });
   }
 
+  private setMouseDownCoordinates = ({ x, y }: MouseEvent) => {
+    this.mouseDownCoordinates = { x, y };
+  };
+
   private removeAnnotationsPins(): void {
     this.pins.forEach((pinElement) => {
       pinElement.remove();
@@ -392,22 +413,23 @@ export class CanvasPin implements PinAdapter {
    */
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive) return;
-
-    const context = this.canvas.getContext('2d');
     const rect = this.canvas.getBoundingClientRect();
+
+    const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
+    const originalX = mouseDownX - rect.x;
+    const originalY = mouseDownY - rect.y;
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const transform = context.getTransform();
+    const distance = Math.hypot(x - originalX, y - originalY);
+    if (distance > 10) return;
 
-    const currentTranslateX = transform.e;
-    const currentTranslateY = transform.f;
+    const context = this.canvas.getContext('2d');
+
+    const transform = context.getTransform();
 
     const invertedMatrix = transform.inverse();
     const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
-
-    const divWrapperXConsideringTranslate = transformedPoint.x + currentTranslateX;
-    const divWrapperYConsideringTranslate = transformedPoint.y + currentTranslateY;
 
     this.onPinFixedObserver.publish({
       x: transformedPoint.x,
@@ -417,11 +439,8 @@ export class CanvasPin implements PinAdapter {
 
     this.resetSelectedPin();
 
-    this.createTemporaryPin({
-      x: divWrapperXConsideringTranslate,
-      y: divWrapperYConsideringTranslate,
-      type: 'canvas',
-    });
+    this.temporaryPinCoordinates = { x: transformedPoint.x, y: transformedPoint.y };
+    this.renderTemporaryPin();
 
     if (this.selectedPin) return;
 
