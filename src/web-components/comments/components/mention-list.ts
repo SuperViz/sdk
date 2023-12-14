@@ -24,17 +24,25 @@ export class CommentsMentionList extends WebComponentsBaseElement {
   };
 
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    const mentionList = this.shadowRoot?.getElementById('mention-list');
     if (_changedProperties.has('participants') && this.participants.length > 0) {
-      mentionList?.style.setProperty('display', 'block'); 
-      mentionList?.style.setProperty('margin-top', '-27px');
+      this.showMentionList();
+      return
     }
 
-    if (_changedProperties.has('participants') && this.participants.length === 0) {
-      mentionList?.style.setProperty('display', 'none'); 
-    }
+    this.hideMentionList();
   }
 
+  showMentionList = () => {
+    const mentionList = this.shadowRoot?.getElementById('mention-list');
+    mentionList?.style.setProperty('display', 'block'); 
+    mentionList?.style.setProperty('margin-top', '-27px');
+  }
+
+  hideMentionList = () => {
+    const mentionList = this.shadowRoot?.getElementById('mention-list');
+    mentionList?.style.setProperty('display', 'none'); 
+  }
+  
   protected render() {
     const mentionItem = (participant) => html`
       <div class="mention-item">
