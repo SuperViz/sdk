@@ -24,6 +24,7 @@ const KICK_PARTICIPANTS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 60000;
 const CLIENT_MESSAGE_SIZE_LIMIT = 10000;
 const SYNC_PROPERTY_INTERVAL = 1000;
+const SYNC_MOUSE_INTERVAL = 100;
 
 let KICK_PARTICIPANTS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
@@ -1342,7 +1343,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const participant = Object.assign({}, this.participantsMouse[data.id] || {}, data);
 
     this.presenceMouseChannel.presence.update(participant);
-  }, SYNC_PROPERTY_INTERVAL);
+  }, SYNC_MOUSE_INTERVAL);
 
   private onPresenceMouseChannelEnter = (presence: Ably.Types.PresenceMessage): void => {
     const slot = this.getParticipantSlot(presence.clientId);
