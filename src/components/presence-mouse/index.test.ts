@@ -180,6 +180,9 @@ describe('MousePointers', () => {
       presenceMouseComponent['presences'] = new Map();
       presenceMouseComponent['following'] = participant2.id;
 
+      presenceMouseComponent['presences'].set(participant2.id, participant2);
+      presenceMouseComponent['presences'].set(participant3.id, participant3);
+
       presenceMouseComponent['onParticipantsDidChange'](participants);
       expect(presenceMouseComponent['presences']).toEqual(secondExpected);
     });
@@ -272,7 +275,9 @@ describe('MousePointers', () => {
       jest.restoreAllMocks();
     });
     test('should publish own mouse visibility as false to realtime', () => {
-      presenceMouseComponent['onMyParticipantMouseOut']();
+      const event = new MouseEvent('mouseout');
+
+      presenceMouseComponent['onMyParticipantMouseOut'](event);
       expect(ABLY_REALTIME_MOCK.updatePresenceMouse).toHaveBeenCalledWith({
         ...MOCK_LOCAL_PARTICIPANT,
         visible: false,
