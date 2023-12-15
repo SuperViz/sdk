@@ -213,8 +213,8 @@ describe('Who Is Online', () => {
   });
 
   test('should stop following if already following', async () => {
-    const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
-      detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 0 },
+    const event = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
+      detail: { id: 1, label: WIODropdownOptions.LOCAL_FOLLOW, slotIndex: 0 },
     });
 
     element['dropdownOptionsHandler'](event);
@@ -246,8 +246,8 @@ describe('Who Is Online', () => {
       1,
     );
 
-    const event = new CustomEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
-      detail: { id: 'test', label: WIODropdownOptions.FOLLOW, slotIndex: 2 },
+    const event = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
+      detail: { id: 'test', label: WIODropdownOptions.LOCAL_FOLLOW, slotIndex: 2 },
     });
 
     element['dropdownOptionsHandler'](event);
@@ -280,11 +280,11 @@ describe('Who Is Online', () => {
 
     test('should emit event when selecting follow option in dropdown', async () => {
       const event = new CustomEvent('selected', {
-        detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 1 },
+        detail: { id: 1, label: WIODropdownOptions.LOCAL_FOLLOW, slotIndex: 1 },
       });
 
       const spy = jest.fn();
-      element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
+      element.addEventListener(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, spy);
 
       expect(element['following']).toBeUndefined();
 
@@ -296,7 +296,23 @@ describe('Who Is Online', () => {
 
     test('should emit event when selecting unfollow option in dropdown', async () => {
       const event = new CustomEvent('selected', {
-        detail: { id: 1, label: WIODropdownOptions.UNFOLLOW },
+        detail: { id: 1, label: WIODropdownOptions.LOCAL_UNFOLLOW },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, spy);
+
+      element['following'] = { id: 1, slotIndex: 1 };
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledWith(event);
+      expect(element['following']).toBeUndefined();
+    });
+
+    test('should emit event when selecting follow option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 1 },
       });
 
       const spy = jest.fn();
@@ -307,39 +323,23 @@ describe('Who Is Online', () => {
       dropdown.dispatchEvent(event);
 
       expect(spy).toHaveBeenCalledWith(event);
+      expect(element['everyoneFollowsMe']).toBe(true);
       expect(element['following']).toBeUndefined();
     });
 
-    test('should emit event when selecting gather option in dropdown', async () => {
+    test('should emit event when selecting stop follow option in dropdown', async () => {
       const event = new CustomEvent('selected', {
-        detail: { id: 1, label: WIODropdownOptions.GATHER, slotIndex: 1 },
+        detail: { id: 1, label: WIODropdownOptions.UNFOLLOW, slotIndex: 1 },
       });
 
       const spy = jest.fn();
-      element.addEventListener(RealtimeEvent.REALTIME_GATHER, spy);
-
-      element['following'] = { id: 1, slotIndex: 1 };
+      element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
+      element['everyoneFollowsMe'] = true;
 
       dropdown.dispatchEvent(event);
 
       expect(spy).toHaveBeenCalledWith(event);
-      expect(element['isGathering']).toBe(true);
-      expect(element['following']).toBeUndefined();
-    });
-
-    test('should emit event when selecting stop gather option in dropdown', async () => {
-      const event = new CustomEvent('selected', {
-        detail: { id: 1, label: WIODropdownOptions.STOP_GATHER, slotIndex: 1 },
-      });
-
-      const spy = jest.fn();
-      element.addEventListener(RealtimeEvent.REALTIME_GATHER, spy);
-      element['isGathering'] = true;
-
-      dropdown.dispatchEvent(event);
-
-      expect(spy).toHaveBeenCalledWith(event);
-      expect(element['isGathering']).toBe(false);
+      expect(element['everyoneFollowsMe']).toBe(false);
     });
 
     test('should emit event when selecting private mode option in dropdown', async () => {
