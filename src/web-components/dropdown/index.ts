@@ -359,7 +359,7 @@ export class Dropdown extends WebComponentsBaseElement {
   private get renderHeader() {
     if (!this.name) return html``;
     return html` <div class="header">
-      <span class="text">${this.name}</span>
+      <span class="text username">${this.name}</span>
       <span class="sv-hr"></span>
     </div>`;
   }

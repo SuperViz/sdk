@@ -92,6 +92,11 @@ export const dropdownStyle = css`
     bottom: 44px;
   }
 
+  .text.username {
+    font-size: 14px;
+    line-height: 16px;
+  }
+
   .items li {
     color: rgb(var(--sv-gray-600));
     text-transform: uppercase;
