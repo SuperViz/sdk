@@ -187,6 +187,7 @@ export const dropdownStyle = css`
     margin: 0;
     font-family: roboto;
     white-space: nowrap;
+    text-align: center;
   }
 
   .tooltip-name {
