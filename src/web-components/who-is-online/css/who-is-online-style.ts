@@ -41,7 +41,7 @@ export const whoIsOnlineStyle = css`
 
   .followed:before {
     border-style: dashed !important;
-    animation: rotate 5s linear infinite;
+    animation: rotate 15s linear infinite;
   }
 
   .private {
