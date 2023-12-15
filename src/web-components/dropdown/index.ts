@@ -24,10 +24,12 @@ export class Dropdown extends WebComponentsBaseElement {
   declare active: string | object;
   declare icons?: string[];
   declare name?: string;
+  declare onHoverData: { name: string; action: string };
   private dropdownContent: HTMLElement;
   private originalPosition: Positions;
   private menu: HTMLElement = undefined;
   private host: HTMLElement;
+  declare tooltipOnLeft: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -40,6 +42,8 @@ export class Dropdown extends WebComponentsBaseElement {
     active: { type: [String, Object] },
     icons: { type: Array },
     name: { type: String },
+    onHoverData: { type: Object },
+    tooltipOnLeft: { type: Boolean },
   };
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -373,6 +377,21 @@ export class Dropdown extends WebComponentsBaseElement {
     setTimeout(() => this.adjustPosition());
   }
 
+  private onHover() {
+    if (!this.onHoverData?.name) return html``;
+
+    const classList = {
+      'superviz-who-is-online__tooltip': true,
+      'tooltip-left': this.tooltipOnLeft,
+    };
+
+    return html` <div class=${classMap(classList)}>
+      <p class="tooltip-name">${this.onHoverData.name}</p>
+      <p class="tooltip-action">${this.onHoverData.action}</p>
+      <div class="superviz-who-is-online__tooltip-arrow"></div>
+    </div>`;
+  }
+
   protected render() {
     const menuClasses = {
       menu: true,
@@ -409,6 +428,7 @@ export class Dropdown extends WebComponentsBaseElement {
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
+        ${this.onHover()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(menuClasses)}>

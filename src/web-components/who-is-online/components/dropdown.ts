@@ -160,6 +160,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
+        onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
+        ?tooltipOnLeft=${true}
         >
         <div 
           class=${classMap(contentClasses)} 

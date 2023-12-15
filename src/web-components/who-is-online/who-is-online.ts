@@ -317,6 +317,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               icons="${JSON.stringify(icons)}"
               name="${participantName}"
               ?disabled=${disableDropdown}
+              onHoverData=${JSON.stringify({ name, action: isLocal ? 'You' : 'Click to follow' })}
             >
               <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
                 ${this.getAvatar(participant)}
