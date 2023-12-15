@@ -81,7 +81,7 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     font-family: 'Open Sans';
-    font-size: 18px;
+    font-size: 14px;
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
@@ -96,7 +96,7 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     font-family: Roboto;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 16px;
     text-align: center;
     font-weight: bold;

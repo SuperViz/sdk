@@ -51,8 +51,8 @@ export const dropdownStyle = css`
     align-items: center;
     justify-content: center;
     font-family: 'Open Sans';
-    font-size: 18px;
-    line-height: 18px;
+    font-size: 14px;
+    line-height: 14px;
     font-weight: bold;
     color: #26242a;
     object-fit: contain;
