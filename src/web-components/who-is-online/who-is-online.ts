@@ -130,7 +130,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         return;
       }
 
-      this.following = { name, id, color, slotIndex };
+      this.following = { name, id, color };
       this.swapParticipantBeingFollowedPosition();
       this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id });
     }
@@ -170,6 +170,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="superviz-who-is-online__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }
@@ -252,23 +253,29 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private followingMessage() {
     if (!this.following) return '';
 
-    const { slotIndex, name, color } = this.following;
+    const { name, color } = this.following;
 
-    const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
-
-    return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
+    return html`<div class="message" style="border-color: ${color}">
       Following: ${name} <span @click=${this.stopFollowing}>Stop</span>
+    </div>`;
+  }
+
+  private everyoneFollowsMeMessage() {
+    if (!this.everyoneFollowsMe) return '';
+
+    const { color } = this.localParticipantData;
+
+    return html`<div class="message" style="border-color: ${color}">
+      Everyone is following you <span @click=${this.stopEveryoneFollowsMe}>Stop</span>
     </div>`;
   }
 
   private privateMessage() {
     if (!this.isPrivate) return '';
 
-    const { color, slotIndex } = this.localParticipantData;
+    const { color } = this.localParticipantData;
 
-    const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
-
-    return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
+    return html`<div class="message" style="border-color: ${color}">
       You are in Private Mode <span @click=${this.cancelPrivate}>Cancel</span>
     </div>`;
   }
@@ -295,7 +302,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           const classList = {
             'superviz-who-is-online__participant': true,
             'disable-dropdown': disableDropdown,
-            followed: participantIsFollowed,
+            followed: participantIsFollowed || (isLocal && this.everyoneFollowsMe),
             private: isLocal && this.isPrivate,
           };
 
@@ -311,6 +318,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               icons="${JSON.stringify(icons)}"
               name="${participantName}"
               ?disabled=${disableDropdown}
+              onHoverData=${JSON.stringify({ name, action: isLocal ? 'You' : 'Click to follow' })}
             >
               <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
                 ${this.getAvatar(participant)}
@@ -338,7 +346,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   protected render() {
     return html`<div class="wio-content">
-      ${this.renderParticipants()} ${this.followingMessage()} ${this.privateMessage()}
+      ${this.renderParticipants()} ${this.followingMessage()} ${this.everyoneFollowsMeMessage()}
+      ${this.privateMessage()}
     </div> `;
   }
 }

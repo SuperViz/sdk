@@ -14,7 +14,6 @@ export interface Following {
   id: string;
   name: string;
   color: string;
-  slotIndex: number;
 }
 
 export interface Options {
@@ -33,6 +32,5 @@ export enum PositionOptions {
 
 export interface LocalParticipantData {
   id: string;
-  slotIndex: number;
   color: string;
 }

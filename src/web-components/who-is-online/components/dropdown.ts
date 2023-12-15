@@ -99,6 +99,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="who-is-online-dropdown__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }
@@ -160,6 +161,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
+        onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
+        ?tooltipOnLeft=${true}
         >
         <div 
           class=${classMap(contentClasses)} 
@@ -326,12 +329,20 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   }
 
+  private onHover() {
+    return html` <div class="superviz-who-is-online-dropdown__tooltip">
+      <p class="tooltip-content">See more</p>
+      <div class="superviz-who-is-online-dropdown__tooltip-arrow"></div>
+    </div>`;
+  }
+
   protected render() {
     return html`
       <div class="dropdown">
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
+        ${this.onHover()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(this.menuClasses)}>${this.renderParticipants()}</div>
