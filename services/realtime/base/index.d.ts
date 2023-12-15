@@ -19,6 +19,9 @@ export declare class RealtimeService implements DefaultRealtimeService {
     authenticationObserver: Observer;
     commentsObserver: Observer;
     presenceMouseObserver: Observer;
+    privateModeWIOObserver: Observer;
+    followWIOObserver: Observer;
+    gatherWIOObserver: Observer;
     presenceMouseParticipantLeaveObserver: Observer;
     presenceMouseParticipantJoinedObserver: Observer;
     presenceSlotsInfosObserver: Observer;
@@ -44,7 +47,7 @@ export declare class RealtimeService implements DefaultRealtimeService {
      */
     unsubscribeFromParticipantUpdate(participantId: string, callback: Function): void;
     /**
-     * @function subscribeToParticipantUpdate
+     * @function subscribeToParticipant3DUpdate
      * @description subscribe to a participant's events
      * @param {string} participantId
      * @param {Function} callback
