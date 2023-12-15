@@ -194,7 +194,10 @@ export class VideoConference extends BaseComponent {
       customColors: config.get<ColorsVariables>('colors'),
       collaborationMode: this.params?.collaborationMode?.enabled ?? true,
       layoutPosition:
-        (this.params?.collaborationMode?.modalPosition as LayoutPosition) ?? LayoutPosition.CENTER,
+        this.params?.collaborationMode?.enabled === false
+          ? LayoutPosition.CENTER
+          : (this.params?.collaborationMode?.modalPosition as LayoutPosition) ??
+            LayoutPosition.CENTER,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
       waterMark: this.showWaterMarkType,
     };
