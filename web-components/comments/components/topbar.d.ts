@@ -8,7 +8,6 @@ export declare class CommentsTopbar extends CommentsTopbar_base {
             type: StringConstructor;
         };
     };
-    constructor();
     private close;
     protected render(): import("lit").TemplateResult<1>;
 }

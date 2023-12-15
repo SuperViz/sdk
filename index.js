@@ -992,7 +992,7 @@ function print() { __p += __j.call(arguments, '') }
     transition: all 300ms;
     cursor: pointer;
     overflow: hidden;
-    padding-left: 12px;
+    padding-left: 10px;
   }
 
   button.float-button p {
@@ -1045,7 +1045,7 @@ function print() { __p += __j.call(arguments, '') }
     justify-content: center;
   }
 }
-`;N();var Lc;function Nc(s){let e=s.querySelector("#superviz-comments");if(e&&!Lc){let t={childList:!0,attributes:!0,characterData:!0,subtree:!0};Lc=new MutationObserver(r=>{r.forEach(i=>{!i.removedNodes.length||i.removedNodes.forEach(a=>{a.id==="poweredby-footer"&&WS(s)})})}),Lc.observe(e,t)}}function WS(s){let e=document.createElement("div");e.id="poweredby-footer",e.className="footer";let t=document.createElement("div");t.className="powered-by powered-by--horizontal";let r=document.createElement("a");r.href="https://superviz.com/",r.target="_blank",r.className="link";let i=document.createElement("div");i.textContent="Powered by";let a=document.createElement("img");a.width=48,a.height=8.86,a.src="https://production.cdn.superviz.com/static/superviz-gray-logo.svg",t.appendChild(r),r.appendChild(i),i.appendChild(a),e.appendChild(t);let l=s.getElementById("superviz-comments");l&&l.appendChild(e),Nc(s)}var qm=Wt(Pt),zS=[qm.styles,Ac,Mc],Wr=class extends qm{constructor(){super();this.annotations=[],this.annotationFilter="all",this.waterMarkState=!1}updateAnnotations(t){this.annotations=t}toggle(){this.emitEvent("toggle",{})}waterMarkStatus(t){this.waterMarkState=t}setFilter({detail:t}){let{filter:r}=t;this.annotationFilter=r}updated(t){super.updated(t),this.updateComplete.then(()=>{let r=this.shadowRoot.querySelector(".superviz-comments");!r||(this.waterMarkState&&Nc(this.shadowRoot),r.setAttribute("style",this.side))})}render(){let t=[this.open?"container":"container-close","superviz-comments"].join(" "),r=ft` <div id="poweredby-footer" class="footer">
+`;N();var Lc;function Nc(s){let e=s.querySelector("#superviz-comments");if(e&&!Lc){let t={childList:!0,attributes:!0,characterData:!0,subtree:!0};Lc=new MutationObserver(r=>{r.forEach(i=>{!i.removedNodes.length||i.removedNodes.forEach(a=>{a.id==="poweredby-footer"&&WS(s)})})}),Lc.observe(e,t)}}function WS(s){let e=document.createElement("div");e.id="poweredby-footer",e.className="footer";let t=document.createElement("div");t.className="powered-by powered-by--horizontal";let r=document.createElement("a");r.href="https://superviz.com/",r.target="_blank",r.className="link";let i=document.createElement("div");i.textContent="Powered by";let a=document.createElement("img");a.width=48,a.height=8.86,a.src="https://production.cdn.superviz.com/static/superviz-gray-logo.svg",t.appendChild(r),r.appendChild(i),i.appendChild(a),e.appendChild(t);let l=s.getElementById("superviz-comments");l&&l.appendChild(e),Nc(s)}var qm=Wt(Pt),zS=[qm.styles,Ac,Mc],Wr=class extends qm{constructor(){super();this.annotations=[],this.annotationFilter="all",this.waterMarkState=!1,this.side="left: 0px"}updateAnnotations(t){this.annotations=t}toggle(){this.emitEvent("toggle",{})}waterMarkStatus(t){this.waterMarkState=t}setFilter({detail:t}){let{filter:r}=t;this.annotationFilter=r}updated(t){super.updated(t),this.updateComplete.then(()=>{let r=this.shadowRoot.querySelector(".superviz-comments");!r||(this.waterMarkState&&Nc(this.shadowRoot),r.setAttribute("style",this.side))})}render(){let t=[this.open?"container":"container-close","superviz-comments"].join(" "),r=ft` <div id="poweredby-footer" class="footer">
       <div class="powered-by powered-by--horizontal">
         <a href="https://superviz.com/" target="_blank" class="link">
           <div class="">
@@ -1061,7 +1061,10 @@ function print() { __p += __j.call(arguments, '') }
     </div>`,i=this.waterMarkState?r:"";return ft`
       <div id="superviz-comments" class=${t}>
         <div class="header">
-          <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
+          <superviz-comments-topbar
+            @close=${this.toggle}
+            side=${this.side.split(":")[0]}
+          ></superviz-comments-topbar>
           <superviz-comments-annotations id="annotations" open=${this.open}>
           </superviz-comments-annotations>
         </div>
@@ -1077,18 +1080,11 @@ function print() { __p += __j.call(arguments, '') }
         ></superviz-comments-content>
         ${i}
       </div>
-    `}};Wr.styles=zS,Wr.properties={open:{type:Boolean},annotations:{type:Object},annotationFilter:{type:String},waterMarkState:{type:Boolean},side:{type:String}},Wr=$t([Ht("superviz-comments")],Wr);N();N();var VS=Wt(Pt),jS=[VS.styles,Cc],zr=class extends Wt(Pt){constructor(){super();this.side="left"}close(){this.dispatchEvent(new CustomEvent("close"))}render(){return this.side==="left"?ft`
-        <div class="topbar">
-          <span @click=${this.close} class="toggle-icon">
-            <superviz-icon name="left" size="lg"></superviz-icon>
-          </span>
-          <span class="text text-bold">COMMENTS</span>
-        </div>
-      `:ft`
+    `}};Wr.styles=zS,Wr.properties={open:{type:Boolean},annotations:{type:Object},annotationFilter:{type:String},waterMarkState:{type:Boolean},side:{type:String}},Wr=$t([Ht("superviz-comments")],Wr);N();N();var VS=Wt(Pt),jS=[VS.styles,Cc],zr=class extends Wt(Pt){close(){this.dispatchEvent(new CustomEvent("close"))}render(){return ft`
       <div class="topbar">
         <span class="text text-bold">COMMENTS</span>
         <span @click=${this.close} class="toggle-icon">
-          <superviz-icon name="right" size="lg"></superviz-icon>
+          <superviz-icon name=${this.side} size="lg"></superviz-icon>
         </span>
       </div>
     `}};zr.styles=jS,zr.properties={side:{type:String}},zr=$t([Ht("superviz-comments-topbar")],zr);N();var Zm=Wt(Pt),JS=[Zm.styles,Oc],Vr=class extends Zm{constructor(){super(...arguments);this.prepareToCreateAnnotation=r=>Rt(this,[r],function*({detail:t}){this.annotation=t,yield this.updateComplete,this.emitEvent("comment-input-focus",t)});this.cancelTemporaryAnnotation=()=>{this.annotation=null};this.cancelTemporaryAnnotationEsc=t=>{(t==null?void 0:t.key)==="Escape"&&(this.annotation=null)}}createComment({detail:t}){this.emitEvent("create-annotation",t),this.annotation=null}connectedCallback(){super.connectedCallback(),window.document.body.addEventListener("prepare-to-create-annotation",this.prepareToCreateAnnotation),window.document.body.addEventListener("close-temporary-annotation",this.cancelTemporaryAnnotation),window.document.body.addEventListener("keyup",t=>{t.key==="Escape"&&this.cancelTemporaryAnnotationEsc(t)})}disconnectedCallback(){super.disconnectedCallback(),window.document.body.removeEventListener("prepare-to-create-annotation",this.prepareToCreateAnnotation),window.document.body.removeEventListener("close-temporary-annotation",this.cancelTemporaryAnnotation),window.document.body.removeEventListener("keyup",t=>{t.key==="Escape"&&this.cancelTemporaryAnnotationEsc(t)})}render(){let t={"annotations--comments-input":!0,hidden:!this.annotation};return ft`
@@ -1328,7 +1324,7 @@ function print() { __p += __j.call(arguments, '') }
         </div>
       </div>
     `}};ii.styles=S1,ii.properties={filter:{type:String},caret:{type:String}},ii=$t([Ht("superviz-comments-annotation-filter")],ii);N();var gv=Wt(Pt),w1=[gv.styles,Rc],oi=class extends gv{constructor(){super();this.isHidden=!0,this.positionStyles="top: 20px; left: 20px;",this.shouldHide=!1,this.commentsPosition="left"}toggle(){this.emitEvent("toggle",{})}connectedCallback(){super.connectedCallback(),window.document.body.addEventListener("toggle-annotation-sidebar",()=>{this.isHidden=!this.isHidden})}updated(t){super.updated(t),this.updateComplete.then(()=>{let r=this.shadowRoot.querySelector(".float-button");if(!r)return;r.setAttribute("style",this.positionStyles);let i=window.document.body.getBoundingClientRect().width,a=r.getBoundingClientRect(),l=320;if(!this.commentsPosition||this.commentsPosition==="left"){this.shouldHide=a.x<l;return}this.shouldHide=i-a.right<l})}render(){let t={"float-button":!0,"hide-button":!this.isHidden&&this.shouldHide};return ft` <button @click=${this.toggle} class="${ee(t)}">
-      <superviz-icon name="comment"></superviz-icon>
+      <superviz-icon allowSetSize=${!0} size="sm" name="comment"></superviz-icon>
 
       <p class="text text-big text-bold">Comments</p>
     </button>`}};oi.styles=w1,oi.properties={positionStyles:{type:String},isHidden:{type:Boolean},commentsPosition:{type:String}},oi=$t([Ht("superviz-comments-button")],oi);N();N();N();var vs=(m=>(m.GOTO="go to",m.LOCAL_FOLLOW="follow",m.LOCAL_UNFOLLOW="unfollow",m.FOLLOW="everyone follows me",m.UNFOLLOW="stop followers",m.PRIVATE="private mode",m.LEAVE_PRIVATE="leave private mode",m.GATHER="gather all",m.STOP_GATHER="stop gather all",m))(vs||{});N();N();var vd=It`
