@@ -99,6 +99,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="who-is-online-dropdown__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }

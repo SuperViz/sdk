@@ -170,6 +170,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="superviz-who-is-online__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }
