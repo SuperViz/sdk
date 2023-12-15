@@ -64,10 +64,6 @@ export const dropdownStyle = css`
     flex-direction: column;
   }
 
-  .dropdown-list * {
-    box-sizing: border-box;
-  }
-
   .dropdown-list > div {
     padding: 4px;
     min-width: 216px;

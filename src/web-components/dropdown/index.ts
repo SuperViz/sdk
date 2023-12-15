@@ -389,7 +389,7 @@ export class Dropdown extends WebComponentsBaseElement {
     };
 
     const icons = this.icons?.map((icon) => {
-      return html`<superviz-icon name="${icon}" size="sm"></superviz-icon>`;
+      return html`<superviz-icon allowSetSize=${true} name="${icon}" size="sm"></superviz-icon>`;
     });
 
     const options = this.options.map((option, index) => {

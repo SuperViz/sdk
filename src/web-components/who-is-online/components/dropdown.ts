@@ -1,6 +1,7 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
@@ -119,36 +120,39 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     const icons = ['place', 'send'];
 
-    return this.participants.map((participant) => {
-      const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
+    return repeat(
+      this.participants,
+      (participant) => participant.id,
+      (participant) => {
+        const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
 
-      const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
+        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
-      const contentClasses = {
-        'who-is-online-dropdown__content': true,
-        'who-is-online-dropdown__content--selected': this.selected === id,
-        'disable-dropdown': disableDropdown,
-        followed: this.following?.id === id,
-      };
+        const contentClasses = {
+          'who-is-online-dropdown__content': true,
+          'who-is-online-dropdown__content--selected': this.selected === id,
+          'disable-dropdown': disableDropdown,
+          followed: this.following?.id === id,
+        };
 
-      const iconClasses = {
-        icon: true,
-        'hide-icon': disableDropdown,
-      };
+        const iconClasses = {
+          icon: true,
+          'hide-icon': disableDropdown,
+        };
 
-      const participantIsFollowed = this.following?.id === id;
+        const participantIsFollowed = this.following?.id === id;
 
-      const options = Object.values(WIODropdownOptions)
-        .map((label, index) => ({
-          label: participantIsFollowed && index ? 'UNFOLLOW' : label,
-          id,
-          name,
-          color,
-          slotIndex,
-        }))
-        .slice(0, 2);
+        const options = Object.values(WIODropdownOptions)
+          .map((label, index) => ({
+            label: participantIsFollowed && index ? 'UNFOLLOW' : label,
+            id,
+            name,
+            color,
+            slotIndex,
+          }))
+          .slice(0, 2);
 
-      return html`
+        return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
@@ -174,7 +178,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         </div>
       </superviz-dropdown>
       `;
-    });
+      },
+    );
   }
 
   private setMenu() {

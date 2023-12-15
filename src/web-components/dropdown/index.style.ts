@@ -17,10 +17,6 @@ export const dropdownStyle = css`
     position: relative;
   }
 
-  .dropdown-list * {
-    box-sizing: border-box;
-  }
-
   .header {
     display: flex;
     flex-direction: column;
