@@ -17,7 +17,7 @@ export const floatButtonStyle = css`
     transition: all 300ms;
     cursor: pointer;
     overflow: hidden;
-    padding-left: 12px;
+    padding-left: 10px;
   }
 
   button.float-button p {
