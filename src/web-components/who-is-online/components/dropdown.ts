@@ -329,12 +329,20 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   }
 
+  private onHover() {
+    return html` <div class="superviz-who-is-online-dropdown__tooltip">
+      <p class="tooltip-content">See more</p>
+      <div class="superviz-who-is-online-dropdown__tooltip-arrow"></div>
+    </div>`;
+  }
+
   protected render() {
     return html`
       <div class="dropdown">
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
+        ${this.onHover()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(this.menuClasses)}>${this.renderParticipants()}</div>
