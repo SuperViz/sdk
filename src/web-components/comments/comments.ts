@@ -34,6 +34,7 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = [];
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
+    this.side = 'left: 0px';
   }
 
   public updateAnnotations(data: Annotation[]) {
