@@ -130,7 +130,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         return;
       }
 
-      this.following = { name, id, color, slotIndex };
+      this.following = { name, id, color };
       this.swapParticipantBeingFollowedPosition();
       this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id });
     }
@@ -252,11 +252,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private followingMessage() {
     if (!this.following) return '';
 
-    const { slotIndex, name, color } = this.following;
+    const { name, color } = this.following;
 
-    const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
-
-    return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
+    return html`<div class="message" style="border-color: ${color}">
       Following: ${name} <span @click=${this.stopFollowing}>Stop</span>
     </div>`;
   }
@@ -264,11 +262,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private privateMessage() {
     if (!this.isPrivate) return '';
 
-    const { color, slotIndex } = this.localParticipantData;
+    const { color } = this.localParticipantData;
 
-    const letterColor = this.textColorValues.includes(slotIndex) ? '#FFFFFF' : '#26242A';
-
-    return html`<div class="following" style="background-color: ${color}; color: ${letterColor}">
+    return html`<div class="message" style="border-color: ${color}">
       You are in Private Mode <span @click=${this.cancelPrivate}>Cancel</span>
     </div>`;
   }

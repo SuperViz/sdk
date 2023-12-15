@@ -131,7 +131,7 @@ export class WhoIsOnline extends BaseComponent {
         const { color } = this.realtime.getSlotColor(slotIndex);
         const isLocal = this.localParticipant.id === id;
         const joinedPresence = activeComponents.some((component) => component.includes('presence'));
-        this.setLocalData(isLocal, !joinedPresence, color, slotIndex);
+        this.setLocalData(isLocal, !joinedPresence, color);
 
         return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
       });
@@ -147,11 +147,11 @@ export class WhoIsOnline extends BaseComponent {
     this.element.updateParticipants(this.participants);
   };
 
-  private setLocalData = (local: boolean, disable: boolean, color: string, slotIndex: number) => {
+  private setLocalData = (local: boolean, disable: boolean, color: string) => {
     if (!local) return;
 
     this.element.disableDropdown = disable;
-    this.element.localParticipantData = { color, slotIndex, id: this.localParticipant.id };
+    this.element.localParticipantData = { color, id: this.localParticipant.id };
   };
 
   /**
