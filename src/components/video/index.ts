@@ -137,7 +137,6 @@ export class VideoConference extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('video conference @ start');
-    this.publish(MeetingEvent.MEETING_START);
 
     if (this.params.userType !== ParticipantType.GUEST) {
       this.localParticipant.type = this.params.userType as ParticipantType;
@@ -193,7 +192,7 @@ export class VideoConference extends BaseComponent {
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
       customColors: config.get<ColorsVariables>('colors'),
-      collaborationMode: true,
+      collaborationMode: this.params?.collaborationMode?.enabled ?? true,
       layoutPosition:
         (this.params?.collaborationMode?.modalPosition as LayoutPosition) ?? LayoutPosition.CENTER,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
@@ -400,6 +399,8 @@ export class VideoConference extends BaseComponent {
       participant: this.localParticipant,
       roomId: config.get<string>('roomId'),
     });
+
+    this.publish(MeetingEvent.MEETING_START);
   };
 
   /**
