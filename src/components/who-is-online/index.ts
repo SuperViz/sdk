@@ -44,6 +44,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected destroy(): void {
     this.unsubscribeToRealtimeEvents();
+    this.realtime.leaveWIOChannel();
     this.removeListeners();
     this.element.remove();
     this.element = null;
@@ -108,6 +109,7 @@ export class WhoIsOnline extends BaseComponent {
     this.realtime.participantLeaveObserver.unsubscribe(this.stopFollowing);
     this.realtime.privateModeWIOObserver.unsubscribe(this.onParticipantListUpdate);
     this.realtime.followWIOObserver.unsubscribe(this.setFollow);
+    this.realtime.gatherWIOObserver.unsubscribe(this.goToMousePointer);
   }
 
   /**

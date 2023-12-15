@@ -1394,6 +1394,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.presenceWIOChannel.subscribe('gather', this.onSetGather);
   };
 
+  public leaveWIOChannel = (): void => {
+    if (!this.presenceWIOChannel) return;
+
+    this.presenceWIOChannel.presence.leave();
+    this.presenceWIOChannel = null;
+  };
+
   private onSetPrivate = ({ data: { id, isPrivate } }): void => {
     this.participants[id].data.isPrivate = isPrivate;
     this.privateModeWIOObserver.publish(this.participants);
