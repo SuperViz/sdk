@@ -10,7 +10,7 @@ const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
 type User = {
   name: string;
-  participantId: string;
+  userId: string;
   avatar: string;
 };
 @customElement('superviz-comments-comment-input')
@@ -34,12 +34,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     // mockusers change to participants groups
     this.users = [
-      { name: 'Vinicius Afonso', participantId: 'participantIdVinicius', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
-      { name: 'Vitor Vargas', participantId: 'participantIdVitor', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
-      { name: 'Vitor Norton', participantId: 'participantIdNorton', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
-      { name: 'Carlos Peixoto', participantId: 'participantIdCarlos', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
-      { name: 'Gabi Alcoar', participantId: 'participantIdGabi', avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
-      { name: 'Ian Silva', participantId: 'participantIdIanSilva', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
+      { name: 'Vinicius Afonso', userId: 'participantIdVinicius', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
+      { name: 'Vitor Vargas', userId: 'participantIdVitor', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
+      { name: 'Vitor Norton', userId: 'participantIdNorton', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
+      { name: 'Carlos Peixoto', userId: 'participantIdCarlos', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
+      { name: 'Gabi Alcoar', userId: 'participantIdGabi', avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
+      { name: 'Ian Silva', userId: 'participantIdIanSilva', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
     ];
   }
 
@@ -124,7 +124,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (action === 'show') {
       this.mentionList = mentions
-
     }
 
     if (action === 'hide') {
@@ -253,7 +252,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.users.forEach(user => {
       const regex = new RegExp(`@${user.name}`, 'gi');
       allText = allText2.replace(regex, `<div class="mentioned"><strong>@${user.name}</strong></div>`);
-      allText2 = allText2.replace(regex, `{{${user.participantId}}}`);
+      allText2 = allText2.replace(regex, `{{${user.userId}}}`);
     });
 
     if (!text) return;
@@ -291,7 +290,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     this.users.forEach(user => {
       const regex = new RegExp(`<div class="mentioned"><strong>@${user.name}</strong></div>`, 'gi');
-      allText = allText.replace(regex, `{{${user.participantId}}}`);
+      allText = allText.replace(regex, `{{${user.userId}}}`);
     });
     const text = allText;
 

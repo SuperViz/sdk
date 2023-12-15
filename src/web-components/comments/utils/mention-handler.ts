@@ -58,7 +58,7 @@ const matchParticipant = (input: HTMLDivElement, event: any, participantList: an
   }
 
   const mentionName = extractMentionName(inputValue, mentionIndex, event);
-  
+
   const mentionList = participantList
     .filter((participant: any) => participant.name
       .toLowerCase()
@@ -68,7 +68,7 @@ const matchParticipant = (input: HTMLDivElement, event: any, participantList: an
   if (!(mentionList.length > 0)) {
     return DEFAULT_HIDE_MENTION_LIST
   }
-  
+
   const mentions = prepareMentionList(mentionList, mentionIndex, range);
 
   return {
@@ -88,7 +88,7 @@ const extractMentionName = (input: string, mentionIndex: number, event: any): st
 const prepareMentionList = (users: any, mentionIndex: number, range: any): any => {
   return users.map((user: any) => ({
     name: user.name,
-    participantId: user.participantId,
+    userId: user.userId,
     avatar: user.avatar,
     index: mentionIndex,
     range
