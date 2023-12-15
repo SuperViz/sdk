@@ -1397,7 +1397,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public leaveWIOChannel = (): void => {
     if (!this.presenceWIOChannel) return;
 
-    this.presenceWIOChannel.presence.leave();
+    this.presenceWIOChannel.unsubscribe();
+    this.presenceWIOChannel.detach();
     this.presenceWIOChannel = null;
   };
 
