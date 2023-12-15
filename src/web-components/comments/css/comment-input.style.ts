@@ -19,7 +19,6 @@ export const commentInputStyle = css`
   }
 
   #comment-input--textarea {
-    // all: unset;
     border: 0px;
     border-radius: 4px;
     outline: none;
@@ -104,9 +103,5 @@ export const commentInputStyle = css`
   .comment-input-options {
     display: flex;
     gap: 4px;
-  }
-
-  .mentioned{
-    display: inline-block;
   }
 `;
