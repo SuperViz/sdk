@@ -55,6 +55,7 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     private adjustPosition;
     private toggle;
     private get menuClasses();
+    private onHover;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};

@@ -56,6 +56,7 @@ export declare class WhoIsOnline extends WebComponentsBaseElement {
     private stopFollowing;
     private cancelPrivate;
     private followingMessage;
+    private everyoneFollowsMeMessage;
     private privateMessage;
     private renderParticipants;
     updated(changedProperties: any): void;

@@ -13,7 +13,6 @@ export interface Following {
     id: string;
     name: string;
     color: string;
-    slotIndex: number;
 }
 export interface Options {
     label: string;
@@ -29,6 +28,5 @@ export declare enum PositionOptions {
 }
 export interface LocalParticipantData {
     id: string;
-    slotIndex: number;
     color: string;
 }
