@@ -194,7 +194,10 @@ export class MousePointers extends BaseComponent {
     }
   };
 
-  private onMyParticipantMouseOut = (): void => {
+  private onMyParticipantMouseOut = (event: MouseEvent): void => {
+    const { x, y, width, height } = this.canvas.getBoundingClientRect();
+    if (event.x > 0 && event.y > 0 && event.x < x + width && event.y < y + height) return;
+
     this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant });
   };
 
