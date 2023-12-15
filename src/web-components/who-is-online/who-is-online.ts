@@ -259,6 +259,16 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     </div>`;
   }
 
+  private everyoneFollowsMeMessage() {
+    if (!this.everyoneFollowsMe) return '';
+
+    const { color } = this.localParticipantData;
+
+    return html`<div class="message" style="border-color: ${color}">
+      Everyone is following you <span @click=${this.stopEveryoneFollowsMe}>Stop</span>
+    </div>`;
+  }
+
   private privateMessage() {
     if (!this.isPrivate) return '';
 
@@ -291,7 +301,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           const classList = {
             'superviz-who-is-online__participant': true,
             'disable-dropdown': disableDropdown,
-            followed: participantIsFollowed,
+            followed: participantIsFollowed || (isLocal && this.everyoneFollowsMe),
             private: isLocal && this.isPrivate,
           };
 
@@ -334,7 +344,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   protected render() {
     return html`<div class="wio-content">
-      ${this.renderParticipants()} ${this.followingMessage()} ${this.privateMessage()}
+      ${this.renderParticipants()} ${this.followingMessage()} ${this.everyoneFollowsMeMessage()}
+      ${this.privateMessage()}
     </div> `;
   }
 }
