@@ -34,6 +34,7 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = [];
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
+    this.side = 'left: 0px';
   }
 
   public updateAnnotations(data: Annotation[]) {
@@ -92,7 +93,10 @@ export class Comments extends WebComponentsBaseElement {
     return html`
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
-          <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
+          <superviz-comments-topbar
+            @close=${this.toggle}
+            side=${this.side.split(':')[0]}
+          ></superviz-comments-topbar>
           <superviz-comments-annotations id="annotations" open=${this.open}>
           </superviz-comments-annotations>
         </div>

@@ -14,6 +14,7 @@ export class MousePointers extends BaseComponent {
   private animateFrame: number;
   private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
   private following: string;
+  private isPrivate: boolean;
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -49,8 +50,8 @@ export class MousePointers extends BaseComponent {
     this.canvas.addEventListener('mousemove', this.onMyParticipantMouseMove);
     this.canvas.addEventListener('mouseout', this.onMyParticipantMouseOut);
     this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
-    this.eventBus.subscribe(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.followMouse);
-
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     this.subscribeToRealtimeEvents();
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
   }
@@ -63,7 +64,8 @@ export class MousePointers extends BaseComponent {
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
-
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
 
@@ -81,7 +83,6 @@ export class MousePointers extends BaseComponent {
   private subscribeToRealtimeEvents = (): void => {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
     this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
-
     this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
   };
 
@@ -96,6 +97,16 @@ export class MousePointers extends BaseComponent {
       this.onParticipantLeftOnRealtime,
     );
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
+  };
+
+  /**
+   * @function setParticipantPrivate
+   * @description perform animation in presence mouse
+   * @returns {void}
+   */
+  private setParticipantPrivate = (isPrivate: boolean): void => {
+    this.isPrivate = isPrivate;
+    this.realtime.updatePresenceMouse({ ...this.localParticipant, visible: !isPrivate });
   };
 
   /**
@@ -155,7 +166,7 @@ export class MousePointers extends BaseComponent {
       ...this.localParticipant,
       x: transformedPoint.x,
       y: transformedPoint.y,
-      visible: true,
+      visible: !this.isPrivate,
     });
   };
 
@@ -170,7 +181,14 @@ export class MousePointers extends BaseComponent {
 
     Object.values(participants).forEach((participant: ParticipantMouse) => {
       if (participant.id === this.localParticipant.id) return;
-      if (this.following && participant.id !== this.following) return;
+      if (
+        this.following &&
+        participant.id !== this.following &&
+        this.presences.has(participant.id)
+      ) {
+        this.removePresenceMouseParticipant(participant.id);
+        return;
+      }
 
       this.presences.set(participant.id, participant);
     });
@@ -183,7 +201,10 @@ export class MousePointers extends BaseComponent {
     }
   };
 
-  private onMyParticipantMouseOut = (): void => {
+  private onMyParticipantMouseOut = (event: MouseEvent): void => {
+    const { x, y, width, height } = this.canvas.getBoundingClientRect();
+    if (event.x > 0 && event.y > 0 && event.x < x + width && event.y < y + height) return;
+
     this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant });
   };
 

@@ -70,7 +70,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     };
 
     return html` <button @click=${this.toggle} class="${classMap(floatButtonClasses)}">
-      <superviz-icon name="comment"></superviz-icon>
+      <superviz-icon allowSetSize=${true} size="sm" name="comment"></superviz-icon>
 
       <p class="text text-big text-bold">Comments</p>
     </button>`;
