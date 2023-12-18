@@ -11,6 +11,7 @@ import { AblyParticipant, AblyRealtime, AblyRealtimeData, ParticipantDataInput, 
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
     private client;
     private participants;
+    private participantsWIO;
     private participantsMouse;
     private participantsOn3d;
     private hostParticipantId;
@@ -20,6 +21,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     private clientSyncChannel;
     private clientRoomStateChannel;
     private broadcastChannel;
+    private presenceWIOChannel;
     private presenceMouseChannel;
     private presence3DChannel;
     private clientRoomState;
@@ -404,6 +406,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
      * @returns {void}
      */
     private publishPresenceMouseUpdate;
+    /** Who Is Online */
+    enterWIOChannel: (participant: Participant) => void;
+    leaveWIOChannel: () => void;
+    private onSetPrivate;
+    private onSetFollow;
+    private onSetGather;
+    setPrivateWIOParticipant: (id: string, isPrivate: boolean) => void;
+    setFollowWIOParticipant: (data: any) => void;
+    setGatherWIOParticipant: (data: any) => void;
     /** Presence 3D */
     enterPresence3DChannel(participant: Participant): void;
     leavePresence3DChannel: () => void;

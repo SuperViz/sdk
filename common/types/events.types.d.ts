@@ -48,9 +48,11 @@ export declare enum RealtimeEvent {
     REALTIME_GO_TO_PARTICIPANT = "realtime.go-to-participant",
     REALTIME_GATHER = "realtime.gather",
     REALTIME_FOLLOW_PARTICIPANT = "realtime.follow-participant",
+    REALTIME_LOCAL_FOLLOW_PARTICIPANT = "realtime.local-follow-participant",
     REALTIME_SET_AVATAR = "realtime.set-avatar",
     REALTIME_DRAWING_CHANGE = "realtime.drawing-change",
-    REALTIME_TRANSCRIPT_CHANGE = "realtime.transcript-change"
+    REALTIME_TRANSCRIPT_CHANGE = "realtime.transcript-change",
+    REALTIME_PRIVATE_MODE = "realtime.private-mode"
 }
 export declare enum TranscriptState {
     TRANSCRIPT_START = "transcript.start",
@@ -105,7 +107,8 @@ export declare enum DeviceEvent {
     DEVICES_BLOCKED = "devices.blocked",
     DEVICES_CAM_BLOCKED = "devices.cam-blocked",
     DEVICES_INITIALIZATION_ERROR = "devices.inititalization-error",
-    DEVICES_UNKNOWN_ERROR = "devices.unknown-error"
+    DEVICES_UNKNOWN_ERROR = "devices.unknown-error",
+    DEVICES_ALLOWED = "devices.allowed"
 }
 export type Dimensions = {
     width: number | null;

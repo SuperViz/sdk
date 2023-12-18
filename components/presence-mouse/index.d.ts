@@ -11,6 +11,7 @@ export declare class MousePointers extends BaseComponent {
     private animateFrame;
     private goToMouseCallback;
     private following;
+    private isPrivate;
     constructor(canvasId: string, options?: PresenceMouseProps);
     private get textColorValues();
     /**
@@ -37,6 +38,12 @@ export declare class MousePointers extends BaseComponent {
      * @returns {void}
      */
     private unsubscribeFromRealtimeEvents;
+    /**
+     * @function setParticipantPrivate
+     * @description perform animation in presence mouse
+     * @returns {void}
+     */
+    private setParticipantPrivate;
     /**
      * @function animate
      * @description perform animation in presence mouse

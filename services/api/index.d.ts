@@ -1,3 +1,4 @@
+import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Annotation } from '../../components/comments/types';
 import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
 export default class ApiService {
@@ -18,4 +19,5 @@ export default class ApiService {
         participantId: string;
     }): Promise<void>;
     static sendActivity(userId: string, groupId: string, groupName: string, product: string): Promise<any>;
+    static validadeParticipantIsEnteringTwice(participant: SuperVizSdkOptions['participant'], roomId: string, apiKey: string, ablyKey: string): Promise<any>;
 }

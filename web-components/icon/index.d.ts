@@ -3,6 +3,7 @@ declare const WebComponentsBaseElement: import("../base/types").Constructor<impo
 export declare class Icon extends WebComponentsBaseElement {
     name: string;
     size: string;
+    allowSetSize: boolean;
     constructor();
     static properties: {
         name: {
@@ -11,7 +12,11 @@ export declare class Icon extends WebComponentsBaseElement {
         size: {
             type: StringConstructor;
         };
+        allowSetSize: {
+            type: BooleanConstructor;
+        };
     };
+    private get iconSize();
     static styles: (import("lit").CSSResult | CSSResultGroup[])[];
     protected render(): import("lit").TemplateResult<1>;
 }

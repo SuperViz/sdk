@@ -8,6 +8,7 @@ export declare class WhoIsOnline extends BaseComponent {
     private element;
     private position;
     private participants;
+    private following;
     constructor(position?: WhoIsOnlinePosition);
     /**
      * @function start
@@ -28,7 +29,7 @@ export declare class WhoIsOnline extends BaseComponent {
      */
     private addListeners;
     /**
-     * @function addListeners
+     * @function removeListeners
      * @description adds event listeners from the who is online element.
      * @returns {void}
      */
@@ -53,7 +54,7 @@ export declare class WhoIsOnline extends BaseComponent {
      * @returns {void}
      */
     private onParticipantListUpdate;
-    private setDisableDropdown;
+    private setLocalData;
     /**
      * @function positionWhoIsOnline
      * @description Positions the Who Is Online component on the screen
@@ -62,16 +63,27 @@ export declare class WhoIsOnline extends BaseComponent {
     private positionWhoIsOnline;
     /**
      * @function goToMousePointer
-     * @description Publishes the event 'go-to-mouse-pointer' to the event bus
+     * @description Publishes the go to event to the event bus
      * @param {CustomEvent} event
      * @returns {void}
      */
     private goToMousePointer;
     /**
      * @function followMousePointer
-     * @description Publishes the event 'follow-mouse-pointer' to the event bus
+     * @description Publishes the follow event to the event bus
      * @param {CustomEvent} event
      * @returns {void}
      */
     private followMousePointer;
+    /**
+     * @function setPrivate
+     * @description Publishes the private event to realtime and the event bus
+     * @param {CustomEvent} event
+     * @returns {void}
+     */
+    private setPrivate;
+    private setFollow;
+    private follow;
+    private stopFollowing;
+    private gather;
 }
