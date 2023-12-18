@@ -77,7 +77,6 @@
     "yargs": "^17.7.2"
   },
   "dependencies": {
-    "@superviz/sv-icons": "^0.8.8",
     "ably": "^1.2.45",
     "bowser": "^2.11.0",
     "bowser-jr": "^1.0.6",

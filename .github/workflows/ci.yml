@@ -123,3 +123,15 @@ jobs:
           SLACK_ICON: https://avatars.slack-edge.com/2020-11-18/1496892993975_af721d1c045bea2d5a46_48.png
           MSG_MINIMAL: true
           SLACK_USERNAME: Deploy SDK
+  updateSamplesVersion:
+    needs: main
+    name: Update samples version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: superviz/samples
+          event-type: new-release
+          client-payload: '{"version": "v0.0.0"}'

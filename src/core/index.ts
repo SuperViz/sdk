@@ -1,7 +1,6 @@
 import { debug } from 'debug';
 
 import { ColorsVariables, ColorsVariablesNames } from '../common/types/colors.types';
-import { ParticipantType } from '../common/types/participant.types';
 import { EnvironmentTypes, SuperVizSdkOptions } from '../common/types/sdk-options.types';
 import ApiService from '../services/api';
 import AuthService from '../services/auth-service';
@@ -102,6 +101,17 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   }
 
   const { ablyKey } = environment;
+
+  const isEnteringTwice = await ApiService.validadeParticipantIsEnteringTwice(
+    options.participant,
+    options.roomId,
+    apiKey,
+    ablyKey,
+  );
+
+  if (isEnteringTwice) {
+    throw new Error('Participant is already in the room');
+  }
 
   config.setConfig({
     apiUrl,
