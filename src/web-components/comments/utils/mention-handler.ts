@@ -10,19 +10,23 @@ const DEFAULT_HIDE_MENTION_LIST = {
   mentions: []
 }
 
-export const addMention = (comment: Comment): string => {
-  const regex = /{{(.*?)}}/g;
-  const matches = comment.text.match(regex);
+// export const addMention = (comment: Comment): string => {
+//   const regex = /{{(.*?)}}/g;
+//   const matches = comment.text.match(regex);
 
-  return matches.reduce((newComment, match) => {
-    const userId = match.replace(/{{|}}/g, '');
-    const mention = comment.mentions.find(mention => mention.userId === userId);
-    return newComment.replace(match, mention.name);;
-  }, comment.text);
-}
+//   return matches.reduce((newComment, match) => {
+//     const userId = match.replace(/{{|}}/g, '');
+//     const mention = comment.mentions.find(mention => mention.userId === userId);
+//     return newComment.replace(match, mention.name);;
+//   }, comment.text);
+// }
 
-export const removeMention = (comment: Comment): any => {
-  // find 
+// export const removeMention = (comment: Comment): any => {
+//   // find 
+// }
+
+const insertMention = () => {
+  //
 }
 
 const removeMentionOnBackspace = (event: any): any => {
@@ -69,7 +73,7 @@ const matchParticipant = (input: HTMLDivElement, event: any, participantList: an
     return DEFAULT_HIDE_MENTION_LIST
   }
 
-  const mentions = prepareMentionList(mentionList, mentionIndex, range);
+  const mentions = prepareMentionList(mentionList, mentionIndex, range, mentionName);
 
   return {
     action: MENTION_ACTION.SHOW,
@@ -85,13 +89,14 @@ const extractMentionName = (input: string, mentionIndex: number, event: any): st
   return lastItemFind ? '' : input.slice(mentionIndex + 1);
 }
 
-const prepareMentionList = (users: any, mentionIndex: number, range: any): any => {
+const prepareMentionList = (users: any, mentionIndex: number, range: any, mentionName: string): any => {
   return users.map((user: any) => ({
     name: user.name,
     userId: user.userId,
     avatar: user.avatar,
     index: mentionIndex,
-    range
+    range,
+    mentionName
   }))
 }
 

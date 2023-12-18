@@ -156,26 +156,30 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     commentDiv.focus();
   }
 
-  // private insertMention = (participantId, mentionIndex, range) => {
-  //   const commentTextarea = this.getCommentInput();
-  //   const ranges = range;
-  //   const inputValue = commentTextarea.innerHTML;
-  //   commentTextarea.innerHTML = inputValue.slice(0, mentionIndex)
+  private insertMention = ({ detail }) => {
+    const { index, userId, name, mentionName } = detail
+    const commentTextarea = this.getCommentInput();
+    const inputValue = commentTextarea.innerHTML;
+    console.log(mentionName)
+    const firstPart = inputValue.slice(0, index)
+    const secondPart = inputValue.slice(index, inputValue.length - mentionName)
 
-  //   const mentionText = `@${participantId}`;
-  //   const newElement = document.createElement('div');
-  //   newElement.className = 'mentioned';
-  //   newElement.innerHTML = `<strong>${mentionText}</strong>`;
-
-  //   commentTextarea.appendChild(newElement);
-
-  //   const spaceNode = document.createTextNode('\u00a0');
-  //   newElement.parentNode.insertBefore(spaceNode, newElement.nextSibling);
+    const newElement = document.createElement('superviz-comments-mentioned');
+    newElement.setAttribute('participant', JSON.stringify({ userId, name }));
     
-  //   // this.hideMentionList();
-  //   this.updateMentionInput(this.getCommentInput().innerHTML)
-  //   this.updateHeight();
-  // }
+    if (commentTextarea.innerHTML.length === 0) {
+      commentTextarea.innerHTML += '&nbsp;'
+    }
+
+    commentTextarea.innerHTML = firstPart
+
+    commentTextarea.innerHTML += newElement.outerHTML
+
+    commentTextarea.innerHTML += secondPart
+    
+    this.updateMentionInput(this.getCommentInput().innerHTML)
+    this.updateHeight();
+  }
 
   private cursorPosition = () => {
     const selection = window.getSelection();
@@ -356,7 +360,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
           ></div>
           <superviz-comments-mention-list
             .participants=${this.mentionList}
-            @participant-selected=${({ detail }) => console.log(detail)}
+            @participant-selected=${this.insertMention}
           ></superviz-comments-mention-list>
         </div>
         <div class="sv-hr"></div>

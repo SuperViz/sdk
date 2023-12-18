@@ -1,7 +1,16 @@
 import { css } from 'lit';
 
 export const mentionedStyle = css`
- .mentioned {
-    display: inline-block;
+  .mention {
+    display: inline;
+  }
+
+  .mentioned {
+    display: inline;
+    font-weight: bold;
+  }
+
+  .mentioned:hover {
+    text-decoration: underline;
   }
 `;
