@@ -27,6 +27,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private dropdownContent: HTMLElement;
   private host: HTMLElement;
   declare disableDropdown: boolean;
+  declare showSeeMoreTooltip: boolean;
+  declare showParticipantTooltip: boolean;
   declare following: Following;
 
   static properties = {
@@ -37,6 +39,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     selected: { type: String },
     disableDropdown: { type: Boolean },
     following: { type: Object },
+    showSeeMoreTooltip: { type: Boolean },
+    showParticipantTooltip: { type: Boolean },
   };
 
   constructor() {
@@ -44,18 +48,21 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     // should match presence-mouse textColorValues
     this.textColorValues = [2, 4, 5, 7, 8, 16];
     this.selected = '';
+    this.showParticipantTooltip = true;
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('open')) {
-      if (this.open) {
-        document.addEventListener('click', this.onClickOutDropdown);
-        return;
-      }
+    if (!changedProperties.has('open')) return;
 
-      document.removeEventListener('click', this.onClickOutDropdown);
-      this.close();
+    this.emitEvent('toggle-dropdown-state', { open: this.open, font: 'toggle' });
+
+    if (this.open) {
+      document.addEventListener('click', this.onClickOutDropdown);
+      return;
     }
+
+    document.removeEventListener('click', this.onClickOutDropdown);
+    // this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -81,9 +88,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.open = false;
     this.selected = '';
     this.emitEvent('clickout', {
-      detail: {
-        open: this.open,
-      },
       bubbles: false,
       composed: false,
     });
@@ -115,6 +119,10 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       ${participant.name?.at(0).toUpperCase()}
     </div>`;
   }
+
+  private toggleShowTooltip = ({ detail: { open, font } }: CustomEvent) => {
+    this.showParticipantTooltip = !this.showParticipantTooltip;
+  };
 
   private renderParticipants() {
     if (!this.participants) return;
@@ -163,6 +171,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         ?disabled=${disableDropdown}
         onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
         ?tooltipOnLeft=${true}
+        ?showTooltip=${this.showParticipantTooltip}
+        @toggle-dropdown-state=${this.toggleShowTooltip}
         >
         <div 
           class=${classMap(contentClasses)} 
@@ -315,6 +325,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (!this.originalPosition) this.originalPosition = this.position;
     this.setMenu();
     this.open = !this.open;
+
     if (!this.open) return;
     this.selected = '';
     setTimeout(() => this.adjustPosition());
@@ -330,6 +341,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   }
 
   private onHover() {
+    if (!this.showSeeMoreTooltip) return;
+
     return html` <div class="superviz-who-is-online-dropdown__tooltip">
       <p class="tooltip-content">See more</p>
       <div class="superviz-who-is-online-dropdown__tooltip-arrow"></div>

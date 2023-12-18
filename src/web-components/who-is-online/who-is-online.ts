@@ -24,8 +24,10 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare following: Following | undefined;
   declare localParticipantData: LocalParticipantData;
   declare isPrivate: boolean;
-  private textColorValues: number[];
   declare everyoneFollowsMe: boolean;
+
+  private textColorValues: number[];
+  declare showTooltip: boolean;
 
   static properties = {
     position: { type: String },
@@ -36,12 +38,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     localParticipantColor: { type: String },
     isPrivate: { type: Boolean },
     everyoneFollowsMe: { type: Boolean },
+    showTooltip: { type: Boolean },
   };
 
   constructor() {
     super();
     this.position = 'top: 20px; right: 40px;';
-
+    this.showTooltip = true;
     this.open = false;
 
     // should match presence-mouse textColorValues property
@@ -107,8 +110,11 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         @clickout=${this.onClickOutDropdown}
         ?disableDropdown=${this.disableDropdown}
         following=${JSON.stringify(this.following)}
+        ?showSeeMoreTooltip=${this.showTooltip}
+        @toggle=${this.toggleOpen}
+        @toggle-dropdown-state=${this.toggleShowTooltip}
       >
-        <div class=${classMap(classes)} slot="dropdown" @click=${this.toggleOpen}>
+        <div class=${classMap(classes)} slot="dropdown">
           <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
         </div>
       </superviz-who-is-online-dropdown>
@@ -159,6 +165,10 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     if (label === WIODropdownOptions.GATHER) {
       this.emitEvent(RealtimeEvent.REALTIME_GATHER, { id });
     }
+  };
+
+  private toggleShowTooltip = () => {
+    this.showTooltip = !this.showTooltip;
   };
 
   private stopEveryoneFollowsMe() {
@@ -315,9 +325,11 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               label="label"
               position="${position}"
               @selected=${this.dropdownOptionsHandler}
+              @toggle-dropdown-state=${this.toggleShowTooltip}
               icons="${JSON.stringify(icons)}"
               name="${participantName}"
               ?disabled=${disableDropdown}
+              ?showTooltip=${this.showTooltip}
               onHoverData=${JSON.stringify({ name, action: isLocal ? 'You' : 'Click to follow' })}
             >
               <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">

@@ -30,6 +30,7 @@ export class Dropdown extends WebComponentsBaseElement {
   private menu: HTMLElement = undefined;
   private host: HTMLElement;
   declare tooltipOnLeft: boolean;
+  declare showTooltip: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -44,10 +45,17 @@ export class Dropdown extends WebComponentsBaseElement {
     name: { type: String },
     onHoverData: { type: Object },
     tooltipOnLeft: { type: Boolean },
+    showTooltip: { type: Boolean },
   };
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (!changedProperties.has('open')) return;
+
+    this.emitEvent(
+      'toggle-dropdown-state',
+      { open: this.open, font: this.name },
+      { bubbles: false, composed: false },
+    );
 
     if (this.open) {
       document.addEventListener('click', this.onClickOutDropdown);
@@ -55,7 +63,7 @@ export class Dropdown extends WebComponentsBaseElement {
     }
 
     document.removeEventListener('click', this.onClickOutDropdown);
-    this.close();
+    // this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -73,11 +81,12 @@ export class Dropdown extends WebComponentsBaseElement {
     const hasDropdownCta = elements.includes(dropdownCta);
 
     if (!(hasDropdownContent || hasDropdownList || hasDropdownCta)) {
-      this.open = false;
+      this.close();
     }
   };
 
   private close = () => {
+    this.open = false;
     this.emitEvent('close', {
       bubbles: false,
       composed: false,
@@ -373,12 +382,14 @@ export class Dropdown extends WebComponentsBaseElement {
     if (!this.originalPosition) this.originalPosition = this.position;
     this.setMenu();
     this.open = !this.open;
+
+    this.emitEvent('open', { open: this.open });
     if (!this.open) return;
     setTimeout(() => this.adjustPosition());
   }
 
   private onHover() {
-    if (!this.onHoverData?.name) return html``;
+    if (!this.showTooltip) return html``;
 
     const classList = {
       'superviz-who-is-online__tooltip': true,

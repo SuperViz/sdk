@@ -11,6 +11,7 @@ interface elementProps {
   options?: Record<string, unknown>;
   name?: string;
   icons?: string[];
+  showTooltip?: boolean;
 }
 
 export const createEl = ({
@@ -21,6 +22,7 @@ export const createEl = ({
   options,
   name,
   icons,
+  showTooltip,
 }: elementProps): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-dropdown');
 
@@ -42,6 +44,15 @@ export const createEl = ({
 
   if (icons) {
     element.setAttribute('icons', JSON.stringify(icons));
+  }
+
+  if (showTooltip) {
+    element.setAttribute('showTooltip', JSON.stringify(showTooltip));
+    const onHoverData = {
+      name: 'onHover',
+      action: 'Click to see more',
+    };
+    element.setAttribute('onHoverData', JSON.stringify(onHoverData));
   }
 
   if (!options) {
@@ -290,7 +301,7 @@ describe('dropdown', () => {
     await sleep();
 
     expect(element()!['emitEvent']).toHaveBeenNthCalledWith(
-      1,
+      3,
       'selected',
       {
         uuid: 'any_uuid',
@@ -445,6 +456,26 @@ describe('dropdown', () => {
 
       expect(el['originalPosition']).toBe('bottom-center');
       expect(el['position']).toBe(el['originalPosition']);
+    });
+  });
+
+  describe.only('onHover', () => {
+    test('should show tooltip when hovering', async () => {
+      createEl({ position: 'bottom-right', align: 'left', showTooltip: true });
+
+      await sleep();
+
+      const tooltip = element()?.shadowRoot?.querySelector('superviz-tooltip');
+
+      expect(tooltip).toBeFalsy();
+
+      dropdown()?.dispatchEvent(new MouseEvent('mouseenter'));
+
+      const tooltipAfterHover = element()?.shadowRoot?.querySelector(
+        '.superviz-who-is-online__tooltip',
+      );
+
+      expect(tooltipAfterHover).toBeTruthy();
     });
   });
 });
