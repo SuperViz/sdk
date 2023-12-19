@@ -2,6 +2,7 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
+import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { Annotation } from '../../../components/comments/types';
@@ -24,21 +25,23 @@ const KICK_PARTICIPANTS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 60000;
 const CLIENT_MESSAGE_SIZE_LIMIT = 10000;
 const SYNC_PROPERTY_INTERVAL = 1000;
+const SYNC_MOUSE_INTERVAL = 100;
 
 let KICK_PARTICIPANTS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
   private participants: Record<string, AblyParticipant> = {};
+  private participantsWIO: Record<string, AblyParticipant> = {};
   private participantsMouse: Record<string, ParticipantMouse> = {};
   private participantsOn3d: Record<string, AblyParticipant> = {};
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
-
   private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
+  private presenceWIOChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presenceMouseChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomState: Record<string, RealtimeMessage> = {};
@@ -386,7 +389,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         return this.participants[participantId]?.data?.slotIndex;
       }
     }
-    return 16; // GRAY COLOR
+    return MeetingColors['gray'];
   }
 
   /**
@@ -1342,7 +1345,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const participant = Object.assign({}, this.participantsMouse[data.id] || {}, data);
 
     this.presenceMouseChannel.presence.update(participant);
-  }, SYNC_PROPERTY_INTERVAL);
+  }, SYNC_MOUSE_INTERVAL);
 
   private onPresenceMouseChannelEnter = (presence: Ably.Types.PresenceMessage): void => {
     const slot = this.getParticipantSlot(presence.clientId);
@@ -1377,6 +1380,52 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     };
 
     this.presenceMouseObserver.publish(this.participantsMouse);
+  };
+
+  /** Who Is Online */
+
+  public enterWIOChannel = (participant: Participant): void => {
+    if (!this.presenceWIOChannel) {
+      this.presenceWIOChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-wio`);
+    }
+
+    this.presenceWIOChannel.attach();
+    this.presenceWIOChannel.subscribe('private', this.onSetPrivate);
+    this.presenceWIOChannel.subscribe('follow', this.onSetFollow);
+    this.presenceWIOChannel.subscribe('gather', this.onSetGather);
+  };
+
+  public leaveWIOChannel = (): void => {
+    if (!this.presenceWIOChannel) return;
+
+    this.presenceWIOChannel.unsubscribe();
+    this.presenceWIOChannel.detach();
+    this.presenceWIOChannel = null;
+  };
+
+  private onSetPrivate = ({ data: { id, isPrivate } }): void => {
+    this.participants[id].data.isPrivate = isPrivate;
+    this.privateModeWIOObserver.publish(this.participants);
+  };
+
+  private onSetFollow = (data: Participant): void => {
+    this.followWIOObserver.publish(data);
+  };
+
+  private onSetGather = ({ data }: Ably.Types.Message): void => {
+    this.gatherWIOObserver.publish({ detail: { id: data.id } });
+  };
+
+  public setPrivateWIOParticipant = (id: string, isPrivate: boolean): void => {
+    this.presenceWIOChannel.publish('private', { id, isPrivate });
+  };
+
+  public setFollowWIOParticipant = (data): void => {
+    this.presenceWIOChannel.publish('follow', { ...data });
+  };
+
+  public setGatherWIOParticipant = (data): void => {
+    this.presenceWIOChannel.publish('gather', { ...data });
   };
 
   /** Presence 3D */

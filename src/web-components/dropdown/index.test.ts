@@ -289,14 +289,15 @@ describe('dropdown', () => {
 
     await sleep();
 
-    expect(element()!['emitEvent']).toHaveBeenCalledWith(
+    expect(element()!['emitEvent']).toHaveBeenNthCalledWith(
+      1,
       'selected',
       {
         uuid: 'any_uuid',
       },
       {
         bubbles: false,
-        composed: false,
+        composed: true,
       },
     );
   });
@@ -322,7 +323,7 @@ describe('dropdown', () => {
       const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
 
       el.style.top = '0px';
-      el.style.right = '50px';
+      el.style.right = '70px';
       el.style.left = 'auto';
       el['host'] = element();
 
@@ -338,7 +339,7 @@ describe('dropdown', () => {
       const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
 
       el.style.top = '0px';
-      el.style.right = '100px';
+      el.style.right = '150px';
       el.style.left = 'auto';
       el['host'] = element();
 
@@ -370,7 +371,7 @@ describe('dropdown', () => {
     test('should reposition dropdown to top-center if bottom and left are out of screen', async () => {
       const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
 
-      el.style.left = '50px';
+      el.style.left = '70px';
       el.style.bottom = '0px';
       el.style.top = 'auto';
       el.style.right = 'auto';

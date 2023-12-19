@@ -4,11 +4,7 @@ import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-col
 import { AblyRealtimeService } from '../src/services/realtime';
 
 import { MOCK_OBSERVER_HELPER } from './observer-helper.mock';
-import {
-  MOCK_ABLY_PARTICIPANT,
-  MOCK_ABLY_PARTICIPANT_DATA_2,
-  MOCK_ABLY_PARTICIPANT_DATA_1,
-} from './participants.mock';
+import { MOCK_ABLY_PARTICIPANT, MOCK_ABLY_PARTICIPANT_DATA_2 } from './participants.mock';
 
 export const createRealtimeMessage = (messageName: string) => ({
   name: messageName,
@@ -25,6 +21,7 @@ export const createRealtimeHistory = () => ({
 
 export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   isLocalParticipantHost: true,
+  setFollow: jest.fn(),
   setGather: jest.fn(),
   setHost: jest.fn(),
   setGridMode: jest.fn(),
@@ -38,6 +35,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   join: jest.fn(),
   leave: jest.fn(),
   setFollowParticipant: jest.fn(),
+  setGatherWIOParticipant: jest.fn(),
   domainWhitelisted: true,
   isDomainWhitelisted: jest.fn().mockReturnValue(true),
   fetchSyncClientProperty: jest.fn((key?: string) => {
@@ -74,13 +72,21 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   presenceMouseObserver: MOCK_OBSERVER_HELPER,
   domainRefusedObserver: MOCK_OBSERVER_HELPER,
   presenceSlotsInfosObserver: MOCK_OBSERVER_HELPER,
+  presenceWIOObserver: MOCK_OBSERVER_HELPER,
+  privateModeWIOObserver: MOCK_OBSERVER_HELPER,
+  followWIOObserver: MOCK_OBSERVER_HELPER,
+  gatherWIOObserver: MOCK_OBSERVER_HELPER,
   subscribeToParticipantUpdate: jest.fn(),
   unsubscribeFromParticipantUpdate: jest.fn(),
   updateMyProperties: jest.fn(),
   getParticipantSlot: jest.fn(),
   updateComments: jest.fn(),
   updatePresenceMouse: jest.fn(),
+  setPrivateWIOParticipant: jest.fn(),
+  setFollowWIOParticipant: jest.fn(),
   leavePresenceMouseChannel: jest.fn(),
   enterPresenceMouseChannel: jest.fn(),
+  enterWIOChannel: jest.fn(),
+  leaveWIOChannel: jest.fn(),
   setKickParticipantsOnHostLeave: jest.fn(),
 } as unknown as AblyRealtimeService;

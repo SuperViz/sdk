@@ -3,6 +3,8 @@ import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../base';
 
+import { IconSizes } from './types';
+
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 
@@ -10,6 +12,7 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 export class Icon extends WebComponentsBaseElement {
   declare name: string;
   declare size: string;
+  declare allowSetSize: boolean;
 
   constructor() {
     super();
@@ -21,7 +24,13 @@ export class Icon extends WebComponentsBaseElement {
   static properties = {
     name: { type: String },
     size: { type: String },
+    allowSetSize: { type: Boolean },
   };
+
+  private get iconSize(): string {
+    if (!this.allowSetSize) return;
+    return IconSizes[this.size];
+  }
 
   static styles = [
     styles,
@@ -39,6 +48,11 @@ export class Icon extends WebComponentsBaseElement {
   ];
 
   protected render() {
-    return html` <i class="sv-icon sv-icon-${this.name}_${this.size}"></i> `;
+    return html`
+      <i
+        class="sv-icon sv-icon-${this.name}_${this.size}"
+        style="font-size: ${this.iconSize}px"
+      ></i>
+    `;
   }
 }

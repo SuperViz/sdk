@@ -15,10 +15,11 @@ export const dropdownStyle = css`
     padding: 10px;
     border-radius: 2px;
     position: relative;
+    cursor: pointer;
   }
 
-  .who-is-online-dropdown__content:not(.local) {
-    cursor: pointer;
+  .who-is-online-dropdown__content.disable-dropdown {
+    cursor: default;
   }
 
   .who-is-online-dropdown__content:hover,
@@ -50,8 +51,8 @@ export const dropdownStyle = css`
     align-items: center;
     justify-content: center;
     font-family: 'Open Sans';
-    font-size: 18px;
-    line-height: 18px;
+    font-size: 14px;
+    line-height: 14px;
     font-weight: bold;
     color: #26242a;
     object-fit: contain;
@@ -61,10 +62,6 @@ export const dropdownStyle = css`
     position: relative;
     display: flex;
     flex-direction: column;
-  }
-
-  .dropdown-list * {
-    box-sizing: border-box;
   }
 
   .dropdown-list > div {
@@ -102,6 +99,49 @@ export const dropdownStyle = css`
     opacity: 1;
   }
 
+  .superviz-who-is-online-dropdown__tooltip {
+    background-color: rgb(var(--sv-gray-600));
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    position: absolute;
+    top: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    opacity: 0;
+    cursor: default;
+    display: none;
+    transition: opacity 0.2s ease-in-out display 0s;
+  }
+
+  .superviz-who-is-online-dropdown__tooltip-arrow {
+    width: 13px;
+    height: 13px;
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: rotate(45deg) translateX(-50%);
+    background-color: rgb(var(--sv-gray-600));
+    border-top-left-radius: 3px;
+  }
+
+  .dropdown-content:hover + .superviz-who-is-online-dropdown__tooltip {
+    opacity: 1;
+    display: block;
+  }
+
+  .tooltip-content {
+    margin: 0;
+    font-family: roboto;
+    white-space: nowrap;
+    text-align: center;
+    color: white;
+    font-size: 14px;
+  }
+
   .user-name {
     font-size: 14px;
     line-height: 20px;
@@ -113,7 +153,10 @@ export const dropdownStyle = css`
     flex: 1;
     justify-content: flex-end;
     display: flex;
-    visibility: hidden;
+  }
+
+  .hide-icon {
+    display: none;
   }
 
   @media (max-width: 780px) {
@@ -136,11 +179,13 @@ export const dropdownStyle = css`
     .dropdown-list > div {
       min-width: 192px;
     }
-  }
 
-  @media (max-width: 780px) {
     .menu--top {
       bottom: 36px;
+    }
+
+    .superviz-who-is-online-dropdown__tooltip {
+      top: 44px;
     }
   }
 `;

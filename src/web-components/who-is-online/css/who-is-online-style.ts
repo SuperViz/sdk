@@ -2,13 +2,21 @@ import { css } from 'lit';
 
 export const whoIsOnlineStyle = css`
   .superviz-who-is-online {
-    position: fixed;
     display: flex;
     align-items: center;
     gap: 4px;
+    position: relative;
+  }
+
+  .wio-content {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
   }
 
   .superviz-who-is-online__participant {
+    --border-color: #aea9b8;
+
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -16,11 +24,57 @@ export const whoIsOnlineStyle = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #aea9b8;
     user-select: none;
+    cursor: pointer;
+    transition: opacity 0.3s ease-in-out;
   }
 
-  .superviz-who-is-online__participant:not(.local) {
+  .superviz-who-is-online__participant:before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+  }
+
+  .followed:before {
+    border-style: dashed !important;
+    animation: rotate 15s linear infinite;
+  }
+
+  .private {
+    opacity: 0.3;
+  }
+
+  @keyframes rotate {
+    100% {
+      transform: rotate(1turn);
+    }
+  }
+
+  .superviz-who-is-online__participant.disable-dropdown {
+    cursor: default;
+  }
+
+  .message {
+    box-sizing: border-box;
+    margin-top: 9px;
+    font-size: 12px;
+    padding: 8px 10px;
+    font-family: 'Roboto';
+    border-radius: 6px;
+    align-self: flex-end;
+    background-color: #fff;
+    color: rgb(var(--sv-gray-700));
+
+    border: 2px solid #e0e0e0;
+  }
+
+  .message span {
+    margin-left: 3px;
+    text-decoration: underline;
     cursor: pointer;
   }
 
@@ -32,7 +86,7 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     font-family: 'Open Sans';
-    font-size: 18px;
+    font-size: 14px;
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
@@ -47,7 +101,7 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     font-family: Roboto;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 16px;
     text-align: center;
     font-weight: bold;
@@ -66,7 +120,8 @@ export const whoIsOnlineStyle = css`
   }
 
   @media (max-width: 780px) {
-    .superviz-who-is-online__participant {
+    .superviz-who-is-online__participant,
+    .superviz-who-is-online__participant::before {
       width: 32px;
       height: 32px;
     }

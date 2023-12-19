@@ -1,11 +1,14 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { repeat } from 'lit/directives/repeat.js';
 
+import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 
-import { WhoIsOnlineDropdownOptions } from './components/types';
+import type { LocalParticipantData } from './components/types';
+import { Following, WIODropdownOptions } from './components/types';
 import { whoIsOnlineStyle } from './css/index';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -16,18 +19,29 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   static styles = styles;
   declare position: string;
   declare participants: Participant[];
-  private textColorValues: number[];
   declare open: boolean;
+  declare disableDropdown: boolean;
+  declare following: Following | undefined;
+  declare localParticipantData: LocalParticipantData;
+  declare isPrivate: boolean;
+  private textColorValues: number[];
+  declare everyoneFollowsMe: boolean;
 
   static properties = {
     position: { type: String },
     participants: { type: Object },
     open: { type: Boolean },
+    disableDropdown: { type: Boolean },
+    following: { type: Object },
+    localParticipantColor: { type: String },
+    isPrivate: { type: Boolean },
+    everyoneFollowsMe: { type: Boolean },
   };
 
   constructor() {
     super();
     this.position = 'top: 20px; right: 40px;';
+
     this.open = false;
 
     // should match presence-mouse textColorValues property
@@ -67,13 +81,14 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     const participants = this.participants
       .slice(4)
-      .map(({ name, color, id, slotIndex, avatar, isLocal }) => ({
+      .map(({ name, color, id, slotIndex, isLocal, avatar, joinedPresence }) => ({
         name,
         color,
         id,
         slotIndex,
         avatar,
         isLocal,
+        joinedPresence,
       }));
 
     const classes = {
@@ -90,6 +105,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         @selected=${this.dropdownOptionsHandler}
         participants=${JSON.stringify(participants)}
         @clickout=${this.onClickOutDropdown}
+        ?disableDropdown=${this.disableDropdown}
+        following=${JSON.stringify(this.following)}
       >
         <div class=${classMap(classes)} slot="dropdown" @click=${this.toggleOpen}>
           <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
@@ -100,12 +117,60 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     return dropdown;
   }
 
-  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
+  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
+    const { id, label, name, color, slotIndex } = detail;
+
+    if (label === WIODropdownOptions['GOTO']) {
+      this.emitEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, { id });
+    }
+
+    if ([WIODropdownOptions.LOCAL_FOLLOW, WIODropdownOptions.LOCAL_UNFOLLOW].includes(label)) {
+      if (this.following?.id === id) {
+        this.stopFollowing();
+        return;
+      }
+
+      this.following = { name, id, color };
+      this.swapParticipantBeingFollowedPosition();
+      this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id });
+    }
+
+    if ([WIODropdownOptions.PRIVATE, WIODropdownOptions.LEAVE_PRIVATE].includes(label)) {
+      this.isPrivate = label === WIODropdownOptions.PRIVATE;
+      this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id, isPrivate: this.isPrivate });
+      this.everyoneFollowsMe = false;
+    }
+
+    if ([WIODropdownOptions.FOLLOW, WIODropdownOptions.UNFOLLOW].includes(label)) {
+      if (this.following) {
+        this.stopFollowing();
+      }
+
+      if (this.everyoneFollowsMe) {
+        this.stopEveryoneFollowsMe();
+        return;
+      }
+
+      this.everyoneFollowsMe = true;
+      this.following = undefined;
+      this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, { id, name, color, slotIndex });
+    }
+
+    if (label === WIODropdownOptions.GATHER) {
+      this.emitEvent(RealtimeEvent.REALTIME_GATHER, { id });
+    }
+  };
+
+  private stopEveryoneFollowsMe() {
+    this.everyoneFollowsMe = false;
+    this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, undefined);
+  }
 
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="superviz-who-is-online__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }
@@ -118,73 +183,171 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       class="superviz-who-is-online__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
-      ${participant.name?.at(0)}
+      ${participant.name?.at(0).toUpperCase()}
+    </div>`;
+  }
+
+  private getOptions(participant: Participant, isBeingFollowed: boolean, isLocal: boolean) {
+    const { id, slotIndex, name, color } = participant;
+    const baseOption = { id, name, color, slotIndex };
+    const { isPrivate } = this;
+
+    const labels = isLocal
+      ? [
+          'GATHER',
+          this.everyoneFollowsMe ? 'UNFOLLOW' : 'FOLLOW',
+          isPrivate ? 'LEAVE_PRIVATE' : 'PRIVATE',
+        ]
+      : ['GOTO', isBeingFollowed ? 'LOCAL_UNFOLLOW' : 'LOCAL_FOLLOW'];
+
+    const options = labels.map((label) => ({
+      ...baseOption,
+      label: WIODropdownOptions[label],
+    }));
+
+    return options;
+  }
+
+  private getIcons(isLocal: boolean, isBeingFollowed: boolean) {
+    return isLocal
+      ? ['gather', this.everyoneFollowsMe ? 'send-off' : 'send', 'eye_inative']
+      : ['place', isBeingFollowed ? 'send-off' : 'send'];
+  }
+
+  private putLocalParticipationFirst() {
+    if (this.participants[0].isLocal) return;
+
+    const localParticipant = this.participants?.find(({ isLocal }) => isLocal);
+    if (!localParticipant) return;
+
+    const participants = [...this.participants];
+    const localParticipantIndex = participants.indexOf(localParticipant);
+    participants.splice(localParticipantIndex, 1);
+    participants.unshift(localParticipant);
+    this.participants = participants;
+  }
+
+  private swapParticipantBeingFollowedPosition() {
+    const a = this.participants?.findIndex(({ id }) => id === this.following?.id);
+    const b = 1;
+
+    if (a < 4 || !a) return;
+
+    const participants = [...this.participants];
+    const temp = participants[a];
+    participants[a] = participants[b];
+    participants[b] = temp;
+    this.participants = participants;
+  }
+
+  private stopFollowing() {
+    this.following = undefined;
+    this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id: undefined });
+  }
+
+  private cancelPrivate() {
+    this.isPrivate = undefined;
+    this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id: this.localParticipantData.id });
+  }
+
+  private followingMessage() {
+    if (!this.following) return '';
+
+    const { name, color } = this.following;
+
+    return html`<div class="message" style="border-color: ${color}">
+      Following: ${name} <span @click=${this.stopFollowing}>Stop</span>
+    </div>`;
+  }
+
+  private everyoneFollowsMeMessage() {
+    if (!this.everyoneFollowsMe) return '';
+
+    const { color } = this.localParticipantData;
+
+    return html`<div class="message" style="border-color: ${color}">
+      Everyone is following you <span @click=${this.stopEveryoneFollowsMe}>Stop</span>
+    </div>`;
+  }
+
+  private privateMessage() {
+    if (!this.isPrivate) return '';
+
+    const { color } = this.localParticipantData;
+
+    return html`<div class="message" style="border-color: ${color}">
+      You are in Private Mode <span @click=${this.cancelPrivate}>Cancel</span>
     </div>`;
   }
 
   private renderParticipants() {
     if (!this.participants) return html``;
 
-    const icons = ['place', 'send'];
+    this.putLocalParticipationFirst();
+    this.swapParticipantBeingFollowedPosition();
 
-    return html`${this.participants.slice(0, 4).map((participant, index) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
+    return html`<div class="superviz-who-is-online">
+      ${repeat(
+        this.participants.slice(0, 4),
+        (participant) => participant.id,
+        (participant, index) => {
+          const { joinedPresence, isLocal, id, name, color } = participant;
 
-      const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => {
-          return { label, id: participant.id };
-        })
-        .splice(0, 1);
+          const participantIsFollowed = this.following?.id === id;
+          const options = this.getOptions(participant, participantIsFollowed, isLocal);
+          const icons = this.getIcons(isLocal, participantIsFollowed);
+          const position = this.dropdownPosition(index);
+          const disableDropdown = !joinedPresence || this.disableDropdown;
 
-      const classList = {
-        'superviz-who-is-online__participant': true,
-        local: participant.isLocal,
-      };
+          const classList = {
+            'superviz-who-is-online__participant': true,
+            'disable-dropdown': disableDropdown,
+            followed: participantIsFollowed || (isLocal && this.everyoneFollowsMe),
+            private: isLocal && this.isPrivate,
+          };
 
-      const position = this.dropdownPosition(index);
-      return html`
-        <superviz-dropdown
-          options=${JSON.stringify(options)}
-          label="label"
-          position="${position}"
-          @selected=${this.dropdownOptionsHandler}
-          icons="${JSON.stringify(icons)}"
-          name="${participant.name}"
-          ?disabled=${participant.isLocal}
-        >
-          -->
-          <div
-            slot="dropdown"
-            class=${classMap(classList)}
-            style="border-color: ${participant.color}"
-          >
-            <div
-              class="superviz-who-is-online__avatar"
-              style="background-color: ${participant.color}; color: ${letterColor}"
+          const append = isLocal ? ' (you)' : '';
+          const participantName = name + append;
+
+          return html`
+            <superviz-dropdown
+              options=${JSON.stringify(options)}
+              label="label"
+              position="${position}"
+              @selected=${this.dropdownOptionsHandler}
+              icons="${JSON.stringify(icons)}"
+              name="${participantName}"
+              ?disabled=${disableDropdown}
+              onHoverData=${JSON.stringify({ name, action: isLocal ? 'You' : 'Click to follow' })}
             >
-              ${participant.name?.at(0).toUpperCase()}
-            </div>
-          </div>
-        </superviz-dropdown>
-      `;
-    })}
-    ${this.renderExcessParticipants()} `;
+              <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
+                ${this.getAvatar(participant)}
+              </div>
+            </superviz-dropdown>
+          `;
+        },
+      )}
+      ${this.renderExcessParticipants()}
+    </div>`;
   }
 
   updated(changedProperties) {
     super.updated(changedProperties);
 
     this.updateComplete.then(() => {
-      const element = this.shadowRoot.querySelector('.superviz-who-is-online');
+      const element = this.shadowRoot.querySelector('.wio-content');
       if (!element) return;
 
-      element.setAttribute('style', this.position);
+      const side = this.position.includes('left') ? 'flex-start' : 'flex-end';
+      const style = `${this.position} align-items: ${side};`;
+      element.setAttribute('style', style);
     });
   }
 
   protected render() {
-    return html` <div class="superviz-who-is-online">${this.renderParticipants()}</div>`;
+    return html`<div class="wio-content">
+      ${this.renderParticipants()} ${this.followingMessage()} ${this.everyoneFollowsMeMessage()}
+      ${this.privateMessage()}
+    </div> `;
   }
 }

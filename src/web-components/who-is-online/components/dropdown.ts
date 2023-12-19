@@ -1,12 +1,13 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { PositionOptions, WhoIsOnlineDropdownOptions } from './types';
+import { Following, WIODropdownOptions, PositionOptions } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -25,6 +26,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private menu: HTMLElement;
   private dropdownContent: HTMLElement;
   private host: HTMLElement;
+  declare disableDropdown: boolean;
+  declare following: Following;
 
   static properties = {
     open: { type: Boolean },
@@ -32,6 +35,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     position: { type: String },
     participants: { type: Array },
     selected: { type: String },
+    disableDropdown: { type: Boolean },
+    following: { type: Object },
   };
 
   constructor() {
@@ -68,26 +73,21 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     const hasDropdownCta = elements.includes(dropdownCta);
 
     if (!(hasDropdownContent || hasDropdownList || hasDropdownCta)) {
-      this.open = false;
-      this.selected = '';
-      this.emitEvent('clickout', {
-        detail: {
-          open: this.open,
-        },
-        bubbles: false,
-        composed: false,
-      });
+      this.close();
     }
   };
 
   private close = () => {
-    this.emitEvent('close', {
+    this.open = false;
+    this.selected = '';
+    this.emitEvent('clickout', {
+      detail: {
+        open: this.open,
+      },
       bubbles: false,
       composed: false,
     });
   };
-
-  public dropdownOptionsHandler = ({ detail }: CustomEvent) => {};
 
   private selectParticipant = (participantId: string) => {
     return () => {
@@ -99,6 +99,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="who-is-online-dropdown__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }
@@ -111,7 +112,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       class="who-is-online-dropdown__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
-      ${participant.name?.at(0)}
+      ${participant.name?.at(0).toUpperCase()}
     </div>`;
   }
 
@@ -120,46 +121,68 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     const icons = ['place', 'send'];
 
-    return this.participants.map((participant) => {
-      const letterColor = this.textColorValues.includes(participant.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
+    return repeat(
+      this.participants,
+      (participant) => participant.id,
+      (participant) => {
+        const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
 
-      const contentClasses = {
-        'who-is-online-dropdown__content': true,
-        'who-is-online-dropdown__content--selected': this.selected === participant.id,
-        local: participant.isLocal,
-      };
+        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
-      const options = Object.values(WhoIsOnlineDropdownOptions)
-        .map((label) => {
-          return { label, id: participant.id };
-        })
-        .splice(0, 1);
+        const contentClasses = {
+          'who-is-online-dropdown__content': true,
+          'who-is-online-dropdown__content--selected': this.selected === id,
+          'disable-dropdown': disableDropdown,
+          followed: this.following?.id === id,
+        };
 
-      return html`
+        const iconClasses = {
+          icon: true,
+          'hide-icon': disableDropdown,
+        };
+
+        const participantIsFollowed = this.following?.id === id;
+
+        const options = Object.values(WIODropdownOptions)
+          .map((label, index) => ({
+            label: participantIsFollowed && index ? 'UNFOLLOW' : label,
+            id,
+            name,
+            color,
+            slotIndex,
+          }))
+          .slice(0, 2);
+
+        return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
         position="bottom-right"
-        
+        @selected=${this.close}
         icons="${JSON.stringify(icons)}"
-        ?disabled=${participant.isLocal}
+        ?disabled=${disableDropdown}
+        onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
+        ?tooltipOnLeft=${true}
         >
         <div 
           class=${classMap(contentClasses)} 
-          @click=${this.selectParticipant(participant.id)} slot="dropdown">
+          @click=${this.selectParticipant(id)} slot="dropdown">
           <div class="who-is-online-dropdown__participant" style="border-color: 
-          ${participant.color}">
+          ${color}">
               ${this.getAvatar(participant)}
             </div>
-            <span class="user-name">${participant.name}</span>
-            <superviz-icon class="icon" name="right" color="var(--sv-gray-600)"></superviz-icon>
+            <span class="user-name">${name}</span>
+            <superviz-icon 
+              class=${classMap(iconClasses)} 
+              name="right" 
+              color="var(--sv-gray-600)">
+          </superviz-icon>
           </div>
         </div>
       </superviz-dropdown>
       `;
-    });
+      },
+    );
   }
 
   private setMenu() {
@@ -306,12 +329,20 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   }
 
+  private onHover() {
+    return html` <div class="superviz-who-is-online-dropdown__tooltip">
+      <p class="tooltip-content">See more</p>
+      <div class="superviz-who-is-online-dropdown__tooltip-arrow"></div>
+    </div>`;
+  }
+
   protected render() {
     return html`
       <div class="dropdown">
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
+        ${this.onHover()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(this.menuClasses)}>${this.renderParticipants()}</div>
