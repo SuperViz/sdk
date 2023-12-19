@@ -4,6 +4,7 @@ export const dropdownStyle = css`
   .superviz-who-is-online__tooltip {
     --host-heigth: 0px;
     --host-width: 0px;
+    --vertical-offset: 12px;
 
     background-color: rgb(var(--sv-gray-600));
     padding: 8px;
@@ -20,6 +21,7 @@ export const dropdownStyle = css`
     display: none;
     transition: opacity 0.2s ease-in-out display 0s;
     overflow-x: clip;
+    z-index: 100;
   }
 
   .tooltip-extras {
@@ -63,11 +65,11 @@ export const dropdownStyle = css`
 
   .tooltip-top {
     top: auto;
-    bottom: calc(var(--host-heigth) + 12px);
+    bottom: calc(var(--host-heigth) + var(--vertical-offset));
   }
 
   .tooltip-bottom {
-    top: calc(var(--host-heigth) + 12px);
+    top: calc(var(--host-heigth) + var(--vertical-offset));
     bottom: auto;
   }
 
@@ -108,6 +110,12 @@ export const dropdownStyle = css`
   .tooltip-right .superviz-who-is-online__tooltip-arrow {
     translate: -100% 0;
     border-radius: 0;
+  }
+
+  .shift-left {
+    left: 0;
+    transform: translateX(-22%);
+    --vertical-offset: 2px;
   }
 
   @media (max-width: 780px) {

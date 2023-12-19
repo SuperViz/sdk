@@ -21,6 +21,7 @@ export class Tooltip extends WebComponentsBaseElement {
   declare showTooltip: boolean;
   declare tooltipVerticalPosition: Positions;
   declare tooltipHorizontalPosition: Positions;
+  declare shiftTooltipLeft: boolean;
 
   declare hostSizes: { height: number; width: number };
 
@@ -32,6 +33,7 @@ export class Tooltip extends WebComponentsBaseElement {
     tooltipVerticalPosition: { type: String },
     tooltipHorizontalPosition: { type: String },
     hostSizes: { type: Object },
+    shiftTooltipLeft: { type: Boolean },
   };
 
   constructor() {
@@ -42,21 +44,39 @@ export class Tooltip extends WebComponentsBaseElement {
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
-  ): void {}
+  ): void {
+    const { host } = this.getRootNode() as unknown as { host: HTMLElement };
+
+    host.addEventListener('mouseenter', () => {
+      this.showTooltip = true;
+    });
+
+    host.addEventListener('mouseleave', () => {
+      this.showTooltip = false;
+    });
+
+    this.tooltipVerticalPosition = PositionsEnum['TOOLTIP-BOTTOM'];
+    this.tooltipHorizontalPosition = PositionsEnum['TOOLTIP-CENTER'];
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    const { host } = this.getRootNode() as unknown as { host: HTMLElement };
+    host.removeEventListener('mouseenter', () => {
+      this.showTooltip = true;
+    });
+
+    host.removeEventListener('mouseleave', () => {
+      this.showTooltip = false;
+    });
+  }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('dropdown')) {
-      //
-    }
-
     if (changedProperties.has('showTooltip') && this.showTooltip) {
       const { height, width } = (this.getRootNode() as any).host.getBoundingClientRect();
       if (this.hostSizes?.height !== height || this.hostSizes?.width !== width) {
         this.hostSizes = { height, width };
       }
-
-      this.tooltipVerticalPosition = PositionsEnum['TOOLTIP-BOTTOM'];
-      this.tooltipHorizontalPosition = PositionsEnum['TOOLTIP-CENTER'];
     }
   }
 
@@ -116,18 +136,18 @@ export class Tooltip extends WebComponentsBaseElement {
       'superviz-who-is-online__tooltip': true,
       'tooltip-extras': this.tooltipOnLeft,
       'show-tooltip': this.showTooltip,
+      'shift-left': this.shiftTooltipLeft,
     };
+
     classList[verticalPosition] = true;
     classList[horizontalPosition] = true;
-
-    console.error(horizontalPosition);
 
     return html`<div
       class=${classMap(classList)}
       style="--host-heigth: ${this.hostSizes?.height}px; --host-width: ${this.hostSizes?.width}px;"
     >
-      <p class="tooltip-name">${this.tooltipData.name}</p>
-      <p class="tooltip-action">${this.tooltipData.action}</p>
+      <p class="tooltip-name">${this.tooltipData?.name}</p>
+      <p class="tooltip-action">${this.tooltipData?.action}</p>
       <div class="superviz-who-is-online__tooltip-arrow"></div>
     </div>`;
   }

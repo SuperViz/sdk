@@ -329,7 +329,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               icons="${JSON.stringify(icons)}"
               name="${participantName}"
               ?disabled=${disableDropdown}
-              ?showTooltip=${this.showTooltip}
+              ?canShowTooltip=${this.showTooltip}
               onHoverData=${JSON.stringify({ name, action: isLocal ? 'You' : 'Click to follow' })}
             >
               <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">

@@ -120,7 +120,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     </div>`;
   }
 
-  private toggleShowTooltip = ({ detail: { open, font } }: CustomEvent) => {
+  private toggleShowTooltip = () => {
     this.showParticipantTooltip = !this.showParticipantTooltip;
   };
 
@@ -170,8 +170,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
         onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
-        ?tooltipOnLeft=${true}
-        ?showTooltip=${this.showParticipantTooltip}
+        ?canShowTooltip=${this.showParticipantTooltip}
+        ?shiftTooltipLeft=${true}
         @toggle-dropdown-state=${this.toggleShowTooltip}
         >
         <div 
@@ -340,14 +340,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   }
 
-  private onHover() {
-    if (!this.showSeeMoreTooltip) return;
+  private tooltip = () => {
+    if (!this.showSeeMoreTooltip) return '';
 
-    return html` <div class="superviz-who-is-online-dropdown__tooltip">
-      <p class="tooltip-content">See more</p>
-      <div class="superviz-who-is-online-dropdown__tooltip-arrow"></div>
-    </div>`;
-  }
+    return html`<superviz-tooltip
+      tooltipData=${JSON.stringify({ name: 'See more' })}
+    ></superviz-tooltip>`;
+  };
 
   protected render() {
     return html`
@@ -355,7 +354,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
-        ${this.onHover()}
+        ${this.tooltip()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(this.menuClasses)}>${this.renderParticipants()}</div>
