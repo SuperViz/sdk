@@ -2,7 +2,7 @@ import { css } from 'lit';
 
 export const dropdownStyle = css`
   .superviz-who-is-online__tooltip {
-    --host-heigth: 0px;
+    --host-height: 0px;
     --host-width: 0px;
     --vertical-offset: 12px;
 
@@ -65,11 +65,11 @@ export const dropdownStyle = css`
 
   .tooltip-top {
     top: auto;
-    bottom: calc(var(--host-heigth) + var(--vertical-offset));
+    bottom: calc(var(--host-height) + var(--vertical-offset));
   }
 
   .tooltip-bottom {
-    top: calc(var(--host-heigth) + var(--vertical-offset));
+    top: calc(var(--host-height) + var(--vertical-offset));
     bottom: auto;
   }
 

@@ -23,7 +23,7 @@ export class Tooltip extends WebComponentsBaseElement {
   declare tooltipHorizontalPosition: Positions;
   declare shiftTooltipLeft: boolean;
 
-  declare hostSizes: { height: number; width: number };
+  declare parentSizes: { height: number; width: number };
 
   static properties = {
     tooltipData: { type: Object },
@@ -32,7 +32,7 @@ export class Tooltip extends WebComponentsBaseElement {
     tooltip: { type: Object },
     tooltipVerticalPosition: { type: String },
     tooltipHorizontalPosition: { type: String },
-    hostSizes: { type: Object },
+    parentSizes: { type: Object },
     shiftTooltipLeft: { type: Boolean },
   };
 
@@ -40,48 +40,53 @@ export class Tooltip extends WebComponentsBaseElement {
     super();
     this.tooltipVerticalPosition = PositionsEnum['TOOLTIP-BOTTOM'];
     this.tooltipHorizontalPosition = PositionsEnum['TOOLTIP-CENTER'];
+    this.showTooltip = false;
+    this.parentSizes = { height: 0, width: 0 };
   }
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    const { host } = this.getRootNode() as unknown as { host: HTMLElement };
-
-    host.addEventListener('mouseenter', () => {
-      this.showTooltip = true;
-    });
-
-    host.addEventListener('mouseleave', () => {
-      this.showTooltip = false;
-    });
+    const { parentElement } = this;
+    parentElement?.addEventListener('mouseenter', this.show);
+    parentElement?.addEventListener('mouseleave', this.hide);
 
     this.tooltipVerticalPosition = PositionsEnum['TOOLTIP-BOTTOM'];
     this.tooltipHorizontalPosition = PositionsEnum['TOOLTIP-CENTER'];
   }
 
+  private hide = () => {
+    this.showTooltip = false;
+  };
+
+  private show = () => {
+    this.showTooltip = true;
+  };
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    const { host } = this.getRootNode() as unknown as { host: HTMLElement };
-    host.removeEventListener('mouseenter', () => {
-      this.showTooltip = true;
-    });
 
-    host.removeEventListener('mouseleave', () => {
-      this.showTooltip = false;
-    });
+    const { parentElement } = this;
+
+    parentElement?.removeEventListener('mouseenter', this.show);
+    parentElement?.removeEventListener('mouseleave', this.hide);
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (changedProperties.has('showTooltip') && this.showTooltip) {
-      const { height, width } = (this.getRootNode() as any).host.getBoundingClientRect();
-      if (this.hostSizes?.height !== height || this.hostSizes?.width !== width) {
-        this.hostSizes = { height, width };
+      const { parentElement } = this;
+      if (!parentElement) return;
+
+      const { height, width } = parentElement.getBoundingClientRect();
+
+      if (this.parentSizes.height !== height || this.parentSizes.width !== width) {
+        this.parentSizes = { height, width };
       }
     }
   }
 
   private adjustTooltipVerticalPosition = () => {
-    const { left, right, bottom, top } = this.tooltip.getBoundingClientRect();
+    const { bottom, top } = this.tooltip.getBoundingClientRect();
     const maxY = window.innerHeight;
 
     if (this.tooltipVerticalPosition.includes('top') && top < 0) {
@@ -144,7 +149,8 @@ export class Tooltip extends WebComponentsBaseElement {
 
     return html`<div
       class=${classMap(classList)}
-      style="--host-heigth: ${this.hostSizes?.height}px; --host-width: ${this.hostSizes?.width}px;"
+      style="--host-height: ${this.parentSizes?.height}px; --host-width: ${this.parentSizes
+        ?.width}px;"
     >
       <p class="tooltip-name">${this.tooltipData?.name}</p>
       <p class="tooltip-action">${this.tooltipData?.action}</p>

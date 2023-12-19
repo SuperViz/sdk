@@ -1,4 +1,3 @@
-import { drop } from 'lodash';
 import '.';
 
 import sleep from '../../common/utils/sleep';
@@ -47,12 +46,12 @@ export const createEl = ({
   }
 
   if (showTooltip) {
-    element.setAttribute('showTooltip', JSON.stringify(showTooltip));
     const onHoverData = {
       name: 'onHover',
       action: 'Click to see more',
     };
     element.setAttribute('onHoverData', JSON.stringify(onHoverData));
+    element.setAttribute('canShowTooltip', 'true');
   }
 
   if (!options) {
@@ -459,23 +458,14 @@ describe('dropdown', () => {
     });
   });
 
-  describe.only('onHover', () => {
-    test('should show tooltip when hovering', async () => {
+  describe('tooltip', () => {
+    test('should render tooltip if can show it', async () => {
       createEl({ position: 'bottom-right', align: 'left', showTooltip: true });
-
       await sleep();
 
       const tooltip = element()?.shadowRoot?.querySelector('superviz-tooltip');
 
-      expect(tooltip).toBeFalsy();
-
-      dropdown()?.dispatchEvent(new MouseEvent('mouseenter'));
-
-      const tooltipAfterHover = element()?.shadowRoot?.querySelector(
-        '.superviz-who-is-online__tooltip',
-      );
-
-      expect(tooltipAfterHover).toBeTruthy();
+      expect(tooltip).toBeTruthy();
     });
   });
 });

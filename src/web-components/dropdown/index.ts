@@ -67,13 +67,13 @@ export class Dropdown extends WebComponentsBaseElement {
     super.disconnectedCallback();
     document.removeEventListener('click', this.onClickOutDropdown);
     const dropdown = this.shadowRoot.querySelector('.dropdown');
-    dropdown.removeEventListener('mouseenter', () => {
+    dropdown?.removeEventListener('mouseenter', () => {
       this.showTooltip = true;
     });
-    dropdown.removeEventListener('mouseleave', () => {
+    dropdown?.removeEventListener('mouseleave', () => {
       this.showTooltip = false;
     });
-    this.dropdownResizeObserver.disconnect();
+    this.dropdownResizeObserver?.disconnect();
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
