@@ -4,12 +4,12 @@ export const annotationFilterStyle = css`
   .select {
     display: flex;
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
   }
 
   .select-container {
-    text-wrap: nowrap;
+    white-space: nowrap;
     padding: 12px;
     cursor: pointer;
     color: rgb(var(--sv-gray-500));

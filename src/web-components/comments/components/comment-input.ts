@@ -226,7 +226,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="comment-input--options">
           <div class="comment-actions">
             <button class="icon-button mention">
-              <superviz-icon name="mention" size="sm"></superviz-icon>
+              <superviz-icon name="mention" size="sm" ?allowSetSize=${true}></superviz-icon>
             </button>
           </div>
           <div class="comment-input-options">
