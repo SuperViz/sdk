@@ -1,18 +1,13 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { AnnotationPositionInfo } from '../../../components/comments/types';
+import { AnnotationPositionInfo, Participant } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 import mentionHandler from '../utils/mention-handler';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
-type User = {
-  name: string;
-  participantId: string;
-  avatar: string;
-};
 @customElement('superviz-comments-comment-input')
 export class CommentsCommentInput extends WebComponentsBaseElement {
   declare eventType: string;
@@ -21,7 +16,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLDivElement;
   declare placeholder: string;
-  declare users: User[];
+  declare participantsList: Participant[];
 
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
@@ -31,16 +26,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.btnActive = false;
     this.text = '';
     this.mentionList = []
-
-    // mockusers change to participants groups
-    this.users = [
-      { name: 'Vinicius Afonso', participantId: 'participantIdVinicius', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
-      { name: 'Vitor Vargas', participantId: 'participantIdVitor', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
-      { name: 'Vitor Norton', participantId: 'participantIdNorton', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
-      { name: 'Carlos Peixoto', participantId: 'participantIdCarlos', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
-      { name: 'Gabi Alcoar', participantId: 'participantIdGabi', avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
-      { name: 'Ian Silva', participantId: 'participantIdIanSilva', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
-    ];
   }
 
   static styles = styles;
@@ -54,6 +39,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     editable: { type: Boolean },
     placeholder: { type: String },
     mentionList: { type: Object },
+    participantsList: { type: Object },
+
   };
 
   private getAddMentionButton = () => {
@@ -124,7 +111,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     mentionHandler.input.removeMentionOnBackspace(e, window.getSelection())
     mentionHandler.input.removeEmptyMentions(this.getCommentInput())
-    const { action, mentions } = mentionHandler.input.matchParticipant(this.getCommentInput(), e, this.users)
+
+    const { action, mentions } = mentionHandler.input.matchParticipant(this.getCommentInput(), e, this.participantsList)
 
     if (action === 'show') {
       this.mentionList = mentions
@@ -146,87 +134,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   };
 
-  private getMentionPrefix = (mentionIndex, inputValue, e) => {
-    let mentionPrefix = '';
-    const text = e.target.innerText.trim();
-    const lastCaracter = text.slice(-1);
-    const lastItemFind = lastCaracter === '@';
-
-    if (lastItemFind || e.data === "@") {
-      mentionPrefix = "";
-    } else {
-      mentionPrefix = inputValue.slice(mentionIndex + 1);
-    }
-
-    return mentionPrefix;
-  }
-
-  private updateMentionInput = (value) => {
-    const commentDiv = this.getCommentInput();
-    commentDiv.innerHTML = value;
-
-    const range = document.createRange();
-    range.selectNodeContents(commentDiv);
-    range.collapse(false);
-
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    commentDiv.focus();
-  }
-
-  private setMentionList = (users, mentionIndex, range) => {
-    const mentionList = users.map((user: any) => ({
-      name: user.name,
-      participantId: user.participantId,
-      avatar: user.avatar,
-      index: mentionIndex,
-      range
-    }))
-    this.mentionList = mentionList
-  }
-
-  private hideMentionList = () => {
-    const mentionList = this.getMentionList();
-    mentionList.innerHTML = '';
-    mentionList.style.display = 'none';
-  }
-
-  private insertMention = (participantId, mentionIndex, range) => {
-    const commentTextarea = this.getCommentInput();
-    const ranges = range;
-    const inputValue = commentTextarea.innerHTML;
-    commentTextarea.innerHTML = inputValue.slice(0, mentionIndex)
-
-    const mentionText = `@${participantId}`;
-    const newElement = document.createElement('div');
-    newElement.className = 'mentioned';
-    newElement.innerHTML = `<strong>${mentionText}</strong>`;
-
-    commentTextarea.appendChild(newElement);
-
-    const spaceNode = document.createTextNode('\u00a0');
-    newElement.parentNode.insertBefore(spaceNode, newElement.nextSibling);
-    
-    this.hideMentionList();
-    this.updateMentionInput(this.getCommentInput().innerHTML)
-    this.updateHeight();
-  }
-
-  private findMatchedUsers = (prefix) => {
-    const lowercasePrefix = prefix.toLowerCase();
-    return this.users.filter(user => user.name.toLowerCase().startsWith(lowercasePrefix));
-  }
-
-  private cursorPosition = () => {
-    const selection = window.getSelection();
-    const range = selection.getRangeAt(0);
-    const { parentElement } = range.commonAncestorContainer;
-    if (parentElement.parentElement.className === 'mentioned') {
-      parentElement.remove();
-    }
-  }
 
   /// NEW MENTION V1
 
@@ -291,10 +198,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     let allText = inputValue;
     let allText2 = inputValue;
 
-    this.users.forEach(user => {
-      const regex = new RegExp(`@${user.name}`, 'gi');
-      allText = allText2.replace(regex, `<div class="mentioned"><strong>@${user.name}</strong></div>`);
-      allText2 = allText2.replace(regex, `{{${user.participantId}}}`);
+    this.participantsList?.forEach(participant => {
+      const regex = new RegExp(`@${participant.name}`, 'gi');
+      allText = allText2.replace(regex, `<div class="mentioned"><strong>@${participant.name}</strong></div>`);
+      allText2 = allText2.replace(regex, `{{${participant.id}}}`);
+
     });
 
     if (!text) return;
@@ -329,10 +237,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const inputValue = input.innerHTML;
 
     let allText = inputValue;
-
-    this.users.forEach(user => {
-      const regex = new RegExp(`<div class="mentioned"><strong>@${user.name}</strong></div>`, 'gi');
-      allText = allText.replace(regex, `{{${user.participantId}}}`);
+    this.participantsList?.forEach(participant => {
+      const regex = new RegExp(`<div class="mentioned"><strong>@${participant.name}</strong></div>`, 'gi');
+      allText = allText.replace(regex, `{{${participant.id}}}`);
     });
     const text = allText;
 
@@ -390,12 +297,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return html`
       <div class="comment-input">
         <div id="comment-input--container">
-          <div
-            contenteditable="true" 
+          <textarea
             id="comment-input--textarea"
             placeholder=${this.placeholder ?? 'Add comment...'}
             @input=${this.updateHeight}
-          ></div>
+          ></textarea>
           <superviz-comments-mention-list .participants=${this.mentionList}></superviz-comments-mention-list>
         </div>
         <div class="sv-hr"></div>

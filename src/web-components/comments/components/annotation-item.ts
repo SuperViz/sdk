@@ -2,7 +2,7 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { Annotation, Comment } from '../../../components/comments/types';
+import { Annotation, Comment, Participant } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationItemStyle } from '../css';
 
@@ -20,6 +20,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare shouldShowUndoResolved: boolean;
   declare isLastAnnotation: boolean;
   declare annotationFilter: string;
+  declare participantsList: Participant[];
 
   static styles = styles;
 
@@ -31,6 +32,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     shouldShowUndoResolved: { type: Boolean },
     isLastAnnotation: { type: Boolean },
     annotationFilter: { type: String },
+    participantsList: { type: Object },
+
   };
 
   private get filterIsAll(): boolean {
@@ -170,6 +173,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         text=${comment.text}
         createdAt=${comment.createdAt}
         annotationId=${this.annotation.uuid}
+        participantsList=${JSON.stringify(this.participantsList)}
       ></superviz-comments-comment-item>
     `;
   };
@@ -200,6 +204,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               username=${this.annotation.comments?.[0].participant?.name || 'Anonymous'}
               text=${this.annotation.comments?.[0].text}
               createdAt=${this.annotation.comments?.[0].createdAt}
+              participantsList=${JSON.stringify(this.participantsList)}
               primaryComment
               resolvable
               ?resolved=${this.resolved}
@@ -219,7 +224,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               eventType="create-comment"
               @click=${(event: Event) => event.stopPropagation()}
               placeholder="Reply"
-            ></superviz-comments-comment-input>
+              participantsList=${JSON.stringify(this.participantsList)}
+              ></superviz-comments-comment-input>
           </div>
         </div>
         <div class=${classMap(this.hrClasses)}></div>
