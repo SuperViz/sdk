@@ -83,16 +83,20 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private updateHeight() {
     const commentsInput = this.commentInput;
 
-    const commentsInputContainer = this.commentInputContainer;
+    commentsInput.style.height = '40px';
 
-    commentsInput.style.height = '0px';
-    commentsInputContainer.style.height = '0px';
+    let textareaHeight = commentsInput.scrollHeight + 15;
 
-    const textareaHeight = commentsInput.scrollHeight - 1.5;
-    const textareaContainerHeight = commentsInput.scrollHeight - 1.5;
+    if (textareaHeight > 40) {
+      commentsInput.style.paddingBottom = '8px';
+    }
+
+    if (textareaHeight === 46) {
+      commentsInput.style.paddingBottom = '0';
+      textareaHeight = 40;
+    }
 
     commentsInput.style.height = `${textareaHeight}px`;
-    commentsInputContainer.style.height = `${textareaContainerHeight}px`;
 
     const btnSend = this.getSendBtn();
     btnSend.disabled = !(commentsInput.value.length > 0);
@@ -200,15 +204,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     return html`
       <div class="comment-input">
-        <div id="comment-input--container">
-          <textarea
-            id="comment-input--textarea"
-            placeholder=${this.placeholder ?? 'Add comment...'}
-            @input=${this.updateHeight}
-            @focus=${this.onTextareaFocus}
-            @blur=${this.onTextareaLoseFocus}
-          ></textarea>
-        </div>
+        <textarea
+          id="comment-input--textarea"
+          placeholder=${this.placeholder ?? 'Add comment...'}
+          @input=${this.updateHeight}
+          @focus=${this.onTextareaFocus}
+          @blur=${this.onTextareaLoseFocus}
+          spellcheck="false"
+        ></textarea>
         <hr class="sv-hr" />
         <div class="comment-input--options">
           <div class="comment-actions">

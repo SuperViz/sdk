@@ -24,6 +24,7 @@ export const annotationPinStyles = css`
     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.25);
     transition: border-color 0.2s ease-in-out opacity 0.2s ease-in-out;
     padding: 2px;
+    box-sizing: border-box;
     cursor: pointer;
   }
 
@@ -44,7 +45,6 @@ export const annotationPinStyles = css`
   }
 
   .annotation-pin__avatar--add {
-    font-size: 24px;
     color: rgb(var(--sv-gray-700));
     background-color: rgb(var(--sv-white));
   }
@@ -59,7 +59,7 @@ export const annotationPinStyles = css`
 
   .floating-input {
     position: absolute;
-    bottom: 0;
+    top: -2px;
     opacity: 0;
   }
 

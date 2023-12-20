@@ -23,24 +23,35 @@ export const commentInputStyle = css`
     border: 0px;
     border-radius: 4px;
     outline: none;
-    height: 1rem;
     font-size: 14px;
     color: rgb(var(--sv-gray-700));
     font-family: Roboto;
     white-space: pre-wrap;
     word-wrap: break-word;
-    overflow: hidden;
+    overflow-y: scroll;
     resize: none;
     line-height: 1rem;
     max-height: 5rem;
     appearance: none;
+    height: 40px;
     width: 100%;
     box-sizing: border-box;
+
+    padding-top: 7px;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 11px solid transparent;
+    border-left: 11px solid transparent;
+  }
+
+  #comment-input--textarea:invalid {
+    border-top: 15px solid transparent;
   }
 
   #comment-input--textarea::placeholder {
     color: rgb(var(--sv-gray-400));
     font-size: 14px;
+    line-height: 14px;
   }
 
   .comment-input--options {
@@ -53,7 +64,7 @@ export const commentInputStyle = css`
   }
 
   .active-textarea {
-    height: 38.5px;
+    height: 40px;
     padding: 4px 8px;
   }
 
@@ -64,11 +75,13 @@ export const commentInputStyle = css`
     transition: 0.25s opacity linear, 0.25s visibility;
     visibility: hidden;
     height: 0;
+    position: absolute;
   }
 
   .active-hr {
     border-top: 1px solid rgb(var(--sv-gray-300));
     opacity: 1;
+    position: relative;
     visibility: visible;
   }
 
@@ -142,15 +155,5 @@ export const commentInputStyle = css`
 
   #comment-input--textarea:focus::placeholder {
     color: transparent;
-  }
-
-  #comment-input--container {
-    max-height: 5rem;
-    min-height: 32px;
-    height: 32px;
-    padding: 3px 11px;
-    overflow-y: scroll;
-    display: flex;
-    align-items: center;
   }
 `;
