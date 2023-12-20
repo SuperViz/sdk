@@ -215,7 +215,7 @@ describe('ApiService', () => {
     test('should return the participants', async () => {
       const response = await ApiService.fetchParticipantsByGroup('any_group_id');
 
-      expect(response).toEqual({});
+      expect(response).toEqual([{"avatar": null, "id": "any_user_id", "name": "any_name"}]);
     });
   });
 

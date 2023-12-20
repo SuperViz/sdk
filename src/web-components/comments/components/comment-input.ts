@@ -14,7 +14,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare text: string;
   declare btnActive: boolean;
   declare editable: boolean;
-  declare commentsInput: HTMLDivElement;
+  declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
   declare participantsList: Participant[];
 
@@ -52,7 +52,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private getCommentInput = () => {
-    return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLDivElement;
+    return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
   };
 
   private getCommentInputContainer = () => {
@@ -64,11 +64,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private commentInputFocus = ({ detail }: CustomEvent) => {
-    const commentTextarea = this.getCommentInput();
-
-    if (commentTextarea && commentTextarea.innerText.length === 0) {
-      commentTextarea.innerHTML = `<span class='placeholder'>Add comment...</span>`
-    }
     this.pinCoordinates = detail;
     this.getCommentInput().focus();
   };
@@ -155,7 +150,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   updated(changedProperties: Map<string, any>) {
     if (changedProperties.has('text') && this.text.length > 0) {
       const commentsInput = this.getCommentInput();
-      commentsInput.innerText = this.text;
+      commentsInput.value = this.text;
       this.updateHeight();
     }
 
@@ -179,31 +174,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     commentsInputContainer.style.height = `${textareaContainerHeight}px`;
 
     const btnSend = this.getSendBtn();
-    btnSend.disabled = !(commentsInput.innerText.length > 0);
-    if (btnSend.disabled) {
-      commentsInput.innerHTML = `<span class='placeholder'>Add comment...</span>`
-      commentsInputContainer.style.height = '41px'
-      commentsInput.style.height = '45px'
-    }
+    btnSend.disabled = !(commentsInput.value.length > 0);
   }
 
   private sendEnter = (e: KeyboardEvent) => {
     if (e.key !== 'Enter' || e.shiftKey) return;
     const input = this.getCommentInput();
-    const text = input.innerText.trim();
-
-    const commentTextarea = this.getCommentInput();
-    const inputValue = commentTextarea.innerHTML;
-
-    let allText = inputValue;
-    let allText2 = inputValue;
-
-    this.participantsList?.forEach(participant => {
-      const regex = new RegExp(`@${participant.name}`, 'gi');
-      allText = allText2.replace(regex, `<div class="mentioned"><strong>@${participant.name}</strong></div>`);
-      allText2 = allText2.replace(regex, `{{${participant.id}}}`);
-
-    });
+    const text = input.value.trim();
 
     if (!text) return;
     const sendBtn = this.getSendBtn();
@@ -221,12 +198,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     );
 
     this.pinCoordinates = null;
-    input.innerText = '';
+    input.value = '';
     sendBtn.disabled = true;
-    if (commentTextarea && commentTextarea.innerText.length === 0) {
-      commentTextarea.innerHTML = `<span class='placeholder'>Add comment...</span>`
-      this.updateHeight()
-    }
+
+    this.updateHeight()
+
   };
 
   private send(e: Event) {
@@ -234,14 +210,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     const input = this.getCommentInput();
     const sendBtn = this.getSendBtn();
-    const inputValue = input.innerHTML;
 
-    let allText = inputValue;
-    this.participantsList?.forEach(participant => {
-      const regex = new RegExp(`<div class="mentioned"><strong>@${participant.name}</strong></div>`, 'gi');
-      allText = allText.replace(regex, `{{${participant.id}}}`);
-    });
-    const text = allText;
+    const text = input.value;
 
     this.emitEvent(
       this.eventType,
@@ -256,7 +226,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     );
 
     this.pinCoordinates = null;
-    input.innerText = '';
+    input.value = '';
     sendBtn.disabled = true;
     this.updateHeight();
   }
