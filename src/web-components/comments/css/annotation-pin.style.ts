@@ -59,7 +59,21 @@ export const annotationPinStyles = css`
 
   .floating-input {
     position: absolute;
+    bottom: 0;
+    opacity: 0;
+  }
+
+  .left .floating-input {
+    right: auto;
     left: 0;
-    transform: translateX(-100%);
+    transform: translateX(calc(-100% - 7px));
+    opacity: 1;
+  }
+
+  .right .floating-input {
+    left: auto;
+    right: 0;
+    transform: translateX(calc(100% + 7px));
+    opacity: 1;
   }
 `;

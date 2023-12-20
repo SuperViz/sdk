@@ -6,6 +6,7 @@ export class CanvasPin implements PinAdapter {
   private logger: Logger;
   private canvasId: string;
   private canvas: HTMLCanvasElement;
+  private canvasSides: { left: number; top: number; right: number; bottom: number };
   private divWrapper: HTMLElement;
   private mouseElement: HTMLElement;
   private isActive: boolean;
@@ -18,6 +19,8 @@ export class CanvasPin implements PinAdapter {
   public onPinFixedObserver: Observer;
   private mouseDownCoordinates: { x: number; y: number };
   private temporaryPinCoordinates: { x: number; y: number } | null = null;
+  private commentsSide: 'left' | 'right' = 'left';
+  private movedTemporaryPin: boolean;
 
   constructor(
     canvasId: string,
@@ -26,6 +29,7 @@ export class CanvasPin implements PinAdapter {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    this.canvasSides = this.canvas.getBoundingClientRect();
     this.isActive = false;
     this.pins = new Map();
     this.goToPinCallback = options?.onGoToPin;
@@ -139,6 +143,8 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('showInput', '');
+      temporaryPin.setAttribute('canvasSides', JSON.stringify(this.canvasSides));
+      temporaryPin.setAttribute('commentsSide', this.commentsSide);
       temporaryPin.setAttribute('position', JSON.stringify({ ...this.temporaryPinCoordinates }));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttributeNode(document.createAttribute('active'));
@@ -176,6 +182,10 @@ export class CanvasPin implements PinAdapter {
     document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
+
+  public setCommentsSide = (side: 'left' | 'right'): void => {
+    this.commentsSide = side;
+  };
 
   /**
    * @function removeListeners
@@ -441,6 +451,12 @@ export class CanvasPin implements PinAdapter {
     this.temporaryPinCoordinates = { x: transformedPoint.x, y: transformedPoint.y };
     this.renderTemporaryPin();
 
+    const temporaryPin = document.getElementById('superviz-temporary-pin');
+
+    // we don't care about the actual movedTemporaryPin value
+    // it only needs to trigger an update
+    this.movedTemporaryPin = !this.movedTemporaryPin;
+    temporaryPin.setAttribute('movedPosition', String(this.movedTemporaryPin));
     if (this.selectedPin) return;
 
     document.body.dispatchEvent(new CustomEvent('unselect-annotation'));

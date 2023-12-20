@@ -38,6 +38,7 @@ export class Comments extends BaseComponent {
       buttonLocation: ButtonLocation.TOP_LEFT,
     };
 
+    pinAdapter.setCommentsSide(this.layoutOptions?.position ?? 'left');
     this.pinAdapter = pinAdapter;
   }
 

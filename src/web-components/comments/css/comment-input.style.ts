@@ -23,23 +23,19 @@ export const commentInputStyle = css`
     border: 0px;
     border-radius: 4px;
     outline: none;
-    height: 38px;
+    height: 1rem;
     font-size: 14px;
     color: rgb(var(--sv-gray-700));
-    padding: 12px 11px !important;
     font-family: Roboto;
     white-space: pre-wrap;
     word-wrap: break-word;
     overflow: hidden;
     resize: none;
-    line-height: 16px;
+    line-height: 1rem;
+    max-height: 5rem;
     appearance: none;
     width: 100%;
     box-sizing: border-box;
-  }
-
-  #comment-input--textarea:focus {
-    height: 38.5px;
   }
 
   #comment-input--textarea::placeholder {
@@ -146,5 +142,15 @@ export const commentInputStyle = css`
 
   #comment-input--textarea:focus::placeholder {
     color: transparent;
+  }
+
+  #comment-input--container {
+    max-height: 5rem;
+    min-height: 32px;
+    height: 32px;
+    padding: 3px 11px;
+    overflow-y: scroll;
+    display: flex;
+    align-items: center;
   }
 `;

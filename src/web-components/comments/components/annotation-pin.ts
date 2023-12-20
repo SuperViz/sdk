@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
@@ -18,6 +18,13 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare annotation: Annotation;
   declare position: Partial<PinCoordinates>;
   declare showInput: boolean;
+  declare canvasSides: { left: number; right: number; top: number; bottom: number };
+  declare horizontalSide: 'left' | 'right' | undefined;
+  private annotationSides: { left: number; right: number; top: number; bottom: number };
+  declare commentsSide: 'left' | 'right';
+  declare movedPosition: string;
+  declare pinAnnotation: HTMLElement;
+  declare avatar: string;
 
   static styles = styles;
   static properties = {
@@ -26,12 +33,64 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     position: { type: Object },
     active: { type: Boolean },
     showInput: { type: Boolean },
+    canvasSides: { type: Object },
+    horizontalSide: { type: String },
+    commentsSide: { type: String },
+    movedPosition: { type: String },
+    pinAnnotation: { type: Object },
+    avatar: { type: String },
   };
 
   constructor() {
     super();
     this.position = { x: 0, y: 0 };
   }
+
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    super.updated(_changedProperties);
+
+    if (!_changedProperties.has('movedPosition') || !this.annotationSides) return;
+    this.annotationSides = this.pinAnnotation.getBoundingClientRect();
+    this.setInputSide();
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+
+    if (!this.showInput) return;
+
+    this.pinAnnotation = this.shadowRoot?.querySelector('.annotation-pin');
+    this.annotationSides = this.pinAnnotation.getBoundingClientRect();
+
+    this.setInputSide();
+  }
+
+  private setInputSide = () => {
+    const inputWidth = 286;
+    const gapWidth = 7;
+    const extraWidth = inputWidth + gapWidth;
+
+    let commentsWidth = this.commentsSide === 'right' ? 320 : 0;
+
+    const right = this.annotationSides.right + extraWidth;
+    const rightLimit = this.canvasSides.right - commentsWidth;
+    if (right < rightLimit) {
+      this.horizontalSide = 'right';
+      return;
+    }
+
+    commentsWidth = this.commentsSide === 'left' ? 320 : 0;
+    const left = this.annotationSides.left - extraWidth;
+    const leftLimit = this.canvasSides.left + commentsWidth;
+    if (left > leftLimit) {
+      this.horizontalSide = 'left';
+      return;
+    }
+
+    this.horizontalSide = leftLimit - left > right - rightLimit ? 'right' : 'left';
+  };
 
   private createComment = ({ detail }: CustomEvent) => {
     document.body.dispatchEvent(
@@ -87,6 +146,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     });
   }
 
+  private counter = 0;
+
+  get userAvatar() {
+    return this.annotation?.comments?.at(0)?.participant;
+  }
+
   get userInitial(): string {
     const name = this.annotation?.comments?.at(0)?.participant?.name ?? 'Anonymous';
 
@@ -103,7 +168,6 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
   private input = () => {
     if (!this.showInput) return;
-
     return html`<div class="floating-input">
       <superviz-comments-comment-input
         @create-annotation=${this.createComment}
@@ -118,6 +182,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       'annotation-pin': true,
       'annotation-pin--active': this.active,
     };
+    classes[this.horizontalSide] = true;
 
     if (this.type === PinMode.ADD) {
       return html`
@@ -126,7 +191,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
           style=${`top: ${this.position.y}px; left: ${this.position.x}px;`}
         >
           <div class="annotation-pin__avatar annotation-pin__avatar--add">
-            <superviz-icon name="add"></superviz-icon>
+            <superviz-icon name="add" allowSetSize="true"></superviz-icon>
           </div>
           ${this.input()}
         </div>
@@ -141,7 +206,6 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       >
         <div class="annotation-pin__avatar">
           <p class="text text-bold text-big">${this.userInitial}</p>
-          <!-- <img src="https://picsum.photos/200/300" alt="" /> -->
         </div>
       </div>
     `;
