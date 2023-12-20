@@ -11,6 +11,11 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, mentionedStyl
 export class CommentsMentioned extends WebComponentsBaseElement {
   static styles = styles;
 
+  constructor() {
+    super();
+    this.participant = {} as any
+  }
+
   declare participant: { userId: string, name: string, avatar: string }
 
   static properties = {
@@ -18,10 +23,6 @@ export class CommentsMentioned extends WebComponentsBaseElement {
   };
 
   protected render() {
-    return html`
-      <div class="mentioned" userId=${this.participant.userId}>
-        ${this.participant.name}
-      </div>
-    `;
+    return html`<div class="mention">@<div class="mentioned" userId=${this.participant.userId}>${this.participant.name}</div></div>`;
   }
 }
