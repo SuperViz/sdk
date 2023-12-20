@@ -131,7 +131,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.SUPERVIZ_DEV_USER_TOKEN }}
           repository: superviz/samples
           event-type: new-release
           client-payload: '{"version": "v0.0.0"}'
