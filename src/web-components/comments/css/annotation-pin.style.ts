@@ -6,6 +6,8 @@ export const annotationPinStyles = css`
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    pointer-events: auto;
   }
 
   .annotation-pin {
@@ -53,5 +55,11 @@ export const annotationPinStyles = css`
     border-radius: 50%;
 
     object-fit: cover;
+  }
+
+  .floating-input {
+    position: absolute;
+    left: 0;
+    transform: translateX(-100%);
   }
 `;

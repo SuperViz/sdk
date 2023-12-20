@@ -90,7 +90,7 @@ export class Comments extends BaseComponent {
 
     // Comments component observers
     this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
-    this.element.addEventListener('create-annotation', this.createAnnotation);
+    document.body.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
@@ -287,7 +287,6 @@ export class Comments extends BaseComponent {
       );
 
       const comment = await this.createComment(annotation.uuid, text);
-
       this.addAnnotation({
         ...annotation,
         comments: [comment],

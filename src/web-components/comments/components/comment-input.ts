@@ -17,8 +17,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
 
-  private pinCoordinates: AnnotationPositionInfo | null = null;
-
   constructor() {
     super();
     this.btnActive = false;
@@ -55,25 +53,18 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.querySelector('.sv-hr') as HTMLDivElement;
   }
 
-  private commentInputFocus = ({ detail }: CustomEvent) => {
-    this.pinCoordinates = detail;
-    this.commentInput.focus();
-  };
-
   connectedCallback(): void {
     super.connectedCallback();
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
-    window.document.body.addEventListener('comment-input-focus', this.commentInputFocus);
     this.addEventListener('keyup', this.sendEnter);
-    const input = this.commentInput;
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this.eventType !== 'create-annotation') return;
+    if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
-    window.document.body.removeEventListener('comment-input-focus', this.commentInputFocus);
+    this.removeEventListener('keyup', this.sendEnter);
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -120,7 +111,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
-        position: this.pinCoordinates,
       },
       {
         composed: false,
@@ -128,7 +118,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       },
     );
 
-    this.pinCoordinates = null;
     input.value = '';
     sendBtn.disabled = true;
     this.updateHeight();
@@ -145,7 +134,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
-        position: this.pinCoordinates,
       },
       {
         composed: false,
@@ -153,7 +141,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       },
     );
 
-    this.pinCoordinates = null;
     input.value = '';
     sendBtn.disabled = true;
     this.updateHeight();

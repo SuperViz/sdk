@@ -36,8 +36,6 @@ export class CanvasPin implements PinAdapter {
       throw new Error(message);
     }
 
-    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
-    document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrapper = this.renderDivWrapper();
@@ -64,8 +62,6 @@ export class CanvasPin implements PinAdapter {
     this.annotations = [];
 
     cancelAnimationFrame(this.animateFrame);
-    document.body.removeEventListener('select-annotation', this.annotationSelected);
-    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   public setPinsVisibility(isVisible: boolean): void {
@@ -142,6 +138,8 @@ export class CanvasPin implements PinAdapter {
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
+      temporaryPin.setAttribute('showInput', '');
+      temporaryPin.setAttribute('position', JSON.stringify({ ...this.temporaryPinCoordinates }));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttributeNode(document.createAttribute('active'));
       this.divWrapper.appendChild(temporaryPin);
@@ -176,6 +174,7 @@ export class CanvasPin implements PinAdapter {
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
     document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('select-annotation', this.annotationSelected);
+    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   /**
@@ -190,6 +189,7 @@ export class CanvasPin implements PinAdapter {
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
     document.body.removeEventListener('keyup', this.resetPins);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
+    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   /**
