@@ -8,6 +8,12 @@ export type Annotation = {
   comments: Comment[];
 };
 
+export type Participant = {
+  id: string;
+  name: string;
+  avatar: string;
+};
+
 export type Comment = {
   uuid: string;
   avatar: string;

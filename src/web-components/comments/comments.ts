@@ -1,7 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { Annotation } from '../../components/comments/types';
+import { Annotation, Participant } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
 import { AnnotationFilter } from './components/types';
@@ -20,6 +20,7 @@ export class Comments extends WebComponentsBaseElement {
   declare annotationFilter: AnnotationFilter;
   declare waterMarkState: boolean;
   declare side: string;
+  declare participantsList: Participant[];
 
   static properties = {
     open: { type: Boolean },
@@ -27,6 +28,7 @@ export class Comments extends WebComponentsBaseElement {
     annotationFilter: { type: String },
     waterMarkState: { type: Boolean },
     side: { type: String },
+    participantsList: { type: Object },
   };
 
   constructor() {
@@ -34,6 +36,11 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = [];
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
+    this.participantsList = [];
+  }
+
+  public participantsListed(participants: Participant[]) {
+    this.participantsList = participants;
   }
 
   public updateAnnotations(data: Annotation[]) {
@@ -93,7 +100,10 @@ export class Comments extends WebComponentsBaseElement {
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
-          <superviz-comments-annotations id="annotations" open=${this.open}>
+          <superviz-comments-annotations
+            id="annotations"
+            participantsList=${JSON.stringify(this.participantsList)}
+            open=${this.open}>
           </superviz-comments-annotations>
         </div>
         <superviz-comments-annotation-filter
@@ -104,6 +114,7 @@ export class Comments extends WebComponentsBaseElement {
         <superviz-comments-content
           annotations=${JSON.stringify(this.annotations)}
           annotationFilter=${this.annotationFilter}
+          participantsList=${JSON.stringify(this.participantsList)}
           class="content"
         ></superviz-comments-content>
         ${htmlPoweredByContent}

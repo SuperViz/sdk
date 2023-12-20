@@ -2,7 +2,7 @@ import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { Annotation } from '../../../components/comments/types';
+import { Annotation, Participant } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationsStyle } from '../css';
 
@@ -14,9 +14,11 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
   static styles = styles;
   static properties = {
     annotation: { type: Object },
+    participantsList: { type: Object },
   };
 
   declare annotation: Annotation;
+  declare participantsList: Participant[];
 
   private createComment({ detail }: CustomEvent) {
     this.emitEvent('create-annotation', detail);
@@ -92,6 +94,8 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
           <superviz-comments-comment-input
             @create-annotation=${this.createComment}
             eventType="create-annotation"
+            participantsList=${JSON.stringify(this.participantsList)}
+
           >
           </superviz-comments-comment-input>
         </div>

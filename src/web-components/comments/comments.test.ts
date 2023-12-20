@@ -1,8 +1,25 @@
 import '.';
 import sleep from '../../common/utils/sleep';
+import { Participant } from '../../components/comments/types';
 
 let element: HTMLElement;
-
+const MOCK_PARTICIPANTS: Participant[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+  },
+];
 describe('comments', () => {
   beforeEach(async () => {
     element = document.createElement('superviz-comments');
@@ -85,5 +102,15 @@ describe('comments', () => {
     await sleep();
 
     expect(element['waterMarkState']).toEqual(waterMark);
+  });
+
+  test('should receive participants List', async () => {
+    const participantsList = JSON.stringify([MOCK_PARTICIPANTS]);
+
+    element['participantsListed'](participantsList);
+
+    await sleep();
+
+    expect(element['participantsList']).toEqual(participantsList);
   });
 });

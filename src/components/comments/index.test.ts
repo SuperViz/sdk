@@ -9,9 +9,29 @@ import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import { PinAdapter, CommentsSide, Annotation } from './types';
+import { Participant , PinAdapter, CommentsSide, Annotation } from "./types";
+
+
 
 import { Comments } from './index';
+
+const MOCK_PARTICIPANTS: Participant[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+  },
+];
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
@@ -22,6 +42,7 @@ jest.mock('../../services/api', () => ({
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
+  fetchParticipantsByGroup: jest.fn().mockImplementation((): any => []),
 }));
 
 const DummiePinAdapter: PinAdapter = {
@@ -701,5 +722,22 @@ describe('Comments', () => {
 
     expect(commentsComponent['annotations'].length).toBe(2);
     expect(commentsComponent['annotations'][1]).toStrictEqual(annotationList[1]);
+  });
+
+  describe('fetch participants into a group', () => {
+    test('should call apiServiceapiService participantsList and send to element the participantsListed to commentsComponent', async () => {
+      const spy = jest.spyOn(ApiService, 'fetchParticipantsByGroup');
+
+      expect(spy).toHaveBeenCalledWith('unit-test-group-id');
+
+      const response = await ApiService.fetchParticipantsByGroup('unit-test-group-id');
+      (ApiService.fetchParticipantsByGroup as jest.Mock).mockReturnValueOnce([MOCK_PARTICIPANTS]);
+      expect(response).toEqual([]);
+
+      commentsComponent['element'].participantsListed = jest.fn();
+      await commentsComponent['element'].participantsListed(MOCK_PARTICIPANTS);
+
+      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(MOCK_PARTICIPANTS);
+    });
   });
 });

@@ -32,12 +32,12 @@ const removeMentionOnBackspace = (event: any): any => {
 
   const range = window.getSelection().getRangeAt(0);
   const { parentElement } = range.commonAncestorContainer;
-  if (parentElement.parentElement.className === 'mentioned') {
+  if (parentElement?.parentElement?.className === 'mentioned') {
     parentElement.remove();
   }
 }
 
-const removeEmptyMentions = (input: HTMLDivElement): any => {
+const removeEmptyMentions = (input: HTMLTextAreaElement): any => {
   const divs = input.querySelectorAll('.mentioned')
   divs.forEach(div => {
     if (div.innerHTML.trim() === '') {
@@ -46,7 +46,7 @@ const removeEmptyMentions = (input: HTMLDivElement): any => {
   });
 }
 
-const matchParticipant = (input: HTMLDivElement, event: any, participantList: any): any => {
+const matchParticipant = (input: HTMLTextAreaElement, event: any, participantList: any): any => {
   const inputValue = input.innerHTML;
   const mentionIndex = inputValue.lastIndexOf('@');
 
@@ -58,7 +58,7 @@ const matchParticipant = (input: HTMLDivElement, event: any, participantList: an
   }
 
   const mentionName = extractMentionName(inputValue, mentionIndex, event);
-  
+
   const mentionList = participantList
     .filter((participant: any) => participant.name
       .toLowerCase()
@@ -68,7 +68,7 @@ const matchParticipant = (input: HTMLDivElement, event: any, participantList: an
   if (!(mentionList.length > 0)) {
     return DEFAULT_HIDE_MENTION_LIST
   }
-  
+
   const mentions = prepareMentionList(mentionList, mentionIndex, range);
 
   return {
@@ -88,7 +88,7 @@ const extractMentionName = (input: string, mentionIndex: number, event: any): st
 const prepareMentionList = (users: any, mentionIndex: number, range: any): any => {
   return users.map((user: any) => ({
     name: user.name,
-    participantId: user.participantId,
+    id: user.userId,
     avatar: user.avatar,
     index: mentionIndex,
     range
@@ -98,11 +98,11 @@ const prepareMentionList = (users: any, mentionIndex: number, range: any): any =
 export default {
   input: {
     addMention: () => undefined,
-    matchParticipant: (input: HTMLDivElement, event: any, participantList: any) => matchParticipant(input, event, participantList),
+    matchParticipant: (input: HTMLTextAreaElement, event: any, participantList: any) => matchParticipant(input, event, participantList),
     addMentionList: () => undefined,
     removeMentionList: () => undefined,
     removeMentionOnBackspace: (event: any, selection: Selection) => removeMentionOnBackspace(event),
-    removeEmptyMentions: (input: HTMLDivElement) => removeEmptyMentions(input),
+    removeEmptyMentions: (input: HTMLTextAreaElement) => removeEmptyMentions(input),
   },
   mentions: {
     // ! WIP !
