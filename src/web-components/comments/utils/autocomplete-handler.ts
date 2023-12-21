@@ -24,18 +24,33 @@ export class AutoCompleteHandler {
   }
 
   removeMention (mention) {
-    this.mentions = this.mentions.filter(m => m.name !== mention.name)
+    const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
+    this.mentions = this.mentions.filter(m => m.name !== mention.name && m.position.start !== mention.position.start && m.position.end !== mention.position.end)
 
-    // also replace the text
-    const text = this.getValue().slice(0, mention.position.start - 1) + this.getValue().slice(mention.position.end, this.getValue().length)
-    this.setValue(text)
-    // set position
-    this.setCaretPosition(mention.position.start)
-    console.log('mention deleted', this.mentions)
+    if (isDeletion) {
+      this.setValue(this.getValue().slice(0, mention.position.start) + this.getValue().slice(mention.position.end, this.getValue().length))
+      this.setCaretPosition(mention.position.start)
+      return
+    }
+
+    const { start, end } = mention.position
+    this.setValue(this.getValue().slice(0, start) + this.getValue().slice(end, this.getValue().length))
+    this.setCaretPosition(start + 1)
   }
 
   clearMentions () {
     this.mentions = []
+  }
+
+  getSelectionPosition () {
+    const caretIndex = this.getSelectionStart()
+    const keyData = this.getLastKeyBeforeCaret(caretIndex)
+    const keyIndex = keyData?.keyIndex ?? -1
+
+    return {
+      start: keyIndex + 1,
+      end: caretIndex,
+    }
   }
 
   getSelectionStart () {
@@ -63,22 +78,45 @@ export class AutoCompleteHandler {
   }
 
   searchMention (caretIndex, keyIndex) {
+    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex < mention.position.end)
+    if (existingMention) {
+      this.removeMention(existingMention)
+      return null
+    }
+
     if (keyIndex !== -1) {
       const searchText = this.getValue().substring(keyIndex + 1, caretIndex)
-      const existingMention = this.mentions.find(mention => mention.position.start >= keyIndex + 1 && mention.position.end > caretIndex)
-      if (existingMention) {
-        this.removeMention(existingMention)
-        return null
-      }
 
       return searchText
     }
-    
-    if (this.mentions.length > 0) {
-      this.clearMentions()
-    }
 
     return null
+  }
+
+  updateMentionPositions () {
+    const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
+
+    this.mentions = this.mentions.map((mention) => {
+      const { start, end } = mention.position
+      const position = this.getSelectionPosition()
+
+      const newPosition = {
+        start,
+        end
+      }
+
+      if (position.start < start) {
+        newPosition.start = isDeletion ? start - 1 : start + 1
+        newPosition.end = isDeletion ? end - 1 : end + 1
+      }
+
+      return {
+        ...mention,
+        position: newPosition
+      }
+    })
+    console.log('start', this.mentions.map(item => item.position.start))
+    console.log('end', this.mentions.map(item => item.position.end))
   }
 
   insertMention (start: number, end: number, participant: any) {
@@ -92,11 +130,9 @@ export class AutoCompleteHandler {
       userId: participant.userId,
       name,
       position: {
-        start,
+        start: start - 1,
         end: start + name.length,
       }
     })
-
-    console.log('mention added', this.mentions)
   }
 }

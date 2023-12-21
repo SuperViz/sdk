@@ -113,19 +113,17 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
     const keyIndex = keyData?.keyIndex ?? -1;
+    this.autoCompleteHandler.updateMentionPositions()
     const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
 
-    const position = {
-      start: keyIndex + 1,
-      end: caretIndex,
-    }
+    const position = this.autoCompleteHandler.getSelectionPosition()
 
     if (searchText === null) {
       this.mentionList = []
       return;
     }
 
-    const { action, mentions } = mentionHandler.input.matchParticipant(searchText, position, this.users)
+    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.users)
 
     if (action === 'show') {
       this.mentionList = mentions
@@ -135,7 +133,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.mentionList = []
     }
 
-    if (e.data === ' ' && this.mentionList.length && this.mentionList.length === 1) {
+    if (e.inputType === ' ' && this.mentionList.length && this.mentionList.length === 1) {
       const [{ userId = '', name = '' } = {}] = this.mentionList;
 
       this.autoCompleteHandler.insertMention(position.start, position.end, {
