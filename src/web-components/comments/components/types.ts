@@ -22,3 +22,5 @@ export enum AnnotationFilter {
   ALL = 'all',
   RESOLVED = 'resolved',
 }
+
+export type Side = 'left' | 'right';

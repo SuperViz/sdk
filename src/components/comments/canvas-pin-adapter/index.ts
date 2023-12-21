@@ -1,11 +1,13 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, AnnotationPositionInfo, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
+
+import { CanvasSides } from './types';
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
   private canvas: HTMLCanvasElement;
-  private canvasSides: { left: number; top: number; right: number; bottom: number };
+  private canvasSides: CanvasSides;
   private divWrapper: HTMLElement;
   private mouseElement: HTMLElement;
   private isActive: boolean;
@@ -142,7 +144,7 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('showInput', '');
-      temporaryPin.setAttribute('canvasSides', JSON.stringify(this.canvasSides));
+      temporaryPin.setAttribute('containerSides', JSON.stringify(this.canvasSides));
       temporaryPin.setAttribute('commentsSide', this.commentsSide);
       temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));

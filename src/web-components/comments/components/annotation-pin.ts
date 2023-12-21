@@ -6,7 +6,7 @@ import { Annotation, PinCoordinates } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationPinStyles } from '../css';
 
-import { PinMode } from './types';
+import { PinMode, Side } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationPinStyles];
@@ -18,10 +18,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare annotation: Annotation;
   declare position: Partial<PinCoordinates>;
   declare showInput: boolean;
-  declare canvasSides: { left: number; right: number; top: number; bottom: number };
-  declare horizontalSide: 'left' | 'right' | undefined;
+  declare containerSides: { left: number; right: number; top: number; bottom: number };
+  declare horizontalSide: Side | undefined;
   private annotationSides: { left: number; right: number; top: number; bottom: number };
-  declare commentsSide: 'left' | 'right';
+  declare commentsSide: Side;
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
   declare localAvatar: string;
@@ -34,7 +34,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     position: { type: Object },
     active: { type: Boolean },
     showInput: { type: Boolean },
-    canvasSides: { type: Object },
+    containerSides: { type: Object },
     horizontalSide: { type: String },
     commentsSide: { type: String },
     movedPosition: { type: String },
@@ -75,7 +75,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     let commentsWidth = this.commentsSide === 'right' ? 320 : 0;
 
     const right = this.annotationSides.right + extraWidth;
-    const rightLimit = this.canvasSides.right - commentsWidth;
+    const rightLimit = this.containerSides.right - commentsWidth;
     if (right < rightLimit) {
       this.horizontalSide = 'right';
       return;
@@ -83,7 +83,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
     commentsWidth = this.commentsSide === 'left' ? 320 : 0;
     const left = this.annotationSides.left - extraWidth;
-    const leftLimit = this.canvasSides.left + commentsWidth;
+    const leftLimit = this.containerSides.left + commentsWidth;
     if (left > leftLimit) {
       this.horizontalSide = 'left';
       return;
