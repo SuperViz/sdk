@@ -25,6 +25,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
   declare localAvatar: string;
+  private originalPosition: Partial<PinCoordinates>;
 
   static styles = styles;
   static properties = {
@@ -60,7 +61,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     super.firstUpdated(_changedProperties);
 
     if (!this.showInput) return;
-
+    this.originalPosition = { ...this.position };
     this.pinAnnotation = this.shadowRoot?.querySelector('.annotation-pin');
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
     this.setInputSide();
@@ -94,10 +95,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   private createComment = ({ detail }: CustomEvent) => {
     document.body.dispatchEvent(
       new CustomEvent('create-annotation', {
-        detail: { ...detail, position: { ...this.position, type: 'canvas' } },
+        detail: { ...detail, position: { ...this.originalPosition, type: 'canvas' } },
       }),
     );
-
+    console.error(this.originalPosition, 'original');
     this.annotation = null;
   };
 

@@ -14,7 +14,6 @@ import {
   CommentsOptions,
   CommentsSide,
   PinAdapter,
-  PinCoordinates,
 } from './types';
 
 export class Comments extends BaseComponent {
@@ -27,6 +26,7 @@ export class Comments extends BaseComponent {
   private clientUrl: string;
   private pinAdapter: PinAdapter;
   private layoutOptions: CommentsOptions;
+  private coordinates: AnnotationPositionInfo;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -113,7 +113,7 @@ export class Comments extends BaseComponent {
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
 
     // pin adapter observers
-    this.pinAdapter.onPinFixedObserver.subscribe(this.onFixedPin);
+    this.pinAdapter.onPinFixedObserver.subscribe(this.onPinFixed);
   }
 
   /**
@@ -142,24 +142,16 @@ export class Comments extends BaseComponent {
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
 
     // pin adapter observers
-    this.pinAdapter.onPinFixedObserver.unsubscribe(this.onFixedPin);
+    this.pinAdapter.onPinFixedObserver.unsubscribe(this.onPinFixed);
   }
 
   /**
-   * @function onFixedPin
+   * @function onPinFixed
    * @description Creates a new annotation when a pin is fixed
    * @param {AnnotationPositionInfo} coordinates
    */
-  private onFixedPin = (coordinates: AnnotationPositionInfo): void => {
-    document.body.dispatchEvent(
-      new CustomEvent('prepare-to-create-annotation', {
-        detail: {
-          ...coordinates,
-        },
-        composed: true,
-        bubbles: true,
-      }),
-    );
+  private onPinFixed = (coordinates: AnnotationPositionInfo): void => {
+    this.coordinates = coordinates;
   };
 
   /**
@@ -279,9 +271,9 @@ export class Comments extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { position, text } = detail;
+      const { text } = detail;
       const { url } = this;
-
+      const position = { ...this.coordinates, type: 'canvas' };
       const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
@@ -474,6 +466,7 @@ export class Comments extends BaseComponent {
         },
       );
 
+      console.error('annotations', annotations);
       this.annotations = annotations;
       this.element.updateAnnotations(this.annotations);
       this.pinAdapter.updateAnnotations(this.annotations);

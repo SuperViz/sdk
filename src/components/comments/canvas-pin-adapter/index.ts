@@ -146,7 +146,7 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttribute('showInput', '');
       temporaryPin.setAttribute('canvasSides', JSON.stringify(this.canvasSides));
       temporaryPin.setAttribute('commentsSide', this.commentsSide);
-      temporaryPin.setAttribute('position', JSON.stringify({ ...this.temporaryPinCoordinates }));
+      temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttribute('localAvatar', this.localUserAvatar);
       temporaryPin.setAttributeNode(document.createAttribute('active'));
@@ -450,7 +450,6 @@ export class CanvasPin implements PinAdapter {
     } as PinCoordinates);
 
     this.resetSelectedPin();
-
     this.temporaryPinCoordinates = { x: transformedPoint.x, y: transformedPoint.y };
     this.renderTemporaryPin();
 
