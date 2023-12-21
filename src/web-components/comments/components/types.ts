@@ -23,4 +23,11 @@ export enum AnnotationFilter {
   RESOLVED = 'resolved',
 }
 
-export type Side = 'left' | 'right';
+export type HorizontalSide = 'left' | 'right';
+
+export interface Sides {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}

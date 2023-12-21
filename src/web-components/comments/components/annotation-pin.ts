@@ -6,7 +6,7 @@ import { Annotation, PinCoordinates } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationPinStyles } from '../css';
 
-import { PinMode, Side } from './types';
+import { PinMode, HorizontalSide, Sides } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationPinStyles];
@@ -18,10 +18,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare annotation: Annotation;
   declare position: Partial<PinCoordinates>;
   declare showInput: boolean;
-  declare containerSides: { left: number; right: number; top: number; bottom: number };
-  declare horizontalSide: Side | undefined;
-  private annotationSides: { left: number; right: number; top: number; bottom: number };
-  declare commentsSide: Side;
+  declare containerSides: Sides;
+  declare horizontalSide: HorizontalSide | undefined;
+  private annotationSides: Sides;
+  declare commentsSide: HorizontalSide;
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
   declare localAvatar: string;
