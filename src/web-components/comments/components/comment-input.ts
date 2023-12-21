@@ -81,13 +81,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     commentsInput.style.height = '40px';
 
-    let textareaHeight = commentsInput.scrollHeight + 15;
+    let textareaHeight = commentsInput.scrollHeight + 16;
 
     if (textareaHeight > 40) {
       commentsInput.style.paddingBottom = '8px';
     }
 
-    if (textareaHeight === 46) {
+    if (textareaHeight === 47) {
       commentsInput.style.paddingBottom = '0';
       textareaHeight = 40;
     }
@@ -198,6 +198,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       `;
     };
 
+    /* Insert inside .comment-input--options when mentions is ready
+    <div class="comment-actions">
+      <button class="icon-button mention">
+        <superviz-icon name="mention" size="sm" ?allowSetSize=${true}></superviz-icon>
+      </button>
+  </div> */
+
     return html`
       <div class="comment-input">
         <textarea
@@ -210,11 +217,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         ></textarea>
         <hr class="sv-hr" />
         <div class="comment-input--options">
-          <div class="comment-actions">
-            <button class="icon-button mention">
-              <superviz-icon name="mention" size="sm" ?allowSetSize=${true}></superviz-icon>
-            </button>
-          </div>
           <div class="comment-input-options">
             ${commentInputOptions()} ${commentInputEditableOptions()}
           </div>
