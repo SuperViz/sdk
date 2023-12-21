@@ -278,7 +278,7 @@ export class Comments extends BaseComponent {
     try {
       const { text } = detail;
       const { url } = this;
-      const position = { ...this.coordinates, type: 'canvas' };
+      const position = { ...this.coordinates };
       const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
