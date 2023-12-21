@@ -619,15 +619,6 @@ describe('Comments', () => {
     ]);
   });
 
-  /**
-   * export interface PinCoordinates {
-  x: number;
-  y: number;
-  z?: number;
-  type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
-}
-
-   */
   test('should updated annotation coordinates when new annotation is fixed', () => {
     const coordinates: PinCoordinates = {
       x: 10,
