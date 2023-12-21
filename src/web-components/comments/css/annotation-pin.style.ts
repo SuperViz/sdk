@@ -49,20 +49,12 @@ export const annotationPinStyles = css`
     height: 100%;
     border-radius: 50%;
 
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .annotation-pin__avatar--add {
     color: rgb(var(--sv-gray-700));
     background-color: rgb(var(--sv-white));
-  }
-
-  .annotation-pin__avatar img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-
-    object-fit: cover;
   }
 
   .floating-input {
