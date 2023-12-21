@@ -371,6 +371,19 @@ describe('Who Is Online', () => {
       expect(spy).toHaveBeenCalledWith(event);
       expect(element['isPrivate']).toBe(false);
     });
+
+    test('should emit event when selecting gather option in dropdown', async () => {
+      const event = new CustomEvent('selected', {
+        detail: { label: WIODropdownOptions.GATHER },
+      });
+
+      const spy = jest.fn();
+      element.addEventListener(RealtimeEvent.REALTIME_GATHER, spy);
+
+      dropdown.dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('cancelPrivate', () => {
@@ -389,6 +402,18 @@ describe('Who Is Online', () => {
 
       expect(element['isPrivate']).toBeUndefined();
       expect(spy).toHaveBeenCalledWith(event);
+    });
+  });
+
+  describe('toggleShowTooltip', () => {
+    test('should toggle showTooltip when called', () => {
+      element['showTooltip'] = true;
+
+      element['toggleShowTooltip']();
+      expect(element['showTooltip']).toBe(false);
+
+      element['toggleShowTooltip']();
+      expect(element['showTooltip']).toBe(true);
     });
   });
 });
