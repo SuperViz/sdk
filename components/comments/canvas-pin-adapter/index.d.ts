@@ -2,8 +2,8 @@ import { Observer } from '../../../common/utils';
 import { Annotation, PinAdapter } from '../types';
 export declare class CanvasPin implements PinAdapter {
     private logger;
-    private canvasId;
     private canvas;
+    private canvasSides;
     private divWrapper;
     private mouseElement;
     private isActive;
@@ -16,6 +16,9 @@ export declare class CanvasPin implements PinAdapter {
     onPinFixedObserver: Observer;
     private mouseDownCoordinates;
     private temporaryPinCoordinates;
+    private commentsSide;
+    private movedTemporaryPin;
+    private localUserAvatar;
     constructor(canvasId: string, options?: {
         onGoToPin?: (position: {
             x: number;
@@ -62,6 +65,7 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private addListeners;
+    setCommentsMetadata: (side: 'left' | 'right', avatar: string) => void;
     /**
      * @function removeListeners
      * @description removes event listeners from the canvas element.
@@ -106,9 +110,26 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private renderAnnotationsPins;
+    /**
+     * @function setMouseDownCoordinates
+     * @description stores the mouse down coordinates
+     * @param {MouseEvent} event - The mouse event object.
+     * @returns {void}
+     */
     private setMouseDownCoordinates;
+    /**
+     * @function removeAnnotationsPins
+     * @description clears all pins from the canvas.
+     * @returns {void}
+     */
     private removeAnnotationsPins;
     /** Callbacks  */
+    /**
+     * @function annotationSelected
+     * @description highlights the selected annotation and scrolls to it
+     * @param {CustomEvent} event
+     * @returns {void}
+     */
     private annotationSelected;
     /**
      * @function goToPin
@@ -147,5 +168,11 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private onMouseEnter;
+    /**
+     * @function onToggleAnnotationSidebar
+     * @description Removes temporary pin and unselects selected pin
+     * @param {CustomEvent} event
+     * @returns {void}
+     */
     private onToggleAnnotationSidebar;
 }

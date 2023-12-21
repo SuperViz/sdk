@@ -7,7 +7,6 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     editable: boolean;
     commentsInput: HTMLTextAreaElement;
     placeholder: string;
-    private pinCoordinates;
     constructor();
     static styles: CSSResultGroup[];
     static properties: {
@@ -27,10 +26,10 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
             type: StringConstructor;
         };
     };
-    private getCommentInput;
-    private getCommentInputContainer;
+    private get commentInput();
     private getSendBtn;
-    private commentInputFocus;
+    private get optionsContainer();
+    private get horizontalRule();
     connectedCallback(): void;
     disconnectedCallback(): void;
     updated(changedProperties: Map<string, any>): void;
@@ -38,6 +37,8 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     private sendEnter;
     private send;
     private closeEditMode;
+    private onTextareaFocus;
+    private onTextareaLoseFocus;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};

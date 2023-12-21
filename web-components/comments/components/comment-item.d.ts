@@ -16,6 +16,7 @@ export declare class CommentsCommentItem extends WebComponentsBaseElement {
     primaryComment: boolean;
     expandElipsis: boolean;
     annotationFilter: string;
+    avatar: string;
     static properties: {
         uuid: {
             type: StringConstructor;
@@ -61,6 +62,7 @@ export declare class CommentsCommentItem extends WebComponentsBaseElement {
     private resolveAnnotation;
     private confirmDelete;
     private closeEditMode;
+    private getAvatar;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};
