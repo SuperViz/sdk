@@ -4,7 +4,6 @@ import { Annotation, AnnotationPositionInfo, PinAdapter, PinCoordinates } from '
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
-  private canvasId: string;
   private canvas: HTMLCanvasElement;
   private canvasSides: { left: number; top: number; right: number; bottom: number };
   private divWrapper: HTMLElement;
@@ -28,7 +27,6 @@ export class CanvasPin implements PinAdapter {
     options?: { onGoToPin?: (position: { x: number; y: number }) => void },
   ) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
-    this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.isActive = false;
     this.pins = new Map();
@@ -351,10 +349,21 @@ export class CanvasPin implements PinAdapter {
     });
   }
 
+  /**
+   * @function setMouseDownCoordinates
+   * @description stores the mouse down coordinates
+   * @param {MouseEvent} event - The mouse event object.
+   * @returns {void}
+   */
   private setMouseDownCoordinates = ({ x, y }: MouseEvent) => {
     this.mouseDownCoordinates = { x, y };
   };
 
+  /**
+   * @function removeAnnotationsPins
+   * @description clears all pins from the canvas.
+   * @returns {void}
+   */
   private removeAnnotationsPins(): void {
     this.pins.forEach((pinElement) => {
       pinElement.remove();
@@ -365,6 +374,12 @@ export class CanvasPin implements PinAdapter {
 
   /** Callbacks  */
 
+  /**
+   * @function annotationSelected
+   * @description highlights the selected annotation and scrolls to it
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
   private annotationSelected = ({ detail }: CustomEvent): void => {
     const { uuid } = detail;
 
@@ -509,6 +524,12 @@ export class CanvasPin implements PinAdapter {
     this.mouseElement = this.createMouseElement();
   };
 
+  /**
+   * @function onToggleAnnotationSidebar
+   * @description Removes temporary pin and unselects selected pin
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
   private onToggleAnnotationSidebar = ({ detail }: CustomEvent): void => {
     const { open } = detail;
 

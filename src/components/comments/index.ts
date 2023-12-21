@@ -48,6 +48,11 @@ export class Comments extends BaseComponent {
     this.pinAdapter = pinAdapter;
   }
 
+  /**
+   * @function url
+   * @description Gets the URL of the client
+   * @returns {void}
+   */
   private get url(): string {
     const url = new URL(this.clientUrl);
     url.search = '';
@@ -147,7 +152,7 @@ export class Comments extends BaseComponent {
 
   /**
    * @function onPinFixed
-   * @description Creates a new annotation when a pin is fixed
+   * @description Sets the coordinates of the new annotation to be created
    * @param {AnnotationPositionInfo} coordinates
    */
   private onPinFixed = (coordinates: AnnotationPositionInfo): void => {
