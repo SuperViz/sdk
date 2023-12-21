@@ -144,13 +144,21 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const avatarDivs = [];
 
     for (let index = 1; index <= this.repliesSize; index++) {
-      avatarDivs.push(html`
-        <div class="avatar">
-          <p class="text text-bold">
-            ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
-          </p>
-        </div>
-      `);
+      if (this.annotation.comments[index]?.participant.avatar) {
+        avatarDivs.push(html`
+          <div class="avatar">
+            <img src=${this.annotation.comments[index]?.participant.avatar} />
+          </div>
+        `);
+      } else {
+        avatarDivs.push(html`
+          <div class="avatar">
+            <p class="text text-bold">
+              ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
+            </p>
+          </div>
+        `);
+      }
     }
 
     return html`
@@ -165,7 +173,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     return html`
       <superviz-comments-comment-item
         uuid=${comment.uuid}
-        avatar="https://picsum.photos/200/300"
+        avatar=${this.annotation?.comments?.at(index)?.participant.avatar}
         username=${comment.participant.name || 'Anonymous'}
         text=${comment.text}
         createdAt=${comment.createdAt}
@@ -201,6 +209,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               text=${this.annotation.comments?.[0].text}
               createdAt=${this.annotation.comments?.[0].createdAt}
               primaryComment
+              avatar=${this.annotation?.comments?.at(0)?.participant.avatar}
               resolvable
               ?resolved=${this.resolved}
               annotationFilter=${this.annotationFilter}
