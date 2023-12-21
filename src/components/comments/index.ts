@@ -38,7 +38,13 @@ export class Comments extends BaseComponent {
       buttonLocation: ButtonLocation.TOP_LEFT,
     };
 
-    pinAdapter.setCommentsSide(this.layoutOptions?.position ?? 'left');
+    setTimeout(() => {
+      pinAdapter.setCommentsMetadata(
+        this.layoutOptions?.position ?? 'left',
+        this.localParticipant?.avatar?.imageUrl,
+      );
+    });
+
     this.pinAdapter = pinAdapter;
   }
 

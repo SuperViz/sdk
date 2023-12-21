@@ -26,7 +26,7 @@ export interface PinAdapter {
   updateAnnotations(annotations: Annotation[]): void;
   removeAnnotationPin(uuid: string): void;
   onPinFixedObserver: Observer;
-  setCommentsSide(side: 'left' | 'right'): void;
+  setCommentsMetadata(side: 'left' | 'right', localUserAvatar: string): void;
 }
 
 export interface PinCoordinates {

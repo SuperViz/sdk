@@ -24,7 +24,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare commentsSide: 'left' | 'right';
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
-  declare avatar: string;
+  declare localAvatar: string;
 
   static styles = styles;
   static properties = {
@@ -38,7 +38,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     commentsSide: { type: String },
     movedPosition: { type: String },
     pinAnnotation: { type: Object },
-    avatar: { type: String },
+    localAvatar: { type: String },
   };
 
   constructor() {
@@ -63,7 +63,6 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
     this.pinAnnotation = this.shadowRoot?.querySelector('.annotation-pin');
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
-
     this.setInputSide();
   }
 
@@ -146,10 +145,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     });
   }
 
-  private counter = 0;
-
   get userAvatar() {
-    return this.annotation?.comments?.at(0)?.participant;
+    if (this.annotation?.comments) return this.annotation?.comments?.at(0)?.participant.avatar;
+
+    return this.localAvatar;
   }
 
   get userInitial(): string {
@@ -165,6 +164,24 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       }),
     );
   }
+
+  private avatar = () => {
+    if (this.type === PinMode.ADD && !this.showInput) {
+      return html`<div class="annotation-pin__avatar annotation-pin__avatar--add">
+        <superviz-icon name="add" allowSetSize="true"></superviz-icon>
+      </div>`;
+    }
+
+    if (this.userAvatar) {
+      return html`<div class="annotation-pin__avatar">
+        <img src=${this.userAvatar} />
+      </div>`;
+    }
+
+    return html`<div class="annotation-pin__avatar">
+      <p class="text text-bold text-big">${this.userInitial}</p>
+    </div>`;
+  };
 
   private input = () => {
     if (!this.showInput) return;
@@ -190,10 +207,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
           class=${classMap(classes)}
           style=${`top: ${this.position.y}px; left: ${this.position.x}px;`}
         >
-          <div class="annotation-pin__avatar annotation-pin__avatar--add">
-            <superviz-icon name="add" allowSetSize="true"></superviz-icon>
-          </div>
-          ${this.input()}
+          ${this.avatar()} ${this.input()}
         </div>
       `;
     }
@@ -204,9 +218,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
         class=${classMap(classes)}
         style=${`top: ${this.position?.y}px; left: ${this.position?.x}px; pointer-events: auto;`}
       >
-        <div class="annotation-pin__avatar">
-          <p class="text text-bold text-big">${this.userInitial}</p>
-        </div>
+        ${this.avatar()}
       </div>
     `;
   }
