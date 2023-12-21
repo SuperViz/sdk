@@ -130,15 +130,78 @@ describe('CommentsCommentInput', () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  test('should set pin coordinates when comment-input-focus event happend', async () => {
-    window.document.body.dispatchEvent(
-      new CustomEvent('comment-input-focus', {
-        detail: { x: 0, y: 0, type: 'canvas' },
-      }),
-    );
+  test('should change textarea elements classes when receiving focus', async () => {
+    const textarea = element['commentInput'] as HTMLElement;
+    const options = element['optionsContainer'] as HTMLElement;
+    const rule = element['horizontalRule'] as HTMLElement;
 
-    await sleep();
+    expect(options.classList.contains('active-textarea')).toBe(false);
+    expect(rule.classList.contains('active-hr')).toBe(false);
 
-    expect(element['pinCoordinates']).toStrictEqual({ x: 0, y: 0, type: 'canvas' });
+    textarea.dispatchEvent(new CustomEvent('focus'));
+
+    expect(options.classList.contains('active-textarea')).toBe(true);
+    expect(rule.classList.contains('active-hr')).toBe(true);
+  });
+
+  test('should change textarea elements classes when losing focus and there is no text', async () => {
+    const textarea = element['commentInput'] as HTMLElement;
+    const options = element['optionsContainer'] as HTMLElement;
+    const rule = element['horizontalRule'] as HTMLElement;
+
+    element['optionsContainer'].classList.add('active-textarea');
+    element['horizontalRule'].classList.add('active-hr');
+
+    textarea.textContent = '';
+    textarea.dispatchEvent(new CustomEvent('blur'));
+
+    expect(options.classList.contains('active-textarea')).toBe(false);
+    expect(rule.classList.contains('active-hr')).toBe(false);
+  });
+
+  test('should not change textarea elements classes when losing focus and there is no text', async () => {
+    const textarea = element['commentInput'] as HTMLElement;
+    const options = element['optionsContainer'] as HTMLElement;
+    const rule = element['horizontalRule'] as HTMLElement;
+
+    element['optionsContainer'].classList.add('active-textarea');
+    element['horizontalRule'].classList.add('active-hr');
+
+    textarea.textContent = 'text';
+    textarea.dispatchEvent(new CustomEvent('blur'));
+
+    expect(options.classList.contains('active-textarea')).toBe(true);
+    expect(rule.classList.contains('active-hr')).toBe(true);
+  });
+
+  test('should add padding to the bottom of textarea for texts with multiple lines', () => {
+    const textarea = element['commentInput'] as HTMLElement;
+
+    textarea.textContent =
+      'This is a text that has more than one line when typing it in the browser.';
+
+    element['updateHeight']();
+
+    expect(textarea.style.paddingBottom).toBe('8px');
+  });
+
+  test('should remove padding and set height to 40px if text goes back to having one line', () => {
+    const textarea = element['commentInput'] as HTMLElement;
+
+    textarea.textContent =
+      'This is a text that has more than one line when typing it in the browser.';
+
+    element['updateHeight']();
+
+    const height = Number(textarea.style.height.slice(0, 2));
+    expect(textarea.style.paddingBottom).toBe('8px');
+    expect(height).toBeGreaterThan(40);
+
+    textarea.textContent = 'This is a text that has one line.';
+
+    element['updateHeight']();
+
+    expect(textarea.style.paddingBottom).toBe('0px');
+    expect(textarea.style.height).toBe('40px');
   });
 });

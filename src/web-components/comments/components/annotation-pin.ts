@@ -98,7 +98,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
         detail: { ...detail, position: { ...this.originalPosition, type: 'canvas' } },
       }),
     );
-    console.error(this.originalPosition, 'original');
+
     this.annotation = null;
   };
 
@@ -107,8 +107,6 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   };
 
   private cancelTemporaryAnnotationEsc = (event: KeyboardEvent) => {
-    if (event?.key !== 'Escape') return;
-
     this.annotation = null;
   };
 

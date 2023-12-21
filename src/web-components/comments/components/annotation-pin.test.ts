@@ -7,13 +7,28 @@ import { PinMode } from './types';
 import '.';
 import '../../icon';
 
-function createAnnotationPin(type = PinMode.SHOW): CommentsAnnotationPin {
+interface CreateAnnotationPinOptions {
+  type?: PinMode;
+  showInput?: boolean;
+}
+
+function createAnnotationPin({
+  type = PinMode.SHOW,
+  showInput = undefined,
+}: CreateAnnotationPinOptions): CommentsAnnotationPin {
   const annotationPin = document.createElement(
     'superviz-comments-annotation-pin',
   ) as CommentsAnnotationPin;
 
   annotationPin.setAttribute('type', type);
   annotationPin.setAttribute('annotation', JSON.stringify(MOCK_ANNOTATION));
+  annotationPin.setAttribute(
+    'canvasSides',
+    JSON.stringify({ left: 0, top: 0, right: 1000, bottom: 1000 }),
+  );
+
+  if (showInput) annotationPin.setAttribute('showInput', '');
+  if (!showInput) annotationPin.removeAttribute('showInput');
 
   return annotationPin;
 }
@@ -32,7 +47,7 @@ describe('annotation-pin', () => {
   });
 
   test('renders the component with type SHOW', async () => {
-    const element = createAnnotationPin();
+    const element = createAnnotationPin({});
     document.body.appendChild(element);
 
     await sleep();
@@ -47,7 +62,7 @@ describe('annotation-pin', () => {
   });
 
   test('renders the component with type ADD', async () => {
-    const element = createAnnotationPin(PinMode.ADD);
+    const element = createAnnotationPin({ type: PinMode.ADD });
     document.body.appendChild(element);
 
     await sleep();
@@ -61,7 +76,7 @@ describe('annotation-pin', () => {
   });
 
   test('renders the component with type SHOW and active', async () => {
-    const element = createAnnotationPin();
+    const element = createAnnotationPin({});
     element.setAttribute('active', 'true');
     document.body.appendChild(element);
 
@@ -77,7 +92,7 @@ describe('annotation-pin', () => {
   });
 
   test('renders the component with type ADD and active', async () => {
-    const element = createAnnotationPin(PinMode.ADD);
+    const element = createAnnotationPin({ type: PinMode.ADD });
     element.setAttribute('active', 'true');
     document.body.appendChild(element);
 
@@ -94,7 +109,7 @@ describe('annotation-pin', () => {
 
   test('should emit an event when the pin is clicked', async () => {
     const spy = jest.fn();
-    const element = createAnnotationPin();
+    const element = createAnnotationPin({});
     document.body.appendChild(element);
 
     await sleep();
@@ -110,5 +125,80 @@ describe('annotation-pin', () => {
         detail: { uuid: MOCK_ANNOTATION.uuid },
       }),
     );
+  });
+
+  describe('showInput is true', () => {
+    test('renders the user avatar with an image', async () => {
+      const element = createAnnotationPin({ showInput: true });
+      document.body.appendChild(element);
+
+      await sleep();
+
+      const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
+
+      expect(renderedElement).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeFalsy();
+      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
+    });
+
+    test('renders the user avatar without an image', async () => {
+      MOCK_ANNOTATION.comments.at(0)!.participant.avatar = '';
+      const element = createAnnotationPin({ showInput: true });
+      MOCK_ANNOTATION.comments.at(0)!.participant.avatar = 'mock_avatar';
+      document.body.appendChild(element);
+
+      await sleep();
+
+      const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
+
+      expect(renderedElement).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeFalsy();
+      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
+    });
+
+    test('should cancel temporary annotation when Esc is pressed', async () => {
+      const element = createAnnotationPin({ showInput: true, type: PinMode.ADD });
+      document.body.appendChild(element);
+
+      await sleep();
+
+      element['cancelTemporaryAnnotationEsc'] = jest.fn(element['cancelTemporaryAnnotation']);
+
+      const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
+      renderedElement.shadowRoot!.querySelector('div')!.click();
+
+      expect(element['cancelTemporaryAnnotationEsc']).toHaveBeenCalledTimes(0);
+      expect(element['annotation']).toBeTruthy();
+
+      const event = new KeyboardEvent('keyup', { key: 'Escape' });
+      window.document.body.dispatchEvent(event);
+
+      expect(element['cancelTemporaryAnnotationEsc']).toHaveBeenCalledTimes(1);
+      expect(element['annotation']).toBeNull();
+    });
+
+    test('should create annotation when input signals to create', async () => {
+      const element = createAnnotationPin({ showInput: true, type: PinMode.ADD });
+      document.body.appendChild(element);
+      element['createComment'] = jest.fn(element['createComment']);
+      const spy = jest.fn();
+
+      document.body.addEventListener('create-annotation', spy);
+      await sleep();
+
+      const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
+      renderedElement.shadowRoot!.querySelector('div')!.click();
+
+      expect(element['annotation']).toBeTruthy();
+
+      const input = renderedElement.shadowRoot!.querySelector('superviz-comments-comment-input')!;
+      input.dispatchEvent(new CustomEvent('create-annotation'));
+
+      expect(element['annotation']).toBeNull();
+      expect(element['createComment']).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -32,6 +32,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare primaryComment: boolean;
   declare expandElipsis: boolean;
   declare annotationFilter: string;
+  declare avatar: string;
 
   static properties = {
     uuid: { type: String },
@@ -91,6 +92,18 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   private closeEditMode = () => {
     this.mode = CommentMode.READONLY;
   };
+
+  private getAvatar() {
+    if (this.avatar) {
+      return html` <div class="comment-item__avatar">
+        <img src=${this.avatar} />
+      </div>`;
+    }
+
+    return html`<div class="comment-item__avatar">
+      <p class="text text-bold">${this.username[0]?.toUpperCase() || 'A'}</p>
+    </div>`;
+  }
 
   protected render() {
     const resolveIcon = this.annotationFilter === AnnotationFilter.ALL ? 'resolve' : 'undo';
@@ -170,9 +183,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       <div class=${classMap(commentItemClass)}>
         <div class="comment-item__user">
           <div class="comment-item__user-details">
-            <div class="comment-item__avatar">
-              <p class="text text-bold">${this.username[0]?.toUpperCase() || 'A'}</p>
-            </div>
+            ${this.getAvatar()}
             <span class="text text-bold sv-gray-600">${this.username}</span>
             <span class="text text-small sv-gray-500">${humanizeDate(this.createdAt)}</span>
           </div>

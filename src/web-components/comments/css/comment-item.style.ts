@@ -57,6 +57,13 @@ export const commentItemStyle = css`
     justify-content: center;
   }
 
+  .comment-item__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
   .comment-item__content {
     width: 100%;
   }

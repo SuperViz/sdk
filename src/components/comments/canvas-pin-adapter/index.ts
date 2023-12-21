@@ -30,7 +30,6 @@ export class CanvasPin implements PinAdapter {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
     this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    this.canvasSides = this.canvas.getBoundingClientRect();
     this.isActive = false;
     this.pins = new Map();
     this.goToPinCallback = options?.onGoToPin;
@@ -41,6 +40,7 @@ export class CanvasPin implements PinAdapter {
       throw new Error(message);
     }
 
+    this.canvasSides = this.canvas.getBoundingClientRect();
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrapper = this.renderDivWrapper();

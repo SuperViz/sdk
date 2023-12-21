@@ -37,10 +37,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
   }
 
-  private get commentInputContainer() {
-    return this.shadowRoot!.getElementById('comment-input--container') as HTMLDivElement;
-  }
-
   private getSendBtn = () => {
     return this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
   };

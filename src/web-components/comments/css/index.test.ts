@@ -1,7 +1,6 @@
 import { annotationItemStyle } from './annotation-item.style';
 import { annotationPinStyles } from './annotation-pin.style';
 import { annotationResolvedStyle } from './annotation-resolved.style';
-import { annotationsStyle } from './annotations.style';
 import { commentInputStyle } from './comment-input.style';
 import { commentItemStyle } from './comment-item.style';
 import { contentStyle } from './content.style';
@@ -11,11 +10,6 @@ import { topbarStyle } from './topbar.style';
 import * as cssStyles from '.';
 
 describe('css', () => {
-  test('should be export CommentsAnnotations', () => {
-    expect(cssStyles.annotationsStyle).toBeDefined();
-    expect(cssStyles.annotationsStyle).toBe(annotationsStyle);
-  });
-
   test('should be export CommentsContent', () => {
     expect(cssStyles.contentStyle).toBeDefined();
     expect(cssStyles.contentStyle).toBe(contentStyle);

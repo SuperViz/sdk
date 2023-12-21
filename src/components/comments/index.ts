@@ -466,7 +466,6 @@ export class Comments extends BaseComponent {
         },
       );
 
-      console.error('annotations', annotations);
       this.annotations = annotations;
       this.element.updateAnnotations(this.annotations);
       this.pinAdapter.updateAnnotations(this.annotations);
