@@ -78,7 +78,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     ApiService.createOrUpdateParticipant({
       name: this.participant?.name,
       participantId: this.participant?.id,
-      avatar: this.participant?.avatar.imageUrl,
+      avatar: this.participant?.avatar?.imageUrl,
     });
   };
 
