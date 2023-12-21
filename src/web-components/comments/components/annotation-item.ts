@@ -144,13 +144,21 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const avatarDivs = [];
 
     for (let index = 1; index <= this.repliesSize; index++) {
-      avatarDivs.push(html`
-        <div class="avatar">
-          <p class="text text-bold">
-            ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
-          </p>
-        </div>
-      `);
+      if (this.annotation.comments[index]?.participant.avatar) {
+        avatarDivs.push(html`
+          <div class="avatar">
+            <img src=${this.annotation.comments[index]?.participant.avatar} />
+          </div>
+        `);
+      } else {
+        avatarDivs.push(html`
+          <div class="avatar">
+            <p class="text text-bold">
+              ${this.annotation.comments[index]?.participant.name[0]?.toUpperCase() || 'A'}
+            </p>
+          </div>
+        `);
+      }
     }
 
     return html`
