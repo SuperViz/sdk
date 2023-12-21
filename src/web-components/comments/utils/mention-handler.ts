@@ -11,12 +11,10 @@ const DEFAULT_HIDE_MENTION_LIST = {
 const matchParticipant = (name: string, position, participantList): any => {
   let mentionList = []
 
-  if (name.length === 0) {
-    mentionList = participantList
-  }
-  
+  mentionList = participantList.filter((participant: any) => participant.email)
+
   if (name.length > 0) {
-    mentionList = participantList
+    mentionList = mentionList
       .filter((participant: any) => participant.name
         .toLowerCase()
         .search(name.toLowerCase()) !== -1

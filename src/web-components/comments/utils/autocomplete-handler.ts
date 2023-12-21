@@ -135,4 +135,12 @@ export class AutoCompleteHandler {
       }
     })
   }
+
+  addAtSymbolInCaretPosition () {
+    const caretIndex = this.getSelectionStart()
+
+    this.setValue(`${this.getValue().slice(0, caretIndex)  }@${  this.getValue().slice(caretIndex, this.getValue().length)}`)
+    this.updateMentionPositions()
+    this.input.focus()
+  }
 }

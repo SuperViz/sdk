@@ -35,12 +35,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
 
     this.users = [
-      { name: 'Vinicius Afonso', userId: 'participantIdVinicius', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
-      { name: 'Vitor Vargas', userId: 'participantIdVitor', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
-      { name: 'Vitor Norton', userId: 'participantIdNorton', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
-      { name: 'Carlos Peixoto', userId: 'participantIdCarlos', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
-      { name: 'Gabi Alcoar', userId: 'participantIdGabi', avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
-      { name: 'Ian Silva', userId: 'participantIdIanSilva', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
+      { name: 'Vinicius Afonso', userId: 'participantIdVinicius', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
+      { name: 'Vitor Vargas', userId: 'participantIdVitor', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
+      { name: 'Vitor Norton', userId: 'participantIdNorton', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
+      { name: 'Carlos Peixoto', userId: 'participantIdCarlos', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
+      { name: 'Gabi Alcoar', userId: 'participantIdGabi', email: null, avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
+      { name: 'Ian Silva', userId: 'participantIdIanSilva', email: '', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
     ];
   }
 
