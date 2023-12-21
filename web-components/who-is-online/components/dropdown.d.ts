@@ -15,6 +15,8 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     private dropdownContent;
     private host;
     disableDropdown: boolean;
+    showSeeMoreTooltip: boolean;
+    showParticipantTooltip: boolean;
     following: Following;
     static properties: {
         open: {
@@ -38,6 +40,12 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         following: {
             type: ObjectConstructor;
         };
+        showSeeMoreTooltip: {
+            type: BooleanConstructor;
+        };
+        showParticipantTooltip: {
+            type: BooleanConstructor;
+        };
     };
     constructor();
     protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
@@ -45,6 +53,7 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     private close;
     private selectParticipant;
     private getAvatar;
+    private toggleShowTooltip;
     private renderParticipants;
     private setMenu;
     private get scrollableParent();
@@ -55,7 +64,7 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     private adjustPosition;
     private toggle;
     private get menuClasses();
-    private onHover;
+    private tooltip;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};
