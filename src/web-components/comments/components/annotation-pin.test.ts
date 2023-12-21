@@ -23,7 +23,7 @@ function createAnnotationPin({
   annotationPin.setAttribute('type', type);
   annotationPin.setAttribute('annotation', JSON.stringify(MOCK_ANNOTATION));
   annotationPin.setAttribute(
-    'canvasSides',
+    'containerSides',
     JSON.stringify({ left: 0, top: 0, right: 1000, bottom: 1000 }),
   );
 
