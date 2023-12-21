@@ -128,8 +128,6 @@ export const commentInputStyle = css`
   }
 
   .align-send-btn > superviz-icon {
-    margin-right: 2px;
-    margin-top: 4px;
     cursor: pointer;
   }
 

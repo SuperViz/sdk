@@ -193,7 +193,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
       return html`
         <button class="comment-input--send-btn align-send-btn" disabled @click=${this.send}>
-          <superviz-icon name="send" size="sm"></superviz-icon>
+          <superviz-icon name="line-arrow-right" size="sm" allowSetSize=${true}></superviz-icon>
         </button>
       `;
     };
