@@ -1464,6 +1464,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {
+    if (!data || !data.id) return;
+
     const participant = Object.assign({}, this.participantsOn3d[data.id]?.data ?? {}, data);
 
     this.participantsOn3d[data.id] = {
