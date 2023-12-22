@@ -185,9 +185,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       </div>`;
     }
 
-    if (this.userAvatar) {
+    const avatar = this.userAvatar;
+    if (avatar) {
       return html`<div class="annotation-pin__avatar">
-        <img src=${this.userAvatar} />
+        <img src=${avatar} />
       </div>`;
     }
 
