@@ -47,4 +47,4 @@ export const mentionListStyle = css`
     line-height: 20px;
     color: rgb(var(--sv-gray-600));
   }
-  `;
+`;

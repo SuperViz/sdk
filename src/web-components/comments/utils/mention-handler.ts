@@ -1,5 +1,3 @@
-import { Comment } from "../../../components/comments/types";
-
 const MENTION_ACTION = {
   SHOW: 'show',
   HIDE: 'hide'
@@ -10,66 +8,24 @@ const DEFAULT_HIDE_MENTION_LIST = {
   mentions: []
 }
 
-export const addMention = (comment: Comment): string => {
-  const regex = /{{(.*?)}}/g;
-  const matches = comment.text.match(regex);
+const matchParticipant = (name: string, position, participantList): any => {
+  let mentionList = []
 
-  return matches.reduce((newComment, match) => {
-    const userId = match.replace(/{{|}}/g, '');
-    const mention = comment.mentions.find(mention => mention.userId === userId);
-    return newComment.replace(match, mention.name);;
-  }, comment.text);
-}
+  mentionList = participantList.filter((participant: any) => participant.email)
 
-export const removeMention = (comment: Comment): any => {
-  // find 
-}
-
-const removeMentionOnBackspace = (event: any): any => {
-  if (!(event.inputType === "deleteContentBackward" || event.inputType === 'deleteContentForward' || event.inputType === "deleteByCut")) {
-    return;
+  if (name.length > 0) {
+    mentionList = mentionList
+      .filter((participant: any) => participant.name
+        .toLowerCase()
+        .search(name.toLowerCase()) !== -1
+      );
   }
-
-  const range = window.getSelection().getRangeAt(0);
-  const { parentElement } = range.commonAncestorContainer;
-  if (parentElement?.parentElement?.className === 'mentioned') {
-    parentElement.remove();
-  }
-}
-
-const removeEmptyMentions = (input: HTMLTextAreaElement): any => {
-  const divs = input.querySelectorAll('.mentioned')
-  divs.forEach(div => {
-    if (div.innerHTML.trim() === '') {
-      div.parentNode.removeChild(div);
-    }
-  });
-}
-
-const matchParticipant = (input: HTMLTextAreaElement, event: any, participantList: any): any => {
-  const inputValue = input.innerHTML;
-  const mentionIndex = inputValue.lastIndexOf('@');
-
-  const selection = window.getSelection();
-  const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-
-  if (!(mentionIndex !== -1)) {
-    return DEFAULT_HIDE_MENTION_LIST
-  }
-
-  const mentionName = extractMentionName(inputValue, mentionIndex, event);
-
-  const mentionList = participantList
-    .filter((participant: any) => participant.name
-      .toLowerCase()
-      .startsWith(mentionName.toLowerCase())
-    );
 
   if (!(mentionList.length > 0)) {
     return DEFAULT_HIDE_MENTION_LIST
   }
 
-  const mentions = prepareMentionList(mentionList, mentionIndex, range);
+  const mentions = prepareMentionList(mentionList, position);
 
   return {
     action: MENTION_ACTION.SHOW,
@@ -77,34 +33,15 @@ const matchParticipant = (input: HTMLTextAreaElement, event: any, participantLis
   }
 }
 
-const extractMentionName = (input: string, mentionIndex: number, event: any): string => {
-  const text = event.target.innerText.trim();
-  const lastCaracter = text.slice(-1);
-  const lastItemFind = lastCaracter === '@' || event.data === "@";
-
-  return lastItemFind ? '' : input.slice(mentionIndex + 1);
-}
-
-const prepareMentionList = (users: any, mentionIndex: number, range: any): any => {
+const prepareMentionList = (users: any, position): any => {
   return users.map((user: any) => ({
     name: user.name,
-    id: user.userId,
+    userId: user.userId,
     avatar: user.avatar,
-    index: mentionIndex,
-    range
+    position
   }))
 }
 
 export default {
-  input: {
-    addMention: () => undefined,
-    matchParticipant: (input: HTMLTextAreaElement, event: any, participantList: any) => matchParticipant(input, event, participantList),
-    addMentionList: () => undefined,
-    removeMentionList: () => undefined,
-    removeMentionOnBackspace: (event: any, selection: Selection) => removeMentionOnBackspace(event),
-    removeEmptyMentions: (input: HTMLTextAreaElement) => removeEmptyMentions(input),
-  },
-  mentions: {
-    // ! WIP !
-  }
+  matchParticipant: (name, position, participantList: any) => matchParticipant(name, position, participantList),
 }

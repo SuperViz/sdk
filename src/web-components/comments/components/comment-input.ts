@@ -1,13 +1,16 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { AnnotationPositionInfo, Participant } from '../../../components/comments/types';
+import { AnnotationPositionInfo } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
+import { AutoCompleteHandler } from '../utils/autocomplete-handler';
 import mentionHandler from '../utils/mention-handler';
+
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
+
 @customElement('superviz-comments-comment-input')
 export class CommentsCommentInput extends WebComponentsBaseElement {
   declare eventType: string;
@@ -16,21 +19,32 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
-  declare participantsList: Participant[];
-
+  declare mentionList: []
+  declare users: any[];
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
+
+  private autoCompleteHandler: AutoCompleteHandler = new AutoCompleteHandler();
 
   constructor() {
     super();
     this.btnActive = false;
     this.text = '';
+
     this.mentionList = []
+
+
+    this.users = [
+      { name: 'Vinicius Afonso', userId: 'participantIdVinicius', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
+      { name: 'Vitor Vargas', userId: 'participantIdVitor', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
+      { name: 'Vitor Norton', userId: 'participantIdNorton', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
+      { name: 'Carlos Peixoto', userId: 'participantIdCarlos', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
+      { name: 'Gabi Alcoar', userId: 'participantIdGabi', email: null, avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
+      { name: 'Ian Silva', userId: 'participantIdIanSilva', email: '', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
+    ];
   }
 
   static styles = styles;
-
-  declare mentionList: []
 
   static properties = {
     eventType: { type: String },
@@ -39,16 +53,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     editable: { type: Boolean },
     placeholder: { type: String },
     mentionList: { type: Object },
-    participantsList: { type: Object },
-
-  };
-
-  private getAddMentionButton = () => {
-    return this.shadowRoot!.getElementById('add-mention-button') as HTMLDivElement;
-  };
-
-  private getMentionList = () => {
-    return this.shadowRoot!.getElementById('mention-list') as HTMLDivElement;
   };
 
   private getCommentInput = () => {
@@ -68,70 +72,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.getCommentInput().focus();
   };
 
-  firstUpdated() {
-    const commentTextarea = this.getCommentInput();
-
-    if (commentTextarea) {
-      commentTextarea.addEventListener('input', this.handleInput);
-      commentTextarea.addEventListener('click', this.clickInput);
-    }
-  }
-
-  /// NEW MENTION V1
-  private buttonAddMention = () => {
-    // const newElement = document.createElement('div');
-    // newElement.className = 'mentioned';
-    // newElement.innerHTML = `@`;
-    // const selection = this.shadowRoot.getSelection();
-
-    // const range = selection.getRangeAt(0);
-    // range.deleteContents();
-
-    // range.insertNode(newElement);
-    // this.handleInput(e, true)
-  }
-
-  private handleInput = (e) => {
-    const commentTextarea = this.getCommentInput();
-
-    const placeholder = commentTextarea.querySelector('.placeholder');
-    if (placeholder) {
-      commentTextarea.removeChild(placeholder);
-      commentTextarea.innerText = `${e?.data || ''}`;
-      window.getSelection().setPosition(commentTextarea, e?.data?.length)
-    }
-    commentTextarea.style.height = '45px';
-
-    this.updateHeight();
-
-    mentionHandler.input.removeMentionOnBackspace(e, window.getSelection())
-    mentionHandler.input.removeEmptyMentions(this.getCommentInput())
-
-    const { action, mentions } = mentionHandler.input.matchParticipant(this.getCommentInput(), e, this.participantsList)
-
-    if (action === 'show') {
-      this.mentionList = mentions
-
-    }
-
-    if (action === 'hide') {
-      this.mentionList = []
-    }
-  };
-
-  private clickInput = (e) => {
-    const commentTextarea = this.getCommentInput();
-
-    const placeholder = commentTextarea.querySelector('.placeholder');
-    if (placeholder) {
-      commentTextarea.removeChild(placeholder);
-      commentTextarea.innerText = '';
-    }
-  };
-
-
-  /// NEW MENTION V1
-
   connectedCallback(): void {
     super.connectedCallback();
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
@@ -147,6 +87,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     window.document.body.removeEventListener('comment-input-focus', this.commentInputFocus);
   }
 
+  firstUpdated() {
+    const commentTextarea = this.getCommentInput();
+
+    if (commentTextarea) {
+      commentTextarea.addEventListener('input', this.handleInput);
+    }
+  }
+
   updated(changedProperties: Map<string, any>) {
     if (changedProperties.has('text') && this.text.length > 0) {
       const commentsInput = this.getCommentInput();
@@ -158,6 +106,56 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       const btnSend = this.getSendBtn();
       btnSend.disabled = !this.btnActive;
     }
+  }
+
+  private handleInput = (e: InputEvent) => {
+    this.autoCompleteHandler.setInput(e);
+    const caretIndex = this.autoCompleteHandler.getSelectionStart();
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
+    this.autoCompleteHandler.updateMentionPositions()
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+
+    const position = this.autoCompleteHandler.getSelectionPosition()
+
+    if (searchText === null) {
+      this.mentionList = []
+      return;
+    }
+
+    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.users)
+
+    if (action === 'show') {
+      this.mentionList = mentions
+    }
+
+    if (action === 'hide') {
+      this.mentionList = []
+    }
+
+    if (e.inputType === ' ' && this.mentionList.length && this.mentionList.length === 1) {
+      const [{ userId = '', name = '' } = {}] = this.mentionList;
+
+      this.autoCompleteHandler.insertMention(position.start, position.end, {
+        userId,
+        name,
+        avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png'
+      });
+
+      this.updateHeight();
+    }
+  }
+
+  private insertMention = (event) => {
+    const { userId, name, avatar, position } = event.detail;
+
+    this.autoCompleteHandler.insertMention(position.start, position.end, {
+      userId,
+      name,
+      avatar
+    });
+
+    this.updateHeight();
   }
 
   private updateHeight() {
@@ -179,6 +177,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private sendEnter = (e: KeyboardEvent) => {
     if (e.key !== 'Enter' || e.shiftKey) return;
+
     const input = this.getCommentInput();
     const text = input.value.trim();
 
@@ -200,9 +199,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.pinCoordinates = null;
     input.value = '';
     sendBtn.disabled = true;
-
-    this.updateHeight()
-
+    this.updateHeight();
   };
 
   private send(e: Event) {
@@ -210,7 +207,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     const input = this.getCommentInput();
     const sendBtn = this.getSendBtn();
-
     const text = input.value;
 
     this.emitEvent(
@@ -272,12 +268,15 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             placeholder=${this.placeholder ?? 'Add comment...'}
             @input=${this.updateHeight}
           ></textarea>
-          <superviz-comments-mention-list .participants=${this.mentionList}></superviz-comments-mention-list>
+          <superviz-comments-mention-list
+            .participants=${this.mentionList}
+            @participant-selected=${this.insertMention}
+          ></superviz-comments-mention-list>
         </div>
         <div class="sv-hr"></div>
         <div class="comment-input--options">
-          <div class="comment-actions">
-            <button id="add-mention-button" @click=${this.buttonAddMention} class="icon-button mention">
+          <div>
+            <button class="icon-button mention">
               <superviz-icon name="mention" size="sm"></superviz-icon>
             </button>
           </div>

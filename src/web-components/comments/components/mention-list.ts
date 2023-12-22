@@ -42,10 +42,19 @@ export class CommentsMentionList extends WebComponentsBaseElement {
     const mentionList = this.shadowRoot?.getElementById('mention-list');
     mentionList?.style.setProperty('display', 'none'); 
   }
-  
+
+  private selectParticipant = (participant) => {
+    this.emitEvent('participant-selected', participant, {
+      bubbles: false,
+      composed: false,
+    })
+
+    this.hideMentionList()
+  }
+
   protected render() {
     const mentionItem = (participant) => html`
-      <div class="mention-item">
+      <div class="mention-item" @click=${() => this.selectParticipant(participant)}>
           <img class="avatar" src="${participant.avatar}" alt="${participant.name}" />
         <div class="avatar-type">${participant.name}</div>
       </div>

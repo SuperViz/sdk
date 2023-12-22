@@ -3,7 +3,6 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { DateTime } from 'luxon';
 
-import { Participant } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
@@ -13,14 +12,24 @@ const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
 type User = {
   name: string;
-  participantId: string;
+  userId: string;
   avatar: string;
+  email: string;
 };
 @customElement('superviz-comments-comment-item')
 export class CommentsCommentItem extends WebComponentsBaseElement {
   constructor() {
     super();
     this.resolved = false;
+    // mocked participants uers
+    this.users = [
+      { name: 'Vinicius Afonso', userId: 'participantIdVinicius', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
+      { name: 'Vitor Vargas', userId: 'participantIdVitor', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
+      { name: 'Vitor Norton', userId: 'participantIdNorton', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
+      { name: 'Carlos Peixoto', userId: 'participantIdCarlos', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
+      { name: 'Gabi Alcoar', userId: 'participantIdGabi', email: null, avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
+      { name: 'Ian Silva', userId: 'participantIdIanSilva', email: '', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
+    ];
   }
 
   static styles = styles;
@@ -37,11 +46,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare primaryComment: boolean;
   declare expandElipsis: boolean;
   declare annotationFilter: string;
-  declare participantsList: Participant[];
+  declare users: User[];
 
 
   static properties = {
-    participantsList: { type: Object },
     uuid: { type: String },
     annotationId: { type: String },
     avatar: { type: String },
@@ -101,9 +109,9 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   };
 
   private convertToDiv() {
-    this.participantsList?.forEach(participant => {
-      const regex = new RegExp(`{{${participant.id}}}(&nbsp;|\\s)`, 'g');
-      this.text = this.text.replace(regex, `<div class="mentioned"><strong>@${participant.name}</strong></div>$1`);
+    this.users.forEach(user => {
+      const regex = new RegExp(`{{${user.userId}}}(&nbsp;|\\s)`, 'g');
+      this.text = this.text.replace(regex, `<div class="mentioned"><strong>@${user.name}</strong></div>$1`);
     });
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = this.text;
@@ -155,7 +163,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           @click=${(event: Event) => event.stopPropagation()}
           text=${this.text}
           eventType="update-comment"
-          participantsList=${JSON.stringify(this.participantsList)}
           @update-comment=${this.updateComment}
           @close-edit-mode=${this.closeEditMode}
         ></superviz-comments-comment-input>
