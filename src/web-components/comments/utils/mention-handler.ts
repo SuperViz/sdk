@@ -36,7 +36,7 @@ const matchParticipant = (name: string, position, participantList): any => {
 const prepareMentionList = (users: any, position): any => {
   return users.map((user: any) => ({
     name: user.name,
-    userId: user.userId,
+    id: user.userId,
     avatar: user.avatar,
     position
   }))
