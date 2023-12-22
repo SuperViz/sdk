@@ -14,7 +14,8 @@ const FETCH_PARTICIPANTS_BY_GROUP_MOCK = [
   {
     id: "any_user_id",
     name: "any_name",
-    avatar: null
+    avatar: null,
+    email: 'any_email',
   }
 ]
 
@@ -215,7 +216,7 @@ describe('ApiService', () => {
     test('should return the participants', async () => {
       const response = await ApiService.fetchParticipantsByGroup('any_group_id');
 
-      expect(response).toEqual([{"avatar": null, "id": "any_user_id", "name": "any_name"}]);
+      expect(response).toEqual([{"avatar": null, "id": "any_user_id", "name": "any_name",  "email": "any_email"}]);
     });
   });
 

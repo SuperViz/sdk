@@ -95,7 +95,6 @@ export class CommentsAnnotations extends WebComponentsBaseElement {
             @create-annotation=${this.createComment}
             eventType="create-annotation"
             participantsList=${JSON.stringify(this.participantsList)}
-
           >
           </superviz-comments-comment-input>
         </div>

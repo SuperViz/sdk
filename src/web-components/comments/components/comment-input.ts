@@ -1,7 +1,7 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { AnnotationPositionInfo } from '../../../components/comments/types';
+import { AnnotationPositionInfo, Participant } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 import { AutoCompleteHandler } from '../utils/autocomplete-handler';
@@ -20,7 +20,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
   declare mentionList: []
-  declare users: any[];
+  declare participantsList: Participant[];
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
 
@@ -30,18 +30,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     super();
     this.btnActive = false;
     this.text = '';
-
     this.mentionList = []
-
-
-    this.users = [
-      { name: 'Vinicius Afonso', userId: 'participantIdVinicius', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png' },
-      { name: 'Vitor Vargas', userId: 'participantIdVitor', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/2.png' },
-      { name: 'Vitor Norton', userId: 'participantIdNorton', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/3.png' },
-      { name: 'Carlos Peixoto', userId: 'participantIdCarlos', email: 'vinicius@superviz.com', avatar: 'https://production.cdn.superviz.com/static/default-avatars/4.png' },
-      { name: 'Gabi Alcoar', userId: 'participantIdGabi', email: null, avatar: 'https://production.cdn.superviz.com/static/default-avatars/5.png' },
-      { name: 'Ian Silva', userId: 'participantIdIanSilva', email: '', avatar: 'https://production.cdn.superviz.com/static/default-avatars/6.png' },
-    ];
   }
 
   static styles = styles;
@@ -53,6 +42,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     editable: { type: Boolean },
     placeholder: { type: String },
     mentionList: { type: Object },
+    participantsList: { type: Object },
   };
 
   private getCommentInput = () => {
@@ -123,7 +113,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       return;
     }
 
-    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.users)
+    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
 
     if (action === 'show') {
       this.mentionList = mentions
