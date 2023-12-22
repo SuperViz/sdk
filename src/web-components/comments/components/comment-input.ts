@@ -33,6 +33,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     placeholder: { type: String },
   };
 
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    this.emitEvent('comment-input-ready', {}, { composed: false, bubbles: false });
+  }
+
   private get commentInput() {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
   }

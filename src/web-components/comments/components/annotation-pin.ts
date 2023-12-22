@@ -24,8 +24,9 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare commentsSide: HorizontalSide;
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
-  declare localAvatar: string;
+  declare localAvatar: string | undefined;
   private originalPosition: Partial<PinCoordinates>;
+  private inputElement: HTMLTextAreaElement;
 
   static styles = styles;
   static properties = {
@@ -53,6 +54,9 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     if (!_changedProperties.has('movedPosition') || !this.annotationSides) return;
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
     this.setInputSide();
+
+    if (!this.inputElement) return;
+    this.focusInput();
   }
 
   protected firstUpdated(
@@ -66,6 +70,16 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
     this.setInputSide();
   }
+
+  private focusInput = () => {
+    if (!this.inputElement) {
+      this.inputElement = this.shadowRoot
+        ?.querySelector('superviz-comments-comment-input')
+        ?.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
+    }
+
+    this.inputElement.focus();
+  };
 
   private setInputSide = () => {
     const inputWidth = 286;
@@ -188,6 +202,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       <superviz-comments-comment-input
         @create-annotation=${this.createComment}
         eventType="create-annotation"
+        @comment-input-ready=${this.focusInput}
       >
       </superviz-comments-comment-input>
     </div>`;
