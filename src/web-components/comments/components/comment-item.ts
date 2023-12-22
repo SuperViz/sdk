@@ -35,7 +35,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare annotationFilter: string;
   declare participantsList: Participant[];
 
-
   static properties = {
     uuid: { type: String },
     annotationId: { type: String },
@@ -96,16 +95,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     this.mode = CommentMode.READONLY;
   };
 
-  private convertToDiv() {
-    this.participantsList?.forEach(participant => {
-      const regex = new RegExp(`{{${participant.id}}}(&nbsp;|\\s)`, 'g');
-      this.text = this.text.replace(regex, `<div class="mentioned"><strong>@${participant.name}</strong></div>$1`);
-    });
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = this.text;
-    return tempDiv;
-  }
-
   protected render() {
     const resolveIcon = this.annotationFilter === AnnotationFilter.ALL ? 'resolve' : 'undo';
 
@@ -165,7 +154,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           id="comment-text"
           @click=${expandElipsis}
           class="text text-big sv-gray-700 ${shouldUseElipsis}"
-          >${this.convertToDiv()}</span
+          >${this.text}</span
         >
       `;
     };
