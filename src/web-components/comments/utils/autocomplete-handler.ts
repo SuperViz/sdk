@@ -78,7 +78,7 @@ export class AutoCompleteHandler {
   }
 
   searchMention (caretIndex, keyIndex) {
-    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex < mention.position.end)
+    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex <= mention.position.end)
     if (existingMention) {
       this.removeMention(existingMention)
       return null
@@ -121,19 +121,31 @@ export class AutoCompleteHandler {
 
   insertMention (start: number, end: number, participant: any) {
     const { name } = participant
+    const position = {
+      start: start - 1,
+      end: start + name.length,
+    }
     const text = this.getValue().slice(0, start) + name + this.getValue().slice(end, this.getValue().length)
-    this.setValue(`${text  } `)
+
+    this.setValue(text)
     this.input.focus()
-    this.setCaretPosition(start + name.length + 1)
 
     this.addMention({
       userId: participant.userId,
       name,
-      position: {
-        start: start - 1,
-        end: start + name.length,
-      }
+      position
     })
+
+    this.addBlankSpace()
+    this.setCaretPosition(start + name.length + 1)
+  }
+
+  addBlankSpace () {
+    const caretIndex = this.getSelectionStart()
+
+    this.setValue(`${this.getValue().slice(0, caretIndex)} ${this.getValue().slice(caretIndex, this.getValue().length)}`)
+    this.updateMentionPositions()
+    this.input.focus()
   }
 
   addAtSymbolInCaretPosition () {
