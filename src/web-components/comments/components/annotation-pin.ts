@@ -25,6 +25,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
   declare localAvatar: string | undefined;
+  declare annotationSent: boolean;
   private originalPosition: Partial<PinCoordinates>;
   private inputElement: HTMLTextAreaElement;
 
@@ -41,6 +42,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     movedPosition: { type: String },
     pinAnnotation: { type: Object },
     localAvatar: { type: String },
+    annotationSent: { type: Boolean },
   };
 
   constructor() {
@@ -107,6 +109,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   };
 
   private createComment = ({ detail }: CustomEvent) => {
+    this.annotationSent = true;
     document.body.dispatchEvent(
       new CustomEvent('create-annotation', {
         detail: { ...detail, position: { ...this.originalPosition, type: 'canvas' } },
@@ -198,7 +201,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   };
 
   private input = () => {
-    if (!this.showInput) return;
+    if (!this.showInput || this.annotationSent) return;
     return html`<div class="floating-input">
       <superviz-comments-comment-input
         @create-annotation=${this.createComment}
