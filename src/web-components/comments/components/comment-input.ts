@@ -45,6 +45,51 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     participantsList: { type: Object },
   };
 
+  private addAtSymbolInCaretPosition = (e) => {
+    let caretIndex = this.autoCompleteHandler.getSelectionStart()
+
+    this.autoCompleteHandler.setValue(`${this.autoCompleteHandler.getValue().slice(0, caretIndex)  }@${  this.autoCompleteHandler.getValue().slice(caretIndex, this.autoCompleteHandler.getValue().length)}`)
+    
+    caretIndex +=1
+
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+
+    const keyIndex = keyData?.keyIndex ?? -1;
+
+
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+
+    const position = {
+      start: keyIndex + 1,
+      end: caretIndex,
+    }
+
+    if (searchText === null) {
+      this.mentionList = []
+      return;
+    }
+        const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+
+    if (action === 'show') {
+      this.mentionList = mentions
+    }
+
+    if (action === 'hide') {
+      this.mentionList = []
+    }
+    if (e.inputType === ' ' && this.mentionList.length && this.mentionList.length === 1) {
+      const [{ userId = '', name = '' } = {}] = this.mentionList;
+
+      this.autoCompleteHandler.insertMention(position.start, position.end, {
+        userId,
+        name,
+        avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png'
+      });
+
+      this.updateHeight();
+    }
+  }
+
   private getCommentInput = () => {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
   };
@@ -267,7 +312,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="comment-input--options">
           <div>
             <button class="icon-button mention">
-              <superviz-icon name="mention" size="sm"></superviz-icon>
+              <superviz-icon name="mention" @click=${this.addAtSymbolInCaretPosition} size="sm"></superviz-icon>
             </button>
           </div>
           <div class="comment-input-options">
