@@ -33,6 +33,7 @@ export const mentionListStyle = css`
   .avatar {
     width: 32px;
     height: 32px;
+    object-fit: contain;
     border-radius: 32%;
     margin-right: 14px;
     margin-left: 12px;

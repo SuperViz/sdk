@@ -2,7 +2,7 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import { Annotation } from '../../../components/comments/types';
+import { Annotation, Participant } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
@@ -16,11 +16,14 @@ export class CommentsContent extends WebComponentsBaseElement {
   constructor() {
     super();
     this.annotations = [];
+    this.participantsList = [];
+
   }
 
   static styles = styles;
 
   declare annotations: Annotation[];
+  declare participantsList: Participant[];
   declare selectedAnnotation: string;
   declare annotationFilter: AnnotationFilter;
   private lastCommentId: string;
@@ -29,6 +32,7 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotations: { type: Object },
     selectedAnnotation: { type: String },
     annotationFilter: { type: String },
+    participantsList: { type: Object },
   };
 
   private unselectAnnotation = () => {
@@ -116,6 +120,7 @@ export class CommentsContent extends WebComponentsBaseElement {
           annotationFilter=${this.annotationFilter}
           uuid=${annotation.uuid}
           isLastComment=${this.checkLastAnnotation(annotation.uuid)}
+          participantsList=${JSON.stringify(this.participantsList)}
         >
         </superviz-comments-annotation-item>
       `,

@@ -7,6 +7,7 @@ import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import {
+  Participant,
   Annotation,
   AnnotationPositionInfo,
   ButtonLocation,
@@ -60,6 +61,7 @@ export class Comments extends BaseComponent {
     this.positionFloatingButton();
     this.fetchAnnotations();
     this.waterMarkState();
+    this.participantsList();
     this.addListeners();
     this.pinAdapter.setPinsVisibility(true);
   }
@@ -490,6 +492,20 @@ export class Comments extends BaseComponent {
       this.element.waterMarkStatus(dataWaterMark);
     } catch (error) {
       this.logger.log('error when fetching waterMark', error);
+    }
+  }
+
+  /**
+ * @function participantsList
+ * @description Fetch participantsList from the API to be shown
+ * @returns {Promise<void>}
+ */
+  private async participantsList(): Promise<void> {
+    try {
+      const participants: Participant[] = await ApiService.fetchParticipantsByGroup(this.group.id);
+      this.element.participantsListed(participants);
+    } catch (error) {
+      this.logger.log('error when fetching participantsList', error);
     }
   }
 
