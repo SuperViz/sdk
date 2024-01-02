@@ -20,12 +20,16 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare showInput: boolean;
   declare containerSides: Sides;
   declare horizontalSide: HorizontalSide | undefined;
-  private annotationSides: Sides;
   declare commentsSide: HorizontalSide;
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
-  declare localAvatar: string;
+  declare localAvatar: string | undefined;
+  declare annotationSent: boolean;
+  declare localName: string;
+
   private originalPosition: Partial<PinCoordinates>;
+  private annotationSides: Sides;
+  private inputElement: HTMLTextAreaElement;
 
   static styles = styles;
   static properties = {
@@ -40,6 +44,8 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     movedPosition: { type: String },
     pinAnnotation: { type: Object },
     localAvatar: { type: String },
+    annotationSent: { type: Boolean },
+    localName: { type: String },
   };
 
   constructor() {
@@ -53,6 +59,9 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     if (!_changedProperties.has('movedPosition') || !this.annotationSides) return;
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
     this.setInputSide();
+
+    if (!this.inputElement) return;
+    this.focusInput();
   }
 
   protected firstUpdated(
@@ -66,6 +75,16 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
     this.setInputSide();
   }
+
+  private focusInput = () => {
+    if (!this.inputElement) {
+      this.inputElement = this.shadowRoot
+        ?.querySelector('superviz-comments-comment-input')
+        ?.shadowRoot!.querySelector('textarea') as HTMLTextAreaElement;
+    }
+
+    this.inputElement.focus();
+  };
 
   private setInputSide = () => {
     const inputWidth = 286;
@@ -93,6 +112,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   };
 
   private createComment = ({ detail }: CustomEvent) => {
+    this.annotationSent = true;
     document.body.dispatchEvent(
       new CustomEvent('create-annotation', {
         detail: { ...detail, position: { ...this.originalPosition, type: 'canvas' } },
@@ -145,13 +165,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   }
 
   get userAvatar() {
-    if (this.annotation?.comments) return this.annotation?.comments?.at(0)?.participant.avatar;
-
-    return this.localAvatar;
+    return this.annotation?.comments?.at(0)?.participant?.avatar || this.localAvatar;
   }
 
   get userInitial(): string {
-    const name = this.annotation?.comments?.at(0)?.participant?.name ?? 'Anonymous';
+    const name =
+      (this.annotation?.comments?.at(0)?.participant?.name ?? this.localName) || 'Anonymous';
 
     return name[0].toUpperCase();
   }
@@ -171,9 +190,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       </div>`;
     }
 
-    if (this.userAvatar) {
+    const avatar = this.userAvatar;
+    if (avatar) {
       return html`<div class="annotation-pin__avatar">
-        <img src=${this.userAvatar} />
+        <img src=${avatar} />
       </div>`;
     }
 
@@ -183,11 +203,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   };
 
   private input = () => {
-    if (!this.showInput) return;
+    if (!this.showInput || this.annotationSent) return;
     return html`<div class="floating-input">
       <superviz-comments-comment-input
         @create-annotation=${this.createComment}
         eventType="create-annotation"
+        @comment-input-ready=${this.focusInput}
       >
       </superviz-comments-comment-input>
     </div>`;

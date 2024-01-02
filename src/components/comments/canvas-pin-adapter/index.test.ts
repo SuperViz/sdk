@@ -1,6 +1,5 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
-import { sleep } from '../../../common/utils';
 
 import { CanvasPin } from '.';
 
@@ -24,6 +23,160 @@ describe('CanvasPinAdapter', () => {
 
   afterEach(() => {
     document.body.innerHTML = '';
+  });
+
+  describe('annotationSelected', () => {
+    afterAll(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should select annotation pin', async () => {
+      instance.updateAnnotations([MOCK_ANNOTATION]);
+
+      expect(instance['selectedPin']).toBeNull();
+
+      instance['annotationSelected'](
+        new CustomEvent('select-annotation', {
+          detail: {
+            uuid: MOCK_ANNOTATION.uuid,
+          },
+        }),
+      );
+
+      expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeTruthy();
+    });
+
+    test('should not select annotation pin if uuid is not defined', async () => {
+      instance.updateAnnotations([MOCK_ANNOTATION]);
+
+      expect(instance['selectedPin']).toBeNull();
+
+      instance['annotationSelected'](
+        new CustomEvent('select-annotation', {
+          detail: {
+            uuid: undefined,
+          },
+        }),
+      );
+
+      expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
+    });
+  });
+
+  test('should remove active on Escape key', () => {
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    const detail = {
+      uuid: MOCK_ANNOTATION.uuid,
+    };
+
+    instance['annotationSelected']({ detail } as unknown as CustomEvent);
+
+    expect(instance['selectedPin']).not.toBeNull();
+
+    instance['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
+
+    expect(instance['selectedPin']).toBeNull();
+  });
+
+  test('should toggle active attribute when click same annotation twice', () => {
+    const detail = {
+      uuid: MOCK_ANNOTATION.uuid,
+    };
+
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    instance['annotationSelected']({ detail } as unknown as CustomEvent);
+
+    expect(instance['selectedPin']).not.toBeNull();
+    expect(instance['selectedPin']?.hasAttribute('active')).toBeTruthy();
+
+    instance['annotationSelected']({ detail } as unknown as CustomEvent);
+
+    expect(instance['selectedPin']).toBeNull();
+  });
+
+  test('should not select annotation pin if it does not exist', async () => {
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+
+    expect(instance['selectedPin']).toBeNull();
+
+    instance['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: 'not-found',
+        },
+      }),
+    );
+
+    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
+  });
+
+  test('should remove temporary pin when selecting another pin', () => {
+    instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
+    instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
+
+    instance['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    expect(instance['pins'].has('temporary-pin')).toBeFalsy();
+  });
+
+  test('should remove highlight from annotation pin when sidebar is closed', () => {
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    instance['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    let pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeTruthy();
+
+    instance['onToggleAnnotationSidebar'](
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: {
+          open: false,
+        },
+      }),
+    );
+
+    pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeFalsy();
+  });
+
+  test('should not remove highlight from annotation pin when sibar is opened', () => {
+    instance.updateAnnotations([MOCK_ANNOTATION]);
+    instance['annotationSelected'](
+      new CustomEvent('select-annotation', {
+        detail: {
+          uuid: MOCK_ANNOTATION.uuid,
+        },
+      }),
+    );
+
+    let pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeTruthy();
+
+    instance['onToggleAnnotationSidebar'](
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: {
+          open: true,
+        },
+      }),
+    );
+
+    pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
+
+    expect(pin?.hasAttribute('active')).toBeTruthy();
   });
 
   test('should create a new instance of CanvasPinAdapter', () => {
@@ -50,7 +203,7 @@ describe('CanvasPinAdapter', () => {
     instance.destroy();
 
     expect(instance['mouseElement']).toBeNull();
-    expect(removeEventListenerSpy).toHaveBeenCalledTimes(4);
+    expect(removeEventListenerSpy).toHaveBeenCalledTimes(5);
   });
 
   test('when mouse enters canvas, should create a new mouse element', () => {
@@ -138,38 +291,6 @@ describe('CanvasPinAdapter', () => {
     expect(instance['pins'].has('not-canvas')).toBeFalsy();
   });
 
-  test('should select annotation pin', async () => {
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-
-    expect(instance['selectedPin']).toBeNull();
-
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: MOCK_ANNOTATION.uuid,
-        },
-      }),
-    );
-
-    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeTruthy();
-  });
-
-  test('should not select annotation pin if uuid is not defined', async () => {
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-
-    expect(instance['selectedPin']).toBeNull();
-
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: undefined,
-        },
-      }),
-    );
-
-    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
-  });
-
   test('should reset on KeyBoardEvent if the key is Escape', () => {
     instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
     instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
@@ -190,122 +311,6 @@ describe('CanvasPinAdapter', () => {
     instance['resetPins']({ key: 'Enter' } as unknown as KeyboardEvent);
 
     expect(instance['pins'].has('temporary-pin')).toBeTruthy();
-  });
-
-  test('should remove active on Escape key', () => {
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-    const detail = {
-      uuid: MOCK_ANNOTATION.uuid,
-    };
-
-    instance['annotationSelected']({ detail } as unknown as CustomEvent);
-
-    expect(instance['selectedPin']).not.toBeNull();
-
-    instance['resetPins']({ key: 'Escape' } as unknown as KeyboardEvent);
-
-    expect(instance['selectedPin']).toBeNull();
-  });
-
-  test('should toggle active attribute when click same annotation twice', () => {
-    const detail = {
-      uuid: MOCK_ANNOTATION.uuid,
-    };
-
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-    instance['annotationSelected']({ detail } as unknown as CustomEvent);
-
-    expect(instance['selectedPin']).not.toBeNull();
-    expect(instance['selectedPin']?.hasAttribute('active')).toBeTruthy();
-
-    instance['annotationSelected']({ detail } as unknown as CustomEvent);
-
-    expect(instance['selectedPin']).toBeNull();
-  });
-
-  test('should not select annotation pin if it does not exist', async () => {
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-
-    expect(instance['selectedPin']).toBeNull();
-
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: 'not-found',
-        },
-      }),
-    );
-
-    expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
-  });
-
-  test('should remove temporary pin when selecting another pin', () => {
-    instance['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    instance['onClick']({ x: 100, y: 100 } as unknown as MouseEvent);
-
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: MOCK_ANNOTATION.uuid,
-        },
-      }),
-    );
-
-    expect(instance['pins'].has('temporary-pin')).toBeFalsy();
-  });
-
-  test('should remove highlight from annotation pin when sibar is closed', () => {
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: MOCK_ANNOTATION.uuid,
-        },
-      }),
-    );
-
-    let pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
-
-    expect(pin?.hasAttribute('active')).toBeTruthy();
-
-    instance['onToggleAnnotationSidebar'](
-      new CustomEvent('toggle-annotation-sidebar', {
-        detail: {
-          open: false,
-        },
-      }),
-    );
-
-    pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
-
-    expect(pin?.hasAttribute('active')).toBeFalsy();
-  });
-
-  test('should not remove highlight from annotation pin when sibar is opened', () => {
-    instance.updateAnnotations([MOCK_ANNOTATION]);
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: MOCK_ANNOTATION.uuid,
-        },
-      }),
-    );
-
-    let pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
-
-    expect(pin?.hasAttribute('active')).toBeTruthy();
-
-    instance['onToggleAnnotationSidebar'](
-      new CustomEvent('toggle-annotation-sidebar', {
-        detail: {
-          open: true,
-        },
-      }),
-    );
-
-    pin = instance['pins'].get(MOCK_ANNOTATION.uuid);
-
-    expect(pin?.hasAttribute('active')).toBeTruthy();
   });
 
   test('should not create a temporary pin if the adapter is not active', () => {

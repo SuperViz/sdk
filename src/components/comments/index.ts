@@ -42,6 +42,7 @@ export class Comments extends BaseComponent {
       pinAdapter.setCommentsMetadata(
         this.layoutOptions?.position ?? 'left',
         this.localParticipant?.avatar?.imageUrl,
+        this.localParticipant?.name,
       );
     });
 

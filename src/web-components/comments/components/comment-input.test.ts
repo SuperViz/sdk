@@ -174,18 +174,7 @@ describe('CommentsCommentInput', () => {
     expect(rule.classList.contains('active-hr')).toBe(true);
   });
 
-  test('should add padding to the bottom of textarea for texts with multiple lines', () => {
-    const textarea = element['commentInput'] as HTMLElement;
-
-    textarea.textContent =
-      'This is a text that has more than one line when typing it in the browser.';
-
-    element['updateHeight']();
-
-    expect(textarea.style.paddingBottom).toBe('8px');
-  });
-
-  test('should remove padding and set height to 40px if text goes back to having one line', () => {
+  test('should set height to 40px if text goes back to having one line', () => {
     const textarea = element['commentInput'] as HTMLElement;
 
     textarea.textContent =
@@ -194,14 +183,12 @@ describe('CommentsCommentInput', () => {
     element['updateHeight']();
 
     const height = Number(textarea.style.height.slice(0, 2));
-    expect(textarea.style.paddingBottom).toBe('8px');
     expect(height).toBeGreaterThan(40);
 
     textarea.textContent = 'This is a text that has one line.';
 
     element['updateHeight']();
 
-    expect(textarea.style.paddingBottom).toBe('0px');
     expect(textarea.style.height).toBe('40px');
   });
 });

@@ -60,7 +60,7 @@ export const commentItemStyle = css`
   .comment-item__avatar img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 50%;
   }
 

@@ -33,6 +33,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     placeholder: { type: String },
   };
 
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    this.emitEvent('comment-input-ready', {}, { composed: false, bubbles: false });
+  }
+
   private get commentInput() {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
   }
@@ -83,12 +89,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     let textareaHeight = commentsInput.scrollHeight + 16;
 
-    if (textareaHeight > 40) {
-      commentsInput.style.paddingBottom = '8px';
-    }
-
     if (textareaHeight === 47) {
-      commentsInput.style.paddingBottom = '0';
       textareaHeight = 40;
     }
 
