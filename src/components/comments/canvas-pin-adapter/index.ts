@@ -199,6 +199,7 @@ export class CanvasPin implements PinAdapter {
    * */
   private removeListeners(): void {
     this.canvas.removeEventListener('click', this.onClick);
+    this.canvas.removeEventListener('mousedown', this.setMouseDownCoordinates);
     this.canvas.removeEventListener('mousemove', this.onMouseMove);
     this.canvas.removeEventListener('mouseout', this.onMouseLeave);
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
