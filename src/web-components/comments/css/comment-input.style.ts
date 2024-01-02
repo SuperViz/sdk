@@ -148,7 +148,7 @@ export const commentInputStyle = css`
     gap: 4px;
     position: absolute;
     right: 8px;
-    bottom: 3px;
+    bottom: 4px;
   }
 
   #comment-input--textarea:focus::placeholder {
