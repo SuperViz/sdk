@@ -43,9 +43,9 @@ describe('CommentsCommentItem', () => {
     element = await createElement();
 
     const username = element.shadowRoot!.querySelector(
-      '.comment-item__user .text-bold',
-    ) as HTMLSpanElement;
-    expect(username.textContent).toEqual('J');
+      '.comment-item__avatar img',
+    ) as HTMLImageElement;
+    expect(username.src).toEqual('https://example.com/avatar.png');
 
     const createdAt = element.shadowRoot!.querySelector(
       '.comment-item__user .text-small',
@@ -56,6 +56,18 @@ describe('CommentsCommentItem', () => {
       '.comment-item__content .text-big',
     ) as HTMLSpanElement;
     expect(text.textContent).toEqual('This is a comment');
+  });
+
+  test('should render username first letter as avatar if there is no image', async () => {
+    element = await createElement({
+      ...DEFAULT_ELEMENT_OPTIONS,
+      avatar: '',
+    });
+
+    const username = element.shadowRoot!.querySelector(
+      '.comment-item__avatar .text',
+    ) as HTMLSpanElement;
+    expect(username.textContent).toEqual('J');
   });
 
   test('resolves the annotation when the comment is unresolved', async () => {

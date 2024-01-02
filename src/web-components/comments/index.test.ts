@@ -3,7 +3,6 @@ import { Comments } from './comments';
 import * as Components from '.';
 
 export { CommentsTopbar } from './components/topbar';
-export { CommentsAnnotations } from './components/annotations';
 export { CommentsContent } from './components/content';
 export { CommentsCommentItem } from './components/comment-item';
 export { CommentsCommentInput } from './components/comment-input';
@@ -19,11 +18,6 @@ describe('Components', () => {
   test('should be export CommentsTopbar', () => {
     expect(Components.CommentsTopbar).toBeDefined();
     expect(Components.CommentsTopbar).toBe(Components.CommentsTopbar);
-  });
-
-  test('should be export CommentsAnnotations', () => {
-    expect(Components.CommentsAnnotations).toBeDefined();
-    expect(Components.CommentsAnnotations).toBe(Components.CommentsAnnotations);
   });
 
   test('should be export CommentsContent', () => {

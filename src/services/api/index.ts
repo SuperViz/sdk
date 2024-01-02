@@ -3,7 +3,12 @@ import { doRequest } from '../../common/utils';
 import { Annotation } from '../../components/comments/types';
 import config from '../config';
 
-import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
+import {
+  AnnotationParams,
+  CommentParams,
+  CreateOrUpdateParticipantParams,
+  FetchAnnotationsParams,
+} from './types';
 
 export default class ApiService {
   static createUrl(baseUrl: string, path: string, query = {}): string {
@@ -99,13 +104,12 @@ export default class ApiService {
   }
 
   static async createOrUpdateParticipant(
-    apiKey: string,
-    participant: { name: string; participantId: string },
+    participant: CreateOrUpdateParticipantParams,
   ): Promise<void> {
     const baseUrl = config.get<string>('apiUrl');
     const path = '/participants';
     const url = this.createUrl(baseUrl, path);
-    return doRequest(url, 'POST', { ...participant }, { apikey: apiKey });
+    return doRequest(url, 'POST', { ...participant }, { apikey: config.get<string>('apiKey') });
   }
 
   static async sendActivity(userId: string, groupId: string, groupName: string, product: string) {

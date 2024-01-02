@@ -19,10 +19,11 @@ export const dropdownStyle = css`
   }
 
   .header {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 5px 10px 0;
+    display: grid;
+    grid-template-rows: 41px 1px;
+    align-items: center;
+    padding: 0 10px;
+    height: 42px;
     font-size: 16px;
     color: rgb(var(--sv-gray-600));
   }
@@ -36,10 +37,6 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
-  }
-
-  .who-is-online-dropdown {
-    padding: 4px;
   }
 
   .items {
@@ -95,13 +92,17 @@ export const dropdownStyle = css`
 
   .text.username {
     font-size: 14px;
-    line-height: 16px;
+    text-align: center;
+
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
   }
 
   .items li {
     color: rgb(var(--sv-gray-600));
     text-transform: uppercase;
-    padding: 5px 10px;
+    padding: 0 10px;
     cursor: pointer;
     min-width: 103px;
     min-height: 32px;
@@ -109,6 +110,7 @@ export const dropdownStyle = css`
     align-items: center;
     justify-content: flex-start;
     gap: 5px;
+    height: 42px;
   }
 
   .sv-icon {
@@ -132,72 +134,15 @@ export const dropdownStyle = css`
 
   .sv-hr {
     width: 100%;
-    height: 0.8px;
+    height: 1px;
     background: rgb(var(--sv-gray-300));
     padding: 0px;
     margin: 0px;
+    justify-self: flex-end;
   }
 
   .option-label {
     white-space: nowrap;
-  }
-
-  .superviz-who-is-online__tooltip {
-    background-color: rgb(var(--sv-gray-600));
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-    position: absolute;
-    top: 52px;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    border-radius: 2px;
-    cursor: default;
-    display: none;
-    transition: opacity 0.2s ease-in-out display 0s;
-  }
-
-  .tooltip-left {
-    left: 29px;
-    top: 60px;
-    z-index: 10;
-  }
-
-  .superviz-who-is-online__tooltip-arrow {
-    width: 13px;
-    height: 13px;
-    position: absolute;
-    top: 0px;
-    left: 50%;
-    transform: rotate(45deg) translateX(-50%);
-    background-color: rgb(var(--sv-gray-600));
-    border-top-left-radius: 3px;
-  }
-
-  .dropdown-content:hover + .superviz-who-is-online__tooltip {
-    opacity: 1;
-    display: block;
-  }
-
-  .tooltip-name,
-  .tooltip-action {
-    margin: 0;
-    font-family: roboto;
-    white-space: nowrap;
-    text-align: center;
-  }
-
-  .tooltip-name {
-    color: white;
-    font-size: 14px;
-  }
-
-  .tooltip-action {
-    color: rgb(var(--sv-gray-400));
-    font-size: 12px;
   }
 
   @media (max-width: 780px) {
@@ -205,15 +150,6 @@ export const dropdownStyle = css`
     .menu--top-center,
     .menu--top-right {
       bottom: 36px;
-    }
-
-    .superviz-who-is-online__tooltip {
-      top: 44px;
-    }
-
-    .tooltip-left {
-      top: 52px;
-      left: 25px;
     }
   }
 `;
