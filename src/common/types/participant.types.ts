@@ -33,4 +33,5 @@ export type ParticipantApi = {
   participantId: string;
   name: string;
   createdAt: string;
+  avatar: string;
 };

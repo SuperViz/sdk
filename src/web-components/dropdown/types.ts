@@ -1,3 +1,5 @@
+import { number } from 'yargs';
+
 export enum PositionsEnum {
   'BOTTOM-LEFT' = 'bottom-left',
   'BOTTOM-CENTER' = 'bottom-center',

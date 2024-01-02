@@ -97,8 +97,6 @@ export class Comments extends WebComponentsBaseElement {
             @close=${this.toggle}
             side=${this.side.split(':')[0]}
           ></superviz-comments-topbar>
-          <superviz-comments-annotations id="annotations" open=${this.open}>
-          </superviz-comments-annotations>
         </div>
         <superviz-comments-annotation-filter
           filter=${this.annotationFilter}

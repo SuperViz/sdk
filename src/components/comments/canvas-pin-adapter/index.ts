@@ -1,11 +1,13 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, AnnotationPositionInfo, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
+
+import { CanvasSides, SimpleParticipant } from './types';
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
-  private canvasId: string;
   private canvas: HTMLCanvasElement;
+  private canvasSides: CanvasSides;
   private divWrapper: HTMLElement;
   private mouseElement: HTMLElement;
   private isActive: boolean;
@@ -18,13 +20,15 @@ export class CanvasPin implements PinAdapter {
   public onPinFixedObserver: Observer;
   private mouseDownCoordinates: { x: number; y: number };
   private temporaryPinCoordinates: { x: number; y: number } | null = null;
+  private commentsSide: 'left' | 'right' = 'left';
+  private movedTemporaryPin: boolean;
+  private localParticipant: SimpleParticipant = {};
 
   constructor(
     canvasId: string,
     options?: { onGoToPin?: (position: { x: number; y: number }) => void },
   ) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
-    this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.isActive = false;
     this.pins = new Map();
@@ -36,8 +40,8 @@ export class CanvasPin implements PinAdapter {
       throw new Error(message);
     }
 
-    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
-    document.body.addEventListener('select-annotation', this.annotationSelected);
+    this.canvasSides = this.canvas.getBoundingClientRect();
+
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrapper = this.renderDivWrapper();
@@ -64,8 +68,6 @@ export class CanvasPin implements PinAdapter {
     this.annotations = [];
 
     cancelAnimationFrame(this.animateFrame);
-    document.body.removeEventListener('select-annotation', this.annotationSelected);
-    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   public setPinsVisibility(isVisible: boolean): void {
@@ -142,7 +144,13 @@ export class CanvasPin implements PinAdapter {
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
+      temporaryPin.setAttribute('showInput', '');
+      temporaryPin.setAttribute('containerSides', JSON.stringify(this.canvasSides));
+      temporaryPin.setAttribute('commentsSide', this.commentsSide);
+      temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
+      temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
+      temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
       this.divWrapper.appendChild(temporaryPin);
     }
@@ -176,7 +184,14 @@ export class CanvasPin implements PinAdapter {
     this.canvas.addEventListener('mouseenter', this.onMouseEnter);
     document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('select-annotation', this.annotationSelected);
+    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
+
+  public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
+    this.commentsSide = side;
+    this.localParticipant.avatar = avatar;
+    this.localParticipant.name = name;
+  };
 
   /**
    * @function removeListeners
@@ -185,11 +200,13 @@ export class CanvasPin implements PinAdapter {
    * */
   private removeListeners(): void {
     this.canvas.removeEventListener('click', this.onClick);
+    this.canvas.removeEventListener('mousedown', this.setMouseDownCoordinates);
     this.canvas.removeEventListener('mousemove', this.onMouseMove);
     this.canvas.removeEventListener('mouseout', this.onMouseLeave);
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
     document.body.removeEventListener('keyup', this.resetPins);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
+    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   /**
@@ -338,10 +355,21 @@ export class CanvasPin implements PinAdapter {
     });
   }
 
+  /**
+   * @function setMouseDownCoordinates
+   * @description stores the mouse down coordinates
+   * @param {MouseEvent} event - The mouse event object.
+   * @returns {void}
+   */
   private setMouseDownCoordinates = ({ x, y }: MouseEvent) => {
     this.mouseDownCoordinates = { x, y };
   };
 
+  /**
+   * @function removeAnnotationsPins
+   * @description clears all pins from the canvas.
+   * @returns {void}
+   */
   private removeAnnotationsPins(): void {
     this.pins.forEach((pinElement) => {
       pinElement.remove();
@@ -352,9 +380,13 @@ export class CanvasPin implements PinAdapter {
 
   /** Callbacks  */
 
-  private annotationSelected = ({ detail }: CustomEvent): void => {
-    const { uuid } = detail;
-
+  /**
+   * @function annotationSelected
+   * @description highlights the selected annotation and scrolls to it
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private annotationSelected = ({ detail: { uuid } }: CustomEvent): void => {
     if (!uuid) return;
 
     const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
@@ -437,10 +469,15 @@ export class CanvasPin implements PinAdapter {
     } as PinCoordinates);
 
     this.resetSelectedPin();
-
     this.temporaryPinCoordinates = { x: transformedPoint.x, y: transformedPoint.y };
     this.renderTemporaryPin();
 
+    const temporaryPin = document.getElementById('superviz-temporary-pin');
+
+    // we don't care about the actual movedTemporaryPin value
+    // it only needs to trigger an update
+    this.movedTemporaryPin = !this.movedTemporaryPin;
+    temporaryPin.setAttribute('movedPosition', String(this.movedTemporaryPin));
     if (this.selectedPin) return;
 
     document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
@@ -491,6 +528,12 @@ export class CanvasPin implements PinAdapter {
     this.mouseElement = this.createMouseElement();
   };
 
+  /**
+   * @function onToggleAnnotationSidebar
+   * @description Removes temporary pin and unselects selected pin
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
   private onToggleAnnotationSidebar = ({ detail }: CustomEvent): void => {
     const { open } = detail;
 
