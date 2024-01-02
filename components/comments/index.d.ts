@@ -12,7 +12,13 @@ export declare class Comments extends BaseComponent {
     private clientUrl;
     private pinAdapter;
     private layoutOptions;
+    private coordinates;
     constructor(pinAdapter: PinAdapter, options?: CommentsOptions);
+    /**
+     * @function url
+     * @description Gets the URL of the client
+     * @returns {void}
+     */
     private get url();
     /**
      * @function start
@@ -39,11 +45,11 @@ export declare class Comments extends BaseComponent {
      */
     private destroyListeners;
     /**
-     * @function onFixedPin
-     * @description Creates a new annotation when a pin is fixed
+     * @function onPinFixed
+     * @description Sets the coordinates of the new annotation to be created
      * @param {AnnotationPositionInfo} coordinates
      */
-    private onFixedPin;
+    private onPinFixed;
     /**
      * @function toggleAnnotationSidebar
      * @description Toggles the annotation sidebar

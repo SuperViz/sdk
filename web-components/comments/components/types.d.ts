@@ -18,3 +18,10 @@ export declare enum AnnotationFilter {
     ALL = "all",
     RESOLVED = "resolved"
 }
+export type HorizontalSide = 'left' | 'right';
+export interface Sides {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+}

@@ -17,11 +17,15 @@ export declare class Dropdown extends WebComponentsBaseElement {
         name: string;
         action: string;
     };
+    shiftTooltipLeft: boolean;
     private dropdownContent;
     private originalPosition;
     private menu;
     private host;
-    tooltipOnLeft: boolean;
+    dropdown: HTMLElement;
+    private dropdownResizeObserver;
+    showTooltip: boolean;
+    canShowTooltip: boolean;
     static properties: {
         open: {
             type: BooleanConstructor;
@@ -56,10 +60,24 @@ export declare class Dropdown extends WebComponentsBaseElement {
         onHoverData: {
             type: ObjectConstructor;
         };
-        tooltipOnLeft: {
+        showTooltip: {
+            type: BooleanConstructor;
+        };
+        dropdown: {
+            type: ObjectConstructor;
+        };
+        canShowTooltip: {
+            type: BooleanConstructor;
+        };
+        drodpdownSizes: {
+            type: ObjectConstructor;
+        };
+        shiftTooltipLeft: {
             type: BooleanConstructor;
         };
     };
+    constructor();
+    disconnectedCallback(): void;
     protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
     private onClickOutDropdown;
     private close;
@@ -79,7 +97,9 @@ export declare class Dropdown extends WebComponentsBaseElement {
     private isScrollable;
     private get renderHeader();
     private toggle;
-    private onHover;
+    private get supervizIcons();
+    private get listOptions();
+    private tooltip;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};

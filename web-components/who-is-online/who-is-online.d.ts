@@ -12,8 +12,9 @@ export declare class WhoIsOnline extends WebComponentsBaseElement {
     following: Following | undefined;
     localParticipantData: LocalParticipantData;
     isPrivate: boolean;
-    private textColorValues;
     everyoneFollowsMe: boolean;
+    private textColorValues;
+    showTooltip: boolean;
     static properties: {
         position: {
             type: StringConstructor;
@@ -39,6 +40,9 @@ export declare class WhoIsOnline extends WebComponentsBaseElement {
         everyoneFollowsMe: {
             type: BooleanConstructor;
         };
+        showTooltip: {
+            type: BooleanConstructor;
+        };
     };
     constructor();
     updateParticipants(data: Participant[]): void;
@@ -47,6 +51,7 @@ export declare class WhoIsOnline extends WebComponentsBaseElement {
     private dropdownPosition;
     private renderExcessParticipants;
     private dropdownOptionsHandler;
+    private toggleShowTooltip;
     private stopEveryoneFollowsMe;
     private getAvatar;
     private getOptions;

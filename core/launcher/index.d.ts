@@ -19,14 +19,14 @@ export declare class Launcher extends Observable implements DefaultLauncher {
      * @param component - component to add
      * @returns {void}
      */
-    addComponent: (component: BaseComponent) => void;
+    addComponent: (component: Partial<BaseComponent>) => void;
     /**
      * @function removeComponent
      * @description remove component from launcher
      * @param component - component to remove
      * @returns {void}
      */
-    removeComponent: (component: BaseComponent) => void;
+    removeComponent: (component: Partial<BaseComponent>) => void;
     /**
      * @function destroy
      * @description destroy launcher and all components

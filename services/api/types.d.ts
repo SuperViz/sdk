@@ -13,3 +13,8 @@ export type FetchAnnotationsParams = {
     roomId: string;
     url: string;
 };
+export type CreateOrUpdateParticipantParams = {
+    name: string;
+    participantId: string;
+    avatar: string | null;
+};

@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap } from 'lit';
 declare const WebComponentsBaseElement: import("../../base/types").Constructor<import("../../base/types").WebComponentsBaseInterface> & typeof LitElement;
 export declare class CommentsCommentInput extends WebComponentsBaseElement {
     eventType: string;
@@ -7,7 +7,6 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     editable: boolean;
     commentsInput: HTMLTextAreaElement;
     placeholder: string;
-    private pinCoordinates;
     constructor();
     static styles: CSSResultGroup[];
     static properties: {
@@ -27,10 +26,11 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
             type: StringConstructor;
         };
     };
-    private getCommentInput;
-    private getCommentInputContainer;
+    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
+    private get commentInput();
     private getSendBtn;
-    private commentInputFocus;
+    private get optionsContainer();
+    private get horizontalRule();
     connectedCallback(): void;
     disconnectedCallback(): void;
     updated(changedProperties: Map<string, any>): void;
@@ -38,6 +38,8 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
     private sendEnter;
     private send;
     private closeEditMode;
+    private onTextareaFocus;
+    private onTextareaLoseFocus;
     protected render(): import("lit").TemplateResult<1>;
 }
 export {};

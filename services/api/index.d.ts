@@ -1,6 +1,6 @@
 import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { Annotation } from '../../components/comments/types';
-import { AnnotationParams, CommentParams, FetchAnnotationsParams } from './types';
+import { AnnotationParams, CommentParams, CreateOrUpdateParticipantParams, FetchAnnotationsParams } from './types';
 export default class ApiService {
     static createUrl(baseUrl: string, path: string, query?: {}): string;
     static validateApiKey(baseUrl: string, apiKey: string): Promise<any>;
@@ -14,10 +14,7 @@ export default class ApiService {
     static resolveAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<Annotation>;
     static deleteComment(baseUrl: string, apiKey: string, commentId: string): Promise<any>;
     static deleteAnnotation(baseUrl: string, apiKey: string, annotationId: string): Promise<any>;
-    static createOrUpdateParticipant(apiKey: string, participant: {
-        name: string;
-        participantId: string;
-    }): Promise<void>;
+    static createOrUpdateParticipant(participant: CreateOrUpdateParticipantParams): Promise<void>;
     static sendActivity(userId: string, groupId: string, groupName: string, product: string): Promise<any>;
     static validadeParticipantIsEnteringTwice(participant: SuperVizSdkOptions['participant'], roomId: string, apiKey: string, ablyKey: string): Promise<any>;
 }
