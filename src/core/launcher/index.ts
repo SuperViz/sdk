@@ -21,7 +21,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private isDestroyed = false;
   private activeComponents: ComponentNames[] = [];
-  private activeComponentsInstances: BaseComponent[] = [];
+  private activeComponentsInstances: Partial<BaseComponent>[] = [];
   private participant: Participant;
   private group: Group;
 
@@ -59,7 +59,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to add
    * @returns {void}
    */
-  public addComponent = (component: BaseComponent): void => {
+  public addComponent = (component: Partial<BaseComponent>): void => {
     if (!this.canAddComponent(component)) return;
 
     component.attach({
@@ -75,11 +75,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
 
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
-    ApiService.createOrUpdateParticipant({
-      name: this.participant?.name,
-      participantId: this.participant?.id,
-      avatar: this.participant?.avatar?.imageUrl,
-    });
   };
 
   /**
@@ -88,7 +83,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to remove
    * @returns {void}
    */
-  public removeComponent = (component: BaseComponent): void => {
+  public removeComponent = (component: Partial<BaseComponent>): void => {
     if (!this.activeComponents.includes(component.name)) {
       const message = `Component ${component.name} is not initialized yet.`;
       this.logger.log(message);
@@ -141,7 +136,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to be added
    * @returns {boolean}
    */
-  private canAddComponent = (component: BaseComponent): boolean => {
+  private canAddComponent = (component: Partial<BaseComponent>): boolean => {
     const isWhitelisted = this.realtime?.isDomainWhitelisted;
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
@@ -223,7 +218,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onParticipantListUpdate = (participants: Record<string, AblyParticipant>): void => {
     this.logger.log('launcher service @ onParticipantListUpdate', participants);
 
-    const participantList = Object.values(participants).map((participant) => ({
+    const participantList: Participant[] = Object.values(participants).map((participant) => ({
       id: participant.data.id,
       name: participant.data?.name,
       type: participant.data?.type,

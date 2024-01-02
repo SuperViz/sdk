@@ -41,6 +41,7 @@ export class CanvasPin implements PinAdapter {
     }
 
     this.canvasSides = this.canvas.getBoundingClientRect();
+
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrapper = this.renderDivWrapper();
