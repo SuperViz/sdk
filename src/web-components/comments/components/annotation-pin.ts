@@ -162,9 +162,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   }
 
   get userAvatar() {
-    if (this.annotation?.comments) return this.annotation?.comments?.at(0)?.participant.avatar;
-
-    return this.localAvatar;
+    return this.annotation?.comments?.at(0)?.participant?.avatar || this.localAvatar;
   }
 
   get userInitial(): string {

@@ -148,7 +148,7 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttribute('commentsSide', this.commentsSide);
       temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
-      if (this.localUserAvatar) temporaryPin.setAttribute('localAvatar', this.localUserAvatar);
+      temporaryPin.setAttribute('localAvatar', this.localUserAvatar ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
       this.divWrapper.appendChild(temporaryPin);
     }

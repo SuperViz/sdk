@@ -144,10 +144,10 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const avatarDivs = [];
 
     for (let index = 1; index <= this.repliesSize; index++) {
-      if (this.annotation.comments[index]?.participant.avatar) {
+      if (this.annotation.comments[index]?.participant?.avatar) {
         avatarDivs.push(html`
           <div class="avatar">
-            <img src=${this.annotation.comments[index]?.participant.avatar} />
+            <img src=${this.annotation.comments[index]?.participant?.avatar} />
           </div>
         `);
       } else {
@@ -173,7 +173,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     return html`
       <superviz-comments-comment-item
         uuid=${comment.uuid}
-        avatar=${this.annotation?.comments?.at(index)?.participant.avatar}
+        avatar=${this.annotation?.comments?.at(index)?.participant?.avatar}
         username=${comment.participant.name || 'Anonymous'}
         text=${comment.text}
         createdAt=${comment.createdAt}
@@ -209,7 +209,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               text=${this.annotation.comments?.[0].text}
               createdAt=${this.annotation.comments?.[0].createdAt}
               primaryComment
-              avatar=${this.annotation?.comments?.at(0)?.participant.avatar}
+              avatar=${this.annotation?.comments?.at(0)?.participant?.avatar}
               resolvable
               ?resolved=${this.resolved}
               annotationFilter=${this.annotationFilter}
