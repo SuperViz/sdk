@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap } from 'lit';
 declare const WebComponentsBaseElement: import("../../base/types").Constructor<import("../../base/types").WebComponentsBaseInterface> & typeof LitElement;
 export declare class CommentsCommentInput extends WebComponentsBaseElement {
     eventType: string;
@@ -26,6 +26,7 @@ export declare class CommentsCommentInput extends WebComponentsBaseElement {
             type: StringConstructor;
         };
     };
+    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
     private get commentInput();
     private getSendBtn;
     private get optionsContainer();

@@ -18,7 +18,7 @@ export declare class CanvasPin implements PinAdapter {
     private temporaryPinCoordinates;
     private commentsSide;
     private movedTemporaryPin;
-    private localUserAvatar;
+    private localParticipant;
     constructor(canvasId: string, options?: {
         onGoToPin?: (position: {
             x: number;
@@ -65,7 +65,7 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private addListeners;
-    setCommentsMetadata: (side: 'left' | 'right', avatar: string) => void;
+    setCommentsMetadata: (side: 'left' | 'right', avatar: string, name: string) => void;
     /**
      * @function removeListeners
      * @description removes event listeners from the canvas element.

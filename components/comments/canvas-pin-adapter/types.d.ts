@@ -10,3 +10,7 @@ export interface CanvasSides {
     right: number;
     bottom: number;
 }
+export interface SimpleParticipant {
+    name?: string;
+    avatar?: string;
+}

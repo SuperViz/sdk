@@ -10,12 +10,15 @@ export declare class CommentsAnnotationPin extends WebComponentsBaseElement {
     showInput: boolean;
     containerSides: Sides;
     horizontalSide: HorizontalSide | undefined;
-    private annotationSides;
     commentsSide: HorizontalSide;
     movedPosition: string;
     pinAnnotation: HTMLElement;
-    localAvatar: string;
+    localAvatar: string | undefined;
+    annotationSent: boolean;
+    localName: string;
     private originalPosition;
+    private annotationSides;
+    private inputElement;
     static styles: CSSResultGroup[];
     static properties: {
         type: {
@@ -51,10 +54,17 @@ export declare class CommentsAnnotationPin extends WebComponentsBaseElement {
         localAvatar: {
             type: StringConstructor;
         };
+        annotationSent: {
+            type: BooleanConstructor;
+        };
+        localName: {
+            type: StringConstructor;
+        };
     };
     constructor();
     protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void;
+    private focusInput;
     private setInputSide;
     private createComment;
     private cancelTemporaryAnnotation;
