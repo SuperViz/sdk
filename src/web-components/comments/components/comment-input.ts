@@ -89,12 +89,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     let textareaHeight = commentsInput.scrollHeight + 16;
 
-    if (textareaHeight > 40) {
-      commentsInput.style.paddingBottom = '8px';
-    }
-
     if (textareaHeight === 47) {
-      commentsInput.style.paddingBottom = '0';
       textareaHeight = 40;
     }
 
