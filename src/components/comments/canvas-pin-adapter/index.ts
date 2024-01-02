@@ -2,7 +2,7 @@ import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
-import { CanvasSides, Participant } from './types';
+import { CanvasSides, SimpleParticipant } from './types';
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
@@ -22,7 +22,7 @@ export class CanvasPin implements PinAdapter {
   private temporaryPinCoordinates: { x: number; y: number } | null = null;
   private commentsSide: 'left' | 'right' = 'left';
   private movedTemporaryPin: boolean;
-  private localParticipant: Participant = {};
+  private localParticipant: SimpleParticipant = {};
 
   constructor(
     canvasId: string,
