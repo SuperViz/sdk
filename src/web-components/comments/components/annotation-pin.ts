@@ -20,13 +20,15 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare showInput: boolean;
   declare containerSides: Sides;
   declare horizontalSide: HorizontalSide | undefined;
-  private annotationSides: Sides;
   declare commentsSide: HorizontalSide;
   declare movedPosition: string;
   declare pinAnnotation: HTMLElement;
   declare localAvatar: string | undefined;
   declare annotationSent: boolean;
+  declare localName: string;
+
   private originalPosition: Partial<PinCoordinates>;
+  private annotationSides: Sides;
   private inputElement: HTMLTextAreaElement;
 
   static styles = styles;
@@ -43,6 +45,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     pinAnnotation: { type: Object },
     localAvatar: { type: String },
     annotationSent: { type: Boolean },
+    localName: { type: String },
   };
 
   constructor() {
@@ -166,7 +169,8 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   }
 
   get userInitial(): string {
-    const name = this.annotation?.comments?.at(0)?.participant?.name ?? 'Anonymous';
+    const name =
+      (this.annotation?.comments?.at(0)?.participant?.name ?? this.localName) || 'Anonymous';
 
     return name[0].toUpperCase();
   }

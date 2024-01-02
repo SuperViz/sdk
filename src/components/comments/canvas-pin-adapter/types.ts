@@ -8,3 +8,8 @@ export interface CanvasSides {
   right: number;
   bottom: number;
 }
+
+export interface Participant {
+  name?: string;
+  avatar?: string;
+}
