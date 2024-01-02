@@ -302,7 +302,7 @@ export class Comments extends BaseComponent {
 
       document.body.dispatchEvent(
         new CustomEvent('select-annotation', {
-          detail: { uuid: annotation.uuid, blockGoTo: this.coordinates['type'] === 'canvas' },
+          detail: { uuid: annotation.uuid },
           composed: true,
           bubbles: true,
         }),

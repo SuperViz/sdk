@@ -179,20 +179,6 @@ describe('CanvasPinAdapter', () => {
     expect(pin?.hasAttribute('active')).toBeTruthy();
   });
 
-  test('should not centralize annotation pin if it blockGoTo is true', () => {
-    const spy = jest.spyOn(instance as any, 'goToPin');
-    instance['annotationSelected'](
-      new CustomEvent('select-annotation', {
-        detail: {
-          uuid: MOCK_ANNOTATION.uuid,
-          blockGoTo: true,
-        },
-      }),
-    );
-
-    expect(spy).not.toBeCalled();
-  });
-
   test('should create a new instance of CanvasPinAdapter', () => {
     const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
