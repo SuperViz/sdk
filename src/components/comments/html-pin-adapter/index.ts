@@ -37,6 +37,7 @@ export class HTMLPin implements PinAdapter {
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrappers = this.renderDivWrapper();
     this.annotations = [];
+    this.getElementsReady();
     this.renderAnnotationsPins();
 
     this.animateFrame = requestAnimationFrame(this.animate);
@@ -50,6 +51,7 @@ export class HTMLPin implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.divWrappers.forEach((divWrapper) => divWrapper.remove());
+    this.divWrappers.clear();
     this.pins = new Map();
     this.onPinFixedObserver.destroy();
     this.onPinFixedObserver = null;
@@ -84,14 +86,19 @@ export class HTMLPin implements PinAdapter {
     const element = this.elementsWithDataId[id];
     if (!element) return;
 
+    const pins = this.divWrappers.get(id).children;
+    for (let i = 0; i < pins.length; ++i) {
+      const pin = pins.item(i);
+      this.pins.delete(pin.id);
+      pin.remove();
+    }
+
     element.style.cursor = 'default';
     this.removeElementListeners(id);
     delete this.elementsWithDataId[id];
   }
 
   private handleObserverChanges = (changes: MutationRecord[]): void => {
-    if (!this.isActive) return;
-
     changes.forEach((change) => {
       const { target, oldValue } = change;
       const dataId = (target as HTMLElement).getAttribute('data-superviz-id');
@@ -128,8 +135,7 @@ export class HTMLPin implements PinAdapter {
     const containerRect = container.getBoundingClientRect();
 
     const divWrapper = document.createElement('div');
-    const dataSupervizId = container.getAttribute('data-superviz-id');
-    const wrapperId = `superviz-id-${dataSupervizId}`;
+    const wrapperId = `superviz-id-${id}`;
     divWrapper.id = wrapperId;
 
     this.container.parentElement.style.position = 'relative';
@@ -177,10 +183,14 @@ export class HTMLPin implements PinAdapter {
 
   private setElementReadyToPin(element: HTMLElement, id: string): void {
     if (this.elementsWithDataId[id]) return;
-    const divWrapper = this.setDivWrapper(element, id);
+    if (!this.divWrappers.get(id)) {
+      const divWrapper = this.setDivWrapper(element, id);
+      this.divWrappers.set(id, divWrapper);
+    }
 
-    this.divWrappers.set(id, divWrapper);
     this.elementsWithDataId[id] = element;
+
+    if (!this.isActive || !this.isPinsVisible) return;
     this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
     this.addElementListeners(id);
   }
@@ -238,9 +248,6 @@ export class HTMLPin implements PinAdapter {
 
     this.removeListeners();
     this.removeAddCursor();
-
-    delete this.divWrappers;
-    this.divWrappers = new Map();
   }
 
   /**
@@ -402,7 +409,7 @@ export class HTMLPin implements PinAdapter {
 
   private renderAnnotationsPins(): void {
     if (!this.annotations.length) {
-      // this.removeAnnotationsPins();
+      this.removeAnnotationsPins();
       return;
     }
 
@@ -433,6 +440,7 @@ export class HTMLPin implements PinAdapter {
         }
 
         pin.setAttribute('style', 'opacity: 0');
+        return;
       }
 
       const pinElement = document.createElement('superviz-comments-annotation-pin');
