@@ -27,6 +27,7 @@ export class HTMLPin implements PinAdapter {
       throw new Error(message);
     }
 
+    this.observeContainer();
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrappers = this.renderDivWrapper();
     this.annotations = [];
@@ -50,34 +51,79 @@ export class HTMLPin implements PinAdapter {
     cancelAnimationFrame(this.animateFrame);
   }
 
-  private setElementsReadyToPin = (): void => {
+  private clearElement(id: string) {
+    const element = this.elementsWithDataId[id];
+    if (!element) return;
+
+    element.style.cursor = 'default';
+    element.removeEventListener('click', this.onClick);
+    delete this.elementsWithDataId[id];
+  }
+
+  private handleObserverChanges = (changes: MutationRecord[]): void => {
+    if (!this.isActive) return;
+
+    changes.forEach((change) => {
+      const { target, oldValue } = change;
+      const dataId = (target as HTMLElement).getAttribute('data-superviz-id');
+
+      if ((!dataId && !oldValue) || dataId === oldValue) return;
+
+      const attributeRemoved = !dataId && oldValue;
+      if (attributeRemoved) {
+        this.clearElement(oldValue);
+        return;
+      }
+
+      if (oldValue && this.elementsWithDataId[oldValue]) {
+        this.clearElement(oldValue);
+      }
+
+      this.setElementReadyToPin(target as HTMLElement, dataId);
+    });
+  };
+
+  private observeContainer() {
+    const mutationObserver = new MutationObserver(this.handleObserverChanges);
+
+    mutationObserver.observe(this.container, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-superviz-id'],
+      attributeOldValue: true,
+    });
+  }
+
+  private setElementReadyToPin(element: HTMLElement, id: string): void {
+    if (this.elementsWithDataId[id]) return;
+
+    this.elementsWithDataId[id] = element;
+    this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
+    this.elementsWithDataId[id].addEventListener('click', this.onClick);
+  }
+
+  private getElementsReady(): void {
     const elementsWithDataId = this.container.querySelectorAll('[data-superviz-id]');
-    const dataIdList = new Set();
 
     elementsWithDataId.forEach((el: HTMLElement) => {
       const id = el.getAttribute('data-superviz-id');
-      dataIdList.add(id);
-
-      if (this.elementsWithDataId[id]) return;
-
-      this.elementsWithDataId[id] = el;
-      this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
-
-      this.elementsWithDataId[id].addEventListener('click', this.onClick);
+      this.setElementReadyToPin(el, id);
     });
+  }
 
-    const childrenId = Object.keys(this.elementsWithDataId);
-    if (childrenId.length === elementsWithDataId.length) return;
-
-    childrenId.forEach((id) => {
-      if (dataIdList.has(id)) return;
-      this.elementsWithDataId[id].style.backgroundColor = '';
-      this.elementsWithDataId[id].style.cursor = 'default';
-
-      this.elementsWithDataId[id].removeEventListener('click', this.onClick);
-      delete this.elementsWithDataId[id];
+  private setAddCursor() {
+    Object.values(this.elementsWithDataId).forEach((el) => {
+      const element = el;
+      element.style.cursor = 'url("") 0 100, pointer';
     });
-  };
+  }
+
+  private removeAddCursor() {
+    Object.values(this.elementsWithDataId).forEach((el) => {
+      const element = el;
+      element.style.cursor = 'default';
+    });
+  }
 
   /**
    * @function setPinsVisibility
@@ -102,11 +148,13 @@ export class HTMLPin implements PinAdapter {
 
     if (this.isActive) {
       this.addListeners();
-      this.setElementsReadyToPin();
+      this.setAddCursor();
+      this.getElementsReady();
       return;
     }
 
     this.removeListeners();
+    this.removeAddCursor();
   }
 
   /**
@@ -141,7 +189,6 @@ export class HTMLPin implements PinAdapter {
   private addListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
       this.elementsWithDataId[id].addEventListener('click', this.onClick);
-      this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
     });
   }
 
@@ -156,9 +203,8 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    * */
   private removeListeners(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => {
-      this.elementsWithDataId[id].removeEventListener('click', this.onClick);
-      this.elementsWithDataId[id].setAttribute('style', '');
+    Object.values(this.elementsWithDataId).forEach((el) => {
+      el.removeEventListener('click', this.onClick);
     });
   }
 
@@ -171,10 +217,6 @@ export class HTMLPin implements PinAdapter {
     if (this.isActive || this.isPinsVisible) {
       this.renderAnnotationsPins();
       this.renderDivWrapper();
-    }
-
-    if (this.isActive) {
-      this.setElementsReadyToPin();
     }
 
     if (this.temporaryPinCoordinates) {
