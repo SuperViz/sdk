@@ -33,6 +33,7 @@ export interface PinCoordinates {
   x: number;
   y: number;
   z?: number;
+  elementId?: string;
   type: 'canvas' | 'matterport' | 'threejs' | 'autodesk' | 'html';
 }
 

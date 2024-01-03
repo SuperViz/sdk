@@ -1,7 +1,8 @@
 import { Logger, Observer } from '../../../common/utils';
-import { Annotation, PinAdapter } from '../types';
+import { PinMode } from '../../../web-components/comments/components/types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
-import { SimpleParticipant } from './types';
+import { HorizontalSide, Simple2DPoint, SimpleParticipant, TemporaryPinData } from './types';
 
 export class HTMLPin implements PinAdapter {
   private logger: Logger;
@@ -10,24 +11,28 @@ export class HTMLPin implements PinAdapter {
   private isPinsVisible: boolean = true;
   private annotations: Annotation[];
   private animateFrame: number;
+  private mouseDownCoordinates: Simple2DPoint;
   public onPinFixedObserver: Observer;
-  private temporaryPinCoordinates: { x: number; y: number } | null = null;
+  private commentsSide: HorizontalSide = 'left';
+  private temporaryPinCoordinates: TemporaryPinData;
   private localParticipant: SimpleParticipant = {};
   private elementsWithDataId: Record<string, HTMLElement> = {};
   private divWrappers: HTMLElement[];
+  private pins: Map<string, HTMLElement>;
+  private movedTemporaryPin: boolean;
 
   constructor(containerId: string) {
     this.logger = new Logger('@superviz/sdk/comments-component/container-pin-adapter');
     this.container = document.getElementById(containerId) as HTMLElement;
-    this.isActive = false;
-
     if (!this.container) {
       const message = `Element with id ${containerId} not found`;
       this.logger.log(message);
       throw new Error(message);
     }
 
+    this.isActive = false;
     this.observeContainer();
+    this.pins = new Map();
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrappers = this.renderDivWrapper();
     this.annotations = [];
@@ -44,6 +49,7 @@ export class HTMLPin implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.divWrappers.forEach((divWrapper) => divWrapper.remove());
+    this.pins = new Map();
     this.onPinFixedObserver.destroy();
     this.onPinFixedObserver = null;
     this.annotations = [];
@@ -56,7 +62,7 @@ export class HTMLPin implements PinAdapter {
     if (!element) return;
 
     element.style.cursor = 'default';
-    element.removeEventListener('click', this.onClick);
+    this.removeElementListeners(id);
     delete this.elementsWithDataId[id];
   }
 
@@ -99,7 +105,7 @@ export class HTMLPin implements PinAdapter {
 
     this.elementsWithDataId[id] = element;
     this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
-    this.elementsWithDataId[id].addEventListener('click', this.onClick);
+    this.addElementListeners(id);
   }
 
   private getElementsReady(): void {
@@ -174,12 +180,65 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
+   * @function setMouseDownCoordinates
+   * @description stores the mouse down coordinates
+   * @param {MouseEvent} event - The mouse event object.
+   * @returns {void}
+   */
+  private setMouseDownCoordinates = ({ x, y }: MouseEvent) => {
+    this.mouseDownCoordinates = { x, y };
+  };
+
+  /**
    * @function renderTemporaryPin
    * @description
           creates a temporary pin with the id
           temporary-pin to mark where the annotation is being created
    */
-  public renderTemporaryPin(): void {}
+  public renderTemporaryPin(elementId?: string): void {
+    let temporaryPin = this.container.querySelector('#superviz-temporary-pin') as HTMLElement;
+
+    if (!temporaryPin) {
+      const elementSides = this.elementsWithDataId[elementId].getBoundingClientRect();
+
+      temporaryPin = document.createElement('superviz-comments-annotation-pin');
+      temporaryPin.id = 'superviz-temporary-pin';
+      temporaryPin.setAttribute('type', PinMode.ADD);
+      temporaryPin.setAttribute('showInput', '');
+      temporaryPin.setAttribute('containerSides', JSON.stringify(elementSides));
+      temporaryPin.setAttribute('commentsSide', this.commentsSide);
+      temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
+      temporaryPin.setAttribute('annotation', JSON.stringify({}));
+      temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
+      temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
+      temporaryPin.setAttributeNode(document.createAttribute('active'));
+      this.elementsWithDataId[elementId].appendChild(temporaryPin);
+    }
+
+    if (elementId && elementId !== this.temporaryPinCoordinates.elementId) {
+      const elementSides = this.elementsWithDataId[elementId].getBoundingClientRect();
+      this.elementsWithDataId[this.temporaryPinCoordinates.elementId]?.removeChild(temporaryPin);
+      this.elementsWithDataId[elementId].appendChild(temporaryPin);
+      this.temporaryPinCoordinates.elementId = elementId;
+      temporaryPin.setAttribute('containerSides', JSON.stringify(elementSides));
+    }
+
+    const { x, y } = this.temporaryPinCoordinates;
+
+    temporaryPin.setAttribute('position', JSON.stringify({ x, y }));
+
+    this.pins.set('temporary-pin', temporaryPin);
+  }
+
+  private addElementListeners(id: string): void {
+    this.elementsWithDataId[id].addEventListener('click', this.onClick, true);
+    this.elementsWithDataId[id].addEventListener('mousedown', this.setMouseDownCoordinates);
+  }
+
+  private removeElementListeners(id: string): void {
+    this.elementsWithDataId[id].removeEventListener('click', this.onClick, true);
+    this.elementsWithDataId[id].removeEventListener('mousedown', this.setMouseDownCoordinates);
+  }
 
   /**
    * @function addListeners
@@ -187,12 +246,11 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   private addListeners(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => {
-      this.elementsWithDataId[id].addEventListener('click', this.onClick);
-    });
+    Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
   }
 
   public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
+    this.commentsSide = side;
     this.localParticipant.avatar = avatar;
     this.localParticipant.name = name;
   };
@@ -203,9 +261,7 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    * */
   private removeListeners(): void {
-    Object.values(this.elementsWithDataId).forEach((el) => {
-      el.removeEventListener('click', this.onClick);
-    });
+    Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id));
   }
 
   /**
@@ -219,9 +275,9 @@ export class HTMLPin implements PinAdapter {
       this.renderDivWrapper();
     }
 
-    if (this.temporaryPinCoordinates) {
-      this.renderTemporaryPin();
-    }
+    // if (this.temporaryPinCoordinates && this.isActive) {
+    //   this.renderTemporaryPin();
+    // }
 
     requestAnimationFrame(this.animate);
   };
@@ -264,7 +320,41 @@ export class HTMLPin implements PinAdapter {
     this.annotations.forEach((annotation) => {});
   }
 
-  private onClick = (event: MouseEvent): void => {};
+  private onClick = (event: MouseEvent): void => {
+    if (!this.isActive || event.target === this.pins.get('temporary-pin')) return;
+    const clickedElement = event.currentTarget as HTMLElement;
+    const elementId = clickedElement.getAttribute('data-superviz-id');
+    const rect = clickedElement.getBoundingClientRect();
+    const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const originalX = mouseDownX - rect.x;
+    const originalY = mouseDownY - rect.y;
+
+    const distance = Math.hypot(x - originalX, y - originalY);
+    if (distance > 10) return;
+
+    this.onPinFixedObserver.publish({
+      x,
+      y,
+      type: 'html',
+      elementId,
+    } as PinCoordinates);
+
+    this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y };
+    this.renderTemporaryPin(elementId);
+
+    const temporaryPin = this.container.querySelector('#superviz-temporary-pin');
+
+    // we don't care about the actual movedTemporaryPin value
+    // it only needs to trigger an update
+    this.movedTemporaryPin = !this.movedTemporaryPin;
+    temporaryPin.setAttribute('movedPosition', String(this.movedTemporaryPin));
+
+    // if (this.selectedPin) return;
+    // document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
+  };
 
   public removeAnnotationPin(uuid: string): void {}
 }

@@ -21,6 +21,7 @@ export const commentInputStyle = css`
   #comment-input--textarea {
     all: unset;
     border: 0px;
+    text-align: left;
     border-radius: 4px;
     outline: none;
     font-size: 14px;
