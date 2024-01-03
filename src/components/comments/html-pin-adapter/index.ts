@@ -17,7 +17,7 @@ export class HTMLPin implements PinAdapter {
   private temporaryPinCoordinates: TemporaryPinData;
   private localParticipant: SimpleParticipant = {};
   private elementsWithDataId: Record<string, HTMLElement> = {};
-  private divWrappers: HTMLElement[];
+  private divWrappers: Map<string, HTMLElement>;
   private pins: Map<string, HTMLElement>;
   private movedTemporaryPin: boolean;
 
@@ -100,9 +100,37 @@ export class HTMLPin implements PinAdapter {
     });
   }
 
+  private setDivWrapper(element: HTMLElement, id: string): HTMLElement {
+    const container = element;
+    const containerRect = container.getBoundingClientRect();
+
+    const divWrapper = document.createElement('div');
+    const dataSupervizId = container.getAttribute('data-superviz-id');
+    const wrapperId = `superviz-id-${dataSupervizId}`;
+    divWrapper.id = wrapperId;
+
+    this.container.parentElement.style.position = 'relative';
+
+    divWrapper.style.position = 'fixed';
+    divWrapper.style.top = `${containerRect.top}px`;
+    divWrapper.style.left = `${containerRect.left}px`;
+    divWrapper.style.width = `${containerRect.width}px`;
+    divWrapper.style.height = `${containerRect.height}px`;
+    divWrapper.style.pointerEvents = 'none';
+    divWrapper.style.overflow = 'hidden';
+
+    if (!this.container.querySelector(`#${wrapperId}`)) {
+      container.parentElement.appendChild(divWrapper);
+    }
+
+    return divWrapper;
+  }
+
   private setElementReadyToPin(element: HTMLElement, id: string): void {
     if (this.elementsWithDataId[id]) return;
+    const divWrapper = this.setDivWrapper(element, id);
 
+    this.divWrappers.set(id, divWrapper);
     this.elementsWithDataId[id] = element;
     this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
     this.addElementListeners(id);
@@ -161,6 +189,22 @@ export class HTMLPin implements PinAdapter {
 
     this.removeListeners();
     this.removeAddCursor();
+
+    delete this.divWrappers;
+    this.divWrappers = new Map();
+  }
+
+  /**
+   * @function removeAnnotationsPins
+   * @description clears all pins from the canvas.
+   * @returns {void}
+   */
+  private removeAnnotationsPins(): void {
+    this.pins.forEach((pinElement) => {
+      pinElement.remove();
+    });
+
+    this.pins.clear();
   }
 
   /**
@@ -176,6 +220,7 @@ export class HTMLPin implements PinAdapter {
 
     if (!this.isActive && !this.isPinsVisible) return;
 
+    this.removeAnnotationsPins();
     this.renderAnnotationsPins();
   }
 
@@ -286,38 +331,61 @@ export class HTMLPin implements PinAdapter {
    * @function renderDivWrapper
    * @description Creates a div wrapper for the pins over each valid element.
    * */
-  private renderDivWrapper(): HTMLElement[] {
-    const divWrappers: HTMLElement[] = Object.values(this.elementsWithDataId).map((el) => {
-      const container = el;
-      const containerRect = container.getBoundingClientRect();
+  private renderDivWrapper(): Map<string, HTMLElement> {
+    const divWrappers: Map<string, HTMLElement> = new Map();
 
-      const divWrapper = document.createElement('div');
-      const dataSupervizId = container.getAttribute('data-superviz-id');
-      const id = `superviz-id-${dataSupervizId}`;
-      divWrapper.id = id;
-
-      this.container.parentElement.style.position = 'relative';
-
-      divWrapper.style.position = 'fixed';
-      divWrapper.style.top = `${containerRect.top}px`;
-      divWrapper.style.left = `${containerRect.left}px`;
-      divWrapper.style.width = `${containerRect.width}px`;
-      divWrapper.style.height = `${containerRect.height}px`;
-      divWrapper.style.pointerEvents = 'none';
-      divWrapper.style.overflow = 'hidden';
-
-      if (!this.container.querySelector(`#${id}`)) {
-        container.parentElement.appendChild(divWrapper);
-      }
-
-      return divWrapper;
+    Object.entries(this.elementsWithDataId).forEach(([id, el]) => {
+      const divWrapper = this.setDivWrapper(el, id);
+      divWrappers.set(id, divWrapper);
     });
 
     return divWrappers;
   }
 
   private renderAnnotationsPins(): void {
-    this.annotations.forEach((annotation) => {});
+    if (!this.annotations.length) {
+      // this.removeAnnotationsPins();
+      return;
+    }
+
+    this.annotations.forEach((annotation) => {
+      if (annotation.resolved) {
+        return;
+      }
+
+      const { x, y, elementId, type } = JSON.parse(annotation.position) as PinCoordinates;
+      if (type !== 'html') return;
+
+      const element = this.elementsWithDataId[elementId];
+      if (!element) return;
+
+      const wrapper = this.divWrappers.get(elementId);
+      if (!wrapper) return;
+
+      if (this.pins.has(annotation.uuid)) {
+        const pin = this.pins.get(annotation.uuid);
+
+        const isVisible = wrapper.clientWidth > x && wrapper.clientHeight > y;
+
+        if (isVisible) {
+          pin.setAttribute('style', 'opacity: 1');
+
+          this.pins.get(annotation.uuid).setAttribute('position', JSON.stringify({ x, y }));
+          return;
+        }
+
+        pin.setAttribute('style', 'opacity: 0');
+      }
+
+      const pinElement = document.createElement('superviz-comments-annotation-pin');
+      pinElement.setAttribute('type', PinMode.SHOW);
+      pinElement.setAttribute('annotation', JSON.stringify(annotation));
+      pinElement.setAttribute('position', JSON.stringify({ x, y }));
+      pinElement.id = annotation.uuid;
+
+      wrapper.appendChild(pinElement);
+      this.pins.set(annotation.uuid, pinElement);
+    });
   }
 
   private onClick = (event: MouseEvent): void => {
