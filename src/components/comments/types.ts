@@ -33,7 +33,7 @@ export interface PinCoordinates {
   x: number;
   y: number;
   z?: number;
-  type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
+  type: 'canvas' | 'matterport' | 'threejs' | 'autodesk' | 'html';
 }
 
 // @NOTE - this is used for 3d annotations
