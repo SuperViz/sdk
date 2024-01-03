@@ -126,6 +126,21 @@ export class HTMLPin implements PinAdapter {
     return divWrapper;
   }
 
+  /**
+   * @function resetPins
+   * @description Unselects selected pin and removes temporary pin.
+   * @param {that} this - The canvas pin adapter instance.
+   * @param {KeyboardEvent} event - The keyboard event object.
+   * @returns {void}
+   * */
+  private resetPins = (event?: KeyboardEvent): void => {
+    if (event && event?.key !== 'Escape') return;
+
+    // this.resetSelectedPin();
+    this.removeAnnotationPin('temporary-pin');
+    this.temporaryPinCoordinates = null;
+  };
+
   private setElementReadyToPin(element: HTMLElement, id: string): void {
     if (this.elementsWithDataId[id]) return;
     const divWrapper = this.setDivWrapper(element, id);
@@ -292,6 +307,7 @@ export class HTMLPin implements PinAdapter {
    */
   private addListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
+    document.body.addEventListener('keyup', this.resetPins);
   }
 
   public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
@@ -307,6 +323,7 @@ export class HTMLPin implements PinAdapter {
    * */
   private removeListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id));
+    document.body.removeEventListener('keyup', this.resetPins);
   }
 
   /**
@@ -424,5 +441,19 @@ export class HTMLPin implements PinAdapter {
     // document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
   };
 
-  public removeAnnotationPin(uuid: string): void {}
+  /**
+   * @function removeAnnotationPin
+   * @description Removes an annotation pin from the canvas.
+   * @param {string} uuid - The uuid of the annotation to be removed.
+   * @returns {void}
+   * */
+  public removeAnnotationPin(uuid: string): void {
+    const pinElement = this.pins.get(uuid);
+
+    if (!pinElement) return;
+
+    pinElement.remove();
+    this.pins.delete(uuid);
+    this.annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
+  }
 }
