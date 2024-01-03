@@ -11,6 +11,7 @@ export class HTMLPin implements PinAdapter {
   private isPinsVisible: boolean = true;
   private annotations: Annotation[];
   private animateFrame: number;
+  private selectedPin: HTMLElement | null = null;
   private mouseDownCoordinates: Simple2DPoint;
   public onPinFixedObserver: Observer;
   private commentsSide: HorizontalSide = 'left';
@@ -55,6 +56,28 @@ export class HTMLPin implements PinAdapter {
     this.annotations = [];
 
     cancelAnimationFrame(this.animateFrame);
+  }
+
+  /**
+   * @function addListeners
+   * @description adds event listeners to the container element.
+   * @returns {void}
+   */
+  private addListeners(): void {
+    Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
+    document.body.addEventListener('keyup', this.resetPins);
+    document.body.addEventListener('select-annotation', this.annotationSelected);
+  }
+
+  /**
+   * @function removeListeners
+   * @description removes event listeners from the container element.
+   * @returns {void}
+   * */
+  private removeListeners(): void {
+    Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id));
+    document.body.removeEventListener('keyup', this.resetPins);
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
   }
 
   private clearElement(id: string) {
@@ -127,6 +150,17 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
+   * @function resetSelectedPin
+   * @description Unselects a pin by removing its 'active' attribute
+   * @returns {void}
+   * */
+  private resetSelectedPin(): void {
+    if (!this.selectedPin) return;
+    this.selectedPin.removeAttribute('active');
+    this.selectedPin = null;
+  }
+
+  /**
    * @function resetPins
    * @description Unselects selected pin and removes temporary pin.
    * @param {that} this - The canvas pin adapter instance.
@@ -136,7 +170,7 @@ export class HTMLPin implements PinAdapter {
   private resetPins = (event?: KeyboardEvent): void => {
     if (event && event?.key !== 'Escape') return;
 
-    // this.resetSelectedPin();
+    this.resetSelectedPin();
     this.removeAnnotationPin('temporary-pin');
     this.temporaryPinCoordinates = null;
   };
@@ -250,6 +284,33 @@ export class HTMLPin implements PinAdapter {
   };
 
   /**
+   * @function annotationSelected
+   * @description highlights the selected annotation and scrolls to it
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private annotationSelected = ({ detail: { uuid } }: CustomEvent): void => {
+    if (!uuid) return;
+
+    const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
+
+    this.resetPins();
+
+    if (annotation?.uuid === uuid) return;
+
+    document.body.dispatchEvent(new CustomEvent('close-temporary-annotation'));
+
+    const pinElement = this.pins.get(uuid);
+
+    if (!pinElement) return;
+
+    pinElement.setAttribute('active', '');
+
+    this.selectedPin = pinElement;
+    // this.goToPin(uuid);
+  };
+
+  /**
    * @function renderTemporaryPin
    * @description
           creates a temporary pin with the id
@@ -300,31 +361,11 @@ export class HTMLPin implements PinAdapter {
     this.elementsWithDataId[id].removeEventListener('mousedown', this.setMouseDownCoordinates);
   }
 
-  /**
-   * @function addListeners
-   * @description adds event listeners to the container element.
-   * @returns {void}
-   */
-  private addListeners(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
-    document.body.addEventListener('keyup', this.resetPins);
-  }
-
   public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
     this.commentsSide = side;
     this.localParticipant.avatar = avatar;
     this.localParticipant.name = name;
   };
-
-  /**
-   * @function removeListeners
-   * @description removes event listeners from the container element.
-   * @returns {void}
-   * */
-  private removeListeners(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id));
-    document.body.removeEventListener('keyup', this.resetPins);
-  }
 
   /**
    * @function animate
@@ -427,6 +468,7 @@ export class HTMLPin implements PinAdapter {
       elementId,
     } as PinCoordinates);
 
+    this.resetSelectedPin();
     this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y };
     this.renderTemporaryPin(elementId);
 
@@ -437,8 +479,8 @@ export class HTMLPin implements PinAdapter {
     this.movedTemporaryPin = !this.movedTemporaryPin;
     temporaryPin.setAttribute('movedPosition', String(this.movedTemporaryPin));
 
-    // if (this.selectedPin) return;
-    // document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
+    if (this.selectedPin) return;
+    document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
   };
 
   /**
