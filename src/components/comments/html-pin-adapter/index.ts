@@ -21,6 +21,8 @@ export class HTMLPin implements PinAdapter {
   private divWrappers: Map<string, HTMLElement>;
   private pins: Map<string, HTMLElement>;
   private movedTemporaryPin: boolean;
+  private resizeObserver: ResizeObserver;
+  private mutationObserver: MutationObserver;
 
   constructor(containerId: string) {
     this.logger = new Logger('@superviz/sdk/comments-component/container-pin-adapter');
@@ -32,12 +34,18 @@ export class HTMLPin implements PinAdapter {
     }
 
     this.isActive = false;
+    this.divWrappers = this.renderDivWrapper();
+    this.getElementsReady();
+
+    this.mutationObserver = new MutationObserver(this.handleMutationObserverChanges);
+    this.resizeObserver = new ResizeObserver(this.handleResizeObserverChanges);
+
     this.observeContainer();
+    this.observeElements();
+
     this.pins = new Map();
     this.onPinFixedObserver = new Observer({ logger: this.logger });
-    this.divWrappers = this.renderDivWrapper();
     this.annotations = [];
-    this.getElementsReady();
     this.renderAnnotationsPins();
 
     this.animateFrame = requestAnimationFrame(this.animate);
@@ -50,6 +58,7 @@ export class HTMLPin implements PinAdapter {
    * */
   public destroy(): void {
     this.removeListeners();
+    this.removeObservers();
     this.divWrappers.forEach((divWrapper) => divWrapper.remove());
     this.divWrappers.clear();
     this.pins = new Map();
@@ -98,7 +107,7 @@ export class HTMLPin implements PinAdapter {
     delete this.elementsWithDataId[id];
   }
 
-  private handleObserverChanges = (changes: MutationRecord[]): void => {
+  private handleMutationObserverChanges = (changes: MutationRecord[]): void => {
     changes.forEach((change) => {
       const { target, oldValue } = change;
       const dataId = (target as HTMLElement).getAttribute('data-superviz-id');
@@ -119,10 +128,32 @@ export class HTMLPin implements PinAdapter {
     });
   };
 
-  private observeContainer() {
-    const mutationObserver = new MutationObserver(this.handleObserverChanges);
+  private removeObservers() {
+    this.mutationObserver.disconnect();
+    this.resizeObserver.disconnect();
+  }
 
-    mutationObserver.observe(this.container, {
+  private handleResizeObserverChanges = (changes: ResizeObserverEntry[]): void => {
+    changes.forEach((change) => {
+      const element = change.target;
+      const elementId = element.getAttribute('data-superviz-id');
+      const elementRect = element.getBoundingClientRect();
+      const wrapper = this.divWrappers.get(elementId);
+      wrapper.style.top = `${elementRect.top}px`;
+      wrapper.style.left = `${elementRect.left}px`;
+      wrapper.style.width = `${elementRect.width}px`;
+      wrapper.style.height = `${elementRect.height}px`;
+    });
+  };
+
+  private observeElements() {
+    Object.values(this.elementsWithDataId).forEach((element) => {
+      this.resizeObserver.observe(element);
+    });
+  }
+
+  private observeContainer() {
+    this.mutationObserver.observe(this.container, {
       subtree: true,
       attributes: true,
       attributeFilter: ['data-superviz-id'],
@@ -243,6 +274,7 @@ export class HTMLPin implements PinAdapter {
       this.addListeners();
       this.setAddCursor();
       this.getElementsReady();
+      this.observeElements();
       return;
     }
 
