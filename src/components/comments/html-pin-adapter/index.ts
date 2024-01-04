@@ -96,8 +96,9 @@ export class HTMLPin implements PinAdapter {
     if (!element) return;
 
     const pins = this.divWrappers.get(id).children;
-    for (let i = 0; i < pins.length; ++i) {
-      const pin = pins.item(i);
+    const { length } = pins;
+    for (let i = 0; i < length; ++i) {
+      const pin = pins.item(0);
       this.pins.delete(pin.id);
       pin.remove();
     }
@@ -178,6 +179,7 @@ export class HTMLPin implements PinAdapter {
     divWrapper.style.height = `${containerRect.height}px`;
     divWrapper.style.pointerEvents = 'none';
     divWrapper.style.overflow = 'hidden';
+    divWrapper.style.zIndex = '10';
 
     if (!this.container.querySelector(`#${wrapperId}`)) {
       container.parentElement.appendChild(divWrapper);
@@ -372,13 +374,13 @@ export class HTMLPin implements PinAdapter {
       temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
       temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
-      this.elementsWithDataId[elementId].appendChild(temporaryPin);
+      this.divWrappers.get(elementId).appendChild(temporaryPin);
     }
 
     if (elementId && elementId !== this.temporaryPinCoordinates.elementId) {
       const elementSides = this.elementsWithDataId[elementId].getBoundingClientRect();
-      this.elementsWithDataId[this.temporaryPinCoordinates.elementId]?.removeChild(temporaryPin);
-      this.elementsWithDataId[elementId].appendChild(temporaryPin);
+      this.divWrappers.get(elementId)?.removeChild(temporaryPin);
+      this.divWrappers.get(elementId).appendChild(temporaryPin);
       this.temporaryPinCoordinates.elementId = elementId;
       temporaryPin.setAttribute('containerSides', JSON.stringify(elementSides));
     }
