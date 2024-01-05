@@ -620,13 +620,13 @@ export class HTMLPin implements PinAdapter {
 
     this.onPinFixedObserver.publish({
       x,
-      y,
+      y: y - 30,
       type: 'html',
       elementId,
     } as PinCoordinates);
 
     this.resetSelectedPin();
-    this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y };
+    this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y: y - 30 };
     this.renderTemporaryPin(elementId);
 
     const temporaryPin = this.divWrappers.get(elementId).querySelector('#superviz-temporary-pin');
