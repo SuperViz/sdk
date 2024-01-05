@@ -63,6 +63,8 @@ export class HTMLPin implements PinAdapter {
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.annotations = [];
     this.renderAnnotationsPins();
+
+    document.body.addEventListener('select-annotation', this.annotationSelected);
   }
 
   // ------- setup -------
@@ -74,6 +76,7 @@ export class HTMLPin implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.removeObservers();
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
     this.divWrappers.forEach((divWrapper) => divWrapper.remove());
     delete this.divWrappers;
     delete this.pins;
@@ -634,7 +637,6 @@ export class HTMLPin implements PinAdapter {
     this.movedTemporaryPin = !this.movedTemporaryPin;
     temporaryPin.setAttribute('movedPosition', String(this.movedTemporaryPin));
 
-    if (this.selectedPin) return;
     document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
   };
 
