@@ -76,13 +76,14 @@ export class HTMLPin implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.removeObservers();
-    document.body.removeEventListener('select-annotation', this.annotationSelected);
     this.divWrappers.forEach((divWrapper) => divWrapper.remove());
     delete this.divWrappers;
     delete this.pins;
     this.onPinFixedObserver.destroy();
     this.onPinFixedObserver = null;
     this.annotations = [];
+
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
   }
 
   /**
@@ -102,10 +103,13 @@ export class HTMLPin implements PinAdapter {
    * @param {string} id the id of the element to remove the listeners from.
    * @returns {void}
    */
-  private removeElementListeners(id: string, unobserveResize?: boolean): void {
+  private removeElementListeners(id: string, keepObserver?: boolean): void {
     this.divWrappers.get(id).removeEventListener('click', this.onClick, true);
     this.divWrappers.get(id).removeEventListener('mousedown', this.onMouseDown);
-    if (unobserveResize) this.resizeObserver.unobserve(this.elementsWithDataId[id]);
+
+    if (keepObserver) return;
+
+    this.resizeObserver.unobserve(this.elementsWithDataId[id]);
   }
 
   /**
@@ -126,7 +130,6 @@ export class HTMLPin implements PinAdapter {
   private addListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
     document.body.addEventListener('keyup', this.resetPins);
-    document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
@@ -138,7 +141,6 @@ export class HTMLPin implements PinAdapter {
   private removeListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id, true));
     document.body.removeEventListener('keyup', this.resetPins);
-    document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
@@ -383,9 +385,10 @@ export class HTMLPin implements PinAdapter {
    * @function clearElement
    * @description clears an element that no longer has the data-superviz-id attribute
    * @param {string} id the id of the element to be cleared
+   * @param {boolean} keepObserver whether to keep he resize observer or not
    * @returns
    */
-  private clearElement(id: string): void {
+  private clearElement(id: string, keepObserver?: boolean): void {
     const element = this.elementsWithDataId[id];
     if (!element) return;
 
@@ -401,7 +404,7 @@ export class HTMLPin implements PinAdapter {
     }
 
     wrapper.style.cursor = 'default';
-    this.removeElementListeners(id);
+    this.removeElementListeners(id, keepObserver);
     delete this.elementsWithDataId[id];
   }
 
@@ -443,11 +446,12 @@ export class HTMLPin implements PinAdapter {
       const divWrapper = this.createWrapper(element, id);
       this.divWrappers.set(id, divWrapper);
     }
+
     this.elementsWithDataId[id] = element;
+    this.resizeObserver?.observe(element);
 
     if (!this.isActive || !this.isPinsVisible) return;
 
-    this.resizeObserver.observe(element);
     this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
     this.addElementListeners(id);
   }
@@ -679,6 +683,7 @@ export class HTMLPin implements PinAdapter {
 
       if ((!dataId && !oldValue) || dataId === oldValue) return;
       const attributeRemoved = !dataId && oldValue;
+
       if (attributeRemoved) {
         this.removeAnnotationPin('temporary-pin');
         this.clearElement(oldValue);
@@ -686,7 +691,7 @@ export class HTMLPin implements PinAdapter {
       }
 
       if (oldValue && this.elementsWithDataId[oldValue]) {
-        this.clearElement(oldValue);
+        this.clearElement(oldValue, true);
       }
 
       this.setElementReadyToPin(target as HTMLElement, dataId);
