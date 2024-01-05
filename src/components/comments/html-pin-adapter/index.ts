@@ -94,8 +94,9 @@ export class HTMLPin implements PinAdapter {
   private clearElement(id: string) {
     const element = this.elementsWithDataId[id];
     if (!element) return;
-
-    const pins = this.divWrappers.get(id).children;
+    const wrapper = this.divWrappers.get(id);
+    const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLDivElement;
+    const pins = pinsWrapper.children;
     const { length } = pins;
     for (let i = 0; i < length; ++i) {
       const pin = pins.item(0);
@@ -103,7 +104,7 @@ export class HTMLPin implements PinAdapter {
       pin.remove();
     }
 
-    element.style.cursor = 'default';
+    wrapper.style.cursor = 'default';
     this.removeElementListeners(id);
     delete this.elementsWithDataId[id];
   }
@@ -144,6 +145,15 @@ export class HTMLPin implements PinAdapter {
       wrapper.style.left = `${elementRect.left}px`;
       wrapper.style.width = `${elementRect.width}px`;
       wrapper.style.height = `${elementRect.height}px`;
+      const subwrappers = wrapper.children;
+
+      for (let i = 0; i < subwrappers.length; ++i) {
+        const subwrapper = subwrappers.item(i) as HTMLElement;
+        subwrapper.style.top = `0`;
+        subwrapper.style.left = `0`;
+        subwrapper.style.width = `${elementRect.width}px`;
+        subwrapper.style.height = `${elementRect.height}px`;
+      }
     });
   };
 
@@ -162,30 +172,40 @@ export class HTMLPin implements PinAdapter {
     });
   }
 
-  private setDivWrapper(element: HTMLElement, id: string): HTMLElement {
+  private setWrappers(element: HTMLElement, id: string): HTMLElement {
     const container = element;
-    const containerRect = container.getBoundingClientRect();
-
-    const divWrapper = document.createElement('div');
     const wrapperId = `superviz-id-${id}`;
-    divWrapper.id = wrapperId;
-
-    this.container.parentElement.style.position = 'relative';
-
-    divWrapper.style.position = 'fixed';
-    divWrapper.style.top = `${containerRect.top}px`;
-    divWrapper.style.left = `${containerRect.left}px`;
-    divWrapper.style.width = `${containerRect.width}px`;
-    divWrapper.style.height = `${containerRect.height}px`;
-    divWrapper.style.pointerEvents = 'none';
-    divWrapper.style.overflow = 'hidden';
-    divWrapper.style.zIndex = '10';
-
-    if (!this.container.querySelector(`#${wrapperId}`)) {
-      container.parentElement.appendChild(divWrapper);
+    if (container.querySelector(`#${wrapperId}`)) {
+      return;
     }
 
-    return divWrapper;
+    const containerRect = container.getBoundingClientRect();
+
+    const containerWrapper = document.createElement('div');
+    containerWrapper.setAttribute('data-wrapper-id', id);
+    containerWrapper.id = wrapperId;
+    this.container.style.position ||= 'relative';
+
+    containerWrapper.style.position = 'fixed';
+    containerWrapper.style.top = `${containerRect.top}px`;
+    containerWrapper.style.left = `${containerRect.left}px`;
+    containerWrapper.style.width = `${containerRect.width}px`;
+    containerWrapper.style.height = `${containerRect.height}px`;
+
+    // containerWrapper.style.zIndex = '10';
+
+    const pinsWrapper = document.createElement('div');
+    pinsWrapper.setAttribute('data-pins-wrapper', '');
+    pinsWrapper.style.position = 'absolute';
+    pinsWrapper.style.overflow = 'hidden';
+    pinsWrapper.style.top = '0';
+    pinsWrapper.style.left = '0';
+    pinsWrapper.style.width = '100%';
+    pinsWrapper.style.height = '100%';
+    containerWrapper.appendChild(pinsWrapper);
+
+    this.container.appendChild(containerWrapper);
+    return containerWrapper;
   }
 
   /**
@@ -202,7 +222,6 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function resetPins
    * @description Unselects selected pin and removes temporary pin.
-   * @param {that} this - The canvas pin adapter instance.
    * @param {KeyboardEvent} event - The keyboard event object.
    * @returns {void}
    * */
@@ -210,21 +229,25 @@ export class HTMLPin implements PinAdapter {
     if (event && event?.key !== 'Escape') return;
 
     this.resetSelectedPin();
+
+    if (!this.temporaryPinCoordinates.elementId) return;
+
     this.removeAnnotationPin('temporary-pin');
-    this.temporaryPinCoordinates = null;
+    this.temporaryPinContainer.remove();
+    this.temporaryPinCoordinates = {};
   };
 
   private setElementReadyToPin(element: HTMLElement, id: string): void {
     if (this.elementsWithDataId[id]) return;
     if (!this.divWrappers.get(id)) {
-      const divWrapper = this.setDivWrapper(element, id);
+      const divWrapper = this.setWrappers(element, id);
       this.divWrappers.set(id, divWrapper);
     }
 
     this.elementsWithDataId[id] = element;
-
+    this.resizeObserver.observe(element);
     if (!this.isActive || !this.isPinsVisible) return;
-    this.elementsWithDataId[id].style.cursor = 'url("") 0 100, pointer';
+    this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
     this.addElementListeners(id);
   }
 
@@ -238,16 +261,14 @@ export class HTMLPin implements PinAdapter {
   }
 
   private setAddCursor() {
-    Object.values(this.elementsWithDataId).forEach((el) => {
-      const element = el;
-      element.style.cursor = 'url("") 0 100, pointer';
+    Object.keys(this.elementsWithDataId).forEach((id) => {
+      this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
     });
   }
 
   private removeAddCursor() {
-    Object.values(this.elementsWithDataId).forEach((el) => {
-      const element = el;
-      element.style.cursor = 'default';
+    Object.keys(this.elementsWithDataId).forEach((id) => {
+      this.divWrappers.get(id).style.cursor = 'default';
     });
   }
 
@@ -276,7 +297,6 @@ export class HTMLPin implements PinAdapter {
       this.addListeners();
       this.setAddCursor();
       this.getElementsReady();
-      this.observeElements();
       return;
     }
 
@@ -351,6 +371,47 @@ export class HTMLPin implements PinAdapter {
     // this.goToPin(uuid);
   };
 
+  private createTemporaryPinContainer(): HTMLDivElement {
+    const temporaryContainer = document.createElement('div');
+    temporaryContainer.style.position = 'absolute';
+    temporaryContainer.style.top = '0';
+    temporaryContainer.style.left = '0';
+    temporaryContainer.style.width = '100%';
+    temporaryContainer.style.height = '100%';
+    temporaryContainer.id = 'temporary-pin-container';
+    return temporaryContainer;
+  }
+
+  private get temporaryPinContainer(): HTMLDivElement {
+    return this.divWrappers
+      .get(this.temporaryPinCoordinates.elementId)
+      .querySelector('#temporary-pin-container');
+  }
+
+  private addTemporaryPinToElement(elementId: string, pin: HTMLElement): void {
+    const element = this.elementsWithDataId[elementId];
+    if (!element) return;
+
+    const wrapper = this.divWrappers.get(elementId);
+    if (!wrapper) return;
+
+    const temporaryContainer = this.createTemporaryPinContainer();
+    temporaryContainer.appendChild(pin);
+
+    wrapper.appendChild(temporaryContainer);
+  }
+
+  private addPinToElement(elementId: string, pin: HTMLElement): void {
+    const element = this.elementsWithDataId[elementId];
+    if (!element) return;
+
+    const wrapper = this.divWrappers.get(elementId);
+    if (!wrapper) return;
+
+    wrapper.appendChild(pin);
+    this.temporaryPinCoordinates.elementId = elementId;
+  }
+
   /**
    * @function renderTemporaryPin
    * @description
@@ -358,7 +419,15 @@ export class HTMLPin implements PinAdapter {
           temporary-pin to mark where the annotation is being created
    */
   public renderTemporaryPin(elementId?: string): void {
-    let temporaryPin = this.container.querySelector('#superviz-temporary-pin') as HTMLElement;
+    this.temporaryPinCoordinates.elementId ||= elementId;
+    let temporaryPin = this.pins.get('temporary-pin');
+
+    if (elementId && elementId !== this.temporaryPinCoordinates.elementId) {
+      this.temporaryPinContainer.remove();
+      this.pins.delete('temporary-pin');
+      this.temporaryPinCoordinates.elementId = elementId;
+      temporaryPin = null;
+    }
 
     if (!temporaryPin) {
       const elementSides = this.elementsWithDataId[elementId].getBoundingClientRect();
@@ -374,15 +443,8 @@ export class HTMLPin implements PinAdapter {
       temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
       temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
-      this.divWrappers.get(elementId).appendChild(temporaryPin);
-    }
 
-    if (elementId && elementId !== this.temporaryPinCoordinates.elementId) {
-      const elementSides = this.elementsWithDataId[elementId].getBoundingClientRect();
-      this.divWrappers.get(elementId)?.removeChild(temporaryPin);
-      this.divWrappers.get(elementId).appendChild(temporaryPin);
-      this.temporaryPinCoordinates.elementId = elementId;
-      temporaryPin.setAttribute('containerSides', JSON.stringify(elementSides));
+      this.addTemporaryPinToElement(elementId, temporaryPin);
     }
 
     const { x, y } = this.temporaryPinCoordinates;
@@ -393,13 +455,18 @@ export class HTMLPin implements PinAdapter {
   }
 
   private addElementListeners(id: string): void {
-    this.elementsWithDataId[id].addEventListener('click', this.onClick, true);
-    this.elementsWithDataId[id].addEventListener('mousedown', this.setMouseDownCoordinates);
+    this.divWrappers.get(id).addEventListener('click', this.onClick, true);
+    this.divWrappers.get(id).addEventListener('mousedown', this.setMouseDownCoordinates);
+    // this.elementsWithDataId[id].addEventListener('click', this.onClick, true);
+    // this.elementsWithDataId[id].addEventListener('mousedown', this.setMouseDownCoordinates);
   }
 
   private removeElementListeners(id: string): void {
-    this.elementsWithDataId[id].removeEventListener('click', this.onClick, true);
-    this.elementsWithDataId[id].removeEventListener('mousedown', this.setMouseDownCoordinates);
+    this.divWrappers.get(id).removeEventListener('click', this.onClick, true);
+    this.divWrappers.get(id).removeEventListener('mousedown', this.setMouseDownCoordinates);
+    this.resizeObserver.unobserve(this.elementsWithDataId[id]);
+    // this.elementsWithDataId[id].removeEventListener('click', this.onClick, true);
+    // this.elementsWithDataId[id].removeEventListener('mousedown', this.setMouseDownCoordinates);
   }
 
   public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
@@ -416,7 +483,7 @@ export class HTMLPin implements PinAdapter {
   private animate = (): void => {
     if (this.isActive || this.isPinsVisible) {
       this.renderAnnotationsPins();
-      this.renderDivWrapper();
+      // this.renderDivWrapper();
     }
 
     // if (this.temporaryPinCoordinates && this.isActive) {
@@ -434,7 +501,7 @@ export class HTMLPin implements PinAdapter {
     const divWrappers: Map<string, HTMLElement> = new Map();
 
     Object.entries(this.elementsWithDataId).forEach(([id, el]) => {
-      const divWrapper = this.setDivWrapper(el, id);
+      const divWrapper = this.setWrappers(el, id);
       divWrappers.set(id, divWrapper);
     });
 
@@ -458,7 +525,7 @@ export class HTMLPin implements PinAdapter {
       const element = this.elementsWithDataId[elementId];
       if (!element) return;
 
-      const wrapper = this.divWrappers.get(elementId);
+      const wrapper = this.divWrappers.get(elementId).querySelector('[data-pins-wrapper]');
       if (!wrapper) return;
 
       if (this.pins.has(annotation.uuid)) {
@@ -490,9 +557,9 @@ export class HTMLPin implements PinAdapter {
 
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive || event.target === this.pins.get('temporary-pin')) return;
-    const clickedElement = event.currentTarget as HTMLElement;
-    const elementId = clickedElement.getAttribute('data-superviz-id');
-    const rect = clickedElement.getBoundingClientRect();
+    const wrapper = event.currentTarget as HTMLElement;
+    const elementId = wrapper.getAttribute('data-wrapper-id');
+    const rect = wrapper.getBoundingClientRect();
     const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -514,7 +581,7 @@ export class HTMLPin implements PinAdapter {
     this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y };
     this.renderTemporaryPin(elementId);
 
-    const temporaryPin = this.container.querySelector('#superviz-temporary-pin');
+    const temporaryPin = this.divWrappers.get(elementId).querySelector('#superviz-temporary-pin');
 
     // we don't care about the actual movedTemporaryPin value
     // it only needs to trigger an update
