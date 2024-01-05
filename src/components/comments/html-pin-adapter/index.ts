@@ -201,8 +201,7 @@ export class HTMLPin implements PinAdapter {
    */
   private setAddCursor(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
-      this.divWrappers.get(id).style.cursor =
-        'url("https://i.ibb.co/GWY82b4/pin-modes.png") 0 100, pointer';
+      this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
     });
   }
 
@@ -233,7 +232,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function removeAnnotationPin
-   * @description Removes an annotation pin from the canvas.
+   * @description Removes an annotation pin from the container.
    * @param {string} uuid - The uuid of the annotation to be removed.
    * @returns {void}
    * */
@@ -342,7 +341,7 @@ export class HTMLPin implements PinAdapter {
   // ------- regular methods -------
   /**
    * @function renderAnnotationsPins
-   * @description appends the pins on the canvas.
+   * @description appends the pins on the container.
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
@@ -416,7 +415,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function removeAnnotationsPins
-   * @description clears all pins from the canvas.
+   * @description clears all pins from the container.
    * @returns {void}
    */
   private removeAnnotationsPins(): void {
@@ -446,8 +445,7 @@ export class HTMLPin implements PinAdapter {
     if (!this.isActive || !this.isPinsVisible) return;
 
     this.resizeObserver.observe(element);
-    this.divWrappers.get(id).style.cursor =
-      'url("https://i.ibb.co/GWY82b4/pin-modes.png") 0 100, pointer';
+    this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
     this.addElementListeners(id);
   }
 
@@ -680,6 +678,7 @@ export class HTMLPin implements PinAdapter {
       if ((!dataId && !oldValue) || dataId === oldValue) return;
       const attributeRemoved = !dataId && oldValue;
       if (attributeRemoved) {
+        this.removeAnnotationPin('temporary-pin');
         this.clearElement(oldValue);
         return;
       }
