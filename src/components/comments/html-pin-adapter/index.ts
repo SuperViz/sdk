@@ -33,6 +33,7 @@ export class HTMLPin implements PinAdapter {
 
   // Elements
   private container: HTMLElement;
+  private pinsContainer: HTMLDivElement;
   private elementsWithDataId: Record<string, HTMLElement> = {};
   private divWrappers: Map<string, HTMLElement> = new Map();
   private pins: Map<string, HTMLElement>;
@@ -51,6 +52,7 @@ export class HTMLPin implements PinAdapter {
       throw new Error(message);
     }
 
+    this.createPinsContainer();
     this.dataAttribute &&= dataAttributeName;
     this.isActive = false;
     this.prepareElements();
@@ -88,6 +90,9 @@ export class HTMLPin implements PinAdapter {
     delete this.logger;
     this.onPinFixedObserver.destroy();
     delete this.onPinFixedObserver;
+    this.pinsContainer.remove();
+    delete this.pinsContainer;
+    delete this.container;
 
     this.annotations = [];
 
@@ -201,6 +206,7 @@ export class HTMLPin implements PinAdapter {
   private setAddCursor(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
       this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
+      this.divWrappers.get(id).style.pointerEvents = 'auto';
     });
   }
 
@@ -212,6 +218,7 @@ export class HTMLPin implements PinAdapter {
   private removeAddCursor(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
       this.divWrappers.get(id).style.cursor = 'default';
+      this.divWrappers.get(id).style.pointerEvents = 'none';
     });
   }
 
@@ -313,9 +320,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function renderTemporaryPin
-   * @description
-          creates a temporary pin with the id
-          temporary-pin to mark where the annotation is being created
+   * @description creates a temporary pin with the id temporary-pin to mark where the annotation is being created
    * @param {string} elementId - The id of the element where the temporary pin will be rendered.
    */
   public renderTemporaryPin(elementId?: string): void {
@@ -550,6 +555,22 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
+   * @function createPinsContainer
+   * @description creates the container where pins will be appended and appends it to the DOM (either the parent of the element with the specified id or the body)
+   * @returns {void}
+   */
+  private createPinsContainer(): void {
+    const pinsContainer = document.createElement('div');
+    pinsContainer.style.position = 'absolute';
+    pinsContainer.style.top = '0';
+    pinsContainer.style.left = '0';
+    pinsContainer.style.width = '100%';
+    pinsContainer.style.height = '100%';
+    this.pinsContainer = pinsContainer;
+    this.container.appendChild(pinsContainer);
+  }
+
+  /**
    * @function createPin
    * @param {Annotation} annotation the annotation associated to the pin to be rendered
    * @param {number} x the x coordinate of the pin
@@ -578,7 +599,6 @@ export class HTMLPin implements PinAdapter {
     const containerWrapper = document.createElement('div');
     containerWrapper.setAttribute('data-wrapper-id', id);
     containerWrapper.id = wrapperId;
-    this.container.style.position ||= 'relative';
 
     containerWrapper.style.position = 'fixed';
     containerWrapper.style.top = `${containerRect.top}px`;
@@ -597,7 +617,7 @@ export class HTMLPin implements PinAdapter {
     pinsWrapper.style.height = '100%';
     containerWrapper.appendChild(pinsWrapper);
 
-    this.container.appendChild(containerWrapper);
+    this.pinsContainer.appendChild(containerWrapper);
     return containerWrapper;
   }
 
