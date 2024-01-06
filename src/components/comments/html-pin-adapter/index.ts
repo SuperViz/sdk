@@ -24,6 +24,7 @@ export class HTMLPin implements PinAdapter {
 
   // Data about the current state of the application
   private selectedPin: HTMLElement | null = null;
+  private dataAttribute: string = 'data-superviz-id';
 
   // Coordinates/Positions
   private mouseDownCoordinates: Simple2DPoint;
@@ -33,14 +34,14 @@ export class HTMLPin implements PinAdapter {
   // Elements
   private container: HTMLElement;
   private elementsWithDataId: Record<string, HTMLElement> = {};
-  private divWrappers: Map<string, HTMLElement>;
+  private divWrappers: Map<string, HTMLElement> = new Map();
   private pins: Map<string, HTMLElement>;
 
   // Observers
   private resizeObserver: ResizeObserver;
   private mutationObserver: MutationObserver;
 
-  constructor(containerId: string) {
+  constructor(containerId: string, dataAttributeName?: string) {
     this.logger = new Logger('@superviz/sdk/comments-component/container-pin-adapter');
     this.container = document.getElementById(containerId) as HTMLElement;
 
@@ -50,8 +51,8 @@ export class HTMLPin implements PinAdapter {
       throw new Error(message);
     }
 
+    this.dataAttribute &&= dataAttributeName;
     this.isActive = false;
-    this.setDivWrappers();
     this.prepareElements();
 
     this.mutationObserver = new MutationObserver(this.handleMutationObserverChanges);
@@ -74,13 +75,20 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    * */
   public destroy(): void {
+    this.logger.log('Destroying HTML Pin Adapter for Comments');
     this.removeListeners();
     this.removeObservers();
     this.divWrappers.forEach((divWrapper) => divWrapper.remove());
+    this.divWrappers.clear();
+    this.pins.forEach((pin) => pin.remove());
+    this.pins.clear();
     delete this.divWrappers;
     delete this.pins;
+    delete this.elementsWithDataId;
+    delete this.logger;
     this.onPinFixedObserver.destroy();
-    this.onPinFixedObserver = null;
+    delete this.onPinFixedObserver;
+
     this.annotations = [];
 
     document.body.removeEventListener('select-annotation', this.annotationSelected);
@@ -120,6 +128,8 @@ export class HTMLPin implements PinAdapter {
   private removeObservers(): void {
     this.mutationObserver.disconnect();
     this.resizeObserver.disconnect();
+    delete this.mutationObserver;
+    delete this.resizeObserver;
   }
 
   /**
@@ -146,7 +156,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function observeElements
-   * @description observes the elements with data-superviz-id attribute.
+   * @description observes the elements with the specified data attribute.
    * @returns {void}
    */
   private observeElements(): void {
@@ -157,44 +167,28 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function observeContainer
-   * @description observes the container for changes in the data-superviz-id attribute.
+   * @description observes the container for changes in the specified data attribute.
    * @returns {void}
    */
   private observeContainer(): void {
     this.mutationObserver.observe(this.container, {
       subtree: true,
       attributes: true,
-      attributeFilter: ['data-superviz-id'],
+      attributeFilter: [this.dataAttribute],
       attributeOldValue: true,
     });
   }
 
   /**
-   * @function setDivWrappers
-   * @description sets the wrapper associated to each pinnable element
-   * @returns {void}
-   * */
-  private setDivWrappers(): void {
-    const divWrappers: Map<string, HTMLElement> = new Map();
-
-    Object.entries(this.elementsWithDataId).forEach(([id, el]) => {
-      const divWrapper = this.createWrapper(el, id);
-      divWrappers.set(id, divWrapper);
-    });
-
-    this.divWrappers = divWrappers;
-  }
-
-  /**
    * @function prepareElements
-   * @description set elements with data-superviz-id attribute as pinnable
+   * @description set elements with the specified data attribute as pinnable
    * @returns {void}
    */
   private prepareElements(): void {
-    const elementsWithDataId = this.container.querySelectorAll('[data-superviz-id]');
+    const elementsWithDataId = this.container.querySelectorAll(`[${this.dataAttribute}]`);
 
     elementsWithDataId.forEach((el: HTMLElement) => {
-      const id = el.getAttribute('data-superviz-id');
+      const id = el.getAttribute(this.dataAttribute);
       this.setElementReadyToPin(el, id);
     });
   }
@@ -233,7 +227,24 @@ export class HTMLPin implements PinAdapter {
     if (this.isPinsVisible) {
       this.renderAnnotationsPins();
     }
+
+    this.removeAnnotationsPins();
   }
+
+  /**
+   * @function translatePins
+   * @description translates the wrapper containing all the pins of an element
+   * @param {string} elementId
+   * @param {number} x
+   * @param {number} y
+   * @returns {void}
+   */
+  public translatePins = (elementId: string, x: number, y: number): void => {
+    const wrapper = this.divWrappers.get(elementId);
+    if (!wrapper) return;
+
+    wrapper.style.transform = `translate(${x}px, ${y}px)`;
+  };
 
   /**
    * @function removeAnnotationPin
@@ -383,7 +394,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function clearElement
-   * @description clears an element that no longer has the data-superviz-id attribute
+   * @description clears an element that no longer has the specified data attribute
    * @param {string} id the id of the element to be cleared
    * @param {boolean} keepObserver whether to keep he resize observer or not
    * @returns
@@ -574,6 +585,7 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.left = `${containerRect.left}px`;
     containerWrapper.style.width = `${containerRect.width}px`;
     containerWrapper.style.height = `${containerRect.height}px`;
+    containerWrapper.style.pointerEvents = 'none';
 
     const pinsWrapper = document.createElement('div');
     pinsWrapper.setAttribute('data-pins-wrapper', '');
@@ -657,7 +669,7 @@ export class HTMLPin implements PinAdapter {
   private handleResizeObserverChanges = (changes: ResizeObserverEntry[]): void => {
     changes.forEach((change) => {
       const element = change.target;
-      const elementId = element.getAttribute('data-superviz-id');
+      const elementId = element.getAttribute(this.dataAttribute);
       const elementRect = element.getBoundingClientRect();
       const wrapper = this.divWrappers.get(elementId);
       wrapper.style.top = `${elementRect.top}px`;
@@ -679,7 +691,7 @@ export class HTMLPin implements PinAdapter {
   private handleMutationObserverChanges = (changes: MutationRecord[]): void => {
     changes.forEach((change) => {
       const { target, oldValue } = change;
-      const dataId = (target as HTMLElement).getAttribute('data-superviz-id');
+      const dataId = (target as HTMLElement).getAttribute(this.dataAttribute);
 
       if ((!dataId && !oldValue) || dataId === oldValue) return;
       const attributeRemoved = !dataId && oldValue;
