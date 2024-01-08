@@ -64,7 +64,7 @@ export class CommentsMentionList extends WebComponentsBaseElement {
       <div id="mention-list">
         ${repeat(
         this.participants, 
-        (participant: any) => participant.participantId,
+        (participant: any) => participant.id,
         (participant) => html`
           ${mentionItem(participant)}
         `)}

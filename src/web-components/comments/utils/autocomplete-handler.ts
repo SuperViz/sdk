@@ -19,13 +19,24 @@ export class AutoCompleteHandler {
     this.key = event.data
   }
 
+  getMentions () {
+    return this.mentions
+  }
+
+  setMentions (mentions) {
+    this.mentions = mentions.map(mention => ({
+      ...mention,
+      position: JSON.parse(mention.position)
+    }))
+  }
+
   addMention (mention: { userId: string, name: string, position: { start: number, end: number } }) {
     this.mentions = [...this.mentions, mention]
   }
 
   removeMention (mention) {
     const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
-    this.mentions = this.mentions.filter(m => m.name !== mention.name && m.position.start !== mention.position.start && m.position.end !== mention.position.end)
+    this.mentions = this.mentions.filter(m => m.position.start !== mention.position.start && m.position.end !== mention.position.end)
 
     if (isDeletion) {
       this.setValue(this.getValue().slice(0, mention.position.start) + this.getValue().slice(mention.position.end, this.getValue().length))
@@ -120,7 +131,7 @@ export class AutoCompleteHandler {
   }
 
   insertMention (start: number, end: number, participant: any) {
-    const { name } = participant
+    const { id, name } = participant
     const position = {
       start: start - 1,
       end: start + name.length,
@@ -131,7 +142,7 @@ export class AutoCompleteHandler {
     this.input.focus()
 
     this.addMention({
-      userId: participant.userId,
+      userId: id,
       name,
       position
     })

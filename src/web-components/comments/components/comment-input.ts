@@ -20,6 +20,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
   declare mentionList: []
+  declare mentions: []
   declare participantsList: Participant[];
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
@@ -31,6 +32,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.btnActive = false;
     this.text = '';
     this.mentionList = []
+    this.mentions = []
   }
 
   static styles = styles;
@@ -41,6 +43,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     btnActive: { type: Boolean },
     editable: { type: Boolean },
     placeholder: { type: String },
+    mentions: { type: Array },
     mentionList: { type: Object },
     participantsList: { type: Object },
   };
@@ -82,6 +85,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (commentTextarea) {
       commentTextarea.addEventListener('input', this.handleInput);
+    }
+
+    if (this.text.length > 0) {
+      this.autoCompleteHandler.setMentions(this.mentions)
     }
   }
 
@@ -137,10 +144,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private insertMention = (event) => {
-    const { userId, name, avatar, position } = event.detail;
+    const { id, name, avatar, position } = event.detail;
 
     this.autoCompleteHandler.insertMention(position.start, position.end, {
-      userId,
+      id,
       name,
       avatar
     });
@@ -203,6 +210,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
+        mentions: this.autoCompleteHandler.getMentions(),
         position: this.pinCoordinates,
       },
       {

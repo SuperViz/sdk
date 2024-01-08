@@ -174,6 +174,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         createdAt=${comment.createdAt}
         annotationId=${this.annotation.uuid}
         participantsList=${JSON.stringify(this.participantsList)}
+        mentions=${JSON.stringify(comment.mentions)}
       ></superviz-comments-comment-item>
     `;
   };
@@ -210,6 +211,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               ?resolved=${this.resolved}
               annotationFilter=${this.annotationFilter}
               @resolve-annotation=${this.resolveAnnotation}
+              mentions=${JSON.stringify(this.annotation.comments?.[0].mentions)}
             ></superviz-comments-comment-item>
 
             <div class=${classMap(this.avatarCommentsClasses)}>

@@ -274,7 +274,7 @@ export class Comments extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { position, text } = detail;
+      const { position, text, mentions } = detail;
       const { url } = this;
 
       const annotation = await ApiService.createAnnotations(
@@ -290,9 +290,23 @@ export class Comments extends BaseComponent {
 
       const comment = await this.createComment(annotation.uuid, text);
 
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+          position: JSON.stringify(mention.position),
+        }))
+      })
+
       this.addAnnotation({
         ...annotation,
-        comments: [comment],
+        comments: [{
+          ...comment,
+          mentions: mentions.map((mention) => ({
+            ...mention,
+            position: JSON.stringify(mention.position),
+          })),
+        }],
       });
 
       // remove the temporary pin
@@ -377,19 +391,34 @@ export class Comments extends BaseComponent {
    */
   private updateComment = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { uuid, text } = detail;
-      await ApiService.updateComment(
+      const { uuid, text, mentions } = detail;
+      const comment = await ApiService.updateComment(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         uuid,
         text,
       );
 
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+          position: JSON.stringify(mention.position),
+        }))
+      })
+
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
           comments: annotation.comments.map((comment) => {
             if (comment.uuid === uuid) {
-              return Object.assign({}, comment, { text });
+              return Object.assign({}, comment, {
+                ...comment,
+                text,
+                mentions: mentions.map((mention) => ({
+                  ...mention,
+                  position: JSON.stringify(mention.position),
+                })),
+              });
             }
 
             return comment;
