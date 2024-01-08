@@ -173,7 +173,7 @@ export class HTMLPin implements PinAdapter {
    */
   private addScrollListeners(element: HTMLElement): void {
     let el = element;
-    while (el.parentElement) {
+    while (el.parentElement && el.parentElement !== document.body) {
       el = el.parentElement;
 
       if (this.traversedDom.has(el)) break;
@@ -641,6 +641,18 @@ export class HTMLPin implements PinAdapter {
     return temporaryContainer;
   }
 
+  private updateTraversedDomList(id: string) {
+    let element: HTMLElement = this.elementsWithDataId[id].parentElement;
+    while (element) {
+      if (element.querySelector(`[${this.dataAttribute}]`)) {
+        break;
+      }
+
+      this.traversedDom.delete(element);
+      element = element.parentElement;
+    }
+  }
+
   /**
    * @function createPinsContainer
    * @description creates the container where pins will be appended and appends it to the DOM (either the parent of the element with the specified id or the body)
@@ -842,6 +854,7 @@ export class HTMLPin implements PinAdapter {
       const attributeRemoved = !dataId && oldValue;
 
       if (attributeRemoved) {
+        this.updateTraversedDomList(oldValue);
         this.removeAnnotationPin('temporary-pin');
         this.clearElement(oldValue);
 
