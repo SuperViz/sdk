@@ -323,11 +323,16 @@ export class HTMLPin implements PinAdapter {
   public removeAnnotationPin(uuid: string): void {
     const pinElement = this.pins.get(uuid);
 
-    if (!pinElement) return;
+    if (!pinElement && uuid === 'temporary-pin') return;
 
-    pinElement.remove();
-    this.pins.delete(uuid);
-    this.annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
+    if (pinElement) {
+      pinElement.remove();
+      this.pins.delete(uuid);
+    }
+
+    this.annotations = this.annotations.filter((annotation) => {
+      return annotation.uuid !== uuid;
+    });
   }
 
   /**
