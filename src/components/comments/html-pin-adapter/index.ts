@@ -96,15 +96,15 @@ export class HTMLPin implements PinAdapter {
     this.divWrappers.clear();
     this.pins.forEach((pin) => pin.remove());
     this.pins.clear();
-    delete this.divWrappers;
-    delete this.pins;
-    delete this.elementsWithDataId;
-    delete this.logger;
+    this.divWrappers = undefined;
+    this.pins = undefined;
+    this.elementsWithDataId = undefined;
+    this.logger = undefined;
     this.onPinFixedObserver.destroy();
-    delete this.onPinFixedObserver;
+    this.onPinFixedObserver = undefined;
     this.pinsContainer.remove();
-    delete this.pinsContainer;
-    delete this.container;
+    this.pinsContainer = undefined;
+    this.container = undefined;
 
     this.annotations = [];
 
