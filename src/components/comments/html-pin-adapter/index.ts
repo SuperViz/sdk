@@ -63,6 +63,12 @@ export class HTMLPin implements PinAdapter {
     const { dataAttributeName } = options;
 
     this.createPinsContainer();
+
+    if (this.dataAttribute === '') throw new Error('dataAttributeName cannot be an empty string');
+    if (this.dataAttribute === null) throw new Error('dataAttributeName cannot be null');
+    if (this.dataAttribute && typeof this.dataAttribute !== 'string')
+      throw new Error('dataAttributeName must be a string');
+
     this.dataAttribute = dataAttributeName || this.dataAttribute;
     this.isActive = false;
     this.prepareElements();
