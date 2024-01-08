@@ -2,7 +2,13 @@ import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
-import { HorizontalSide, Simple2DPoint, SimpleParticipant, TemporaryPinData } from './types';
+import {
+  HorizontalSide,
+  TranslateAndScale,
+  Simple2DPoint,
+  SimpleParticipant,
+  TemporaryPinData,
+} from './types';
 
 export class HTMLPin implements PinAdapter {
   // Public properties
@@ -53,7 +59,7 @@ export class HTMLPin implements PinAdapter {
     }
 
     this.createPinsContainer();
-    this.dataAttribute &&= dataAttributeName;
+    this.dataAttribute = dataAttributeName || this.dataAttribute;
     this.isActive = false;
     this.prepareElements();
 
@@ -65,7 +71,6 @@ export class HTMLPin implements PinAdapter {
     this.pins = new Map();
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.annotations = [];
-    this.renderAnnotationsPins();
 
     document.body.addEventListener('select-annotation', this.annotationSelected);
   }
@@ -73,7 +78,7 @@ export class HTMLPin implements PinAdapter {
   // ------- setup -------
   /**
    * @function destroy
-   * @description destroys the container pin adapter.
+   * @description destroys the pin adapter.
    * @returns {void}
    * */
   public destroy(): void {
@@ -101,7 +106,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function addElementListeners
-   * @description adds event listeners to the element
+   * @description adds event listeners to the element.
    * @param {string} id the id of the element to add the listeners to.
    * @returns {void}
    */
@@ -114,6 +119,7 @@ export class HTMLPin implements PinAdapter {
    * @function removeElementListeners
    * @description removes event listeners from the element
    * @param {string} id the id of the element to remove the listeners from.
+   * @param {boolean} keepObserver whether to keep he resize observer or not.
    * @returns {void}
    */
   private removeElementListeners(id: string, keepObserver?: boolean): void {
@@ -186,7 +192,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function prepareElements
-   * @description set elements with the specified data attribute as pinnable
+   * @description sets elements with the specified data attribute as pinnable.
    * @returns {void}
    */
   private prepareElements(): void {
@@ -200,7 +206,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function setAddCursor
-   * @description sets the mouse cursor to a special cursor
+   * @description sets the mouse cursor to a special cursor when hovering over all the elements with the specified data-attribute.
    * @returns {void}
    */
   private setAddCursor(): void {
@@ -212,7 +218,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function removeAddCursor
-   * @description removes the special cursor
+   * @description removes the special cursor.
    * @returns {void}
    */
   private removeAddCursor(): void {
@@ -225,7 +231,8 @@ export class HTMLPin implements PinAdapter {
   // ------- public methods -------
   /**
    * @function setPinsVisibility
-   * @param {boolean} isVisible - Controls the visibility of the pins.
+   * @description sets the visibility of the pins, hides them if it is not visible.
+   * @param {boolean} isVisible controls the visibility of the pins.
    * @returns {void}
    */
   public setPinsVisibility(isVisible: boolean): void {
@@ -242,15 +249,43 @@ export class HTMLPin implements PinAdapter {
    * @function translatePins
    * @description translates the wrapper containing all the pins of an element
    * @param {string} elementId
-   * @param {number} x
-   * @param {number} y
+   * @param {Partial<TranslateAndScale>} options the values to be applied to the transform property of the specified wrapper
    * @returns {void}
    */
-  public translatePins = (elementId: string, x: number, y: number): void => {
+  public translateAndScalePins = (elementId: string, options: Partial<TranslateAndScale>): void => {
     const wrapper = this.divWrappers.get(elementId);
     if (!wrapper) return;
 
-    wrapper.style.transform = `translate(${x}px, ${y}px)`;
+    const { scale, translateX, translateY } = options;
+    const {
+      scale: currentScale,
+      translateX: currentTranslateX,
+      translateY: currentTranslateY,
+    } = this.parseTransform(wrapper.style.transform);
+
+    wrapper.style.transform = `scale(${scale ?? currentScale}) translateX(${
+      translateX ?? currentTranslateX
+    }px) translateY(${translateY ?? currentTranslateY}px)`;
+  };
+
+  /**
+   * @function translateAndScaleContainer
+   * @description apply a translation and scales the container containing all the pins
+   * @param {Partial<TranslateAndScale>} options the values to be applied to the transform property of the general pins container
+   * @returns {void}
+   */
+  public translateAndScaleContainer = (options: Partial<TranslateAndScale>): void => {
+    const { scale, translateX, translateY } = options;
+    const {
+      scale: currentScale,
+      translateX: currentTranslateX,
+      translateY: currentTranslateY,
+    } = this.parseTransform(this.pinsContainer.style.transform);
+
+    const transform = `scale(${scale ?? currentScale}) translateX(${
+      translateX ?? currentTranslateX
+    }px) translateY(${translateY ?? currentTranslateY}px)`;
+    this.pinsContainer.style.transform = transform;
   };
 
   /**
@@ -272,9 +307,10 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function setCommentsMetadata
    * @description stores data related to the local participant
-   * @param {HorizontalSide} side
-   * @param {string} avatar
-   * @param {string} name
+   * @param {HorizontalSide} side whether the comments sidebar is on the left or right side of the screen
+   * @param {string} avatar the avatar of the local participant
+   * @param {string} name the name of the local participant
+   * @returns {void}
    */
   public setCommentsMetadata = (side: HorizontalSide, avatar: string, name: string): void => {
     this.commentsSide = side;
@@ -292,8 +328,9 @@ export class HTMLPin implements PinAdapter {
     this.logger.log('updateAnnotations', annotations);
 
     this.annotations = annotations;
+    this.renderAnnotationsPins();
 
-    if (!this.isActive && !this.isPinsVisible) return;
+    if (!this.isActive || !this.isPinsVisible) return;
 
     this.removeAnnotationsPins();
     this.renderAnnotationsPins();
@@ -301,6 +338,7 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function setActive
+   * @description sets the container pin adapter as active or not
    * @param {boolean} isOpen whether the container pin adapter is active or not.
    * @returns {void}
    */
@@ -321,7 +359,8 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function renderTemporaryPin
    * @description creates a temporary pin with the id temporary-pin to mark where the annotation is being created
-   * @param {string} elementId - The id of the element where the temporary pin will be rendered.
+   * @param {string} elementId the id of the element where the temporary pin will be rendered.
+   * @returns {void}
    */
   public renderTemporaryPin(elementId?: string): void {
     this.temporaryPinCoordinates.elementId ||= elementId;
@@ -384,7 +423,7 @@ export class HTMLPin implements PinAdapter {
 
       const wrapper = this.divWrappers
         .get(elementId)
-        .querySelector('[data-pins-wrapper]') as HTMLDivElement;
+        ?.querySelector('[data-pins-wrapper]') as HTMLDivElement;
       if (!wrapper) return;
 
       if (this.pins.has(annotation.uuid)) {
@@ -402,25 +441,30 @@ export class HTMLPin implements PinAdapter {
    * @description clears an element that no longer has the specified data attribute
    * @param {string} id the id of the element to be cleared
    * @param {boolean} keepObserver whether to keep he resize observer or not
-   * @returns
+   * @returns {void}
    */
   private clearElement(id: string, keepObserver?: boolean): void {
     const element = this.elementsWithDataId[id];
     if (!element) return;
 
     const wrapper = this.divWrappers.get(id);
-    const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLDivElement;
-    const pins = pinsWrapper.children;
-    const { length } = pins;
+    if (wrapper) {
+      const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLDivElement;
+      const pins = pinsWrapper.children;
+      const { length } = pins;
 
-    for (let i = 0; i < length; ++i) {
-      const pin = pins.item(0);
-      this.pins.delete(pin.id);
-      pin.remove();
+      for (let i = 0; i < length; ++i) {
+        const pin = pins.item(0);
+        this.pins.delete(pin.id);
+        pin.remove();
+      }
+
+      wrapper.style.cursor = 'default';
+      wrapper.remove();
     }
 
-    wrapper.style.cursor = 'default';
     this.removeElementListeners(id, keepObserver);
+    this.divWrappers.delete(id);
     delete this.elementsWithDataId[id];
   }
 
@@ -469,13 +513,14 @@ export class HTMLPin implements PinAdapter {
     if (!this.isActive || !this.isPinsVisible) return;
 
     this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
+    this.divWrappers.get(id).style.pointerEvents = 'auto';
     this.addElementListeners(id);
   }
 
   /**
    * @function resetPins
    * @description Unselects selected pin and removes temporary pin.
-   * @param {KeyboardEvent} event - The keyboard event object.
+   * @param {KeyboardEvent} event the keyboard event object, this should be 'Escape'.
    * @returns {void}
    * */
   private resetPins = (event?: KeyboardEvent): void => {
@@ -493,7 +538,7 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function annotationSelected
    * @description highlights the selected annotation and scrolls to it
-   * @param {CustomEvent} event
+   * @param {CustomEvent} event the emitted event object with the uuid of the selected annotation
    * @returns {void}
    */
   private annotationSelected = ({ detail: { uuid } }: CustomEvent): void => {
@@ -520,8 +565,9 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function addTemporaryPinToElement
-   * @param {string} elementId
-   * @param {HTMLElement} pin
+   * @description adds the temporary pin and the temporary pin container to the element with the specified id.
+   * @param {string} elementId the id of the element where the temporary pin will be rendered.
+   * @param {HTMLElement} pin the temporary pin to be rendered.
    * @returns {void}
    */
   private addTemporaryPinToElement(elementId: string, pin: HTMLElement): void {
@@ -541,7 +587,7 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function createTemporaryPinContainer
    * @description return a temporary pin container
-   * @returns {HTMLDivElement}
+   * @returns {HTMLDivElement} the temporary pin container, separated from the main pins container to avoid overflow issues
    */
   private createTemporaryPinContainer(): HTMLDivElement {
     const temporaryContainer = document.createElement('div');
@@ -565,17 +611,21 @@ export class HTMLPin implements PinAdapter {
     pinsContainer.style.top = '0';
     pinsContainer.style.left = '0';
     pinsContainer.style.width = '100%';
+    pinsContainer.style.pointerEvents = 'none';
     pinsContainer.style.height = '100%';
+    pinsContainer.style.transformOrigin = '0 0';
+
     this.pinsContainer = pinsContainer;
     this.container.appendChild(pinsContainer);
   }
 
   /**
    * @function createPin
+   * @description creates a pin element and sets its properties
    * @param {Annotation} annotation the annotation associated to the pin to be rendered
    * @param {number} x the x coordinate of the pin
    * @param {number} y the y coordinate of the pin
-   * @returns
+   * @returns {HTMLElement} the pin element
    */
   private createPin(annotation: Annotation, x: number, y: number) {
     const pinElement = document.createElement('superviz-comments-annotation-pin');
@@ -587,12 +637,18 @@ export class HTMLPin implements PinAdapter {
     return pinElement;
   }
 
+  /**
+   * @function createWrapper
+   * @description creates a wrapper for the element with the specified id
+   * @param {HTMLElement} element the element to be wrapped
+   * @param {string} id the id of the element to be wrapped
+   * @returns {HTMLElement} the new wrapper element
+   */
   private createWrapper(element: HTMLElement, id: string): HTMLElement {
     const container = element;
     const wrapperId = `superviz-id-${id}`;
-    if (container.querySelector(`#${wrapperId}`)) {
-      return;
-    }
+
+    if (this.pinsContainer.querySelector(`#${wrapperId}`)) return;
 
     const containerRect = container.getBoundingClientRect();
 
@@ -600,12 +656,14 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.setAttribute('data-wrapper-id', id);
     containerWrapper.id = wrapperId;
 
-    containerWrapper.style.position = 'fixed';
+    containerWrapper.style.position = 'absolute';
     containerWrapper.style.top = `${containerRect.top}px`;
     containerWrapper.style.left = `${containerRect.left}px`;
     containerWrapper.style.width = `${containerRect.width}px`;
     containerWrapper.style.height = `${containerRect.height}px`;
     containerWrapper.style.pointerEvents = 'none';
+    containerWrapper.style.transform = 'translateX(0) translateY(0) scale(1)';
+    containerWrapper.style.cursor = 'default';
 
     const pinsWrapper = document.createElement('div');
     pinsWrapper.setAttribute('data-pins-wrapper', '');
@@ -624,7 +682,7 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function temporaryPinContainer
    * @description returns the temporary pin container
-   * @returns {HTMLDivElement}
+   * @returns {HTMLDivElement} the temporary pin container
    */
   private get temporaryPinContainer(): HTMLDivElement {
     return this.divWrappers
@@ -633,6 +691,12 @@ export class HTMLPin implements PinAdapter {
   }
 
   // ------- callbacks -------
+  /**
+   * @function onClick
+   * @description handles the click event on the container; mainly, creates or moves the temporary pin
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive || event.target === this.pins.get('temporary-pin')) return;
 
@@ -686,28 +750,42 @@ export class HTMLPin implements PinAdapter {
     this.mouseDownCoordinates = { x, y };
   };
 
+  /**
+   * @function handleResizeObserverChanges
+   * @description handles the resize changes in the elements with the specified data attribute
+   * @param {ResizeObserverEntry[]} changes the elements with the specified data attribute that have changed
+   * @returns {void}
+   */
   private handleResizeObserverChanges = (changes: ResizeObserverEntry[]): void => {
     changes.forEach((change) => {
-      const element = change.target;
+      const element = change.target as HTMLElement;
       const elementId = element.getAttribute(this.dataAttribute);
       const elementRect = element.getBoundingClientRect();
       const wrapper = this.divWrappers.get(elementId);
-      wrapper.style.top = `${elementRect.top}px`;
-      wrapper.style.left = `${elementRect.left}px`;
-      wrapper.style.width = `${elementRect.width}px`;
-      wrapper.style.height = `${elementRect.height}px`;
+
+      wrapper.style.top = `${elementRect.top + window.scrollY}`;
+      wrapper.style.left = `${elementRect.left + window.scrollX}`;
+      wrapper.style.width = `${elementRect.width}`;
+      wrapper.style.height = `${elementRect.height}`;
+
       const subwrappers = wrapper.children;
 
       for (let i = 0; i < subwrappers.length; ++i) {
         const subwrapper = subwrappers.item(i) as HTMLElement;
-        subwrapper.style.top = `0`;
-        subwrapper.style.left = `0`;
+        subwrapper.style.top = '0';
+        subwrapper.style.left = '0';
         subwrapper.style.width = `${elementRect.width}px`;
-        subwrapper.style.height = `${elementRect.height}px`;
+        subwrapper.style.height = `${elementRect.height}`;
       }
     });
   };
 
+  /**
+   * @function handleMutationObserverChanges
+   * @description handles the changes in the value of the specified data attribute of the elements inside the container
+   * @param {MutationRecord[]} changes the changes in the value of the specified data attribute of the elements inside the container
+   * @returns {void}
+   */
   private handleMutationObserverChanges = (changes: MutationRecord[]): void => {
     changes.forEach((change) => {
       const { target, oldValue } = change;
@@ -734,7 +812,7 @@ export class HTMLPin implements PinAdapter {
   /**
    * @function onToggleAnnotationSidebar
    * @description Removes temporary pin and unselects selected pin
-   * @param {CustomEvent} event
+   * @param {CustomEvent} event the emitted event object with the info about if the annotation sidebar is open or not
    * @returns {void}
    */
   private onToggleAnnotationSidebar = ({ detail }: CustomEvent): void => {
@@ -742,12 +820,26 @@ export class HTMLPin implements PinAdapter {
 
     if (open) return;
 
-    this.pins.forEach((pinElement) => {
-      pinElement.removeAttribute('active');
-    });
+    this.resetSelectedPin();
 
     if (this.pins.has('temporary-pin')) {
       this.removeAnnotationPin('temporary-pin');
     }
   };
+
+  /**
+   * @function parseTransform
+   * @description parses the transform property of an element
+   * @param {string} transform the transform property of an element
+   * @returns {TranslateAndScale} an object with the key-value pairs of the transform property
+   */
+  private parseTransform(transform: string): TranslateAndScale {
+    return Array.from(transform.matchAll(/(\w+)\((.+?)\)/gm)).reduce(
+      (agg: any, [, property, value]: any) => ({
+        ...agg,
+        [property]: (value as string).replace('px', ''),
+      }),
+      {},
+    ) as TranslateAndScale;
+  }
 }
