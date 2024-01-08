@@ -137,7 +137,7 @@ describe('HTMLPinAdapter', () => {
 
       instance['removeListeners']();
 
-      expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(2);
+      expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(1);
       expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(6);
     });
 
@@ -157,7 +157,7 @@ describe('HTMLPinAdapter', () => {
       jest.restoreAllMocks();
     });
 
-    test('should select annotation pin', async () => {
+    test('should select annotation pin', () => {
       instance.updateAnnotations([MOCK_ANNOTATION_HTML]);
 
       expect(instance['selectedPin']).toBeNull();
@@ -173,7 +173,7 @@ describe('HTMLPinAdapter', () => {
       expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeTruthy();
     });
 
-    test('should not select annotation pin if uuid is not defined', async () => {
+    test('should not select annotation pin if uuid is not defined', () => {
       instance.updateAnnotations([MOCK_ANNOTATION_HTML]);
 
       expect(instance['selectedPin']).toBeNull();
@@ -513,7 +513,7 @@ describe('HTMLPinAdapter', () => {
       expect(instance['selectedPin']).toBeNull();
     });
 
-    test('should not select annotation pin if it does not exist', async () => {
+    test('should not select annotation pin if it does not exist', () => {
       instance.updateAnnotations([MOCK_ANNOTATION_HTML]);
 
       expect(instance['selectedPin']).toBeNull();
@@ -611,8 +611,7 @@ describe('HTMLPinAdapter', () => {
   });
 
   describe('updateAnnotations', () => {
-    test('should not render annotations if the adapter is not active and visibility is false', async () => {
-      instance.setActive(false);
+    test('should not render annotations if visibility is false', () => {
       instance.setPinsVisibility(false);
 
       instance.updateAnnotations([MOCK_ANNOTATION_HTML]);
@@ -1024,8 +1023,8 @@ describe('HTMLPinAdapter', () => {
       expect(wrapper.style.height).toEqual(`${height}px`);
       expect(wrapper.style.top).toEqual(`${top}px`);
       expect(wrapper.style.left).toEqual(`${left}px`);
-      expect(pinsWrapper.style.width).toEqual(`${width}px`);
-      expect(pinsWrapper.style.height).toEqual(`${height}px`);
+      expect(pinsWrapper.style.width).toEqual(`100%`);
+      expect(pinsWrapper.style.height).toEqual(`100%`);
       expect(pinsWrapper.style.top).toEqual('0px');
       expect(pinsWrapper.style.left).toEqual('0px');
     });
@@ -1152,6 +1151,32 @@ describe('HTMLPinAdapter', () => {
       instance['onToggleAnnotationSidebar']({ detail: { open: false } } as unknown as CustomEvent);
 
       expect(spy).toHaveBeenCalledWith('temporary-pin');
+    });
+  });
+
+  describe('onScroll', () => {
+    test('should update the wrappers positions to keep them in the same position relative to the elements with the specified data-attribute', () => {
+      const element1 = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
+      const element2 = document.body.querySelector('[data-superviz-id="2"]') as HTMLElement;
+      const wrapper1 = instance['divWrappers'].get('1') as HTMLElement;
+      const wrapper2 = instance['divWrappers'].get('2') as HTMLElement;
+
+      const element1Rect = element1.getBoundingClientRect();
+      const element2Rect = element2.getBoundingClientRect();
+
+      wrapper1.style.top = `${Math.random()}px`;
+      wrapper1.style.left = `${Math.random()}px`;
+
+      wrapper2.style.top = `${Math.random()}px`;
+      wrapper2.style.left = `${Math.random()}px`;
+
+      instance['onScroll']();
+
+      expect(wrapper1.style.top).toEqual(`${element1Rect.top}px`);
+      expect(wrapper1.style.left).toEqual(`${element1Rect.left}px`);
+
+      expect(wrapper2.style.top).toEqual(`${element2Rect.top}px`);
+      expect(wrapper2.style.left).toEqual(`${element2Rect.left}px`);
     });
   });
 });

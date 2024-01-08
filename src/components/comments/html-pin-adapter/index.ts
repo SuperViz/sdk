@@ -164,6 +164,9 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function addScrollListeners
+   * @description adds scroll event listeners to the element and its parents, until a parent that already has the scroll listener is found.
+   * @param {HTMLElement} element the element to add the scroll listener to.
+   * @returns {void}
    */
   private addScrollListeners(element: HTMLElement): void {
     let el = element;
@@ -351,9 +354,8 @@ export class HTMLPin implements PinAdapter {
     this.logger.log('updateAnnotations', annotations);
 
     this.annotations = annotations;
-    this.renderAnnotationsPins();
 
-    if (!this.isActive || !this.isPinsVisible) return;
+    if (!this.isPinsVisible) return;
 
     this.removeAnnotationsPins();
     this.renderAnnotationsPins();
@@ -767,6 +769,8 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function onScroll
+   * @description moves the wrappers to the correct position when the user scrolls
+   * @returns {void}
    */
   private onScroll = (): void => {
     Object.entries(this.elementsWithDataId).forEach(([key, value]) => {
