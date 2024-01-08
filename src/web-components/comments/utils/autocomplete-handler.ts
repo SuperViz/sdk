@@ -65,7 +65,7 @@ export class AutoCompleteHandler {
   }
 
   getSelectionStart () {
-    return this.input.selectionStart
+    return this.input?.selectionStart
   }
 
   setCaretPosition (index) {
@@ -73,7 +73,7 @@ export class AutoCompleteHandler {
   }
 
   getValue () {
-    return this.input.value
+    return this.input?.value
   }
 
   setValue (value) {
@@ -106,7 +106,7 @@ export class AutoCompleteHandler {
   }
 
   updateMentionPositions () {
-    const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
+    const isDeletion = (this.event?.inputType === "deleteContentBackward" || this.event?.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event?.inputType === "deleteByCut")
 
     this.mentions = this.mentions.map((mention) => {
       const { start, end } = mention.position
@@ -168,11 +168,4 @@ export class AutoCompleteHandler {
     this.input.focus()
   }
 
-  addAtSymbolInCaretPosition () {
-    const caretIndex = this.getSelectionStart()
-
-    this.setValue(`${this.getValue().slice(0, caretIndex)  }@${  this.getValue().slice(caretIndex, this.getValue().length)}`)
-    this.updateMentionPositions()
-    this.input.focus()
-  }
 }

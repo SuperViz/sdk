@@ -48,6 +48,52 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     participantsList: { type: Object },
   };
 
+  private addAtSymbolInCaretPosition = (e) => {
+    const input = this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+    const newInputEvent = new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(newInputEvent, 'data', {
+      value: '@',
+      writable: true,
+    });
+
+    input.dispatchEvent(newInputEvent);
+    let caretIndex = this.autoCompleteHandler.getSelectionStart()
+    const getValue = this.autoCompleteHandler.getValue()
+
+    this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
+
+    caretIndex +=1
+
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+
+    const keyIndex = keyData?.keyIndex ?? -1;
+
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+
+    const position = {
+      start: keyIndex + 1,
+      end: caretIndex,
+    }
+
+    if (searchText === null) {
+      this.mentionList = []
+      return;
+    }
+        const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+
+    if (action === 'show') {
+      this.mentionList = mentions
+    }
+
+    if (action === 'hide') {
+      this.mentionList = []
+    }
+
+  }
+
   private getCommentInput = () => {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
   };
@@ -263,7 +309,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="comment-input--options">
           <div>
             <button class="icon-button mention">
-              <superviz-icon name="mention" size="sm"></superviz-icon>
+              <superviz-icon name="mention" @click=${this.addAtSymbolInCaretPosition} size="sm"></superviz-icon>
             </button>
           </div>
           <div class="comment-input-options">
