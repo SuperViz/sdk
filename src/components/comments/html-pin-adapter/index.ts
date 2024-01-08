@@ -844,6 +844,7 @@ export class HTMLPin implements PinAdapter {
 
         if (this.selectedPin?.getAttribute('elementId') === oldValue) {
           document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
+          this.selectedPin = null;
         }
 
         return;
