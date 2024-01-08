@@ -43,6 +43,7 @@ export class HTMLPin implements PinAdapter {
   private elementsWithDataId: Record<string, HTMLElement> = {};
   private divWrappers: Map<string, HTMLElement> = new Map();
   private pins: Map<string, HTMLElement>;
+  private traversedDom: Set<HTMLElement> = new Set();
 
   // Observers
   private resizeObserver: ResizeObserver;
@@ -73,6 +74,9 @@ export class HTMLPin implements PinAdapter {
     this.annotations = [];
 
     document.body.addEventListener('select-annotation', this.annotationSelected);
+    Object.values(this.elementsWithDataId).forEach((element) => {
+      this.addScrollListeners(element);
+    });
   }
 
   // ------- setup -------
@@ -102,6 +106,10 @@ export class HTMLPin implements PinAdapter {
     this.annotations = [];
 
     document.body.removeEventListener('select-annotation', this.annotationSelected);
+    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    this.traversedDom.forEach((element) => {
+      element.removeEventListener('scroll', this.onScroll);
+    });
   }
 
   /**
@@ -155,6 +163,21 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
+   * @function addScrollListeners
+   */
+  private addScrollListeners(element: HTMLElement): void {
+    let el = element;
+    while (el.parentElement) {
+      el = el.parentElement;
+
+      if (this.traversedDom.has(el)) break;
+
+      this.traversedDom.add(el);
+      el.addEventListener('scroll', this.onScroll);
+    }
+  }
+
+  /**
    * @function removeListeners
    * @description removes event listeners from the container element.
    * @returns {void}
@@ -162,7 +185,6 @@ export class HTMLPin implements PinAdapter {
   private removeListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id, true));
     document.body.removeEventListener('keyup', this.resetPins);
-    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   /**
@@ -211,7 +233,8 @@ export class HTMLPin implements PinAdapter {
    */
   private setAddCursor(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
-      this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
+      this.divWrappers.get(id).style.cursor =
+        'url("https://production.cdn.superviz.com/static/pin-add.png") 0 100, pointer';
       this.divWrappers.get(id).style.pointerEvents = 'auto';
     });
   }
@@ -509,10 +532,12 @@ export class HTMLPin implements PinAdapter {
 
     this.elementsWithDataId[id] = element;
     this.resizeObserver?.observe(element);
+    this.addScrollListeners(element);
 
     if (!this.isActive || !this.isPinsVisible) return;
 
-    this.divWrappers.get(id).style.cursor = 'url("") 0 100, pointer';
+    this.divWrappers.get(id).style.cursor =
+      'url("https://production.cdn.superviz.com/static/pin-add.png") 0 100, pointer';
     this.divWrappers.get(id).style.pointerEvents = 'auto';
     this.addElementListeners(id);
   }
@@ -656,7 +681,7 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.setAttribute('data-wrapper-id', id);
     containerWrapper.id = wrapperId;
 
-    containerWrapper.style.position = 'absolute';
+    containerWrapper.style.position = 'fixed';
     containerWrapper.style.top = `${containerRect.top}px`;
     containerWrapper.style.left = `${containerRect.left}px`;
     containerWrapper.style.width = `${containerRect.width}px`;
@@ -741,6 +766,21 @@ export class HTMLPin implements PinAdapter {
   };
 
   /**
+   * @function onScroll
+   */
+  private onScroll = (): void => {
+    Object.entries(this.elementsWithDataId).forEach(([key, value]) => {
+      const wrapper = this.divWrappers.get(key);
+      const elementRect = value.getBoundingClientRect();
+
+      wrapper.style.top = `${elementRect.top}px`;
+      wrapper.style.left = `${elementRect.left}px`;
+      wrapper.style.width = `${elementRect.width}px`;
+      wrapper.style.height = `${elementRect.height}px`;
+    });
+  };
+
+  /**
    * @function onMouseDown
    * @description stores the mouse down coordinates
    * @param {MouseEvent} event - The mouse event object.
@@ -763,20 +803,10 @@ export class HTMLPin implements PinAdapter {
       const elementRect = element.getBoundingClientRect();
       const wrapper = this.divWrappers.get(elementId);
 
-      wrapper.style.top = `${elementRect.top + window.scrollY}`;
-      wrapper.style.left = `${elementRect.left + window.scrollX}`;
-      wrapper.style.width = `${elementRect.width}`;
-      wrapper.style.height = `${elementRect.height}`;
-
-      const subwrappers = wrapper.children;
-
-      for (let i = 0; i < subwrappers.length; ++i) {
-        const subwrapper = subwrappers.item(i) as HTMLElement;
-        subwrapper.style.top = '0';
-        subwrapper.style.left = '0';
-        subwrapper.style.width = `${elementRect.width}px`;
-        subwrapper.style.height = `${elementRect.height}`;
-      }
+      wrapper.style.top = `${elementRect.top + window.scrollY}px`;
+      wrapper.style.left = `${elementRect.left + window.scrollX}px`;
+      wrapper.style.width = `${elementRect.width}px`;
+      wrapper.style.height = `${elementRect.height}px`;
     });
   };
 
