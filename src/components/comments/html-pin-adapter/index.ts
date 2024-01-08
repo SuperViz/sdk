@@ -8,6 +8,7 @@ import {
   Simple2DPoint,
   SimpleParticipant,
   TemporaryPinData,
+  HTMLPinOptions,
 } from './types';
 
 export class HTMLPin implements PinAdapter {
@@ -49,7 +50,7 @@ export class HTMLPin implements PinAdapter {
   private resizeObserver: ResizeObserver;
   private mutationObserver: MutationObserver;
 
-  constructor(containerId: string, dataAttributeName?: string) {
+  constructor(containerId: string, options?: HTMLPinOptions) {
     this.logger = new Logger('@superviz/sdk/comments-component/container-pin-adapter');
     this.container = document.getElementById(containerId) as HTMLElement;
 
@@ -58,6 +59,8 @@ export class HTMLPin implements PinAdapter {
       this.logger.log(message);
       throw new Error(message);
     }
+
+    const { dataAttributeName } = options;
 
     this.createPinsContainer();
     this.dataAttribute = dataAttributeName || this.dataAttribute;

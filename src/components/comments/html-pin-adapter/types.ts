@@ -19,3 +19,7 @@ export interface TranslateAndScale {
   translateX: number;
   translateY: number;
 }
+
+export interface HTMLPinOptions {
+  dataAttributeName?: string;
+}
