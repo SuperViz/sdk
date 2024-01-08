@@ -129,18 +129,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (action === 'hide') {
       this.mentionList = []
     }
-
-    if (e.inputType === ' ' && this.mentionList.length && this.mentionList.length === 1) {
-      const [{ userId = '', name = '' } = {}] = this.mentionList;
-
-      this.autoCompleteHandler.insertMention(position.start, position.end, {
-        userId,
-        name,
-        avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png'
-      });
-
-      this.updateHeight();
-    }
   }
 
   private insertMention = (event) => {

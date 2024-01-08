@@ -90,6 +90,7 @@ export class AutoCompleteHandler {
 
   searchMention (caretIndex, keyIndex) {
     const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex <= mention.position.end)
+    
     if (existingMention) {
       this.removeMention(existingMention)
       return null
@@ -126,6 +127,14 @@ export class AutoCompleteHandler {
         position: newPosition
       }
     })
+
+    this.mentions = this.mentions.filter(mention => {
+      const { start, end } = mention.position
+      const text = this.getValue().substring(start, end)
+
+      return text !== ''
+    })
+
     console.log('start', this.mentions.map(item => item.position.start))
     console.log('end', this.mentions.map(item => item.position.end))
   }
