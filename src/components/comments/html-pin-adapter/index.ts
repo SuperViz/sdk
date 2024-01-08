@@ -563,7 +563,7 @@ export class HTMLPin implements PinAdapter {
     if (!this.temporaryPinCoordinates.elementId) return;
 
     this.removeAnnotationPin('temporary-pin');
-    this.temporaryPinContainer.remove();
+    this.temporaryPinContainer?.remove();
     this.temporaryPinCoordinates = {};
   };
 
@@ -593,6 +593,12 @@ export class HTMLPin implements PinAdapter {
     pinElement.setAttribute('active', '');
 
     this.selectedPin = pinElement;
+
+    const newSelectedAnnotation = this.annotations.find((annotation) => annotation.uuid === uuid);
+    this.selectedPin.setAttribute(
+      'elementId',
+      JSON.parse(newSelectedAnnotation.position).elementId,
+    );
   };
 
   /**
@@ -717,9 +723,7 @@ export class HTMLPin implements PinAdapter {
    * @returns {HTMLDivElement} the temporary pin container
    */
   private get temporaryPinContainer(): HTMLDivElement {
-    return this.divWrappers
-      .get(this.temporaryPinCoordinates.elementId)
-      .querySelector('#temporary-pin-container');
+    return document.getElementById('temporary-pin-container') as HTMLDivElement;
   }
 
   // ------- callbacks -------
@@ -836,6 +840,11 @@ export class HTMLPin implements PinAdapter {
       if (attributeRemoved) {
         this.removeAnnotationPin('temporary-pin');
         this.clearElement(oldValue);
+
+        if (this.selectedPin?.getAttribute('elementId') === oldValue) {
+          document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
+        }
+
         return;
       }
 

@@ -1075,6 +1075,22 @@ describe('HTMLPinAdapter', () => {
       expect(setElementsSpy).not.toHaveBeenCalled();
     });
 
+    test('should unselect pin if the attribute is removed from the element', () => {
+      const change = {
+        target: document.createElement('div') as HTMLElement,
+        oldValue: '1',
+      } as unknown as MutationRecord;
+
+      const selectedPin = document.createElement('div');
+      selectedPin.setAttribute('elementId', '1');
+      instance['selectedPin'] = selectedPin;
+
+      const spy = jest.spyOn(document.body, 'dispatchEvent');
+      instance['handleMutationObserverChanges']([change]);
+
+      expect(spy).toHaveBeenCalledWith(new CustomEvent('select-annotation'));
+    });
+
     test('should clear element if the attribute changes, but still exists', () => {
       const change = {
         target: document.body.querySelector('[data-superviz-id="1"]') as HTMLElement,
