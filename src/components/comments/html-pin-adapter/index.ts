@@ -50,7 +50,7 @@ export class HTMLPin implements PinAdapter {
   private resizeObserver: ResizeObserver;
   private mutationObserver: MutationObserver;
 
-  constructor(containerId: string, options?: HTMLPinOptions) {
+  constructor(containerId: string, options: HTMLPinOptions = {}) {
     this.logger = new Logger('@superviz/sdk/comments-component/container-pin-adapter');
     this.container = document.getElementById(containerId) as HTMLElement;
 
@@ -59,6 +59,9 @@ export class HTMLPin implements PinAdapter {
       this.logger.log(message);
       throw new Error(message);
     }
+
+    if (typeof options !== 'object')
+      throw new Error('Second argument of the HTMLPin constructor must be an object');
 
     const { dataAttributeName } = options;
 
