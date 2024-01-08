@@ -652,6 +652,7 @@ export class HTMLPin implements PinAdapter {
     pinsContainer.style.pointerEvents = 'none';
     pinsContainer.style.height = '100%';
     pinsContainer.style.transformOrigin = '0 0';
+    pinsContainer.style.zIndex = '99';
 
     this.pinsContainer = pinsContainer;
     this.container.appendChild(pinsContainer);
