@@ -34,6 +34,7 @@ export class HTMLPin implements PinAdapter {
   private selectedPin: HTMLElement | null = null;
   private dataAttribute: string = 'data-superviz-id';
   private animateFrame: number;
+  private dataAttributeNameFilters: RegExp[];
 
   // Coordinates/Positions
   private mouseDownCoordinates: Simple2DPoint;
@@ -81,7 +82,7 @@ export class HTMLPin implements PinAdapter {
     if (typeof options !== 'object')
       throw new Error('Second argument of the HTMLPin constructor must be an object');
 
-    const { dataAttributeName } = options;
+    const { dataAttributeName, dataAttributeNameFilters } = options;
 
     if (dataAttributeName === '') throw new Error('dataAttributeName must be a non-empty string');
     if (dataAttributeName === null) throw new Error('dataAttributeName cannot be null');
@@ -89,6 +90,8 @@ export class HTMLPin implements PinAdapter {
       throw new Error('dataAttributeName must be a non-empty string');
 
     this.dataAttribute = dataAttributeName || this.dataAttribute;
+    this.dataAttributeNameFilters = dataAttributeNameFilters || [];
+
     this.isActive = false;
     this.prepareElements();
 
@@ -222,6 +225,12 @@ export class HTMLPin implements PinAdapter {
 
     elementsWithDataId.forEach((el: HTMLElement) => {
       const id = el.getAttribute(this.dataAttribute);
+      const skip = this.dataAttributeNameFilters.some((filter, index) => {
+        return id.match(filter);
+      });
+
+      if (skip) return;
+
       this.setElementReadyToPin(el, id);
     });
   }
@@ -789,9 +798,13 @@ export class HTMLPin implements PinAdapter {
     changes.forEach((change) => {
       const { target, oldValue } = change;
       const dataId = (target as HTMLElement).getAttribute(this.dataAttribute);
-
       if ((!dataId && !oldValue) || dataId === oldValue) return;
-      const attributeRemoved = !dataId && oldValue;
+
+      const oldValueSkipped = this.dataAttributeNameFilters.some((filter) =>
+        oldValue.match(filter),
+      );
+
+      const attributeRemoved = !dataId && oldValue && !oldValueSkipped;
 
       if (attributeRemoved) {
         this.removeAnnotationPin('temporary-pin');
@@ -805,9 +818,13 @@ export class HTMLPin implements PinAdapter {
         return;
       }
 
-      if (oldValue && this.elementsWithDataId[oldValue]) {
+      const skip = this.dataAttributeNameFilters.some((filter) => dataId.match(filter));
+
+      if ((oldValue && this.elementsWithDataId[oldValue]) || skip) {
         this.clearElement(oldValue);
       }
+
+      if (skip) return;
 
       this.setElementReadyToPin(target as HTMLElement, dataId);
       this.renderAnnotationsPins();

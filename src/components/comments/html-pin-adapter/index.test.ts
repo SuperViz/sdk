@@ -1043,6 +1043,50 @@ describe('HTMLPinAdapter', () => {
       expect(renderAnnotationsSpy).not.toHaveBeenCalled();
       expect(setElementsSpy).not.toHaveBeenCalled();
     });
+
+    test('should clear element then do nothing if new value is filtered', () => {
+      document.body.innerHTML =
+        '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
+      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      const change = {
+        target: document.body.querySelector('[data-superviz-id="1-matches"]') as HTMLElement,
+        oldValue: '2',
+      } as unknown as MutationRecord;
+
+      setElementsSpy = jest.spyOn(instance as any, 'setElementReadyToPin');
+      renderAnnotationsSpy = jest.spyOn(instance as any, 'renderAnnotationsPins');
+      clearElementSpy = jest.spyOn(instance as any, 'clearElement');
+      removeAnnotationSpy = jest.spyOn(instance as any, 'removeAnnotationPin');
+
+      instance['handleMutationObserverChanges']([change]);
+
+      expect(clearElementSpy).toHaveBeenCalled();
+      expect(renderAnnotationsSpy).not.toHaveBeenCalled();
+      expect(setElementsSpy).not.toHaveBeenCalled();
+      expect(removeAnnotationSpy).not.toHaveBeenCalled();
+    });
+
+    test('should not clear element if old value was skipped', () => {
+      document.body.innerHTML =
+        '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
+      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      const change = {
+        target: document.body.querySelector('[data-superviz-id="does-not-match"]') as HTMLElement,
+        oldValue: '1-matches',
+      } as unknown as MutationRecord;
+
+      setElementsSpy = jest.spyOn(instance as any, 'setElementReadyToPin');
+      renderAnnotationsSpy = jest.spyOn(instance as any, 'renderAnnotationsPins');
+      clearElementSpy = jest.spyOn(instance as any, 'clearElement');
+      removeAnnotationSpy = jest.spyOn(instance as any, 'removeAnnotationPin');
+
+      instance['handleMutationObserverChanges']([change]);
+
+      expect(clearElementSpy).not.toHaveBeenCalled();
+      expect(renderAnnotationsSpy).toHaveBeenCalled();
+      expect(setElementsSpy).toHaveBeenCalled();
+      expect(removeAnnotationSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('onToggleAnnotationSidebar', () => {
@@ -1176,6 +1220,22 @@ describe('HTMLPinAdapter', () => {
       instance['setPositionNotStatic'](element);
 
       expect(element.style.position).toEqual('absolute');
+    });
+  });
+
+  describe('prepareElements', () => {
+    test('should not prepare element if data attribute value matches filter', () => {
+      document.body.innerHTML =
+        '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
+      const container = document.getElementById('container') as HTMLElement;
+
+      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      const spy = jest.spyOn(instance as any, 'setElementReadyToPin');
+
+      instance['container'] = container;
+      instance['prepareElements']();
+
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 });
