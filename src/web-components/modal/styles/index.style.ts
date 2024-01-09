@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-export const modalStyle = css`  
+export const modalStyle = css`
   .modal--overlay {
     position: absolute;
     top: 0;
@@ -9,6 +9,8 @@ export const modalStyle = css`
     width: 100%;
     height: 100%;
     background: rgba(var(--sv-gray-400), 0.8);
+
+    z-index: 99;
   }
 
   .modal--container {
@@ -22,6 +24,8 @@ export const modalStyle = css`
     width: 100%;
     height: 100%;
     background: transparent;
+
+    z-index: 99;
   }
 
   .modal--container > .modal {

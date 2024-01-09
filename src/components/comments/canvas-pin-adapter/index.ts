@@ -303,7 +303,7 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
-    if (!this.annotations || this.canvas.style.display === 'none') {
+    if (!this.annotations.length || this.canvas.style.display === 'none') {
       this.removeAnnotationsPins();
       return;
     }
