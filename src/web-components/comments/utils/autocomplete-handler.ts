@@ -39,7 +39,8 @@ export class AutoCompleteHandler {
     this.mentions = this.mentions.filter(m => m.position.start !== mention.position.start && m.position.end !== mention.position.end)
 
     if (isDeletion) {
-      this.setValue(this.getValue().slice(0, mention.position.start) + this.getValue().slice(mention.position.end, this.getValue().length))
+      const keyDeleted = this.getValue().slice(mention.position.end, mention.position.end + 1)
+      this.setValue(this.getValue().slice(0, mention.position.start) + keyDeleted + this.getValue().slice(mention.position.end, this.getValue().length))
       this.setCaretPosition(mention.position.start + 1)
       this.updateMentionsAfterDeletion(mention.name.length)
       return
@@ -56,8 +57,8 @@ export class AutoCompleteHandler {
       const position = this.getSelectionPosition()
 
       const newPosition = {
-        start: m.position.start - mentionSize - 1,
-        end: m.position.end - mentionSize - 1,
+        start: m.position.start - mentionSize,
+        end: m.position.end - mentionSize,
       }
 
       if (position.start > m.position.start) {
@@ -111,7 +112,7 @@ export class AutoCompleteHandler {
   }
 
   searchMention (caretIndex, keyIndex) {
-    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex <= mention.position.end)
+    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex < mention.position.end)
     
     if (existingMention && caretIndex === existingMention.position.start) {
       return null
@@ -193,5 +194,4 @@ export class AutoCompleteHandler {
     this.updateMentionPositions()
     this.input.focus()
   }
-
 }
