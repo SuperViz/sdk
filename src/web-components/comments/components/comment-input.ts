@@ -219,6 +219,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
+        mentions: this.autoCompleteHandler.getMentions(),
         position: this.pinCoordinates,
       },
       {

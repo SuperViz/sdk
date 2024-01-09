@@ -113,10 +113,11 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   };
 
   private createComment({ detail }: CustomEvent) {
-    const { text } = detail;
+    const { text, mentions } = detail;
 
     this.emitEvent('create-comment', {
       uuid: this.annotation.uuid,
+      mentions,
       text,
     });
   }
