@@ -28,7 +28,8 @@ export interface PinCoordinates {
     x: number;
     y: number;
     z?: number;
-    type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
+    elementId?: string;
+    type: 'canvas' | 'matterport' | 'threejs' | 'autodesk' | 'html';
 }
 export interface PinCoordinatesIn3D {
     position: PinCoordinates;
