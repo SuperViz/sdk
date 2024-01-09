@@ -2,12 +2,6 @@ import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 
 import { HTMLPin } from '.';
 
-window.ResizeObserver = jest.fn().mockReturnValue({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-  unobserve: jest.fn(),
-});
-
 const MOCK_ANNOTATION_HTML = {
   ...MOCK_ANNOTATION,
   position: JSON.stringify({
@@ -56,6 +50,36 @@ describe('HTMLPinAdapter', () => {
         'Element with id not-found-html not found',
       );
     });
+
+    test('should throw error if second argument is not of type object', () => {
+      expect(() => new HTMLPin('container', 'not-object' as any)).toThrowError(
+        'Second argument of the HTMLPin constructor must be an object',
+      );
+    });
+
+    test('should throw error if dataAttributeName is an empty string', () => {
+      expect(() => new HTMLPin('container', { dataAttributeName: '' })).toThrowError(
+        'dataAttributeName must be a non-empty string',
+      );
+    });
+
+    test('should throw error if dataAttributeName is null', () => {
+      expect(() => new HTMLPin('container', { dataAttributeName: null as any })).toThrowError(
+        'dataAttributeName cannot be null',
+      );
+    });
+
+    test('should throw error if dataAttributeName is not a string', () => {
+      expect(() => new HTMLPin('container', { dataAttributeName: 123 as any })).toThrowError(
+        'dataAttributeName must be a non-empty string',
+      );
+    });
+
+    test('should call requestAnimationFrame if there is a void element', () => {
+      document.body.innerHTML = '<div id="container"><img data-superviz-id="1" /></div>';
+      const pin = new HTMLPin('container');
+      expect(pin['animateFrame']).toBeTruthy();
+    });
   });
 
   describe('destroy', () => {
@@ -71,7 +95,6 @@ describe('HTMLPinAdapter', () => {
       const removeElementListenersSpy = jest.spyOn(document.body as any, 'removeEventListener');
       const removeSpy = jest.fn();
       const removeEventListenerSpy = jest.fn();
-      const disconnectSpy = jest.spyOn(instance['resizeObserver'], 'disconnect');
 
       const wrappers = [...instance['divWrappers']].map(([entry, value]) => {
         return [
@@ -83,7 +106,6 @@ describe('HTMLPinAdapter', () => {
 
       instance.destroy();
 
-      expect(disconnectSpy).toHaveBeenCalled();
       expect(removeListenersSpy).toHaveBeenCalled();
       expect(removeObserversSpy).toHaveBeenCalled();
       expect(onPinFixedObserverSpy).toHaveBeenCalled();
@@ -97,7 +119,6 @@ describe('HTMLPinAdapter', () => {
       expect(instance['pins']).toEqual(undefined);
       expect(instance['onPinFixedObserver']).toEqual(undefined);
       expect(instance['divWrappers']).toEqual(undefined);
-      expect(instance['resizeObserver']).toEqual(undefined);
       expect(instance['mutationObserver']).toEqual(undefined);
     });
   });
@@ -139,16 +160,6 @@ describe('HTMLPinAdapter', () => {
 
       expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(1);
       expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(6);
-    });
-
-    test('should not call resizeObserver.unobserve if flag is true', () => {
-      instance['removeElementListeners']('1', true);
-      expect(instance['resizeObserver'].unobserve).not.toHaveBeenCalled();
-    });
-
-    test('should call resizeObserver.unobserve if flag is false', () => {
-      instance['removeElementListeners']('1', false);
-      expect(instance['resizeObserver'].unobserve).toHaveBeenCalled();
     });
   });
 
@@ -401,6 +412,8 @@ describe('HTMLPinAdapter', () => {
       instance['annotations'] = [MOCK_ANNOTATION_HTML];
       instance['renderAnnotationsPins']();
 
+      expect(instance['divWrappers'].get('1')).not.toEqual(undefined);
+
       const wrapper = instance['divWrappers'].get('1') as HTMLElement;
 
       expect(wrapper.style.cursor).not.toEqual('default');
@@ -412,8 +425,8 @@ describe('HTMLPinAdapter', () => {
 
       expect(spy).toHaveBeenCalled();
       expect(instance['pins'].size).toEqual(0);
-      expect(Object.keys(instance['elementsWithDataId']).length).toEqual(2);
-      expect(wrapper.style.cursor).toEqual('default');
+      expect(instance['elementsWithDataId']['1']).toEqual(undefined);
+      expect(instance['divWrappers'].get('1')).toEqual(undefined);
     });
 
     test('should not clear element if it is not stored in elementsWithDataId', () => {
@@ -725,107 +738,6 @@ describe('HTMLPinAdapter', () => {
     });
   });
 
-  describe('translateAndScalePins', () => {
-    afterEach(() => {
-      instance['divWrappers'].clear();
-    });
-
-    test('should apply the correct translate and scale to the specified pins wrapper', () => {
-      const wrapper = instance['divWrappers'].get('1') as HTMLElement;
-      const transformObject = {
-        scale: Math.random() * 10,
-        translateX: Math.random() * 1000,
-        translateY: Math.random() * 1000,
-      };
-
-      const transformString = `scale(${transformObject.scale}) translateX(${transformObject.translateX}px) translateY(${transformObject.translateY}px)`;
-
-      expect(wrapper.style.transform).not.toEqual(transformString);
-
-      instance['translateAndScalePins']('1', transformObject);
-
-      expect(wrapper.style.transform).toEqual(transformString);
-    });
-
-    test('should not apply the transform if the wrapper does not exist', () => {
-      const transformObject = {
-        scale: Math.random() * 10,
-        translateX: Math.random() * 1000,
-        translateY: Math.random() * 1000,
-      };
-
-      const spyParse = jest.spyOn(instance as any, 'parseTransform');
-
-      instance['translateAndScalePins']('not-found', transformObject);
-
-      expect(instance['divWrappers'].has('not-found')).toBeFalsy();
-      expect(spyParse).not.toHaveBeenCalled();
-    });
-
-    test('should keep previous transform if the new transform is not defined', () => {
-      const wrapper = instance['divWrappers'].get('1') as HTMLElement;
-      const transformObject = {
-        scale: Math.random() * 10,
-        translateX: Math.random() * 1000,
-        translateY: Math.random() * 1000,
-      };
-
-      const transformString = `scale(${transformObject.scale}) translateX(${transformObject.translateX}px) translateY(${transformObject.translateY}px)`;
-
-      expect(wrapper.style.transform).not.toEqual(transformString);
-
-      instance['translateAndScalePins']('1', transformObject);
-
-      expect(wrapper.style.transform).toEqual(transformString);
-
-      instance['translateAndScalePins']('1', {});
-
-      expect(wrapper.style.transform).toEqual(transformString);
-    });
-  });
-
-  describe('translateAndScaleContainer', () => {
-    beforeEach(() => {
-      instance['pinsContainer'].style.transform = 'scale(1) translateX(0px) translateY(0px)';
-    });
-
-    test('should apply the correct translate and scale to the pins container', () => {
-      const transformObject = {
-        scale: Math.random() * 10,
-        translateX: Math.random() * 1000,
-        translateY: Math.random() * 1000,
-      };
-
-      const transformString = `scale(${transformObject.scale}) translateX(${transformObject.translateX}px) translateY(${transformObject.translateY}px)`;
-
-      expect(instance['pinsContainer'].style.transform).not.toEqual(transformString);
-
-      instance['translateAndScaleContainer'](transformObject);
-
-      expect(instance['pinsContainer'].style.transform).toEqual(transformString);
-    });
-
-    test('should keep previous transform if the new transform is not defined', () => {
-      const transformObject = {
-        scale: Math.random() * 10,
-        translateX: Math.random() * 1000,
-        translateY: Math.random() * 1000,
-      };
-
-      const transformString = `scale(${transformObject.scale}) translateX(${transformObject.translateX}px) translateY(${transformObject.translateY}px)`;
-
-      expect(instance['pinsContainer'].style.transform).not.toEqual(transformString);
-
-      instance['translateAndScaleContainer'](transformObject);
-
-      expect(instance['pinsContainer'].style.transform).toEqual(transformString);
-
-      instance['translateAndScaleContainer']({});
-
-      expect(instance['pinsContainer'].style.transform).toEqual(transformString);
-    });
-  });
-
   describe('setElementReadyToPin', () => {
     beforeEach(() => {
       instance['divWrappers'].get('1')!.style.cursor = 'default';
@@ -877,7 +789,6 @@ describe('HTMLPinAdapter', () => {
       const spySet = jest.spyOn(instance['divWrappers'], 'set');
       const spyCreate = jest.spyOn(instance as any, 'createWrapper');
 
-      instance['pinsContainer'].innerHTML = '';
       instance['divWrappers'].clear();
 
       delete instance['elementsWithDataId']['1'];
@@ -950,21 +861,20 @@ describe('HTMLPinAdapter', () => {
   describe('createWrapper', () => {
     test('should create a new wrapper', () => {
       const element = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      instance['pinsContainer'].innerHTML = '';
 
+      instance['divWrappers'].clear();
       const wrapper = instance['createWrapper'](element, '1');
 
       const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLElement;
       const containerRect = element.getBoundingClientRect();
 
       expect(wrapper).toBeInstanceOf(HTMLDivElement);
-      expect(wrapper.style.position).toEqual('fixed');
-      expect(wrapper.style.top).toEqual(`${containerRect.top}px`);
-      expect(wrapper.style.left).toEqual(`${containerRect.left}px`);
-      expect(wrapper.style.width).toEqual(`${containerRect.width}px`);
-      expect(wrapper.style.height).toEqual(`${containerRect.height}px`);
+      expect(wrapper.style.position).toEqual('absolute');
+      expect(wrapper.style.top).toEqual('0px');
+      expect(wrapper.style.left).toEqual('0px');
+      expect(wrapper.style.width).toEqual('100%');
+      expect(wrapper.style.height).toEqual('100%');
       expect(wrapper.style.pointerEvents).toEqual('none');
-      expect(wrapper.style.transform).toEqual('translateX(0) translateY(0) scale(1)');
       expect(wrapper.style.cursor).toEqual('default');
       expect(wrapper.getAttribute('data-wrapper-id')).toEqual('1');
       expect(wrapper.id).toEqual('superviz-id-1');
@@ -980,53 +890,52 @@ describe('HTMLPinAdapter', () => {
 
     test('should not create a new wrapper if wrapper already exists', () => {
       const element = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      instance['pinsContainer'].innerHTML = '';
+
+      instance['divWrappers'].clear();
 
       const wrapper1 = instance['createWrapper'](element, '1');
+      instance['divWrappers'].set('1', wrapper1);
+
       const wrapper2 = instance['createWrapper'](element, '1');
 
       expect(wrapper1).toBeInstanceOf(HTMLDivElement);
       expect(wrapper2).toBe(undefined);
     });
-  });
 
-  describe('handleResizeObserverChanges', () => {
-    test('should update the wrapper position when the element is resized', () => {
-      const element = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      const wrapper = instance['divWrappers'].get('1') as HTMLElement;
-      const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLElement;
+    test('should create wrapper as sibling of the element if element is a void element', () => {
+      document.body.innerHTML = '<img data-superviz-id="1" />';
+      const element = document.querySelector('img') as HTMLElement;
 
-      const width = Math.random() * 1000;
-      const height = Math.random() * 1000;
-      const top = Math.random() * 1000;
-      const left = Math.random() * 1000;
+      instance['divWrappers'].clear();
+      instance['elementsWithDataId']['1'] = element;
 
-      element.style.width = `${width}px`;
-      element.style.height = `${height}px`;
-      element.style.top = `${top}px`;
-      element.style.left = `${left}px`;
+      const wrapper = instance['createWrapper'](element, '1');
 
-      const changes = {
-        target: element,
-      } as unknown as ResizeObserverEntry;
+      const containerRect = element.getBoundingClientRect();
 
-      element.getBoundingClientRect = jest.fn().mockReturnValue({
-        width,
-        height,
-        top,
-        left,
-      });
+      expect(wrapper.parentElement).toEqual(element.parentElement);
+      expect(wrapper.style.position).toEqual('fixed');
+      expect(wrapper.style.top).toEqual(`${containerRect.top}px`);
+      expect(wrapper.style.left).toEqual(`${containerRect.left}px`);
+      expect(wrapper.style.width).toEqual(`${containerRect.width}px`);
+      expect(wrapper.style.height).toEqual(`${containerRect.height}px`);
 
-      instance['handleResizeObserverChanges']([changes]);
+      expect(instance['voidElementsWrappers'].get('1')).toEqual(wrapper);
+    });
 
-      expect(wrapper.style.width).toEqual(`${width}px`);
-      expect(wrapper.style.height).toEqual(`${height}px`);
-      expect(wrapper.style.top).toEqual(`${top}px`);
-      expect(wrapper.style.left).toEqual(`${left}px`);
-      expect(pinsWrapper.style.width).toEqual(`100%`);
-      expect(pinsWrapper.style.height).toEqual(`100%`);
-      expect(pinsWrapper.style.top).toEqual('0px');
-      expect(pinsWrapper.style.left).toEqual('0px');
+    test('should append wrapper of void element to body if element parent is not found', () => {
+      document.body.innerHTML = '';
+      const element = document.createElement('img') as HTMLElement;
+      element.setAttribute('data-superviz-id', '1');
+
+      jest.spyOn(instance as any, 'setPositionNotStatic').mockImplementation(() => {});
+
+      instance['divWrappers'].clear();
+      instance['elementsWithDataId']['1'] = element;
+
+      const wrapper = instance['createWrapper'](element, '1');
+
+      expect(wrapper.parentElement).toEqual(document.body);
     });
   });
 
@@ -1170,29 +1079,103 @@ describe('HTMLPinAdapter', () => {
     });
   });
 
-  describe('onScroll', () => {
-    test('should update the wrappers positions to keep them in the same position relative to the elements with the specified data-attribute', () => {
-      const element1 = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      const element2 = document.body.querySelector('[data-superviz-id="2"]') as HTMLElement;
-      const wrapper1 = instance['divWrappers'].get('1') as HTMLElement;
-      const wrapper2 = instance['divWrappers'].get('2') as HTMLElement;
+  describe('animate', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+    test('should update pins positions', () => {
+      const spy = jest.spyOn(instance as any, 'updatePinsPositions');
+      window.requestAnimationFrame = jest.fn();
+      instance['animate']();
+      expect(spy).toHaveBeenCalled();
+      expect(window.requestAnimationFrame).toHaveBeenCalledWith(instance['animate']);
+    });
+  });
 
-      const element1Rect = element1.getBoundingClientRect();
-      const element2Rect = element2.getBoundingClientRect();
+  describe('updatePinsPositions', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '<div><img src="#" data-superviz-id="image-id"/></div>';
+    });
 
-      wrapper1.style.top = `${Math.random()}px`;
-      wrapper1.style.left = `${Math.random()}px`;
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
-      wrapper2.style.top = `${Math.random()}px`;
-      wrapper2.style.left = `${Math.random()}px`;
+    test('should update position of all wrappers of void elements', () => {
+      const div = document.body.querySelector('div') as HTMLDivElement;
+      const image = document.body.querySelector('img') as HTMLImageElement;
 
-      instance['onScroll']();
+      instance['container'] = div as HTMLElement;
+      instance['prepareElements']();
 
-      expect(wrapper1.style.top).toEqual(`${element1Rect.top}px`);
-      expect(wrapper1.style.left).toEqual(`${element1Rect.left}px`);
+      image.getBoundingClientRect = jest.fn().mockReturnValue({
+        left: 40,
+        top: 30,
+        width: 50,
+        height: 60,
+      });
 
-      expect(wrapper2.style.top).toEqual(`${element2Rect.top}px`);
-      expect(wrapper2.style.left).toEqual(`${element2Rect.left}px`);
+      const wrapper = instance['divWrappers'].get('image-id') as HTMLElement;
+      const spy = jest.spyOn(wrapper.style, 'setProperty');
+
+      instance['updatePinsPositions']();
+
+      expect(spy).toHaveBeenNthCalledWith(1, 'top', '30px');
+      expect(spy).toHaveBeenNthCalledWith(2, 'left', '40px');
+      expect(spy).toHaveBeenNthCalledWith(3, 'width', '50px');
+      expect(spy).toHaveBeenNthCalledWith(4, 'height', '60px');
+    });
+
+    test('should not update if positions are the same', () => {
+      const div = document.body.querySelector('div') as HTMLDivElement;
+      const image = document.body.querySelector('img') as HTMLImageElement;
+
+      instance['container'] = div as HTMLElement;
+      instance['prepareElements']();
+
+      image.getBoundingClientRect = jest.fn().mockReturnValue({
+        left: 40,
+        top: 30,
+        width: 50,
+        height: 60,
+      });
+
+      const wrapper = instance['divWrappers'].get('image-id') as HTMLElement;
+
+      wrapper.getBoundingClientRect = jest.fn().mockReturnValue({
+        left: 40,
+        top: 30,
+        width: 50,
+        height: 60,
+      });
+
+      const spy = jest.spyOn(wrapper.style, 'setProperty');
+
+      instance['updatePinsPositions']();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setPositionNotStatic', () => {
+    test('should set element position to relative if it is static', () => {
+      const element = document.createElement('div');
+
+      element.style.position = 'static';
+
+      instance['setPositionNotStatic'](element);
+
+      expect(element.style.position).toEqual('relative');
+    });
+
+    test('should do nothing if element position is not static', () => {
+      const element = document.createElement('div');
+
+      element.style.position = 'absolute';
+
+      instance['setPositionNotStatic'](element);
+
+      expect(element.style.position).toEqual('absolute');
     });
   });
 });

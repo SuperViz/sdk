@@ -14,12 +14,6 @@ export interface TemporaryPinData extends Partial<Simple2DPoint> {
 
 export type HorizontalSide = 'left' | 'right';
 
-export interface TranslateAndScale {
-  scale: number;
-  translateX: number;
-  translateY: number;
-}
-
 export interface HTMLPinOptions {
   dataAttributeName?: string;
 }
