@@ -40,13 +40,35 @@ export class AutoCompleteHandler {
 
     if (isDeletion) {
       this.setValue(this.getValue().slice(0, mention.position.start) + this.getValue().slice(mention.position.end, this.getValue().length))
-      this.setCaretPosition(mention.position.start)
+      this.setCaretPosition(mention.position.start + 1)
+      this.updateMentionsAfterDeletion(mention.name.length)
       return
     }
 
-    const { start, end } = mention.position
-    this.setValue(this.getValue().slice(0, start) + this.getValue().slice(end, this.getValue().length))
-    this.setCaretPosition(start + 1)
+    this.setValue(this.getValue().slice(0, mention.start) + this.getValue().slice(mention.end, this.getValue().length))
+    this.setCaretPosition(mention.start + 1)
+
+    this.updateMentionsAfterDeletion(mention.name.length)
+  }
+
+  updateMentionsAfterDeletion (mentionSize: number) {
+      this.mentions = this.mentions.map(m => {
+      const position = this.getSelectionPosition()
+
+      const newPosition = {
+        start: m.position.start - mentionSize - 1,
+        end: m.position.end - mentionSize - 1,
+      }
+
+      if (position.start > m.position.start) {
+        return m
+      }
+
+      return {
+        ...m,
+        position: newPosition
+      }
+    })
   }
 
   clearMentions () {
@@ -91,6 +113,10 @@ export class AutoCompleteHandler {
   searchMention (caretIndex, keyIndex) {
     const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex <= mention.position.end)
     
+    if (existingMention && caretIndex === existingMention.position.start) {
+      return null
+    }
+
     if (existingMention) {
       this.removeMention(existingMention)
       return null
