@@ -113,6 +113,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         ?showSeeMoreTooltip=${this.showTooltip}
         @toggle=${this.toggleOpen}
         @toggle-dropdown-state=${this.toggleShowTooltip}
+        ?localParticipantJoinedPresence=${this.localParticipantData?.joinedPresence}
       >
         <div class=${classMap(classes)} slot="dropdown">
           <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
@@ -319,6 +320,18 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           const append = isLocal ? ' (you)' : '';
           const participantName = name + append;
 
+          const tooltipData = {
+            name,
+          } as { name: string; action: string };
+
+          if (this.localParticipantData?.joinedPresence && joinedPresence && !isLocal) {
+            tooltipData.action = 'Click to Follow';
+          }
+
+          if (isLocal) {
+            tooltipData.action = 'You';
+          }
+
           return html`
             <superviz-dropdown
               options=${JSON.stringify(options)}
@@ -330,7 +343,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               name="${participantName}"
               ?disabled=${disableDropdown}
               ?canShowTooltip=${this.showTooltip}
-              onHoverData=${JSON.stringify({ name, action: isLocal ? 'You' : 'Click to follow' })}
+              onHoverData=${JSON.stringify(tooltipData)}
             >
               <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
                 ${this.getAvatar(participant)}

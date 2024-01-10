@@ -30,6 +30,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare showSeeMoreTooltip: boolean;
   declare showParticipantTooltip: boolean;
   declare following: Following;
+  declare localParticipantJoinedPresence: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -41,6 +42,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     following: { type: Object },
     showSeeMoreTooltip: { type: Boolean },
     showParticipantTooltip: { type: Boolean },
+    localParticipantJoinedPresence: { type: Boolean },
   };
 
   constructor() {
@@ -161,6 +163,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           }))
           .slice(0, 2);
 
+        const tooltipData = {
+          name,
+        } as { name: string; action: string };
+
+        if (this.localParticipantJoinedPresence && joinedPresence) {
+          tooltipData.action = 'Click to Follow';
+        }
+
         return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
@@ -169,7 +179,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
-        onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
+        onHoverData=${JSON.stringify(tooltipData)}
         ?canShowTooltip=${this.showParticipantTooltip}
         ?shiftTooltipLeft=${true}
         @toggle-dropdown-state=${this.toggleShowTooltip}

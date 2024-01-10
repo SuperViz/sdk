@@ -33,4 +33,5 @@ export enum PositionOptions {
 export interface LocalParticipantData {
   id: string;
   color: string;
+  joinedPresence: boolean;
 }
