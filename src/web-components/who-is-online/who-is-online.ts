@@ -7,7 +7,7 @@ import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 
-import type { LocalParticipantData } from './components/types';
+import type { LocalParticipantData, TooltipData } from './components/types';
 import { Following, WIODropdownOptions } from './components/types';
 import { whoIsOnlineStyle } from './css/index';
 
@@ -320,9 +320,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           const append = isLocal ? ' (you)' : '';
           const participantName = name + append;
 
-          const tooltipData = {
+          const tooltipData: TooltipData = {
             name,
-          } as { name: string; action: string };
+          };
 
           if (this.localParticipantData?.joinedPresence && joinedPresence && !isLocal) {
             tooltipData.action = 'Click to Follow';

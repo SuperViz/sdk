@@ -35,3 +35,12 @@ export interface LocalParticipantData {
   color: string;
   joinedPresence: boolean;
 }
+
+export interface TooltipData {
+  name: string;
+  action?: string;
+}
+
+export type VerticalSide = 'top' | 'bottom';
+
+export type HorizontalSide = 'left' | 'right';

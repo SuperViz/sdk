@@ -7,7 +7,14 @@ import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { Following, WIODropdownOptions, PositionOptions } from './types';
+import {
+  Following,
+  WIODropdownOptions,
+  PositionOptions,
+  TooltipData,
+  VerticalSide,
+  HorizontalSide,
+} from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -17,12 +24,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   static styles = styles;
 
   declare open: boolean;
-  declare align: 'left' | 'right';
-  declare position: 'top' | 'bottom';
+  declare align: HorizontalSide;
+  declare position: VerticalSide;
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
-  private originalPosition: 'top' | 'bottom';
+  private originalPosition: VerticalSide;
   private menu: HTMLElement;
   private dropdownContent: HTMLElement;
   private host: HTMLElement;
@@ -163,9 +170,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           }))
           .slice(0, 2);
 
-        const tooltipData = {
+        const tooltipData: TooltipData = {
           name,
-        } as { name: string; action: string };
+        };
 
         if (this.localParticipantJoinedPresence && joinedPresence) {
           tooltipData.action = 'Click to Follow';
@@ -320,13 +327,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     if (action === PositionOptions['USE-ORIGINAL']) {
       const originalVertical = this.originalPosition.split('-')[0];
-      this.position = this.position.replace(/top|bottom/, originalVertical) as 'top' | 'bottom';
+      this.position = this.position.replace(/top|bottom/, originalVertical) as VerticalSide;
       return;
     }
 
     const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
     const previousSide = this.position.split('-')[0];
-    const newPosition = this.position.replace(previousSide, newSide) as 'top' | 'bottom';
+    const newPosition = this.position.replace(previousSide, newSide) as VerticalSide;
 
     this.position = newPosition;
   };
