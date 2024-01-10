@@ -1047,7 +1047,7 @@ describe('HTMLPinAdapter', () => {
     test('should clear element then do nothing if new value is filtered', () => {
       document.body.innerHTML =
         '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
-      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const change = {
         target: document.body.querySelector('[data-superviz-id="1-matches"]') as HTMLElement,
         oldValue: '2',
@@ -1069,7 +1069,7 @@ describe('HTMLPinAdapter', () => {
     test('should not clear element if old value was skipped', () => {
       document.body.innerHTML =
         '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
-      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const change = {
         target: document.body.querySelector('[data-superviz-id="does-not-match"]') as HTMLElement,
         oldValue: '1-matches',
@@ -1229,7 +1229,7 @@ describe('HTMLPinAdapter', () => {
         '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
       const container = document.getElementById('container') as HTMLElement;
 
-      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const spy = jest.spyOn(instance as any, 'setElementReadyToPin');
 
       instance['container'] = container;

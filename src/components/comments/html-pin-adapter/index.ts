@@ -34,7 +34,7 @@ export class HTMLPin implements PinAdapter {
   private selectedPin: HTMLElement | null = null;
   private dataAttribute: string = 'data-superviz-id';
   private animateFrame: number;
-  private dataAttributeNameFilters: RegExp[];
+  private dataAttributeValueFilters: RegExp[];
 
   // Coordinates/Positions
   private mouseDownCoordinates: Simple2DPoint;
@@ -82,7 +82,7 @@ export class HTMLPin implements PinAdapter {
     if (typeof options !== 'object')
       throw new Error('Second argument of the HTMLPin constructor must be an object');
 
-    const { dataAttributeName, dataAttributeNameFilters } = options;
+    const { dataAttributeName, dataAttributeValueFilters } = options;
 
     if (dataAttributeName === '') throw new Error('dataAttributeName must be a non-empty string');
     if (dataAttributeName === null) throw new Error('dataAttributeName cannot be null');
@@ -90,7 +90,7 @@ export class HTMLPin implements PinAdapter {
       throw new Error('dataAttributeName must be a non-empty string');
 
     this.dataAttribute = dataAttributeName || this.dataAttribute;
-    this.dataAttributeNameFilters = dataAttributeNameFilters || [];
+    this.dataAttributeValueFilters = dataAttributeValueFilters || [];
 
     this.isActive = false;
     this.prepareElements();
@@ -225,7 +225,7 @@ export class HTMLPin implements PinAdapter {
 
     elementsWithDataId.forEach((el: HTMLElement) => {
       const id = el.getAttribute(this.dataAttribute);
-      const skip = this.dataAttributeNameFilters.some((filter, index) => {
+      const skip = this.dataAttributeValueFilters.some((filter, index) => {
         return id.match(filter);
       });
 
@@ -800,7 +800,7 @@ export class HTMLPin implements PinAdapter {
       const dataId = (target as HTMLElement).getAttribute(this.dataAttribute);
       if ((!dataId && !oldValue) || dataId === oldValue) return;
 
-      const oldValueSkipped = this.dataAttributeNameFilters.some((filter) =>
+      const oldValueSkipped = this.dataAttributeValueFilters.some((filter) =>
         oldValue.match(filter),
       );
 
@@ -818,7 +818,7 @@ export class HTMLPin implements PinAdapter {
         return;
       }
 
-      const skip = this.dataAttributeNameFilters.some((filter) => dataId.match(filter));
+      const skip = this.dataAttributeValueFilters.some((filter) => dataId.match(filter));
 
       if ((oldValue && this.elementsWithDataId[oldValue]) || skip) {
         this.clearElement(oldValue);
