@@ -8,16 +8,16 @@ const DEFAULT_HIDE_MENTION_LIST = {
   mentions: []
 }
 
-const matchParticipant = (name: string, position, participantList): any => {
+const matchParticipant = (userName: string, position, participantList): any => {
   let mentionList = []
 
   mentionList = participantList.filter((participant: any) => participant.email)
 
-  if (name.length > 0) {
+  if (userName.length > 0) {
     mentionList = mentionList
-      .filter((participant: any) => participant.name
+      .filter((participant: any) => participant.userName
         .toLowerCase()
-        .search(name.toLowerCase()) !== -1
+        .search(userName.toLowerCase()) !== -1
       );
   }
 
@@ -37,11 +37,12 @@ const prepareMentionList = (users: any, position): any => {
   return users.map((user: any) => ({
     id: user.id,
     name: user.name,
+    userName: user.userName,
     avatar: user.avatar,
     position
   }))
 }
 
 export default {
-  matchParticipant: (name, position, participantList: any) => matchParticipant(name, position, participantList),
+  matchParticipant: (userName, position, participantList: any) => matchParticipant(userName, position, participantList),
 }

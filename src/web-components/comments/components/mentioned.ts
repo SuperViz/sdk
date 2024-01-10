@@ -16,13 +16,13 @@ export class CommentsMentioned extends WebComponentsBaseElement {
     this.participant = {} as any
   }
 
-  declare participant: { userId: string, name: string, avatar: string }
+  declare participant: { userId: string, name: string, userName: string, avatar: string }
 
   static properties = {
     participant: { type: Object },
   };
 
   protected render() {
-    return html`<div class="mention">@<div class="mentioned" userId=${this.participant.userId}>${this.participant.name}</div></div>`;
+    return html`<div class="mention">@<div class="mentioned" userId=${this.participant.userId}>${this.participant.userName}</div></div>`;
   }
 }

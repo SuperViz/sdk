@@ -11,6 +11,7 @@ export type Annotation = {
 export type Participant = {
   id: string;
   name: string;
+  userName: string;
   avatar: string;
   email: string;
 };
