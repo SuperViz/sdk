@@ -23,6 +23,5 @@ export type MentionParams = {
 
 export type MentionParticipantParams = {
   id: string
-  position: string
   readed: number
 }

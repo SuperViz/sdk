@@ -7,69 +7,29 @@ export class AutoCompleteHandler {
   private keys = ['@']
   private event: InputEvent
   private input: HTMLTextAreaElement
-  private key: string | number
-  private oldKey: string | number
-  private mentions: { userId: string, name: string, position: { start: number, end: number } }[]
+  private key: string
+  private mentions: { userId: string, name: string, username: string }[]
 
   setInput (event: InputEvent) {
     this.event = event
     this.input = event.target as HTMLTextAreaElement
 
-    this.oldKey = this.key
     this.key = event.data
   }
 
   getMentions () {
     return this.mentions
+      .filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
+      .filter(mention => this.input.value.includes(mention.name))
   }
 
   setMentions (mentions) {
-    this.mentions = mentions.map(mention => ({
-      ...mention,
-      position: JSON.parse(mention.position)
-    }))
+    this.mentions = mentions
   }
 
-  addMention (mention: { userId: string, name: string, position: { start: number, end: number } }) {
+  addMention (mention: { userId: string, name: string, username: string }) {
     this.mentions = [...this.mentions, mention]
-  }
-
-  removeMention (mention) {
-    const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
-    this.mentions = this.mentions.filter(m => m.position.start !== mention.position.start && m.position.end !== mention.position.end)
-
-    if (isDeletion) {
-      const keyDeleted = this.getValue().slice(mention.position.end, mention.position.end + 1)
-      this.setValue(this.getValue().slice(0, mention.position.start) + keyDeleted + this.getValue().slice(mention.position.end, this.getValue().length))
-      this.setCaretPosition(mention.position.start + 1)
-      this.updateMentionsAfterDeletion(mention.name.length)
-      return
-    }
-
-    this.setValue(this.getValue().slice(0, mention.start) + this.getValue().slice(mention.end, this.getValue().length))
-    this.setCaretPosition(mention.start + 1)
-
-    this.updateMentionsAfterDeletion(mention.name.length)
-  }
-
-  updateMentionsAfterDeletion (mentionSize: number) {
-      this.mentions = this.mentions.map(m => {
-      const position = this.getSelectionPosition()
-
-      const newPosition = {
-        start: m.position.start - mentionSize,
-        end: m.position.end - mentionSize,
-      }
-
-      if (position.start > m.position.start) {
-        return m
-      }
-
-      return {
-        ...m,
-        position: newPosition
-      }
-    })
+    this.mentions = this.mentions.filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
   }
 
   clearMentions () {
@@ -112,66 +72,17 @@ export class AutoCompleteHandler {
   }
 
   searchMention (caretIndex, keyIndex) {
-    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex < mention.position.end)
-    
-    if (existingMention && caretIndex === existingMention.position.start) {
-      return null
-    }
-
-    if (existingMention) {
-      this.removeMention(existingMention)
-      return null
-    }
-
     if (keyIndex !== -1) {
       const searchText = this.getValue().substring(keyIndex + 1, caretIndex)
 
       return searchText
     }
-
+    
     return null
-  }
-
-  updateMentionPositions () {
-    const isDeletion = (this.event?.inputType === "deleteContentBackward" || this.event?.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event?.inputType === "deleteByCut")
-
-    this.mentions = this.mentions.map((mention) => {
-      const { start, end } = mention.position
-      const position = this.getSelectionPosition()
-
-      const newPosition = {
-        start,
-        end
-      }
-
-      if (position.start < start) {
-        newPosition.start = isDeletion ? start - 1 : start + 1
-        newPosition.end = isDeletion ? end - 1 : end + 1
-      }
-
-      return {
-        ...mention,
-        position: newPosition
-      }
-    })
-
-    this.mentions = this.mentions.filter(mention => {
-      const { start, end } = mention.position
-      const text = this.getValue().substring(start, end)
-
-      return text !== ''
-    })
-
-    console.log('start', this.mentions.map(item => item.position.start))
-    console.log('end', this.mentions.map(item => item.position.end))
   }
 
   insertMention (start: number, end: number, participant: any) {
     const { id, name } = participant
-    const position = {
-      start: start - 1,
-      end: start + name.length,
-    }
     const text = this.getValue().slice(0, start) + name + this.getValue().slice(end, this.getValue().length)
 
     this.setValue(text)
@@ -180,18 +91,9 @@ export class AutoCompleteHandler {
     this.addMention({
       userId: id,
       name,
-      position
+      username: name
     })
 
-    this.addBlankSpace()
-    this.setCaretPosition(start + name.length + 1)
-  }
-
-  addBlankSpace () {
-    const caretIndex = this.getSelectionStart()
-
-    this.setValue(`${this.getValue().slice(0, caretIndex)} ${this.getValue().slice(caretIndex, this.getValue().length)}`)
-    this.updateMentionPositions()
-    this.input.focus()
+    this.setCaretPosition(start + name.length)
   }
 }
