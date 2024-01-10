@@ -60,37 +60,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     });
 
     input.dispatchEvent(newInputEvent);
-    let caretIndex = this.autoCompleteHandler.getSelectionStart()
-    const getValue = this.autoCompleteHandler.getValue()
-
-    this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
-
-    caretIndex +=1
-
-    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
-
-    const keyIndex = keyData?.keyIndex ?? -1;
-
-    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
-
-    const position = {
-      start: keyIndex + 1,
-      end: caretIndex,
-    }
-
-    if (searchText === null) {
-      this.mentionList = []
-      return;
-    }
-        const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
-
-    if (action === 'show') {
-      this.mentionList = mentions
-    }
-
-    if (action === 'hide') {
-      this.mentionList = []
-    }
 
   }
 
@@ -153,13 +122,32 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private handleInput = (e: InputEvent) => {
     this.autoCompleteHandler.setInput(e);
-    const caretIndex = this.autoCompleteHandler.getSelectionStart();
-    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
-    const keyIndex = keyData?.keyIndex ?? -1;
-    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    let caretIndex = this.autoCompleteHandler.getSelectionStart();
+    let keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    let keyIndex = keyData?.keyIndex ?? -1;
 
-    const position = this.autoCompleteHandler.getSelectionPosition()
+    let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    let position
 
+    const isButtonAtSimbol = (e.data === '@' && keyIndex === -1)
+    const isButtonAtSimbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
+
+    if (isButtonAtSimbol || isButtonAtSimbolAndNotStartedMention) {
+      searchText = '';
+      caretIndex = this.autoCompleteHandler.getSelectionStart()
+      const getValue = this.autoCompleteHandler.getValue()
+
+      this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
+
+      caretIndex +=1
+      keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+      keyIndex = keyData?.keyIndex ?? -1;
+      searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+      position = {
+        start: keyIndex + 1,
+        end: caretIndex,
+      }
+    } else position = this.autoCompleteHandler.getSelectionPosition()
     console.log(this.autoCompleteHandler.getMentions())
 
     if (searchText === null) {
