@@ -406,7 +406,6 @@ export class Comments extends BaseComponent {
         commentsId: comment.uuid,
         participants: mentions.map((mention) => ({
           id: mention.userId,
-          position: JSON.stringify(mention.position),
         }))
       })
 
@@ -417,10 +416,7 @@ export class Comments extends BaseComponent {
               return Object.assign({}, comment, {
                 ...comment,
                 text,
-                mentions: mentions.map((mention) => ({
-                  ...mention,
-                  position: JSON.stringify(mention.position),
-                })),
+                mentions,
               });
             }
 
