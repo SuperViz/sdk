@@ -12,10 +12,9 @@ const matchParticipant = (userName: string, position, participantList): any => {
   let mentionList = []
 
   mentionList = participantList.filter((participant: any) => participant.email)
-
   if (userName.length > 0) {
     mentionList = mentionList
-      .filter((participant: any) => participant.userName
+      .filter((participant: any) => participant.user_name
         .toLowerCase()
         .search(userName.toLowerCase()) !== -1
       );
