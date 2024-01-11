@@ -133,9 +133,10 @@ export class HTMLPin implements PinAdapter {
     this.voidElementsWrappers.clear();
     this.voidElementsWrappers = undefined;
     this.annotations = [];
-    cancelAnimationFrame(this.animateFrame);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+
+    cancelAnimationFrame(this.animateFrame);
   }
 
   /**
@@ -187,8 +188,10 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   private animate = (): void => {
-    this.updatePinsPositions();
-    requestAnimationFrame(this.animate);
+    if (this.voidElementsWrappers) {
+      this.updatePinsPositions();
+      this.animateFrame = requestAnimationFrame(this.animate);
+    }
   };
 
   /**

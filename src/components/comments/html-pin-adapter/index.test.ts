@@ -289,9 +289,6 @@ describe('HTMLPinAdapter', () => {
 
       instance['renderAnnotationsPins']();
 
-      // // delete this avoids an error being throw when the pin is destroyed
-      // delete instance['elementsWithDataId']['1'];
-
       expect(instance['pins'].size).toEqual(0);
     });
 
