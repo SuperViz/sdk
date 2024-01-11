@@ -14,6 +14,7 @@ export type Participant = {
   userName: string;
   avatar: string;
   email: string;
+  position?: string;
 };
 
 export type Comment = {

@@ -19,7 +19,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
-  declare mentionList: []
+  declare mentionList: Participant[]
   declare mentions: []
   declare participantsList: Participant[];
 
@@ -127,13 +127,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     let keyIndex = keyData?.keyIndex ?? -1;
 
     let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
-    let position
+    let position = this.autoCompleteHandler.getSelectionPosition()
 
     const isButtonAtSimbol = (e.data === '@' && keyIndex === -1)
     const isButtonAtSimbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
 
     if (isButtonAtSimbol || isButtonAtSimbolAndNotStartedMention) {
-      searchText = '';
       caretIndex = this.autoCompleteHandler.getSelectionStart()
       const getValue = this.autoCompleteHandler.getValue()
 
@@ -147,15 +146,24 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         start: keyIndex + 1,
         end: caretIndex,
       }
-    } else position = this.autoCompleteHandler.getSelectionPosition()
-    console.log(this.autoCompleteHandler.getMentions())
-
+    }
     if (searchText === null) {
       this.mentionList = []
       return;
     }
 
-    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+    const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+
+    if (findDigitParticipant) {
+      this.mentionList = [];
+      const mentioned = {
+        detail: {
+          ...mentions[0]
+        }
+      };
+      this.insertMention(mentioned)
+      return
+    }
 
     if (action === 'show') {
       this.mentionList = mentions
@@ -167,12 +175,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private insertMention = (event) => {
-    const { id, name, avatar, position } = event.detail;
+    const { id, name, userName, avatar, email, position } = event.detail;
 
     this.autoCompleteHandler.insertMention(position.start, position.end, {
       id,
       name,
-      avatar
+      userName,
+      avatar,
+      email,
     });
 
     this.updateHeight();
