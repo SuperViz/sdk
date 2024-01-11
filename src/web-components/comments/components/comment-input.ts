@@ -120,11 +120,38 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   }
 
+  private userMentionedByTextInput = (mentions) => {
+    this.mentionList = [];
+    const mentioned = {
+      detail: {
+        ...mentions[0]
+      }
+    };
+    this.insertMention(mentioned)
+  }
+
+  private buttonAtSimbol = () => {
+    let caretIndex = this.autoCompleteHandler.getSelectionStart()
+    const getValue = this.autoCompleteHandler.getValue()
+
+    this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
+
+    caretIndex +=1
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    const position = {
+      start: keyIndex + 1,
+      end: caretIndex,
+    }
+    return {searchText, position}
+  }
+
   private handleInput = (e: InputEvent) => {
     this.autoCompleteHandler.setInput(e);
-    let caretIndex = this.autoCompleteHandler.getSelectionStart();
-    let keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
-    let keyIndex = keyData?.keyIndex ?? -1;
+    const caretIndex = this.autoCompleteHandler.getSelectionStart();
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
 
     let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
     let position = this.autoCompleteHandler.getSelectionPosition()
@@ -133,20 +160,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const isButtonAtSimbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
 
     if (isButtonAtSimbol || isButtonAtSimbolAndNotStartedMention) {
-      caretIndex = this.autoCompleteHandler.getSelectionStart()
-      const getValue = this.autoCompleteHandler.getValue()
-
-      this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
-
-      caretIndex +=1
-      keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
-      keyIndex = keyData?.keyIndex ?? -1;
-      searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
-      position = {
-        start: keyIndex + 1,
-        end: caretIndex,
-      }
+      const data = this.buttonAtSimbol()
+      searchText = data.searchText
+      position = data.position
     }
+
     if (searchText === null) {
       this.mentionList = []
       return;
@@ -155,13 +173,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
 
     if (findDigitParticipant) {
-      this.mentionList = [];
-      const mentioned = {
-        detail: {
-          ...mentions[0]
-        }
-      };
-      this.insertMention(mentioned)
+      this.userMentionedByTextInput(mentions)
       return
     }
 
