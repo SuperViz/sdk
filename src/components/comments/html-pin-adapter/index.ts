@@ -243,7 +243,7 @@ export class HTMLPin implements PinAdapter {
   private setAddCursor(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
       this.divWrappers.get(id).style.cursor =
-        'url("https://production.cdn.superviz.com/static/pin-add.png") 0 100, pointer';
+        'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
       this.divWrappers.get(id).style.pointerEvents = 'auto';
     });
   }
@@ -526,7 +526,7 @@ export class HTMLPin implements PinAdapter {
     if (!this.isActive || !this.isPinsVisible) return;
 
     this.divWrappers.get(id).style.cursor =
-      'url("https://production.cdn.superviz.com/static/pin-add.png") 0 100, pointer';
+      'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
     this.divWrappers.get(id).style.pointerEvents = 'auto';
     this.addElementListeners(id);
   }
