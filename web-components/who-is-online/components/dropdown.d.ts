@@ -1,12 +1,12 @@
 import { CSSResultGroup, LitElement, PropertyValueMap } from 'lit';
 import { Participant } from '../../../components/who-is-online/types';
-import { Following } from './types';
+import { Following, VerticalSide, HorizontalSide } from './types';
 declare const WebComponentsBaseElement: import("../../base/types").Constructor<import("../../base/types").WebComponentsBaseInterface> & typeof LitElement;
 export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     static styles: CSSResultGroup[];
     open: boolean;
-    align: 'left' | 'right';
-    position: 'top' | 'bottom';
+    align: HorizontalSide;
+    position: VerticalSide;
     participants: Participant[];
     private textColorValues;
     selected: string;
@@ -18,6 +18,7 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     showSeeMoreTooltip: boolean;
     showParticipantTooltip: boolean;
     following: Following;
+    localParticipantJoinedPresence: boolean;
     static properties: {
         open: {
             type: BooleanConstructor;
@@ -44,6 +45,9 @@ export declare class WhoIsOnlineDropdown extends WebComponentsBaseElement {
             type: BooleanConstructor;
         };
         showParticipantTooltip: {
+            type: BooleanConstructor;
+        };
+        localParticipantJoinedPresence: {
             type: BooleanConstructor;
         };
     };

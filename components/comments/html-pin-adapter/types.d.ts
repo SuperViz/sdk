@@ -12,5 +12,5 @@ export interface TemporaryPinData extends Partial<Simple2DPoint> {
 export type HorizontalSide = 'left' | 'right';
 export interface HTMLPinOptions {
     dataAttributeName?: string;
-    dataAttributeNameFilters?: RegExp[];
+    dataAttributeValueFilters?: RegExp[];
 }

@@ -12,7 +12,7 @@ export declare class HTMLPin implements PinAdapter {
     private selectedPin;
     private dataAttribute;
     private animateFrame;
-    private dataAttributeNameFilters;
+    private dataAttributeValueFilters;
     private mouseDownCoordinates;
     private commentsSide;
     private temporaryPinCoordinates;
@@ -198,12 +198,6 @@ export declare class HTMLPin implements PinAdapter {
      */
     private addTemporaryPinToElement;
     /**
-     * @function createTemporaryPinContainer
-     * @description return a temporary pin container
-     * @returns {HTMLDivElement} the temporary pin container, separated from the main pins container to avoid overflow issues
-     */
-    private createTemporaryPinContainer;
-    /**
      * @function createPin
      * @description creates a pin element and sets its properties
      * @param {Annotation} annotation the annotation associated to the pin to be rendered
@@ -227,12 +221,6 @@ export declare class HTMLPin implements PinAdapter {
      * @returns {void}
      */
     private setPositionNotStatic;
-    /**
-     * @function temporaryPinContainer
-     * @description returns the temporary pin container
-     * @returns {HTMLDivElement} the temporary pin container
-     */
-    private get temporaryPinContainer();
     /**
      * @function onClick
      * @description handles the click event on the container; mainly, creates or moves the temporary pin

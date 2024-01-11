@@ -29,4 +29,11 @@ export declare enum PositionOptions {
 export interface LocalParticipantData {
     id: string;
     color: string;
+    joinedPresence: boolean;
 }
+export interface TooltipData {
+    name: string;
+    action?: string;
+}
+export type VerticalSide = 'top' | 'bottom';
+export type HorizontalSide = 'left' | 'right';
