@@ -383,11 +383,13 @@ export class HTMLPin implements PinAdapter {
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
       temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
+      temporaryPin.setAttribute('keepPositionRatio', '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
 
       this.addTemporaryPinToElement(elementId, temporaryPin);
     }
 
+    const { width, height } = this.divWrappers.get(elementId).getBoundingClientRect();
     const { x, y } = this.temporaryPinCoordinates;
 
     temporaryPin.setAttribute('position', JSON.stringify({ x, y }));
@@ -425,6 +427,8 @@ export class HTMLPin implements PinAdapter {
       const wrapper = this.divWrappers.get(elementId);
       if (!wrapper) return;
 
+      const { width, height } = wrapper.getBoundingClientRect();
+      console.error(x, width, y, height);
       const pinElement = this.createPin(annotation, x, y);
       wrapper.appendChild(pinElement);
       this.pins.set(annotation.uuid, pinElement);
@@ -614,6 +618,7 @@ export class HTMLPin implements PinAdapter {
     pinElement.setAttribute('type', PinMode.SHOW);
     pinElement.setAttribute('annotation', JSON.stringify(annotation));
     pinElement.setAttribute('position', JSON.stringify({ x, y }));
+    pinElement.setAttribute('keepPositionRatio', '');
     pinElement.id = annotation.uuid;
 
     return pinElement;
@@ -710,8 +715,8 @@ export class HTMLPin implements PinAdapter {
     const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
     const scale = wrapper.getBoundingClientRect().width / wrapper.offsetWidth || 1;
 
-    const x = (event.clientX - rect.left) / scale;
-    const y = (event.clientY - rect.top) / scale;
+    let x = (event.clientX - rect.left) / scale;
+    let y = (event.clientY - rect.top) / scale;
 
     const originalX = (mouseDownX - rect.x) / scale;
     const originalY = (mouseDownY - rect.y) / scale;
@@ -719,15 +724,19 @@ export class HTMLPin implements PinAdapter {
     const distance = Math.hypot(x - originalX, y - originalY);
     if (distance > 10) return;
 
+    const { width, height } = wrapper.getBoundingClientRect();
+
+    x /= width;
+    y = (y - 32) / height;
     this.onPinFixedObserver.publish({
       x,
-      y: y - 30,
+      y,
       type: 'html',
       elementId,
     } as PinCoordinates);
 
     this.resetSelectedPin();
-    this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y: y - 30 };
+    this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y };
     this.renderTemporaryPin(elementId);
 
     const temporaryPin = this.divWrappers.get(elementId).querySelector('#superviz-temporary-pin');

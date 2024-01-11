@@ -26,6 +26,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare localAvatar: string | undefined;
   declare annotationSent: boolean;
   declare localName: string;
+  declare keepPositionRatio: boolean;
 
   private originalPosition: Partial<PinCoordinates>;
   private annotationSides: Sides;
@@ -46,6 +47,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     localAvatar: { type: String },
     annotationSent: { type: Boolean },
     localName: { type: String },
+    keepPositionRatio: { type: Boolean },
   };
 
   constructor() {
@@ -221,25 +223,21 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     };
     classes[this.horizontalSide] = true;
 
+    let style = '';
+    if (this.keepPositionRatio) {
+      style = `top: ${this.position.y * 100}%; left: ${this.position.x * 100}%;`;
+    } else {
+      style = `top: ${this.position.y * 100}px; left: ${this.position.x * 100}px;`;
+    }
+
     if (this.type === PinMode.ADD) {
       return html`
-        <div
-          class=${classMap(classes)}
-          style=${`top: ${this.position.y}px; left: ${this.position.x}px;`}
-        >
-          ${this.avatar()} ${this.input()}
-        </div>
+        <div class=${classMap(classes)} style=${style}>${this.avatar()} ${this.input()}</div>
       `;
     }
 
     return html`
-      <div
-        @click=${this.emitClick}
-        class=${classMap(classes)}
-        style=${`top: ${this.position?.y}px; left: ${this.position?.x}px; pointer-events: auto;`}
-      >
-        ${this.avatar()}
-      </div>
+      <div @click=${this.emitClick} class=${classMap(classes)} style=${style}>${this.avatar()}</div>
     `;
   }
 }
