@@ -284,16 +284,10 @@ describe('HTMLPinAdapter', () => {
         },
       ];
 
-      instance['divWrappers']
-        .get('1')
-        ?.querySelector('[data-pins-wrapper]')!
-        .removeAttribute('data-pins-wrapper');
+      instance['divWrappers'].delete('1');
       instance['pins'].clear();
 
       instance['renderAnnotationsPins']();
-
-      // // delete this avoids an error being throw when the pin is destroyed
-      // delete instance['elementsWithDataId']['1'];
 
       expect(instance['pins'].size).toEqual(0);
     });
@@ -708,7 +702,7 @@ describe('HTMLPinAdapter', () => {
       jest.restoreAllMocks();
     });
 
-    test('should remove previous temporary pin container when rendering temporary pin over another element', () => {
+    test('should remove previous temporary pin when rendering temporary pin over another element', () => {
       instance['onClick']({
         clientX: 100,
         clientY: 100,
@@ -721,7 +715,6 @@ describe('HTMLPinAdapter', () => {
         currentTarget.getAttribute('data-wrapper-id'),
       );
 
-      const removeSpy = jest.spyOn(instance['temporaryPinContainer'] as any, 'remove');
       const deleteSpy = jest.spyOn(instance['pins'], 'delete');
 
       instance['onClick']({
@@ -731,7 +724,6 @@ describe('HTMLPinAdapter', () => {
         currentTarget: document.body.querySelector('[data-wrapper-id="2"]') as HTMLElement,
       } as unknown as MouseEvent);
 
-      expect(removeSpy).toHaveBeenCalled();
       expect(deleteSpy).toHaveBeenCalled();
       expect(instance['pins'].has('temporary-pin')).toBeTruthy();
       expect(instance['temporaryPinCoordinates'].elementId).toBe('2');
@@ -807,54 +799,33 @@ describe('HTMLPinAdapter', () => {
 
     test('should add temporary pin to element', () => {
       const element = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      const temporaryPinContainer = document.createElement('div');
-      temporaryPinContainer.id = 'temp-container';
       const pin = document.createElement('div');
       pin.id = 'temp-pin';
-      const spy = jest
-        .spyOn(instance as any, 'createTemporaryPinContainer')
-        .mockReturnValue(temporaryPinContainer);
 
       instance['addTemporaryPinToElement']('1', pin);
 
-      expect(spy).toHaveBeenCalled();
-      expect(temporaryPinContainer.querySelector('#temp-pin')).toBe(pin);
-      expect(instance['divWrappers'].get('1')?.querySelector('#temp-container')).toBe(
-        temporaryPinContainer,
-      );
+      const wrapper = instance['divWrappers'].get('1') as HTMLElement;
+      expect(element.firstElementChild).toBe(wrapper);
+      expect(wrapper.firstElementChild).toBe(pin);
     });
 
     test('should not add temporary pin to element if element is not found', () => {
-      const element = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      const temporaryPinContainer = document.createElement('div');
-      temporaryPinContainer.id = 'temp-container';
       const pin = document.createElement('div');
       pin.id = 'temp-pin';
-      const spy = jest
-        .spyOn(instance as any, 'createTemporaryPinContainer')
-        .mockReturnValue(temporaryPinContainer);
 
       instance['addTemporaryPinToElement']('not-found', pin);
 
-      expect(spy).not.toHaveBeenCalled();
-      expect(temporaryPinContainer.querySelector('#temp-pin')).toBe(null);
-      expect(instance['divWrappers'].get('1')?.querySelector('#temp-container')).toBe(null);
+      expect(instance['divWrappers'].get('1')?.querySelector('#temp-pin')).toBe(null);
     });
 
     test('should not add temporary pin to element if wrapper is not found', () => {
-      const element = document.body.querySelector('[data-superviz-id="1"]') as HTMLElement;
-      const temporaryPinContainer = document.createElement('div');
-      temporaryPinContainer.id = 'temp-container';
       const pin = document.createElement('div');
       pin.id = 'temp-pin';
-      const spy = jest
-        .spyOn(instance as any, 'createTemporaryPinContainer')
-        .mockReturnValue(temporaryPinContainer);
+
       instance['divWrappers'].delete('1');
       instance['addTemporaryPinToElement']('1', pin);
 
-      expect(spy).not.toHaveBeenCalled();
-      expect(temporaryPinContainer.querySelector('#temp-pin')).toBe(null);
+      expect(document.getElementById('temp-pin')).toBe(null);
     });
   });
 
@@ -864,9 +835,6 @@ describe('HTMLPinAdapter', () => {
 
       instance['divWrappers'].clear();
       const wrapper = instance['createWrapper'](element, '1');
-
-      const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLElement;
-      const containerRect = element.getBoundingClientRect();
 
       expect(wrapper).toBeInstanceOf(HTMLDivElement);
       expect(wrapper.style.position).toEqual('absolute');
@@ -878,14 +846,6 @@ describe('HTMLPinAdapter', () => {
       expect(wrapper.style.cursor).toEqual('default');
       expect(wrapper.getAttribute('data-wrapper-id')).toEqual('1');
       expect(wrapper.id).toEqual('superviz-id-1');
-
-      expect(pinsWrapper).toBeInstanceOf(HTMLDivElement);
-      expect(pinsWrapper.style.position).toEqual('absolute');
-      expect(pinsWrapper.style.overflow).toEqual('hidden');
-      expect(pinsWrapper.style.top).toEqual('0px');
-      expect(pinsWrapper.style.left).toEqual('0px');
-      expect(pinsWrapper.style.width).toEqual('100%');
-      expect(pinsWrapper.style.height).toEqual('100%');
     });
 
     test('should not create a new wrapper if wrapper already exists', () => {
@@ -1047,7 +1007,7 @@ describe('HTMLPinAdapter', () => {
     test('should clear element then do nothing if new value is filtered', () => {
       document.body.innerHTML =
         '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
-      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const change = {
         target: document.body.querySelector('[data-superviz-id="1-matches"]') as HTMLElement,
         oldValue: '2',
@@ -1069,7 +1029,7 @@ describe('HTMLPinAdapter', () => {
     test('should not clear element if old value was skipped', () => {
       document.body.innerHTML =
         '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
-      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const change = {
         target: document.body.querySelector('[data-superviz-id="does-not-match"]') as HTMLElement,
         oldValue: '1-matches',
@@ -1229,7 +1189,7 @@ describe('HTMLPinAdapter', () => {
         '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
       const container = document.getElementById('container') as HTMLElement;
 
-      instance = new HTMLPin('container', { dataAttributeNameFilters: [/.*-matches$/] });
+      instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const spy = jest.spyOn(instance as any, 'setElementReadyToPin');
 
       instance['container'] = container;

@@ -7,7 +7,14 @@ import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { Following, WIODropdownOptions, PositionOptions } from './types';
+import {
+  Following,
+  WIODropdownOptions,
+  PositionOptions,
+  TooltipData,
+  VerticalSide,
+  HorizontalSide,
+} from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -17,12 +24,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   static styles = styles;
 
   declare open: boolean;
-  declare align: 'left' | 'right';
-  declare position: 'top' | 'bottom';
+  declare align: HorizontalSide;
+  declare position: VerticalSide;
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
-  private originalPosition: 'top' | 'bottom';
+  private originalPosition: VerticalSide;
   private menu: HTMLElement;
   private dropdownContent: HTMLElement;
   private host: HTMLElement;
@@ -30,6 +37,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare showSeeMoreTooltip: boolean;
   declare showParticipantTooltip: boolean;
   declare following: Following;
+  declare localParticipantJoinedPresence: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -41,6 +49,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     following: { type: Object },
     showSeeMoreTooltip: { type: Boolean },
     showParticipantTooltip: { type: Boolean },
+    localParticipantJoinedPresence: { type: Boolean },
   };
 
   constructor() {
@@ -161,6 +170,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           }))
           .slice(0, 2);
 
+        const tooltipData: TooltipData = {
+          name,
+        };
+
+        if (this.localParticipantJoinedPresence && joinedPresence) {
+          tooltipData.action = 'Click to Follow';
+        }
+
         return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
@@ -169,7 +186,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
-        onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
+        onHoverData=${JSON.stringify(tooltipData)}
         ?canShowTooltip=${this.showParticipantTooltip}
         ?shiftTooltipLeft=${true}
         @toggle-dropdown-state=${this.toggleShowTooltip}
@@ -310,13 +327,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     if (action === PositionOptions['USE-ORIGINAL']) {
       const originalVertical = this.originalPosition.split('-')[0];
-      this.position = this.position.replace(/top|bottom/, originalVertical) as 'top' | 'bottom';
+      this.position = this.position.replace(/top|bottom/, originalVertical) as VerticalSide;
       return;
     }
 
     const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
     const previousSide = this.position.split('-')[0];
-    const newPosition = this.position.replace(previousSide, newSide) as 'top' | 'bottom';
+    const newPosition = this.position.replace(previousSide, newSide) as VerticalSide;
 
     this.position = newPosition;
   };

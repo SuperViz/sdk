@@ -16,5 +16,5 @@ export type HorizontalSide = 'left' | 'right';
 
 export interface HTMLPinOptions {
   dataAttributeName?: string;
-  dataAttributeNameFilters?: RegExp[];
+  dataAttributeValueFilters?: RegExp[];
 }

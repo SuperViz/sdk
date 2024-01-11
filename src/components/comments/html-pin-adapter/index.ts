@@ -34,7 +34,7 @@ export class HTMLPin implements PinAdapter {
   private selectedPin: HTMLElement | null = null;
   private dataAttribute: string = 'data-superviz-id';
   private animateFrame: number;
-  private dataAttributeNameFilters: RegExp[];
+  private dataAttributeValueFilters: RegExp[];
 
   // Coordinates/Positions
   private mouseDownCoordinates: Simple2DPoint;
@@ -82,7 +82,7 @@ export class HTMLPin implements PinAdapter {
     if (typeof options !== 'object')
       throw new Error('Second argument of the HTMLPin constructor must be an object');
 
-    const { dataAttributeName, dataAttributeNameFilters } = options;
+    const { dataAttributeName, dataAttributeValueFilters } = options;
 
     if (dataAttributeName === '') throw new Error('dataAttributeName must be a non-empty string');
     if (dataAttributeName === null) throw new Error('dataAttributeName cannot be null');
@@ -90,7 +90,7 @@ export class HTMLPin implements PinAdapter {
       throw new Error('dataAttributeName must be a non-empty string');
 
     this.dataAttribute = dataAttributeName || this.dataAttribute;
-    this.dataAttributeNameFilters = dataAttributeNameFilters || [];
+    this.dataAttributeValueFilters = dataAttributeValueFilters || [];
 
     this.isActive = false;
     this.prepareElements();
@@ -133,9 +133,10 @@ export class HTMLPin implements PinAdapter {
     this.voidElementsWrappers.clear();
     this.voidElementsWrappers = undefined;
     this.annotations = [];
-    cancelAnimationFrame(this.animateFrame);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+
+    cancelAnimationFrame(this.animateFrame);
   }
 
   /**
@@ -187,8 +188,10 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   private animate = (): void => {
-    this.updatePinsPositions();
-    requestAnimationFrame(this.animate);
+    if (this.voidElementsWrappers) {
+      this.updatePinsPositions();
+      this.animateFrame = requestAnimationFrame(this.animate);
+    }
   };
 
   /**
@@ -225,7 +228,7 @@ export class HTMLPin implements PinAdapter {
 
     elementsWithDataId.forEach((el: HTMLElement) => {
       const id = el.getAttribute(this.dataAttribute);
-      const skip = this.dataAttributeNameFilters.some((filter, index) => {
+      const skip = this.dataAttributeValueFilters.some((filter, index) => {
         return id.match(filter);
       });
 
@@ -243,7 +246,7 @@ export class HTMLPin implements PinAdapter {
   private setAddCursor(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => {
       this.divWrappers.get(id).style.cursor =
-        'url("https://production.cdn.superviz.com/static/pin-add.png") 0 100, pointer';
+        'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
       this.divWrappers.get(id).style.pointerEvents = 'auto';
     });
   }
@@ -360,8 +363,9 @@ export class HTMLPin implements PinAdapter {
     let temporaryPin = this.pins.get('temporary-pin');
 
     if (elementId && elementId !== this.temporaryPinCoordinates.elementId) {
-      this.temporaryPinContainer.remove();
+      this.pins.get('temporary-pin').remove();
       this.pins.delete('temporary-pin');
+
       this.temporaryPinCoordinates.elementId = elementId;
       temporaryPin = null;
     }
@@ -411,17 +415,15 @@ export class HTMLPin implements PinAdapter {
       const { x, y, elementId, type } = JSON.parse(annotation.position) as PinCoordinates;
       if (type !== 'html') return;
 
-      const element = this.elementsWithDataId[elementId];
-      if (!element) return;
-
-      const wrapper = this.divWrappers
-        .get(elementId)
-        ?.querySelector('[data-pins-wrapper]') as HTMLDivElement;
-      if (!wrapper) return;
-
       if (this.pins.has(annotation.uuid)) {
         return;
       }
+
+      const element = this.elementsWithDataId[elementId];
+      if (!element) return;
+
+      const wrapper = this.divWrappers.get(elementId);
+      if (!wrapper) return;
 
       const pinElement = this.createPin(annotation, x, y);
       wrapper.appendChild(pinElement);
@@ -460,8 +462,7 @@ export class HTMLPin implements PinAdapter {
 
     const wrapper = this.divWrappers.get(id);
     if (wrapper) {
-      const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLDivElement;
-      const pins = pinsWrapper.children;
+      const pins = wrapper.children;
       const { length } = pins;
 
       for (let i = 0; i < length; ++i) {
@@ -526,7 +527,7 @@ export class HTMLPin implements PinAdapter {
     if (!this.isActive || !this.isPinsVisible) return;
 
     this.divWrappers.get(id).style.cursor =
-      'url("https://production.cdn.superviz.com/static/pin-add.png") 0 100, pointer';
+      'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
     this.divWrappers.get(id).style.pointerEvents = 'auto';
     this.addElementListeners(id);
   }
@@ -545,7 +546,6 @@ export class HTMLPin implements PinAdapter {
     if (!this.temporaryPinCoordinates.elementId) return;
 
     this.removeAnnotationPin('temporary-pin');
-    this.temporaryPinContainer?.remove();
     this.temporaryPinCoordinates = {};
   };
 
@@ -597,29 +597,10 @@ export class HTMLPin implements PinAdapter {
     const wrapper = this.divWrappers.get(elementId);
     if (!wrapper) return;
 
-    const temporaryContainer = this.createTemporaryPinContainer();
-    temporaryContainer.appendChild(pin);
-
-    wrapper.appendChild(temporaryContainer);
+    wrapper.appendChild(pin);
   }
 
   // ------- helper functions -------
-  /**
-   * @function createTemporaryPinContainer
-   * @description return a temporary pin container
-   * @returns {HTMLDivElement} the temporary pin container, separated from the main pins container to avoid overflow issues
-   */
-  private createTemporaryPinContainer(): HTMLDivElement {
-    const temporaryContainer = document.createElement('div');
-    temporaryContainer.style.position = 'absolute';
-    temporaryContainer.style.top = '0';
-    temporaryContainer.style.left = '0';
-    temporaryContainer.style.width = '100%';
-    temporaryContainer.style.height = '100%';
-    temporaryContainer.id = 'temporary-pin-container';
-    return temporaryContainer;
-  }
-
   /**
    * @function createPin
    * @description creates a pin element and sets its properties
@@ -666,16 +647,6 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
 
-    const pinsWrapper = document.createElement('div');
-    pinsWrapper.setAttribute('data-pins-wrapper', '');
-    pinsWrapper.style.position = 'absolute';
-    pinsWrapper.style.overflow = 'hidden';
-    pinsWrapper.style.top = '0';
-    pinsWrapper.style.left = '0';
-    pinsWrapper.style.width = '100%';
-    pinsWrapper.style.height = '100%';
-    containerWrapper.appendChild(pinsWrapper);
-
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
       this.setPositionNotStatic(this.elementsWithDataId[id]);
@@ -715,15 +686,6 @@ export class HTMLPin implements PinAdapter {
     if (position !== 'static') return;
 
     element.style.setProperty('position', 'relative');
-  }
-
-  /**
-   * @function temporaryPinContainer
-   * @description returns the temporary pin container
-   * @returns {HTMLDivElement} the temporary pin container
-   */
-  private get temporaryPinContainer(): HTMLDivElement {
-    return document.getElementById('temporary-pin-container') as HTMLDivElement;
   }
 
   // ------- callbacks -------
@@ -800,7 +762,7 @@ export class HTMLPin implements PinAdapter {
       const dataId = (target as HTMLElement).getAttribute(this.dataAttribute);
       if ((!dataId && !oldValue) || dataId === oldValue) return;
 
-      const oldValueSkipped = this.dataAttributeNameFilters.some((filter) =>
+      const oldValueSkipped = this.dataAttributeValueFilters.some((filter) =>
         oldValue.match(filter),
       );
 
@@ -818,7 +780,7 @@ export class HTMLPin implements PinAdapter {
         return;
       }
 
-      const skip = this.dataAttributeNameFilters.some((filter) => dataId.match(filter));
+      const skip = this.dataAttributeValueFilters.some((filter) => dataId.match(filter));
 
       if ((oldValue && this.elementsWithDataId[oldValue]) || skip) {
         this.clearElement(oldValue);
