@@ -14,6 +14,7 @@ const FETCH_PARTICIPANTS_BY_GROUP_MOCK = [
   {
     id: "any_user_id",
     name: "any_name",
+    userName: "any_user_name",
     avatar: null,
     email: 'any_email',
   }
@@ -216,14 +217,14 @@ describe('ApiService', () => {
     test('should return the participants', async () => {
       const response = await ApiService.fetchParticipantsByGroup('any_group_id');
 
-      expect(response).toEqual([{"avatar": null, "id": "any_user_id", "name": "any_name",  "email": "any_email"}]);
+      expect(response).toEqual([{"avatar": null, "id": "any_user_id", "name": "any_name", "userName": "any_user_name",  "email": "any_email"}]);
     });
   });
 
   describe('Mentions', () => {
     test('should create a mention', async () => {
       const response = await ApiService.createMentions({
-        commentId: 'any_comment_id',
+        commentsId: 'any_comment_id',
         participants: []
       });
 
