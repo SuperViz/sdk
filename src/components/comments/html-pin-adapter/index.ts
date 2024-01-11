@@ -360,8 +360,9 @@ export class HTMLPin implements PinAdapter {
     let temporaryPin = this.pins.get('temporary-pin');
 
     if (elementId && elementId !== this.temporaryPinCoordinates.elementId) {
-      this.temporaryPinContainer.remove();
+      this.pins.get('temporary-pin').remove();
       this.pins.delete('temporary-pin');
+
       this.temporaryPinCoordinates.elementId = elementId;
       temporaryPin = null;
     }
@@ -411,17 +412,15 @@ export class HTMLPin implements PinAdapter {
       const { x, y, elementId, type } = JSON.parse(annotation.position) as PinCoordinates;
       if (type !== 'html') return;
 
-      const element = this.elementsWithDataId[elementId];
-      if (!element) return;
-
-      const wrapper = this.divWrappers
-        .get(elementId)
-        ?.querySelector('[data-pins-wrapper]') as HTMLDivElement;
-      if (!wrapper) return;
-
       if (this.pins.has(annotation.uuid)) {
         return;
       }
+
+      const element = this.elementsWithDataId[elementId];
+      if (!element) return;
+
+      const wrapper = this.divWrappers.get(elementId);
+      if (!wrapper) return;
 
       const pinElement = this.createPin(annotation, x, y);
       wrapper.appendChild(pinElement);
@@ -460,8 +459,7 @@ export class HTMLPin implements PinAdapter {
 
     const wrapper = this.divWrappers.get(id);
     if (wrapper) {
-      const pinsWrapper = wrapper.querySelector('[data-pins-wrapper]') as HTMLDivElement;
-      const pins = pinsWrapper.children;
+      const pins = wrapper.children;
       const { length } = pins;
 
       for (let i = 0; i < length; ++i) {
@@ -545,7 +543,6 @@ export class HTMLPin implements PinAdapter {
     if (!this.temporaryPinCoordinates.elementId) return;
 
     this.removeAnnotationPin('temporary-pin');
-    this.temporaryPinContainer?.remove();
     this.temporaryPinCoordinates = {};
   };
 
@@ -597,29 +594,10 @@ export class HTMLPin implements PinAdapter {
     const wrapper = this.divWrappers.get(elementId);
     if (!wrapper) return;
 
-    const temporaryContainer = this.createTemporaryPinContainer();
-    temporaryContainer.appendChild(pin);
-
-    wrapper.appendChild(temporaryContainer);
+    wrapper.appendChild(pin);
   }
 
   // ------- helper functions -------
-  /**
-   * @function createTemporaryPinContainer
-   * @description return a temporary pin container
-   * @returns {HTMLDivElement} the temporary pin container, separated from the main pins container to avoid overflow issues
-   */
-  private createTemporaryPinContainer(): HTMLDivElement {
-    const temporaryContainer = document.createElement('div');
-    temporaryContainer.style.position = 'absolute';
-    temporaryContainer.style.top = '0';
-    temporaryContainer.style.left = '0';
-    temporaryContainer.style.width = '100%';
-    temporaryContainer.style.height = '100%';
-    temporaryContainer.id = 'temporary-pin-container';
-    return temporaryContainer;
-  }
-
   /**
    * @function createPin
    * @description creates a pin element and sets its properties
@@ -666,16 +644,6 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
 
-    const pinsWrapper = document.createElement('div');
-    pinsWrapper.setAttribute('data-pins-wrapper', '');
-    pinsWrapper.style.position = 'absolute';
-    pinsWrapper.style.overflow = 'hidden';
-    pinsWrapper.style.top = '0';
-    pinsWrapper.style.left = '0';
-    pinsWrapper.style.width = '100%';
-    pinsWrapper.style.height = '100%';
-    containerWrapper.appendChild(pinsWrapper);
-
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
       this.setPositionNotStatic(this.elementsWithDataId[id]);
@@ -715,15 +683,6 @@ export class HTMLPin implements PinAdapter {
     if (position !== 'static') return;
 
     element.style.setProperty('position', 'relative');
-  }
-
-  /**
-   * @function temporaryPinContainer
-   * @description returns the temporary pin container
-   * @returns {HTMLDivElement} the temporary pin container
-   */
-  private get temporaryPinContainer(): HTMLDivElement {
-    return document.getElementById('temporary-pin-container') as HTMLDivElement;
   }
 
   // ------- callbacks -------
