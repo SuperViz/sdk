@@ -16,6 +16,7 @@ export declare class CommentsAnnotationPin extends WebComponentsBaseElement {
     localAvatar: string | undefined;
     annotationSent: boolean;
     localName: string;
+    keepPositionRatio: boolean;
     private originalPosition;
     private annotationSides;
     private inputElement;
@@ -59,6 +60,9 @@ export declare class CommentsAnnotationPin extends WebComponentsBaseElement {
         };
         localName: {
             type: StringConstructor;
+        };
+        keepPositionRatio: {
+            type: BooleanConstructor;
         };
     };
     constructor();
