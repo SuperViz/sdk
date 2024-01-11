@@ -83,7 +83,7 @@ export class AutoCompleteHandler {
 
   insertMention (start: number, end: number, participant: any) {
     const { id, name } = participant
-    const text = this.getValue().slice(0, start) + name + this.getValue().slice(end, this.getValue().length)
+    const text = `${this.getValue().slice(0, start) + name  } ${  this.getValue().slice(end, this.getValue().length)}`
 
     this.setValue(text)
     this.input.focus()
@@ -94,6 +94,6 @@ export class AutoCompleteHandler {
       username: name
     })
 
-    this.setCaretPosition(start + name.length)
+    this.setCaretPosition(start + name.length + 1)
   }
 }
