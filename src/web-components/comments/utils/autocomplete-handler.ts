@@ -22,7 +22,7 @@ export class AutoCompleteHandler {
   getMentions () {
     return this.mentions
       .filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
-      .filter(mention => this.input.value.includes(mention.name))
+      .filter(mention => this.input.value.includes(mention.userName))
   }
 
   setMentions (mentions) {
@@ -96,6 +96,6 @@ export class AutoCompleteHandler {
       userName
     })
 
-    this.setCaretPosition(start + name.length + 1)
+    this.setCaretPosition(start + userName.length + 1)
   }
 }
