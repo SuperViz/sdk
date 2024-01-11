@@ -389,7 +389,6 @@ export class HTMLPin implements PinAdapter {
       this.addTemporaryPinToElement(elementId, temporaryPin);
     }
 
-    const { width, height } = this.divWrappers.get(elementId).getBoundingClientRect();
     const { x, y } = this.temporaryPinCoordinates;
 
     temporaryPin.setAttribute('position', JSON.stringify({ x, y }));
@@ -726,8 +725,9 @@ export class HTMLPin implements PinAdapter {
 
     const { width, height } = wrapper.getBoundingClientRect();
 
-    x /= width;
-    y = (y - 32) / height;
+    // save coordinates as percentages
+    x = (x * 100) / width;
+    y = ((y - 32) * 100) / height;
     this.onPinFixedObserver.publish({
       x,
       y,

@@ -225,9 +225,9 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
     let style = '';
     if (this.keepPositionRatio) {
-      style = `top: ${this.position.y * 100}%; left: ${this.position.x * 100}%;`;
+      style = `top: ${this.position.y}%; left: ${this.position.x}%;`;
     } else {
-      style = `top: ${this.position.y * 100}px; left: ${this.position.x * 100}px;`;
+      style = `top: ${this.position.y}px; left: ${this.position.x}px;`;
     }
 
     if (this.type === PinMode.ADD) {
