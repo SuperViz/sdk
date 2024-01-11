@@ -428,7 +428,7 @@ export class HTMLPin implements PinAdapter {
       if (!wrapper) return;
 
       const { width, height } = wrapper.getBoundingClientRect();
-      console.error(x, width, y, height);
+
       const pinElement = this.createPin(annotation, x, y);
       wrapper.appendChild(pinElement);
       this.pins.set(annotation.uuid, pinElement);
