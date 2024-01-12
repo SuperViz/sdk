@@ -97,6 +97,7 @@ export class CanvasPin implements PinAdapter {
       return;
     }
 
+    this.resetPins();
     this.removeListeners();
     this.canvas.style.cursor = this.originalCanvasCursor;
   }
