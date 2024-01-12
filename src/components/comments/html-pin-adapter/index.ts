@@ -712,22 +712,25 @@ export class HTMLPin implements PinAdapter {
     const elementId = wrapper.getAttribute('data-wrapper-id');
     const rect = wrapper.getBoundingClientRect();
     const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
-    const scale = wrapper.getBoundingClientRect().width / wrapper.offsetWidth || 1;
 
-    let x = (event.clientX - rect.left) / scale;
-    let y = (event.clientY - rect.top) / scale;
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
 
-    const originalX = (mouseDownX - rect.x) / scale;
-    const originalY = (mouseDownY - rect.y) / scale;
+    const originalX = mouseDownX - rect.x;
+    const originalY = mouseDownY - rect.y;
 
     const distance = Math.hypot(x - originalX, y - originalY);
     if (distance > 10) return;
 
     const { width, height } = wrapper.getBoundingClientRect();
 
+    const cursorHeight = 32;
+    const scale = wrapper.getBoundingClientRect().width / wrapper.offsetWidth || 1;
+
     // save coordinates as percentages
     x = (x * 100) / width;
-    y = ((y - 32) * 100) / height;
+    y = ((y - cursorHeight * scale) * 100) / height;
+
     this.onPinFixedObserver.publish({
       x,
       y,
