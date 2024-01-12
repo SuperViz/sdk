@@ -19,7 +19,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
-  declare mentionList: []
+  declare mentionList: Participant[]
   declare mentions: []
   declare participantsList: Participant[];
 
@@ -120,42 +120,62 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   }
 
+  private userMentionedByTextInput = (mentions) => {
+    this.mentionList = [];
+    const mentioned = {
+      detail: {
+        ...mentions[0]
+      }
+    };
+    this.insertMention(mentioned)
+  }
+
+  private buttonAtSimbol = () => {
+    let caretIndex = this.autoCompleteHandler.getSelectionStart()
+    const getValue = this.autoCompleteHandler.getValue()
+
+    this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
+
+    caretIndex +=1
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    const position = {
+      start: keyIndex + 1,
+      end: caretIndex,
+    }
+    return {searchText, position}
+  }
+
   private handleInput = (e: InputEvent) => {
     this.autoCompleteHandler.setInput(e);
-    let caretIndex = this.autoCompleteHandler.getSelectionStart();
-    let keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
-    let keyIndex = keyData?.keyIndex ?? -1;
+    const caretIndex = this.autoCompleteHandler.getSelectionStart();
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
 
     let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
-    let position
+    let position = this.autoCompleteHandler.getSelectionPosition()
 
     const isButtonAtSimbol = (e.data === '@' && keyIndex === -1)
     const isButtonAtSimbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
 
     if (isButtonAtSimbol || isButtonAtSimbolAndNotStartedMention) {
-      searchText = '';
-      caretIndex = this.autoCompleteHandler.getSelectionStart()
-      const getValue = this.autoCompleteHandler.getValue()
-
-      this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
-
-      caretIndex +=1
-      keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
-      keyIndex = keyData?.keyIndex ?? -1;
-      searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
-      position = {
-        start: keyIndex + 1,
-        end: caretIndex,
-      }
-    } else position = this.autoCompleteHandler.getSelectionPosition()
-    console.log(this.autoCompleteHandler.getMentions())
+      const data = this.buttonAtSimbol()
+      searchText = data.searchText
+      position = data.position
+    }
 
     if (searchText === null) {
       this.mentionList = []
       return;
     }
 
-    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+    const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+
+    if (findDigitParticipant) {
+      this.userMentionedByTextInput(mentions)
+      return
+    }
 
     if (action === 'show') {
       this.mentionList = mentions
@@ -167,12 +187,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private insertMention = (event) => {
-    const { id, name, avatar, position } = event.detail;
+    const { id, name, userName, avatar, email, position } = event.detail;
 
     this.autoCompleteHandler.insertMention(position.start, position.end, {
       id,
       name,
-      avatar
+      userName,
+      avatar,
+      email,
     });
 
     this.updateHeight();

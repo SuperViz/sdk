@@ -1,3 +1,5 @@
+import { Participant } from "../../../components/comments/types"
+
 export class AutoCompleteHandler {
   constructor () {
     this.input = null
@@ -8,7 +10,7 @@ export class AutoCompleteHandler {
   private event: InputEvent
   private input: HTMLTextAreaElement
   private key: string
-  private mentions: { userId: string, name: string, username: string }[]
+  private mentions: { userId: string, name: string, userName: string }[]
 
   setInput (event: InputEvent) {
     this.event = event
@@ -20,14 +22,14 @@ export class AutoCompleteHandler {
   getMentions () {
     return this.mentions
       .filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
-      .filter(mention => this.input.value.includes(mention.name))
+      .filter(mention => this.input.value.includes(mention.userName))
   }
 
   setMentions (mentions) {
     this.mentions = mentions
   }
 
-  addMention (mention: { userId: string, name: string, username: string }) {
+  addMention (mention: { userId: string, name: string, userName: string }) {
     this.mentions = [...this.mentions, mention]
     this.mentions = this.mentions.filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
   }
@@ -81,9 +83,9 @@ export class AutoCompleteHandler {
     return null
   }
 
-  insertMention (start: number, end: number, participant: any) {
-    const { id, name } = participant
-    const text = `${this.getValue().slice(0, start) + name  } ${  this.getValue().slice(end, this.getValue().length)}`
+  insertMention (start: number, end: number, participant: Participant) {
+    const { id, name, userName } = participant
+    const text = `${`${this.getValue().slice(0, start) + userName} `}${  this.getValue().slice(end, this.getValue().length)}`
 
     this.setValue(text)
     this.input.focus()
@@ -91,9 +93,9 @@ export class AutoCompleteHandler {
     this.addMention({
       userId: id,
       name,
-      username: name
+      userName
     })
 
-    this.setCaretPosition(start + name.length + 1)
+    this.setCaretPosition(start + userName.length + 1)
   }
 }

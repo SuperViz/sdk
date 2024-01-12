@@ -18,18 +18,21 @@ import { Comments } from './index';
 const MOCK_PARTICIPANTS: Participant[] = [
   {
     name: 'John Zero',
+    userName: 'John Zero',
     avatar: 'avatar1.png',
     id: '1',
     email: 'john.zero@mail.com',
   },
   {
     name: 'John Uno',
+    userName: 'John Uno',
     avatar: 'avatar2.png',
     id: '2',
     email: 'john.uno@mail.com',
   },
   {
     name: 'John Doe',
+    userName: 'John Doe',
     avatar: 'avatar3.png',
     id: '3',
     email: 'john.doe@mail.com',
@@ -42,6 +45,7 @@ jest.mock('../../services/api', () => ({
   createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
   createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
+  createMentions: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
@@ -441,7 +445,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(3);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(4);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
@@ -487,12 +491,14 @@ describe('Comments', () => {
 
   test('should update comment on annotation when it is updated', async () => {
     commentsComponent['annotations'] = [MOCK_ANNOTATION];
+    jest.spyOn(ApiService, 'createMentions');
 
     commentsComponent['element'].dispatchEvent(
       new CustomEvent('update-comment', {
         detail: {
           uuid: MOCK_ANNOTATION.comments[0].uuid,
           text: 'text-test',
+          mentions: [],
         },
       }),
     );
@@ -534,7 +540,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(1);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(2);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );

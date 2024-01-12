@@ -55,8 +55,8 @@ export class CommentsMentionList extends WebComponentsBaseElement {
   protected render() {
     const mentionItem = (participant) => html`
       <div class="mention-item" @click=${() => this.selectParticipant(participant)}>
-          <img class="avatar" src="${participant.avatar}" alt="${participant.name}" />
-        <div class="avatar-type">${participant.name}</div>
+          <img class="avatar" src="${participant.avatar}" alt="${participant.userName}" />
+        <div class="avatar-type">${participant.userName}</div>
       </div>
     `
 
