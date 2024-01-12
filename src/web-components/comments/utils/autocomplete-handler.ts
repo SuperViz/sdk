@@ -1,3 +1,5 @@
+import { Participant } from "../../../components/comments/types"
+
 export class AutoCompleteHandler {
   constructor () {
     this.input = null
@@ -7,35 +9,29 @@ export class AutoCompleteHandler {
   private keys = ['@']
   private event: InputEvent
   private input: HTMLTextAreaElement
-  private key: string | number
-  private oldKey: string | number
-  private mentions: { userId: string, name: string, position: { start: number, end: number } }[]
+  private key: string
+  private mentions: { userId: string, name: string }[]
 
   setInput (event: InputEvent) {
     this.event = event
     this.input = event.target as HTMLTextAreaElement
 
-    this.oldKey = this.key
     this.key = event.data
   }
 
-  addMention (mention: { userId: string, name: string, position: { start: number, end: number } }) {
-    this.mentions = [...this.mentions, mention]
+  getMentions () {
+    return this.mentions
+      .filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
+      .filter(mention => this.input.value.includes(mention.name))
   }
 
-  removeMention (mention) {
-    const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
-    this.mentions = this.mentions.filter(m => m.name !== mention.name && m.position.start !== mention.position.start && m.position.end !== mention.position.end)
+  setMentions (mentions) {
+    this.mentions = mentions
+  }
 
-    if (isDeletion) {
-      this.setValue(this.getValue().slice(0, mention.position.start) + this.getValue().slice(mention.position.end, this.getValue().length))
-      this.setCaretPosition(mention.position.start)
-      return
-    }
-
-    const { start, end } = mention.position
-    this.setValue(this.getValue().slice(0, start) + this.getValue().slice(end, this.getValue().length))
-    this.setCaretPosition(start + 1)
+  addMention (mention: { userId: string, name: string }) {
+    this.mentions = [...this.mentions, mention]
+    this.mentions = this.mentions.filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
   }
 
   clearMentions () {
@@ -54,7 +50,7 @@ export class AutoCompleteHandler {
   }
 
   getSelectionStart () {
-    return this.input.selectionStart
+    return this.input?.selectionStart
   }
 
   setCaretPosition (index) {
@@ -62,7 +58,7 @@ export class AutoCompleteHandler {
   }
 
   getValue () {
-    return this.input.value
+    return this.input?.value
   }
 
   setValue (value) {
@@ -78,81 +74,27 @@ export class AutoCompleteHandler {
   }
 
   searchMention (caretIndex, keyIndex) {
-    const existingMention = this.mentions.find(mention => mention.position.start <= caretIndex && caretIndex <= mention.position.end)
-    if (existingMention) {
-      this.removeMention(existingMention)
-      return null
-    }
-
     if (keyIndex !== -1) {
       const searchText = this.getValue().substring(keyIndex + 1, caretIndex)
 
       return searchText
     }
-
+    
     return null
   }
 
-  updateMentionPositions () {
-    const isDeletion = (this.event.inputType === "deleteContentBackward" || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward' || this.event.inputType === "deleteByCut")
-
-    this.mentions = this.mentions.map((mention) => {
-      const { start, end } = mention.position
-      const position = this.getSelectionPosition()
-
-      const newPosition = {
-        start,
-        end
-      }
-
-      if (position.start < start) {
-        newPosition.start = isDeletion ? start - 1 : start + 1
-        newPosition.end = isDeletion ? end - 1 : end + 1
-      }
-
-      return {
-        ...mention,
-        position: newPosition
-      }
-    })
-    console.log('start', this.mentions.map(item => item.position.start))
-    console.log('end', this.mentions.map(item => item.position.end))
-  }
-
-  insertMention (start: number, end: number, participant: any) {
-    const { name } = participant
-    const position = {
-      start: start - 1,
-      end: start + name.length,
-    }
-    const text = this.getValue().slice(0, start) + name + this.getValue().slice(end, this.getValue().length)
+  insertMention (start: number, end: number, participant: Participant) {
+    const { id, name } = participant
+    const text = `${`${this.getValue().slice(0, start) + name} `}${  this.getValue().slice(end, this.getValue().length)}`
 
     this.setValue(text)
     this.input.focus()
 
     this.addMention({
-      userId: participant.userId,
-      name,
-      position
+      userId: id,
+      name
     })
 
-    this.addBlankSpace()
     this.setCaretPosition(start + name.length + 1)
-  }
-
-  addBlankSpace () {
-    const caretIndex = this.getSelectionStart()
-
-    this.setValue(`${this.getValue().slice(0, caretIndex)} ${this.getValue().slice(caretIndex, this.getValue().length)}`)
-    this.updateMentionPositions()
-    this.input.focus()
-  }
-
-  addAtSymbolInCaretPosition () {
-    const caretIndex = this.getSelectionStart()
-
-    this.setValue(`${this.getValue().slice(0, caretIndex)  }@${  this.getValue().slice(caretIndex, this.getValue().length)}`)
-    this.updateMentionPositions()
-    this.input.focus()
   }
 }

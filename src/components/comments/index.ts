@@ -96,7 +96,7 @@ export class Comments extends BaseComponent {
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
-      this.createComment(detail.uuid, detail.text, true);
+      this.createComment(detail.uuid, detail.text, detail.mentions, true);
     });
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
@@ -125,7 +125,7 @@ export class Comments extends BaseComponent {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
-      this.createComment(detail.uuid, detail.text, true);
+      this.createComment(detail.uuid, detail.text, detail.mentions, true);
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
@@ -274,7 +274,7 @@ export class Comments extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { position, text } = detail;
+      const { position, text, mentions } = detail;
       const { url } = this;
 
       const annotation = await ApiService.createAnnotations(
@@ -288,7 +288,7 @@ export class Comments extends BaseComponent {
         },
       );
 
-      const comment = await this.createComment(annotation.uuid, text);
+      const comment = await this.createComment(annotation.uuid, text, mentions);
 
       this.addAnnotation({
         ...annotation,
@@ -344,10 +344,11 @@ export class Comments extends BaseComponent {
   private async createComment(
     annotationId: string,
     text: string,
+    mentions = [],
     addComment = false,
   ): Promise<Comment> {
     try {
-      const comment: Comment = await ApiService.createComment(
+      let comment: Comment = await ApiService.createComment(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         {
@@ -356,6 +357,22 @@ export class Comments extends BaseComponent {
           text,
         },
       );
+
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+          readed: 0
+        }))
+      })
+
+      comment = {
+        ...comment,
+        mentions: mentions.map((mention) => ({
+          ...mention,
+          position: JSON.stringify(mention.position),
+        })),
+      }
 
       if (addComment) {
         this.addComment(annotationId, comment);
@@ -377,19 +394,30 @@ export class Comments extends BaseComponent {
    */
   private updateComment = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { uuid, text } = detail;
-      await ApiService.updateComment(
+      const { uuid, text, mentions } = detail;
+      const comment = await ApiService.updateComment(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         uuid,
         text,
       );
 
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+        }))
+      })
+
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
           comments: annotation.comments.map((comment) => {
             if (comment.uuid === uuid) {
-              return Object.assign({}, comment, { text });
+              return Object.assign({}, comment, {
+                ...comment,
+                text,
+                mentions,
+              });
             }
 
             return comment;

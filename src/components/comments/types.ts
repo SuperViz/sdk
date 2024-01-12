@@ -13,6 +13,7 @@ export type Participant = {
   name: string;
   avatar: string;
   email: string;
+  position?: string;
 };
 
 export type Comment = {

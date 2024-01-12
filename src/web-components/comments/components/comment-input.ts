@@ -19,7 +19,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
-  declare mentionList: []
+  declare mentionList: Participant[];
+  declare mentions: Participant[];
   declare participantsList: Participant[];
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
@@ -30,7 +31,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     super();
     this.btnActive = false;
     this.text = '';
-    this.mentionList = []
+    this.mentionList = [];
+    this.mentions = [];
   }
 
   static styles = styles;
@@ -41,9 +43,25 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     btnActive: { type: Boolean },
     editable: { type: Boolean },
     placeholder: { type: String },
+    mentions: { type: Array },
     mentionList: { type: Object },
     participantsList: { type: Object },
   };
+
+  private addAtSymbolInCaretPosition = (e) => {
+    const input = this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+    const newInputEvent = new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(newInputEvent, 'data', {
+      value: '@',
+      writable: true,
+    });
+
+    input.dispatchEvent(newInputEvent);
+
+  }
 
   private getCommentInput = () => {
     return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
@@ -83,6 +101,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (commentTextarea) {
       commentTextarea.addEventListener('input', this.handleInput);
     }
+
+    if (this.text.length > 0) {
+      this.autoCompleteHandler.setMentions(this.mentions)
+    }
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -98,51 +120,80 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   }
 
+  private userMentionedByTextInput = (mentions) => {
+    this.mentionList = [];
+    const mentioned = {
+      detail: {
+        ...mentions[0]
+      }
+    };
+    this.insertMention(mentioned)
+  }
+
+  private buttonAtSimbol = () => {
+    let caretIndex = this.autoCompleteHandler.getSelectionStart()
+    const getValue = this.autoCompleteHandler.getValue()
+
+    this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
+
+    caretIndex +=1
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    const position = {
+      start: keyIndex + 1,
+      end: caretIndex,
+    }
+    return {searchText, position}
+  }
+
   private handleInput = (e: InputEvent) => {
     this.autoCompleteHandler.setInput(e);
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
     const keyIndex = keyData?.keyIndex ?? -1;
-    this.autoCompleteHandler.updateMentionPositions()
-    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
 
-    const position = this.autoCompleteHandler.getSelectionPosition()
+    let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    let position = this.autoCompleteHandler.getSelectionPosition()
+
+    const isButtonAtSimbol = (e.data === '@' && keyIndex === -1)
+    const isButtonAtSimbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
+
+    if (isButtonAtSimbol || isButtonAtSimbolAndNotStartedMention) {
+      const data = this.buttonAtSimbol()
+      searchText = data.searchText
+      position = data.position
+    }
 
     if (searchText === null) {
       this.mentionList = []
       return;
     }
 
-    const { action, mentions } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+    const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+
+    if (findDigitParticipant) {
+      this.userMentionedByTextInput(mentions)
+      return
+    }
 
     if (action === 'show') {
       this.mentionList = mentions
     }
 
     if (action === 'hide') {
-      this.mentionList = []
-    }
-
-    if (e.inputType === ' ' && this.mentionList.length && this.mentionList.length === 1) {
-      const [{ userId = '', name = '' } = {}] = this.mentionList;
-
-      this.autoCompleteHandler.insertMention(position.start, position.end, {
-        userId,
-        name,
-        avatar: 'https://production.cdn.superviz.com/static/default-avatars/1.png'
-      });
-
-      this.updateHeight();
+      this.mentionList = [];
     }
   }
 
   private insertMention = (event) => {
-    const { userId, name, avatar, position } = event.detail;
+    const { id, name, avatar, email, position } = event.detail;
 
     this.autoCompleteHandler.insertMention(position.start, position.end, {
-      userId,
+      id,
       name,
-      avatar
+      avatar,
+      email,
     });
 
     this.updateHeight();
@@ -178,6 +229,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
+        mentions: this.autoCompleteHandler.getMentions(),
         position: this.pinCoordinates,
       },
       {
@@ -203,6 +255,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       this.eventType,
       {
         text,
+        mentions: this.autoCompleteHandler.getMentions(),
         position: this.pinCoordinates,
       },
       {
@@ -267,7 +320,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="comment-input--options">
           <div>
             <button class="icon-button mention">
-              <superviz-icon name="mention" size="sm"></superviz-icon>
+              <superviz-icon name="mention" @click=${this.addAtSymbolInCaretPosition} size="sm"></superviz-icon>
             </button>
           </div>
           <div class="comment-input-options">

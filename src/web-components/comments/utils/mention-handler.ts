@@ -1,3 +1,6 @@
+import { Participant } from "../../../components/comments/types"
+
+
 const MENTION_ACTION = {
   SHOW: 'show',
   HIDE: 'hide'
@@ -5,20 +8,35 @@ const MENTION_ACTION = {
 
 const DEFAULT_HIDE_MENTION_LIST = {
   action: MENTION_ACTION.HIDE,
-  mentions: []
+  mentions: [],
+  findDigitParticipant: false,
 }
 
-const matchParticipant = (name: string, position, participantList): any => {
+type hideMentionList = {
+  action: string;
+  mentions: Participant[];
+  findDigitParticipant: boolean
+};
+
+const matchParticipant = (name: string, position, participantList: Participant[]): hideMentionList => {
+  
   let mentionList = []
 
-  mentionList = participantList.filter((participant: any) => participant.email)
-
+  mentionList = participantList.filter((participant: Participant) => participant.email)
   if (name.length > 0) {
     mentionList = mentionList
-      .filter((participant: any) => participant.name
+      .filter((participant: Participant) => participant.name
         .toLowerCase()
         .search(name.toLowerCase()) !== -1
       );
+      if (name === mentionList[0]?.name?.toLowerCase()) {
+        const mentions = prepareMentionList(mentionList, position);
+        return {
+          action: MENTION_ACTION.HIDE,
+          mentions,
+          findDigitParticipant: true
+        }
+      }
   }
 
   if (!(mentionList.length > 0)) {
@@ -29,19 +47,21 @@ const matchParticipant = (name: string, position, participantList): any => {
 
   return {
     action: MENTION_ACTION.SHOW,
-    mentions
+    mentions,
+    findDigitParticipant: false
   }
 }
 
-const prepareMentionList = (users: any, position): any => {
-  return users.map((user: any) => ({
+const prepareMentionList = (users: Participant[], position): Participant[] => {
+  return users.map((user: Participant) => ({
+    id: user.id,
     name: user.name,
-    id: user.userId,
     avatar: user.avatar,
+    email: user.email,
     position
   }))
 }
 
 export default {
-  matchParticipant: (name, position, participantList: any) => matchParticipant(name, position, participantList),
+  matchParticipant: (name, position, participantList: Participant[]) => matchParticipant(name, position, participantList),
 }

@@ -34,6 +34,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare expandElipsis: boolean;
   declare annotationFilter: string;
   declare participantsList: Participant[];
+  declare mentions: Participant[];
 
   static properties = {
     uuid: { type: String },
@@ -50,15 +51,17 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     expandElipsis: { type: Boolean },
     annotationFilter: { type: String },
     participantsList: { type: Object },
+    mentions: { type: Array },
   };
 
   private updateComment = ({ detail }: CustomEvent) => {
-    const { text } = detail;
+    const { text, mentions } = detail;
     this.text = text;
     this.closeEditMode();
 
     this.emitEvent('update-comment', {
       uuid: this.uuid,
+      mentions,
       text,
     });
   };
@@ -140,6 +143,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           text=${this.text}
           eventType="update-comment"
           participantsList=${JSON.stringify(this.participantsList)}
+          mentions=${JSON.stringify(this.mentions)}
           @update-comment=${this.updateComment}
           @close-edit-mode=${this.closeEditMode}
         ></superviz-comments-comment-input>

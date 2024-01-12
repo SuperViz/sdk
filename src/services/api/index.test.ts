@@ -223,7 +223,7 @@ describe('ApiService', () => {
   describe('Mentions', () => {
     test('should create a mention', async () => {
       const response = await ApiService.createMentions({
-        commentId: 'any_comment_id',
+        commentsId: 'any_comment_id',
         participants: []
       });
 

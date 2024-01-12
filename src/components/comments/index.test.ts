@@ -42,6 +42,7 @@ jest.mock('../../services/api', () => ({
   createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
   createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
+  createMentions: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
@@ -441,7 +442,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(3);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(4);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
@@ -487,12 +488,14 @@ describe('Comments', () => {
 
   test('should update comment on annotation when it is updated', async () => {
     commentsComponent['annotations'] = [MOCK_ANNOTATION];
+    jest.spyOn(ApiService, 'createMentions');
 
     commentsComponent['element'].dispatchEvent(
       new CustomEvent('update-comment', {
         detail: {
           uuid: MOCK_ANNOTATION.comments[0].uuid,
           text: 'text-test',
+          mentions: [],
         },
       }),
     );
@@ -534,7 +537,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(1);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(2);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );

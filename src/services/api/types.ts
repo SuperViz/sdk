@@ -17,11 +17,11 @@ export type FetchAnnotationsParams = {
 }
 
 export type MentionParams = {
-  commentId: string
+  commentsId: string
   participants: MentionParticipantParams[]
 }
 
 export type MentionParticipantParams = {
-  participantId: string
+  id: string
   readed: number
 }
