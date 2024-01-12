@@ -5,7 +5,6 @@ export declare class CanvasPin implements PinAdapter {
     private canvas;
     private canvasSides;
     private divWrapper;
-    private mouseElement;
     private isActive;
     private isPinsVisible;
     private annotations;
@@ -19,6 +18,7 @@ export declare class CanvasPin implements PinAdapter {
     private commentsSide;
     private movedTemporaryPin;
     private localParticipant;
+    private originalCanvasCursor;
     constructor(canvasId: string, options?: {
         onGoToPin?: (position: {
             x: number;
@@ -72,12 +72,6 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      * */
     private removeListeners;
-    /**
-     * @function createMouseElement
-     * @description Creates a new mouse element for the canvas pin adapter.
-     * @returns {HTMLElement} The newly created mouse element.
-     */
-    private createMouseElement;
     /**
      * @function resetSelectedPin
      * @description Unselects a pin by removing its 'active' attribute
@@ -145,29 +139,6 @@ export declare class CanvasPin implements PinAdapter {
      * @param event - The MouseEvent object representing the click event.
      */
     private onClick;
-    /**
-     * @function onMouseMove
-     * @description handles the mouse move event on the canvas.
-     * @param event - The mouse event object.
-     * @returns {void}
-     */
-    private onMouseMove;
-    /**
-     * @function onMouseLeave
-     * @description
-        Removes the mouse element and sets the canvas cursor
-        to default when the mouse leaves the canvas.
-     * @returns {void}
-     */
-    private onMouseLeave;
-    /**
-     * @function onMouseEnter
-     * @description
-          Handles the mouse enter event for the canvas pin adapter.
-          If there is no mouse element, creates one.
-     * @returns {void}
-     */
-    private onMouseEnter;
     /**
      * @function onToggleAnnotationSidebar
      * @description Removes temporary pin and unselects selected pin
