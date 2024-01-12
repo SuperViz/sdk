@@ -34,7 +34,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare expandElipsis: boolean;
   declare annotationFilter: string;
   declare participantsList: Participant[];
-  declare mentions: []
+  declare mentions: Participant[];
 
   static properties = {
     uuid: { type: String },

@@ -6,21 +6,18 @@ let element: HTMLElement;
 const MOCK_PARTICIPANTS: Participant[] = [
   {
     name: 'John Zero',
-    userName: 'John Zero',
     avatar: 'avatar1.png',
     id: '1',
     email: 'john.zero@mail.com',
   },
   {
     name: 'John Uno',
-    userName: 'John Uno',
     avatar: 'avatar2.png',
     id: '2',
     email: 'john.uno@mail.com',
   },
   {
     name: 'John Doe',
-    userName: 'John Doe',
     avatar: 'avatar3.png',
     id: '3',
     email: 'john.doe@mail.com',

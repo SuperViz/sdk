@@ -10,7 +10,7 @@ export class AutoCompleteHandler {
   private event: InputEvent
   private input: HTMLTextAreaElement
   private key: string
-  private mentions: { userId: string, name: string, userName: string }[]
+  private mentions: { userId: string, name: string }[]
 
   setInput (event: InputEvent) {
     this.event = event
@@ -22,14 +22,14 @@ export class AutoCompleteHandler {
   getMentions () {
     return this.mentions
       .filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
-      .filter(mention => this.input.value.includes(mention.userName))
+      .filter(mention => this.input.value.includes(mention.name))
   }
 
   setMentions (mentions) {
     this.mentions = mentions
   }
 
-  addMention (mention: { userId: string, name: string, userName: string }) {
+  addMention (mention: { userId: string, name: string }) {
     this.mentions = [...this.mentions, mention]
     this.mentions = this.mentions.filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
   }
@@ -84,18 +84,17 @@ export class AutoCompleteHandler {
   }
 
   insertMention (start: number, end: number, participant: Participant) {
-    const { id, name, userName } = participant
-    const text = `${`${this.getValue().slice(0, start) + userName} `}${  this.getValue().slice(end, this.getValue().length)}`
+    const { id, name } = participant
+    const text = `${`${this.getValue().slice(0, start) + name} `}${  this.getValue().slice(end, this.getValue().length)}`
 
     this.setValue(text)
     this.input.focus()
 
     this.addMention({
       userId: id,
-      name,
-      userName
+      name
     })
 
-    this.setCaretPosition(start + userName.length + 1)
+    this.setCaretPosition(start + name.length + 1)
   }
 }
