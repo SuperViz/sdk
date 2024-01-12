@@ -183,6 +183,9 @@ describe('CanvasPinAdapter', () => {
     const canvasPinAdapter = new CanvasPin('canvas');
     canvasPinAdapter.setActive(true);
     expect(canvasPinAdapter).toBeInstanceOf(CanvasPin);
+    expect(canvasPinAdapter['canvas'].style.cursor).toBe(
+      'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer',
+    );
   });
 
   test('should throw an error if no canvas element is found', () => {
@@ -194,7 +197,7 @@ describe('CanvasPinAdapter', () => {
   test('should add event listeners to the canvas element', () => {
     const addEventListenerSpy = jest.spyOn(instance['canvas'], 'addEventListener');
     instance['addListeners']();
-    expect(addEventListenerSpy).toHaveBeenCalledTimes(5);
+    expect(addEventListenerSpy).toHaveBeenCalledTimes(2);
   });
 
   test('should destroy the canvas pin adapter', () => {
@@ -202,29 +205,7 @@ describe('CanvasPinAdapter', () => {
 
     instance.destroy();
 
-    expect(instance['mouseElement']).toBeNull();
-    expect(removeEventListenerSpy).toHaveBeenCalledTimes(5);
-  });
-
-  test('when mouse enters canvas, should create a new mouse element', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-    const mock = jest.fn().mockImplementation(() => document.createElement('div'));
-    canvasPinAdapter['createMouseElement'] = mock;
-
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-
-    expect(canvasPinAdapter['createMouseElement']).toHaveBeenCalledTimes(1);
-  });
-
-  test('when mouse leaves canvas, should remove the mouse element', () => {
-    const canvasPinAdapter = new CanvasPin('canvas');
-    canvasPinAdapter.setActive(true);
-
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseenter'));
-    canvasPinAdapter['canvas'].dispatchEvent(new MouseEvent('mouseout'));
-
-    expect(canvasPinAdapter['mouseElement']).toBeNull();
+    expect(removeEventListenerSpy).toHaveBeenCalledTimes(2);
   });
 
   test('should create temporary pin when mouse clicks canvas', () => {
@@ -356,21 +337,6 @@ describe('CanvasPinAdapter', () => {
     instance.updateAnnotations([]);
 
     expect(instance['pins'].size).toEqual(0);
-  });
-
-  test('should update the position of the mouse element', () => {
-    const event = new MouseEvent('mousemove', { clientX: 100, clientY: 200 });
-    const customEvent = {
-      ...event,
-      x: event.clientX,
-      y: event.clientY,
-    };
-
-    instance['onMouseMove'](customEvent);
-
-    const element = instance['mouseElement'];
-    expect(element).toBeDefined();
-    expect(element.getAttribute('position')).toBe(JSON.stringify({ x: 100, y: 200 }));
   });
 
   test('should update mouse coordinates on mousedown event', () => {
