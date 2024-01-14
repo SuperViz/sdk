@@ -168,13 +168,13 @@ export class VideoConference extends BaseComponent {
   /**
    * @function startVideo
    * @description start video manager
-   * @param {VideoManagerOptions} options - video manager params
    * @returns {void}
    */
   private startVideo = (): void => {
     this.videoConfig = {
       language: this.params?.language,
       canUseTranscription: this.params?.transcriptOff === false,
+      canShowAudienceList: this.params?.showAudienceList ?? true,
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
