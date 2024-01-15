@@ -367,7 +367,7 @@ export class CanvasPin implements PinAdapter {
    * @param {CustomEvent} event
    * @returns {void}
    */
-  private annotationSelected = ({ detail: { uuid } }: CustomEvent): void => {
+  private annotationSelected = ({ detail: { uuid, haltGoToPin } }: CustomEvent): void => {
     if (!uuid) return;
 
     const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
@@ -385,6 +385,9 @@ export class CanvasPin implements PinAdapter {
     pinElement.setAttribute('active', '');
 
     this.selectedPin = pinElement;
+
+    if (haltGoToPin) return;
+
     this.goToPin(uuid);
   };
 
