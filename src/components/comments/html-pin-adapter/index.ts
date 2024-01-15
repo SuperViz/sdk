@@ -298,6 +298,8 @@ export class HTMLPin implements PinAdapter {
       this.pins.delete(uuid);
     }
 
+    if (uuid === 'temporary-pin') return;
+
     this.annotations = this.annotations.filter((annotation) => {
       return annotation.uuid !== uuid;
     });
