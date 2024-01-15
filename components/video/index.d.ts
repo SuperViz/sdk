@@ -71,7 +71,6 @@ export declare class VideoConference extends BaseComponent {
     /**
      * @function startVideo
      * @description start video manager
-     * @param {VideoManagerOptions} options - video manager params
      * @returns {void}
      */
     private startVideo;

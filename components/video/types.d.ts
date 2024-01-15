@@ -2,6 +2,7 @@ import { Avatar, ParticipantType } from '../../common/types/participant.types';
 import { DevicesOptions } from '../../common/types/sdk-options.types';
 import { CamerasPosition, LayoutMode, LayoutPosition, Locale, Offset } from '../../services/video-conference-manager/types';
 export interface VideoComponentOptions {
+    showAudienceList?: boolean;
     camsOff?: boolean;
     screenshareOff?: boolean;
     chatOff?: boolean;
