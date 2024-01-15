@@ -180,6 +180,7 @@ export class HTMLPin implements PinAdapter {
     Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
     document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    document.body.addEventListener('click', this.hideTemporaryPin);
   }
 
   /**
@@ -202,6 +203,7 @@ export class HTMLPin implements PinAdapter {
   private removeListeners(): void {
     Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id));
     document.body.removeEventListener('keyup', this.resetPins);
+    document.body.removeEventListener('click', this.hideTemporaryPin);
   }
 
   /**
@@ -452,6 +454,23 @@ export class HTMLPin implements PinAdapter {
       wrapper.style.setProperty('height', `${elementRect.height}px`);
     });
   }
+
+  /**
+   * @function hideTemporaryPin
+   * @description hides the temporary pin if click outside an observed element
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private hideTemporaryPin = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+
+    this.divWrappers.forEach((wrapper) => {
+      if (wrapper.contains(target) || this.pins.get('temporary-pin')?.contains(target)) return;
+
+      this.removeAnnotationPin('temporary-pin');
+      this.temporaryPinCoordinates = {};
+    });
+  };
 
   /**
    * @function clearElement
@@ -820,6 +839,7 @@ export class HTMLPin implements PinAdapter {
 
     if (this.pins.has('temporary-pin')) {
       this.removeAnnotationPin('temporary-pin');
+      this.temporaryPinCoordinates.elementId = undefined;
     }
   };
 }
