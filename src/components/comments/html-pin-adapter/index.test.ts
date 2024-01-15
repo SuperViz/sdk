@@ -142,7 +142,7 @@ describe('HTMLPinAdapter', () => {
 
       instance['addListeners']();
 
-      expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(2);
+      expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(3);
       expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(6);
     });
 
@@ -158,7 +158,7 @@ describe('HTMLPinAdapter', () => {
 
       instance['removeListeners']();
 
-      expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(1);
+      expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(2);
       expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(6);
     });
   });
