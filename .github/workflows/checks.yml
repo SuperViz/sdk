@@ -6,6 +6,14 @@ on:
       - opened
       - synchronize
 jobs:
+  delete-comments: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: izhangzhihao/delete-comment@master
+        with: 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_user_name: SuperViz-Dev
+          issue_number: ${{ github.event.number }}
   test-unit:
     runs-on: ubuntu-latest
     steps:
