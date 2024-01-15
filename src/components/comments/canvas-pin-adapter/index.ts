@@ -132,6 +132,9 @@ export class CanvasPin implements PinAdapter {
 
     pinElement.remove();
     this.pins.delete(uuid);
+
+    if (uuid === 'temporary-pin') return;
+
     this.annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
   }
 
@@ -186,6 +189,7 @@ export class CanvasPin implements PinAdapter {
     document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    document.body.addEventListener('click', this.hideTemporaryPin);
   }
 
   public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
@@ -205,6 +209,7 @@ export class CanvasPin implements PinAdapter {
     document.body.removeEventListener('keyup', this.resetPins);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    document.body.addEventListener('click', this.hideTemporaryPin);
   }
 
   /**
@@ -373,7 +378,7 @@ export class CanvasPin implements PinAdapter {
    * @param {CustomEvent} event
    * @returns {void}
    */
-  private annotationSelected = ({ detail: { uuid } }: CustomEvent): void => {
+  private annotationSelected = ({ detail: { uuid, haltGoToPin } }: CustomEvent): void => {
     if (!uuid) return;
 
     const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
@@ -391,6 +396,9 @@ export class CanvasPin implements PinAdapter {
     pinElement.setAttribute('active', '');
 
     this.selectedPin = pinElement;
+
+    if (haltGoToPin) return;
+
     this.goToPin(uuid);
   };
 
@@ -447,7 +455,7 @@ export class CanvasPin implements PinAdapter {
     const transform = context.getTransform();
 
     const invertedMatrix = transform.inverse();
-    const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
+    const transformedPoint = new DOMPoint(x, y - 31).matrixTransform(invertedMatrix);
 
     this.onPinFixedObserver.publish({
       x: transformedPoint.x,
@@ -488,5 +496,20 @@ export class CanvasPin implements PinAdapter {
     if (this.pins.has('temporary-pin')) {
       this.removeAnnotationPin('temporary-pin');
     }
+  };
+
+  /**
+   * @function hideTemporaryPin
+   * @description hides the temporary pin if click outside an observed element
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private hideTemporaryPin = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+
+    if (this.canvas.contains(target) || this.pins.get('temporary-pin')?.contains(target)) return;
+
+    this.removeAnnotationPin('temporary-pin');
+    this.temporaryPinCoordinates = null;
   };
 }
