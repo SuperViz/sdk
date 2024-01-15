@@ -241,7 +241,7 @@ export class CanvasPin implements PinAdapter {
   private animate = (): void => {
     if (this.isActive || this.isPinsVisible) {
       this.renderAnnotationsPins();
-      this.renderDivWrapper();
+      this.divWrapper = this.renderDivWrapper();
     }
 
     if (this.temporaryPinCoordinates) {
@@ -258,24 +258,30 @@ export class CanvasPin implements PinAdapter {
    * */
   private renderDivWrapper(): HTMLElement {
     const canvasRect = this.canvas.getBoundingClientRect();
-    const divWrapper = document.createElement('div');
-    divWrapper.id = 'superviz-canvas-wrapper';
+    let wrapper = this.divWrapper;
 
-    this.canvas.parentElement.style.position = 'relative';
-
-    divWrapper.style.position = 'fixed';
-    divWrapper.style.top = `${canvasRect.top}px`;
-    divWrapper.style.left = `${canvasRect.left}px`;
-    divWrapper.style.width = `${canvasRect.width}px`;
-    divWrapper.style.height = `${canvasRect.height}px`;
-    divWrapper.style.pointerEvents = 'none';
-    divWrapper.style.overflow = 'hidden';
-
-    if (!document.getElementById('superviz-canvas-wrapper')) {
-      this.canvas.parentElement.appendChild(divWrapper);
+    if (!wrapper) {
+      wrapper = document.createElement('div')
+      wrapper.id = 'superviz-canvas-wrapper';
+      if (['', 'static'].includes(this.canvas.parentElement.style.position)) {
+        this.canvas.parentElement.style.position = 'relative';
+      };
     }
 
-    return divWrapper;
+
+    wrapper.style.position = 'absolute';
+    wrapper.style.top = `${this.canvas.offsetTop}px`;
+    wrapper.style.left = `${this.canvas.offsetLeft}px`;
+    wrapper.style.width = `${canvasRect.width}px`;
+    wrapper.style.height = `${canvasRect.height}px`;
+    wrapper.style.pointerEvents = 'none';
+    wrapper.style.overflow = 'hidden';
+
+    if (!document.getElementById('superviz-canvas-wrapper')) {
+      this.canvas.parentElement.appendChild(wrapper);
+    }
+
+    return wrapper;
   }
 
   /**
@@ -284,7 +290,7 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
-    if (!this.annotations.length || this.canvas.style.display === 'none') {
+    if ((!this.annotations.length || this.canvas.style.display === 'none') && !this.pins.get('temporary-pin')) {
       this.removeAnnotationsPins();
       return;
     }
