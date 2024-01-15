@@ -146,4 +146,11 @@ export declare class CanvasPin implements PinAdapter {
      * @returns {void}
      */
     private onToggleAnnotationSidebar;
+    /**
+     * @function hideTemporaryPin
+     * @description hides the temporary pin if click outside an observed element
+     * @param {MouseEvent} event the mouse event object
+     * @returns {void}
+     */
+    private hideTemporaryPin;
 }

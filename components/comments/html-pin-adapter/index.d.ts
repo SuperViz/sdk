@@ -149,6 +149,13 @@ export declare class HTMLPin implements PinAdapter {
      */
     private updatePinsPositions;
     /**
+     * @function hideTemporaryPin
+     * @description hides the temporary pin if click outside an observed element
+     * @param {MouseEvent} event the mouse event object
+     * @returns {void}
+     */
+    private hideTemporaryPin;
+    /**
      * @function clearElement
      * @description clears an element that no longer has the specified data attribute
      * @param {string} id the id of the element to be cleared
