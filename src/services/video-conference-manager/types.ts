@@ -8,6 +8,7 @@ export interface VideoManagerOptions {
   language?: string;
   canUseChat: boolean;
   canUseCams: boolean;
+  canShowAudienceList: boolean;
   canUseTranscription: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
@@ -57,6 +58,7 @@ export interface FrameConfig {
   roomId: string;
   debug: boolean;
   limits: ComponentLimits;
+  canShowAudienceList: boolean;
   canUseChat: boolean;
   canUseCams: boolean;
   canUseScreenshare: boolean;

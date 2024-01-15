@@ -46,7 +46,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientRoomState: Record<string, RealtimeMessage> = {};
   private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
-  // private clientSyncPropertiesTimeOut: ReturnType<typeof setTimeout> = null;
 
   private isReconnecting: boolean = false;
 
