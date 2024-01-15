@@ -421,6 +421,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   public setParticipantData = (data: ParticipantDataInput): void => {
     this.myParticipant.data = Object.assign({}, this.myParticipant.data, data);
 
+    this.updateMyProperties(this.myParticipant.data);
     this.updatePresence3D(this.myParticipant.data);
   };
 
