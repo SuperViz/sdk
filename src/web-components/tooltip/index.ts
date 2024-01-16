@@ -50,9 +50,6 @@ export class Tooltip extends WebComponentsBaseElement {
     const { parentElement } = this;
     parentElement?.addEventListener('mouseenter', this.show);
     parentElement?.addEventListener('mouseleave', this.hide);
-
-    this.tooltipVerticalPosition = PositionsEnum['TOOLTIP-BOTTOM'];
-    this.tooltipHorizontalPosition = PositionsEnum['TOOLTIP-CENTER'];
   }
 
   private hide = () => {
