@@ -78,6 +78,8 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
+    max-height: 240px;
+    overflow: auto;
   }
 
   .menu--bottom {

@@ -60,6 +60,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.showParticipantTooltip = true;
   }
 
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    this.shadowRoot.querySelector('.menu').scrollTop = 0;
+  }
+
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (!changedProperties.has('open')) return;
 
@@ -71,7 +77,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     }
 
     document.removeEventListener('click', this.onClickOutDropdown);
-    // this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -137,11 +142,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (!this.participants) return;
 
     const icons = ['place', 'send'];
+    const numberOfParticipants = this.participants.length - 1;
 
     return repeat(
       this.participants,
       (participant) => participant.id,
-      (participant) => {
+      (participant, index) => {
         const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
 
         const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
@@ -178,6 +184,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           tooltipData.action = 'Click to Follow';
         }
 
+        const isLastParticipant = index === numberOfParticipants;
+
         return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
@@ -189,6 +197,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         onHoverData=${JSON.stringify(tooltipData)}
         ?canShowTooltip=${this.showParticipantTooltip}
         ?shiftTooltipLeft=${true}
+        ?lastParticipant=${isLastParticipant}
         @toggle-dropdown-state=${this.toggleShowTooltip}
         >
         <div 
