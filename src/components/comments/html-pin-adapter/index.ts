@@ -465,13 +465,17 @@ export class HTMLPin implements PinAdapter {
    */
   private hideTemporaryPin = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
+    const temporaryPinWrapper = this.divWrappers.get(this.temporaryPinCoordinates.elementId);
 
-    this.divWrappers.forEach((wrapper) => {
-      if (wrapper.contains(target) || this.pins.get('temporary-pin')?.contains(target)) return;
+    if (!temporaryPinWrapper) return;
 
-      this.removeAnnotationPin('temporary-pin');
-      this.temporaryPinCoordinates = {};
-    });
+    const clickedOnWrapper = temporaryPinWrapper.contains(target);
+    const clickedOnTemporaryPin = this.pins.get('temporary-pin')?.contains(target);
+
+    if (clickedOnWrapper || clickedOnTemporaryPin) return;
+
+    this.removeAnnotationPin('temporary-pin');
+    this.temporaryPinCoordinates = {};
   };
 
   /**
@@ -763,7 +767,7 @@ export class HTMLPin implements PinAdapter {
     this.temporaryPinCoordinates = { ...this.temporaryPinCoordinates, x, y };
     this.renderTemporaryPin(elementId);
 
-    const temporaryPin = this.divWrappers.get(elementId).querySelector('#superviz-temporary-pin');
+    const temporaryPin = this.pins.get('temporary-pin');
 
     // we don't care about the actual movedTemporaryPin value
     // it only needs to trigger an update
