@@ -23,7 +23,7 @@ export class CanvasPin implements PinAdapter {
   private movedTemporaryPin: boolean;
   private localParticipant: SimpleParticipant = {};
   private originalCanvasCursor: string;
-  private participants: Participant[];
+  declare participants: Participant[];
 
   constructor(
     canvasId: string,
@@ -407,6 +407,8 @@ export class CanvasPin implements PinAdapter {
 
   /**
    * @function participantsList
+   * @description - all participants of developer groupId
+   * @param participants - all participants list
    */
   public set participantsList(participants: Participant[]) {
     this.participants = participants;

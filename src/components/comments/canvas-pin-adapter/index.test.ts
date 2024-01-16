@@ -1,7 +1,29 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { Participant } from '../types';
 
 import { CanvasPin } from '.';
+
+const MOCK_PARTICIPANTS: Participant[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+    email: 'john.zero@mail.com',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+    email: 'john.uno@mail.com',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+    email: 'john.doe@mail.com',
+  },
+];
 
 describe('CanvasPinAdapter', () => {
   let instance: CanvasPin;
@@ -19,6 +41,7 @@ describe('CanvasPinAdapter', () => {
     instance.setActive(true);
     instance['mouseDownCoordinates'] = { x: 100, y: 100 };
     instance['canvas'] = { ...instance['canvas'], ...MOCK_CANVAS } as unknown as HTMLCanvasElement;
+
   });
 
   afterEach(() => {
@@ -62,6 +85,15 @@ describe('CanvasPinAdapter', () => {
       expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
     });
   });
+
+    test('should set participants correctly', () => {
+      const canvasPinAdapter = new CanvasPin('canvas');
+      const participants: Participant[] = MOCK_PARTICIPANTS;
+      canvasPinAdapter.participantsList = participants;
+
+      expect(canvasPinAdapter.participants).toEqual(participants);
+    });
+
 
   test('should remove active on Escape key', () => {
     instance.updateAnnotations([MOCK_ANNOTATION]);

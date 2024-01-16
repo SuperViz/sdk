@@ -21,7 +21,8 @@ export class HTMLPin implements PinAdapter {
   // Comments data
   private annotations: Annotation[];
   private localParticipant: SimpleParticipant = {};
-  private participants: Participant[];
+
+  declare participants: Participant[];
 
   // Loggers
   private logger: Logger;
