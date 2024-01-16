@@ -17,7 +17,7 @@ export default class RemoteConfigService {
   static async getRemoteConfig(
     environment: EnvironmentTypes = EnvironmentTypes.PROD,
   ): Promise<RemoteConfig> {
-    const { version } = await import('../../../version.js');
+    const { version } = await import('../../../.version.js');
 
     if (environment === EnvironmentTypes.LOCAL) {
       const { remoteConfig } = await import('../../../.remote-config.js');
