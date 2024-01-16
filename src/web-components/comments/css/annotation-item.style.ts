@@ -35,6 +35,13 @@ export const annotationItemStyle = css`
     justify-content: center;
   }
 
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+
   .avatar:not(:first-child) {
     margin-left: -6px;
   }

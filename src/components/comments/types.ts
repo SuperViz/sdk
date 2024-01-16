@@ -41,13 +41,16 @@ export interface PinAdapter {
   updateAnnotations(annotations: Annotation[]): void;
   removeAnnotationPin(uuid: string): void;
   onPinFixedObserver: Observer;
+  setCommentsMetadata(side: 'left' | 'right', localUserAvatar: string, name: string): void;
+  participantsList: Participant[];
 }
 
 export interface PinCoordinates {
   x: number;
   y: number;
   z?: number;
-  type: 'canvas' | 'matterport' | 'threejs' | 'autodesk';
+  elementId?: string;
+  type: 'canvas' | 'matterport' | 'threejs' | 'autodesk' | 'html';
 }
 
 // @NOTE - this is used for 3d annotations

@@ -3,13 +3,13 @@ export type AnnotationParams = {
   url: string;
   position: string;
   userId: string;
-}
+};
 
 export type CommentParams = {
   annotationId: string;
   userId: string;
   text: string;
-}
+};
 
 export type FetchAnnotationsParams = {
   roomId: string;
@@ -25,3 +25,9 @@ export type MentionParticipantParams = {
   id: string
   readed: number
 }
+
+export type CreateOrUpdateParticipantParams = {
+  name: string;
+  participantId: string;
+  avatar: string | null;
+};

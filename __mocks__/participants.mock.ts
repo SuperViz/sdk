@@ -11,6 +11,10 @@ export const MOCK_LOCAL_PARTICIPANT: Participant = {
   id: 'unit-test-local-participant-id',
   name: 'unit-test-local-participant-name',
   color: '#000',
+  avatar: {
+    imageUrl: 'unit-test-avatar-thumbnail.png',
+    model3DUrl: 'unit-test-avatar-model.glb',
+  },
 };
 
 export const MOCK_GROUP: Group = {

@@ -1,5 +1,6 @@
 import {
   CanvasPin,
+  HTMLPin,
   Comments,
   MousePointers,
   Realtime,
@@ -46,6 +47,7 @@ export interface SuperVizCdn {
   Realtime: typeof Realtime;
   Comments: typeof Comments;
   CanvasPin: typeof CanvasPin;
+  HTMLPin: typeof HTMLPin;
   WhoIsOnline: typeof WhoIsOnline;
   RealtimeComponentState: typeof RealtimeComponentState;
   RealtimeComponentEvent: typeof RealtimeComponentEvent;

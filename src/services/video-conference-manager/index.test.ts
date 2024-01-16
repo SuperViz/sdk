@@ -20,6 +20,7 @@ const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
     browserService: new BrowserService(),
     camerasPosition: CamerasPosition.RIGHT,
     canUseTranscription: true,
+    canShowAudienceList: true,
     canUseCams: true,
     canUseChat: true,
     canUseScreenshare: true,

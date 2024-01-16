@@ -2,7 +2,7 @@ import { css } from 'lit';
 
 export const mentionListStyle = css`
   #mention-list {
-    position: relative;
+    position: absolute;
     z-index: 1;
     max-height: 200px;
     overflow-y: auto;

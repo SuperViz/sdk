@@ -24,10 +24,20 @@ export class Dropdown extends WebComponentsBaseElement {
   declare active: string | object;
   declare icons?: string[];
   declare name?: string;
+  declare onHoverData: { name: string; action: string };
+  declare shiftTooltipLeft: boolean;
+
   private dropdownContent: HTMLElement;
   private originalPosition: Positions;
   private menu: HTMLElement = undefined;
   private host: HTMLElement;
+  declare dropdown: HTMLElement;
+  private dropdownResizeObserver: ResizeObserver;
+
+  // true when the dropdown is hovered (pass to tooltip element)
+  declare showTooltip: boolean;
+  // true if the tooltip should be shown when hovering (use in this element)
+  declare canShowTooltip: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -40,10 +50,40 @@ export class Dropdown extends WebComponentsBaseElement {
     active: { type: [String, Object] },
     icons: { type: Array },
     name: { type: String },
+    onHoverData: { type: Object },
+    showTooltip: { type: Boolean },
+    dropdown: { type: Object },
+    canShowTooltip: { type: Boolean },
+    drodpdownSizes: { type: Object },
+    shiftTooltipLeft: { type: Boolean },
   };
+
+  constructor() {
+    super();
+    this.showTooltip = false;
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this.onClickOutDropdown);
+    const dropdown = this.shadowRoot.querySelector('.dropdown');
+    dropdown?.removeEventListener('mouseenter', () => {
+      this.showTooltip = true;
+    });
+    dropdown?.removeEventListener('mouseleave', () => {
+      this.showTooltip = false;
+    });
+    this.dropdownResizeObserver?.disconnect();
+  }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (!changedProperties.has('open')) return;
+
+    this.emitEvent(
+      'toggle-dropdown-state',
+      { open: this.open, font: this.name },
+      { bubbles: false, composed: false },
+    );
 
     if (this.open) {
       document.addEventListener('click', this.onClickOutDropdown);
@@ -51,7 +91,6 @@ export class Dropdown extends WebComponentsBaseElement {
     }
 
     document.removeEventListener('click', this.onClickOutDropdown);
-    this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -69,11 +108,12 @@ export class Dropdown extends WebComponentsBaseElement {
     const hasDropdownCta = elements.includes(dropdownCta);
 
     if (!(hasDropdownContent || hasDropdownList || hasDropdownCta)) {
-      this.open = false;
+      this.close();
     }
   };
 
   private close = () => {
+    this.open = false;
     this.emitEvent('close', {
       bubbles: false,
       composed: false,
@@ -309,11 +349,11 @@ export class Dropdown extends WebComponentsBaseElement {
       };
 
       const intersectionObserver = new IntersectionObserver(this.adjustPosition, options);
-      const resizeObserver = new ResizeObserver(this.adjustPosition);
+      this.dropdownResizeObserver = new ResizeObserver(this.adjustPosition);
       const target = this.menu;
 
       intersectionObserver.observe(target);
-      resizeObserver.observe(this.scrollableParent ?? document.body);
+      this.dropdownResizeObserver.observe(this.scrollableParent ?? document.body);
     }
   }
 
@@ -359,7 +399,7 @@ export class Dropdown extends WebComponentsBaseElement {
   private get renderHeader() {
     if (!this.name) return html``;
     return html` <div class="header">
-      <span class="text">${this.name}</span>
+      <span class="text username">${this.name}</span>
       <span class="sv-hr"></span>
     </div>`;
   }
@@ -369,9 +409,40 @@ export class Dropdown extends WebComponentsBaseElement {
     if (!this.originalPosition) this.originalPosition = this.position;
     this.setMenu();
     this.open = !this.open;
+
+    this.emitEvent('open', { open: this.open });
     if (!this.open) return;
     setTimeout(() => this.adjustPosition());
   }
+
+  private get supervizIcons() {
+    return this.icons?.map((icon) => {
+      return html`<superviz-icon allowSetSize=${true} name="${icon}" size="sm"></superviz-icon>`;
+    });
+  }
+
+  private get listOptions() {
+    return this.options.map((option, index) => {
+      const liClasses = {
+        text: true,
+        'text-bold': true,
+        active: option?.[this.returnTo] && this.active === option?.[this.returnTo],
+      };
+
+      return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
+        ${this.supervizIcons?.at(index)} <span class="option-label">${option[this.label]}</span>
+      </li>`;
+    });
+  }
+
+  private tooltip = () => {
+    if (!this.canShowTooltip) return '';
+
+    return html` <superviz-tooltip
+      tooltipData=${JSON.stringify(this.onHoverData)}
+      ?shiftTooltipLeft=${this.shiftTooltipLeft}
+    ></superviz-tooltip>`;
+  };
 
   protected render() {
     const menuClasses = {
@@ -388,33 +459,18 @@ export class Dropdown extends WebComponentsBaseElement {
       'who-is-online-dropdown': this.name,
     };
 
-    const icons = this.icons?.map((icon) => {
-      return html`<superviz-icon name="${icon}" size="sm"></superviz-icon>`;
-    });
-
-    const options = this.options.map((option, index) => {
-      const liClasses = {
-        text: true,
-        'text-bold': true,
-        active: option?.[this.returnTo] && this.active === option?.[this.returnTo],
-      };
-
-      return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
-        ${icons?.at(index)} <span class="option-label">${option[this.label]}</span>
-      </li>`;
-    });
-
     return html`
       <div class="dropdown">
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
+        ${this.tooltip()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(menuClasses)}>
           ${this.renderHeader}
           <ul class="items">
-            ${options}
+            ${this.listOptions}
           </ul>
         </div>
       </div>

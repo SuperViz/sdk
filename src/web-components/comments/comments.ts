@@ -41,6 +41,7 @@ export class Comments extends WebComponentsBaseElement {
 
   public participantsListed(participants: Participant[]) {
     this.participantsList = participants;
+    this.side = 'left: 0px';
   }
 
   public updateAnnotations(data: Annotation[]) {
@@ -100,11 +101,6 @@ export class Comments extends WebComponentsBaseElement {
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar @close=${this.toggle}></superviz-comments-topbar>
-          <superviz-comments-annotations
-            id="annotations"
-            participantsList=${JSON.stringify(this.participantsList)}
-            open=${this.open}>
-          </superviz-comments-annotations>
         </div>
         <superviz-comments-annotation-filter
           filter=${this.annotationFilter}

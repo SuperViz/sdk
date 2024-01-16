@@ -15,6 +15,7 @@ import {
   Realtime,
   Comments,
   CanvasPin,
+  HTMLPin,
   WhoIsOnline,
 } from './components';
 import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
@@ -62,6 +63,7 @@ if (window) {
     Realtime,
     Comments,
     CanvasPin,
+    HTMLPin,
     WhoIsOnline,
     ParticipantType,
     LayoutPosition,

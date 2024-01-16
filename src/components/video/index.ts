@@ -137,7 +137,6 @@ export class VideoConference extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('video conference @ start');
-    this.publish(MeetingEvent.MEETING_START);
 
     if (this.params.userType !== ParticipantType.GUEST) {
       this.localParticipant.type = this.params.userType as ParticipantType;
@@ -169,13 +168,13 @@ export class VideoConference extends BaseComponent {
   /**
    * @function startVideo
    * @description start video manager
-   * @param {VideoManagerOptions} options - video manager params
    * @returns {void}
    */
   private startVideo = (): void => {
     this.videoConfig = {
       language: this.params?.language,
       canUseTranscription: this.params?.transcriptOff === false,
+      canShowAudienceList: this.params?.showAudienceList ?? true,
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
@@ -195,7 +194,10 @@ export class VideoConference extends BaseComponent {
       customColors: config.get<ColorsVariables>('colors'),
       collaborationMode: this.params?.collaborationMode?.enabled ?? true,
       layoutPosition:
-        (this.params?.collaborationMode?.modalPosition as LayoutPosition) ?? LayoutPosition.CENTER,
+        this.params?.collaborationMode?.enabled === false
+          ? LayoutPosition.CENTER
+          : (this.params?.collaborationMode?.modalPosition as LayoutPosition) ??
+            LayoutPosition.CENTER,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
       waterMark: this.showWaterMarkType,
     };
@@ -400,6 +402,8 @@ export class VideoConference extends BaseComponent {
       participant: this.localParticipant,
       roomId: config.get<string>('roomId'),
     });
+
+    this.publish(MeetingEvent.MEETING_START);
   };
 
   /**

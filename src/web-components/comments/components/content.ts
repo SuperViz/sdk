@@ -111,7 +111,7 @@ export class CommentsContent extends WebComponentsBaseElement {
 
   protected render() {
     return html` ${repeat(
-      this.annotations.filter((annotation) => annotation.comments.length),
+      this.annotations.filter((annotation) => annotation.comments?.length),
       (annotation: Annotation) => annotation.uuid,
       (annotation: Annotation) => html`
         <superviz-comments-annotation-item

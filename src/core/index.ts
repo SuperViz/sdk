@@ -1,7 +1,6 @@
 import { debug } from 'debug';
 
 import { ColorsVariables, ColorsVariablesNames } from '../common/types/colors.types';
-import { ParticipantType } from '../common/types/participant.types';
 import { EnvironmentTypes, SuperVizSdkOptions } from '../common/types/sdk-options.types';
 import ApiService from '../services/api';
 import AuthService from '../services/auth-service';
@@ -93,15 +92,31 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('Failed to validate API key');
   }
 
-  const environment = await ApiService.fetchConfig(apiUrl, apiKey);
-  const limits = await ApiService.fetchLimits(apiUrl, apiKey);
-  const waterMark = await ApiService.fetchWaterMark(apiUrl, apiKey);
+  const [environment, limits, waterMark] = await Promise.all([
+    ApiService.fetchConfig(apiUrl, apiKey),
+    ApiService.fetchLimits(apiUrl, apiKey),
+    ApiService.fetchWaterMark(apiUrl, apiKey),
+  ]).catch(() => {
+    throw new Error('Failed to load configuration from server');
+  });
 
   if (!environment || !environment.ablyKey) {
     throw new Error('Failed to load configuration from server');
   }
 
   const { ablyKey } = environment;
+  const { participant, roomId } = options;
+
+  const isEnteringTwice = await ApiService.validadeParticipantIsEnteringTwice(
+    participant,
+    roomId,
+    apiKey,
+    ablyKey,
+  );
+
+  if (isEnteringTwice) {
+    throw new Error('Participant is already in the room');
+  }
 
   config.setConfig({
     apiUrl,
@@ -114,6 +129,12 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     limits,
     waterMark,
     colors: options.customColors,
+  });
+
+  ApiService.createOrUpdateParticipant({
+    name: participant.name,
+    participantId: participant.id,
+    avatar: participant.avatar?.imageUrl,
   });
 
   return LauncherFacade(options);
