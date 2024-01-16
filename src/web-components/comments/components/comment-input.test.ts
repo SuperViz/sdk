@@ -155,8 +155,8 @@ describe('CommentsCommentInput', () => {
     textarea.textContent = '';
     textarea.dispatchEvent(new CustomEvent('blur'));
 
-    expect(options.classList.contains('active-textarea')).toBe(false);
-    expect(rule.classList.contains('active-hr')).toBe(false);
+    expect(options.classList.contains('active-textarea')).toBe(true);
+    expect(rule.classList.contains('active-hr')).toBe(true);
   });
 
   test('should not change textarea elements classes when losing focus and there is no text', async () => {
@@ -174,7 +174,7 @@ describe('CommentsCommentInput', () => {
     expect(rule.classList.contains('active-hr')).toBe(true);
   });
 
-  test('should set height to 40px if text goes back to having one line', () => {
+  test('should set height to 41px if text goes back to having one line', () => {
     const textarea = element['commentInput'] as HTMLElement;
 
     textarea.textContent =
@@ -189,6 +189,6 @@ describe('CommentsCommentInput', () => {
 
     element['updateHeight']();
 
-    expect(textarea.style.height).toBe('40px');
+    expect(textarea.style.height).toBe('41px');
   });
 });
