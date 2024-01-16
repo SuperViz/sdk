@@ -9,6 +9,7 @@ import {
 } from '../../services/video-conference-manager/types';
 
 export interface VideoComponentOptions {
+  showAudienceList?: boolean;
   camsOff?: boolean;
   screenshareOff?: boolean;
   chatOff?: boolean;

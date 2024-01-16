@@ -15,17 +15,15 @@ export const dropdownStyle = css`
 
   .dropdown-list {
     position: relative;
-  }
-
-  .dropdown-list * {
-    box-sizing: border-box;
+    z-index: 20;
   }
 
   .header {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 5px 10px 0;
+    display: grid;
+    grid-template-rows: 41px 1px;
+    align-items: center;
+    padding: 0 10px;
+    height: 42px;
     font-size: 16px;
     color: rgb(var(--sv-gray-600));
   }
@@ -39,10 +37,6 @@ export const dropdownStyle = css`
     z-index: 1;
     transition: 0.2s;
     border-radius: 3px;
-  }
-
-  .who-is-online-dropdown {
-    padding: 4px;
   }
 
   .items {
@@ -96,10 +90,19 @@ export const dropdownStyle = css`
     bottom: 44px;
   }
 
+  .text.username {
+    font-size: 14px;
+    text-align: center;
+
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
+  }
+
   .items li {
     color: rgb(var(--sv-gray-600));
     text-transform: uppercase;
-    padding: 5px 10px;
+    padding: 0 10px;
     cursor: pointer;
     min-width: 103px;
     min-height: 32px;
@@ -107,6 +110,7 @@ export const dropdownStyle = css`
     align-items: center;
     justify-content: flex-start;
     gap: 5px;
+    height: 42px;
   }
 
   .sv-icon {
@@ -130,10 +134,11 @@ export const dropdownStyle = css`
 
   .sv-hr {
     width: 100%;
-    height: 0.8px;
+    height: 1px;
     background: rgb(var(--sv-gray-300));
     padding: 0px;
     margin: 0px;
+    justify-self: flex-end;
   }
 
   .option-label {

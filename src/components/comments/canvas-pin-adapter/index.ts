@@ -1,13 +1,14 @@
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, AnnotationPositionInfo, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, Participant, PinAdapter, PinCoordinates } from '../types';
+
+import { CanvasSides, SimpleParticipant } from './types';
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
-  private canvasId: string;
   private canvas: HTMLCanvasElement;
+  private canvasSides: CanvasSides;
   private divWrapper: HTMLElement;
-  private mouseElement: HTMLElement;
   private isActive: boolean;
   private isPinsVisible: boolean = true;
   private annotations: Annotation[];
@@ -16,13 +17,19 @@ export class CanvasPin implements PinAdapter {
   private animateFrame: number;
   private goToPinCallback: (position: { x: number; y: number }) => void;
   public onPinFixedObserver: Observer;
+  private mouseDownCoordinates: { x: number; y: number };
+  private temporaryPinCoordinates: { x: number; y: number } | null = null;
+  private commentsSide: 'left' | 'right' = 'left';
+  private movedTemporaryPin: boolean;
+  private localParticipant: SimpleParticipant = {};
+  private originalCanvasCursor: string;
+  private participants: Participant[];
 
   constructor(
     canvasId: string,
     options?: { onGoToPin?: (position: { x: number; y: number }) => void },
   ) {
     this.logger = new Logger('@superviz/sdk/comments-component/canvas-pin-adapter');
-    this.canvasId = canvasId;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.isActive = false;
     this.pins = new Map();
@@ -34,8 +41,8 @@ export class CanvasPin implements PinAdapter {
       throw new Error(message);
     }
 
-    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
-    document.body.addEventListener('select-annotation', this.annotationSelected);
+    this.canvasSides = this.canvas.getBoundingClientRect();
+
     document.body.style.position = 'relative';
     this.onPinFixedObserver = new Observer({ logger: this.logger });
     this.divWrapper = this.renderDivWrapper();
@@ -53,7 +60,6 @@ export class CanvasPin implements PinAdapter {
   public destroy(): void {
     this.removeListeners();
     this.removeAnnotationsPins();
-    this.mouseElement = null;
     this.pins = new Map();
     this.divWrapper.remove();
     this.onPinFixedObserver.destroy();
@@ -62,8 +68,6 @@ export class CanvasPin implements PinAdapter {
     this.annotations = [];
 
     cancelAnimationFrame(this.animateFrame);
-    document.body.removeEventListener('select-annotation', this.annotationSelected);
-    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
   }
 
   public setPinsVisibility(isVisible: boolean): void {
@@ -84,14 +88,19 @@ export class CanvasPin implements PinAdapter {
    */
   public setActive(isOpen: boolean): void {
     this.isActive = isOpen;
-    this.canvas.style.cursor = isOpen ? 'none' : 'default';
+    // this.canvas.style.cursor = isOpen ? 'none' : 'default';
 
     if (this.isActive) {
+      this.originalCanvasCursor = this.canvas.style.cursor;
+      this.canvas.style.cursor =
+        'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
       this.addListeners();
       return;
     }
 
+    this.resetPins();
     this.removeListeners();
+    this.canvas.style.cursor = this.originalCanvasCursor;
   }
 
   /**
@@ -124,30 +133,50 @@ export class CanvasPin implements PinAdapter {
 
     pinElement.remove();
     this.pins.delete(uuid);
+
+    if (uuid === 'temporary-pin') return;
+
     this.annotations = this.annotations.filter((annotation) => annotation.uuid !== uuid);
   }
 
   /**
-   * @function createTemporaryPin
+   * @function renderTemporaryPin
    * @description
           creates a temporary pin with the id
           temporary-pin to mark where the annotation is being created
-   * @param {PinCoordinates} position  - The position of the pin to be created.
    */
-  public createTemporaryPin(position: PinCoordinates): void {
+  public renderTemporaryPin(): void {
     let temporaryPin = document.getElementById('superviz-temporary-pin');
 
     if (!temporaryPin) {
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
+      temporaryPin.setAttribute('showInput', '');
+      temporaryPin.setAttribute('containerSides', JSON.stringify(this.canvasSides));
+      temporaryPin.setAttribute('commentsSide', this.commentsSide);
+      temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
+      temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
+      temporaryPin.setAttribute('participantsList', JSON.stringify(this.participants));
+      temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
+      this.divWrapper.appendChild(temporaryPin);
     }
 
-    temporaryPin.setAttribute('position', JSON.stringify(position));
+    const { x: savedX, y: savedY } = this.temporaryPinCoordinates;
 
-    this.divWrapper.appendChild(temporaryPin);
+    const context = this.canvas.getContext('2d');
+    const transform = context.getTransform();
+
+    const currentTranslateX = transform.e;
+    const currentTranslateY = transform.f;
+
+    const x = savedX + currentTranslateX;
+    const y = savedY + currentTranslateY;
+
+    temporaryPin.setAttribute('position', JSON.stringify({ x, y }));
+
     this.pins.set('temporary-pin', temporaryPin);
   }
 
@@ -158,12 +187,18 @@ export class CanvasPin implements PinAdapter {
    */
   private addListeners(): void {
     this.canvas.addEventListener('click', this.onClick);
-    this.canvas.addEventListener('mousemove', this.onMouseMove);
-    this.canvas.addEventListener('mouseout', this.onMouseLeave);
-    this.canvas.addEventListener('mouseenter', this.onMouseEnter);
+    this.canvas.addEventListener('mousedown', this.setMouseDownCoordinates);
     document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('select-annotation', this.annotationSelected);
+    document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    document.body.addEventListener('click', this.hideTemporaryPin);
   }
+
+  public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
+    this.commentsSide = side;
+    this.localParticipant.avatar = avatar;
+    this.localParticipant.name = name;
+  };
 
   /**
    * @function removeListeners
@@ -172,28 +207,11 @@ export class CanvasPin implements PinAdapter {
    * */
   private removeListeners(): void {
     this.canvas.removeEventListener('click', this.onClick);
-    this.canvas.removeEventListener('mousemove', this.onMouseMove);
-    this.canvas.removeEventListener('mouseout', this.onMouseLeave);
-    this.canvas.removeEventListener('mouseenter', this.onMouseEnter);
+    this.canvas.removeEventListener('mousedown', this.setMouseDownCoordinates);
     document.body.removeEventListener('keyup', this.resetPins);
     document.body.removeEventListener('select-annotation', this.annotationSelected);
-  }
-
-  /**
-   * @function createMouseElement
-   * @description Creates a new mouse element for the canvas pin adapter.
-   * @returns {HTMLElement} The newly created mouse element.
-   */
-  private createMouseElement(): HTMLElement {
-    const mouseElement = document.createElement('superviz-comments-annotation-pin');
-    mouseElement.setAttribute('type', PinMode.ADD);
-    mouseElement.setAttribute('annotation', JSON.stringify({}));
-    mouseElement.setAttribute('position', JSON.stringify({ x: 0, y: 0 }));
-    document.body.appendChild(mouseElement);
-
-    this.canvas.style.cursor = 'none';
-
-    return mouseElement;
+    document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
+    document.body.addEventListener('click', this.hideTemporaryPin);
   }
 
   /**
@@ -219,6 +237,7 @@ export class CanvasPin implements PinAdapter {
 
     this.resetSelectedPin();
     this.removeAnnotationPin('temporary-pin');
+    this.temporaryPinCoordinates = null;
   };
 
   /**
@@ -229,7 +248,11 @@ export class CanvasPin implements PinAdapter {
   private animate = (): void => {
     if (this.isActive || this.isPinsVisible) {
       this.renderAnnotationsPins();
-      this.renderDivWrapper();
+      this.divWrapper = this.renderDivWrapper();
+    }
+
+    if (this.temporaryPinCoordinates) {
+      this.renderTemporaryPin();
     }
 
     requestAnimationFrame(this.animate);
@@ -242,24 +265,30 @@ export class CanvasPin implements PinAdapter {
    * */
   private renderDivWrapper(): HTMLElement {
     const canvasRect = this.canvas.getBoundingClientRect();
-    const divWrapper = document.createElement('div');
-    divWrapper.id = 'superviz-canvas-wrapper';
+    let wrapper = this.divWrapper;
 
-    this.canvas.parentElement.style.position = 'relative';
-
-    divWrapper.style.position = 'fixed';
-    divWrapper.style.top = `${canvasRect.top}px`;
-    divWrapper.style.left = `${canvasRect.left}px`;
-    divWrapper.style.width = `${canvasRect.width}px`;
-    divWrapper.style.height = `${canvasRect.height}px`;
-    divWrapper.style.pointerEvents = 'none';
-    divWrapper.style.overflow = 'hidden';
-
-    if (!document.getElementById('superviz-canvas-wrapper')) {
-      this.canvas.parentElement.appendChild(divWrapper);
+    if (!wrapper) {
+      wrapper = document.createElement('div')
+      wrapper.id = 'superviz-canvas-wrapper';
+      if (['', 'static'].includes(this.canvas.parentElement.style.position)) {
+        this.canvas.parentElement.style.position = 'relative';
+      };
     }
 
-    return divWrapper;
+
+    wrapper.style.position = 'absolute';
+    wrapper.style.top = `${this.canvas.offsetTop}px`;
+    wrapper.style.left = `${this.canvas.offsetLeft}px`;
+    wrapper.style.width = `${canvasRect.width}px`;
+    wrapper.style.height = `${canvasRect.height}px`;
+    wrapper.style.pointerEvents = 'none';
+    wrapper.style.overflow = 'hidden';
+
+    if (!document.getElementById('superviz-canvas-wrapper')) {
+      this.canvas.parentElement.appendChild(wrapper);
+    }
+
+    return wrapper;
   }
 
   /**
@@ -268,19 +297,17 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
-    if (!this.annotations || this.canvas.style.display === 'none') {
+    if ((!this.annotations.length || this.canvas.style.display === 'none') && !this.pins.get('temporary-pin')) {
       this.removeAnnotationsPins();
       return;
     }
 
     this.annotations.forEach((annotation) => {
-      const position = JSON.parse(annotation.position) as PinCoordinates;
-
       if (annotation.resolved) {
-        this.removeAnnotationPin(annotation.uuid);
         return;
       }
 
+      const position = JSON.parse(annotation.position) as PinCoordinates;
       if (position?.type !== 'canvas') return;
 
       const { x: savedX, y: savedY } = position;
@@ -310,9 +337,10 @@ export class CanvasPin implements PinAdapter {
 
         return;
       }
-
       const pinElement = document.createElement('superviz-comments-annotation-pin');
       pinElement.setAttribute('type', PinMode.SHOW);
+      pinElement.setAttribute('participantsList', JSON.stringify(this.participants));
+
       pinElement.setAttribute('annotation', JSON.stringify(annotation));
       pinElement.setAttribute('position', JSON.stringify({ x, y }));
       pinElement.id = annotation.uuid;
@@ -322,6 +350,21 @@ export class CanvasPin implements PinAdapter {
     });
   }
 
+  /**
+   * @function setMouseDownCoordinates
+   * @description stores the mouse down coordinates
+   * @param {MouseEvent} event - The mouse event object.
+   * @returns {void}
+   */
+  private setMouseDownCoordinates = ({ x, y }: MouseEvent) => {
+    this.mouseDownCoordinates = { x, y };
+  };
+
+  /**
+   * @function removeAnnotationsPins
+   * @description clears all pins from the canvas.
+   * @returns {void}
+   */
   private removeAnnotationsPins(): void {
     this.pins.forEach((pinElement) => {
       pinElement.remove();
@@ -332,9 +375,13 @@ export class CanvasPin implements PinAdapter {
 
   /** Callbacks  */
 
-  private annotationSelected = ({ detail }: CustomEvent): void => {
-    const { uuid } = detail;
-
+  /**
+   * @function annotationSelected
+   * @description highlights the selected annotation and scrolls to it
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private annotationSelected = ({ detail: { uuid, haltGoToPin } }: CustomEvent): void => {
     if (!uuid) return;
 
     const annotation = JSON.parse(this.selectedPin?.getAttribute('annotation') ?? '{}');
@@ -352,9 +399,19 @@ export class CanvasPin implements PinAdapter {
     pinElement.setAttribute('active', '');
 
     this.selectedPin = pinElement;
+
+    if (haltGoToPin) return;
+
     this.goToPin(uuid);
   };
 
+  /**
+   * @function participantsList
+   */
+  public set participantsList(participants: Participant[]) {
+    this.participants = participants;
+  }
+  
   /**
    * @function goToPin
    * @description - translate the canvas to the pin position
@@ -392,22 +449,23 @@ export class CanvasPin implements PinAdapter {
    */
   private onClick = (event: MouseEvent): void => {
     if (!this.isActive) return;
-
-    const context = this.canvas.getContext('2d');
     const rect = this.canvas.getBoundingClientRect();
+
+    const { x: mouseDownX, y: mouseDownY } = this.mouseDownCoordinates;
+    const originalX = mouseDownX - rect.x;
+    const originalY = mouseDownY - rect.y;
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
+    const distance = Math.hypot(x - originalX, y - originalY);
+    if (distance > 10) return;
+
+    const context = this.canvas.getContext('2d');
+
     const transform = context.getTransform();
 
-    const currentTranslateX = transform.e;
-    const currentTranslateY = transform.f;
-
     const invertedMatrix = transform.inverse();
-    const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
-
-    const divWrapperXConsideringTranslate = transformedPoint.x + currentTranslateX;
-    const divWrapperYConsideringTranslate = transformedPoint.y + currentTranslateY;
+    const transformedPoint = new DOMPoint(x, y - 31).matrixTransform(invertedMatrix);
 
     this.onPinFixedObserver.publish({
       x: transformedPoint.x,
@@ -416,63 +474,26 @@ export class CanvasPin implements PinAdapter {
     } as PinCoordinates);
 
     this.resetSelectedPin();
+    this.temporaryPinCoordinates = { x: transformedPoint.x, y: transformedPoint.y };
+    this.renderTemporaryPin();
 
-    this.createTemporaryPin({
-      x: divWrapperXConsideringTranslate,
-      y: divWrapperYConsideringTranslate,
-      type: 'canvas',
-    });
+    const temporaryPin = document.getElementById('superviz-temporary-pin');
 
+    // we don't care about the actual movedTemporaryPin value
+    // it only needs to trigger an update
+    this.movedTemporaryPin = !this.movedTemporaryPin;
+    temporaryPin.setAttribute('movedPosition', String(this.movedTemporaryPin));
     if (this.selectedPin) return;
 
     document.body.dispatchEvent(new CustomEvent('unselect-annotation'));
   };
 
   /**
-   * @function onMouseMove
-   * @description handles the mouse move event on the canvas.
-   * @param event - The mouse event object.
+   * @function onToggleAnnotationSidebar
+   * @description Removes temporary pin and unselects selected pin
+   * @param {CustomEvent} event
    * @returns {void}
    */
-  private onMouseMove = (event: MouseEvent): void => {
-    const { x, y } = event;
-
-    if (!this.mouseElement) {
-      this.mouseElement = this.createMouseElement();
-    }
-
-    this.mouseElement.setAttribute('position', JSON.stringify({ x, y }));
-  };
-
-  /**
-   * @function onMouseLeave
-   * @description
-      Removes the mouse element and sets the canvas cursor
-      to default when the mouse leaves the canvas.
-   * @returns {void}
-   */
-  private onMouseLeave = (): void => {
-    if (this.mouseElement) {
-      this.mouseElement.remove();
-      this.mouseElement = null;
-    }
-
-    this.canvas.style.cursor = 'default';
-  };
-
-  /**
-   * @function onMouseEnter
-   * @description
-        Handles the mouse enter event for the canvas pin adapter.
-        If there is no mouse element, creates one.
-   * @returns {void}
-   */
-  private onMouseEnter = (): void => {
-    if (this.mouseElement) return;
-
-    this.mouseElement = this.createMouseElement();
-  };
-
   private onToggleAnnotationSidebar = ({ detail }: CustomEvent): void => {
     const { open } = detail;
 
@@ -485,5 +506,29 @@ export class CanvasPin implements PinAdapter {
     if (this.pins.has('temporary-pin')) {
       this.removeAnnotationPin('temporary-pin');
     }
+  };
+
+  /**
+   * @function hideTemporaryPin
+   * @description hides the temporary pin if click outside an observed element
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private hideTemporaryPin = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    const isCanvasParent = target.contains(this.canvas);
+    const { x, y } = event;
+    const { left, top, right, bottom } = this.canvas.getBoundingClientRect();
+    const clickIsInsideCanvas = x > left && x < right && y > top && y < bottom;
+
+    if (
+      this.canvas.contains(target) ||
+      this.pins.get('temporary-pin')?.contains(target) ||
+      (isCanvasParent && clickIsInsideCanvas)
+    )
+      return;
+
+    this.removeAnnotationPin('temporary-pin');
+    this.temporaryPinCoordinates = null;
   };
 }

@@ -12,6 +12,7 @@ export const whoIsOnlineStyle = css`
     display: flex;
     flex-direction: column;
     position: fixed;
+    z-index: 99;
   }
 
   .superviz-who-is-online__participant {
@@ -26,6 +27,7 @@ export const whoIsOnlineStyle = css`
     justify-content: center;
     user-select: none;
     cursor: pointer;
+    transition: opacity 0.3s ease-in-out;
   }
 
   .superviz-who-is-online__participant:before {
@@ -40,7 +42,11 @@ export const whoIsOnlineStyle = css`
 
   .followed:before {
     border-style: dashed !important;
-    animation: rotate 5s linear infinite;
+    animation: rotate 15s linear infinite;
+  }
+
+  .private {
+    opacity: 0.3;
   }
 
   @keyframes rotate {
@@ -53,16 +59,21 @@ export const whoIsOnlineStyle = css`
     cursor: default;
   }
 
-  .following {
+  .message {
+    box-sizing: border-box;
     margin-top: 9px;
     font-size: 12px;
     padding: 8px 10px;
     font-family: 'Roboto';
-    border-radius: 4px;
+    border-radius: 6px;
     align-self: flex-end;
+    background-color: #fff;
+    color: rgb(var(--sv-gray-700));
+
+    border: 2px solid #e0e0e0;
   }
 
-  .following span {
+  .message span {
     margin-left: 3px;
     text-decoration: underline;
     cursor: pointer;
@@ -76,7 +87,7 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     font-family: 'Open Sans';
-    font-size: 18px;
+    font-size: 14px;
     line-height: 18px;
     font-weight: bold;
     color: #26242a;
@@ -91,7 +102,7 @@ export const whoIsOnlineStyle = css`
     align-items: center;
     justify-content: center;
     font-family: Roboto;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 16px;
     text-align: center;
     font-weight: bold;

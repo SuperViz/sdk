@@ -1,14 +1,19 @@
 export enum WIODropdownOptions {
-  GOTO = 'go-to',
-  FOLLOW = 'follow',
-  UNFOLLOW = 'unfollow',
+  GOTO = 'go to',
+  LOCAL_FOLLOW = 'follow',
+  LOCAL_UNFOLLOW = 'unfollow',
+  FOLLOW = 'everyone follows me',
+  UNFOLLOW = 'stop followers',
+  PRIVATE = 'private mode',
+  LEAVE_PRIVATE = 'leave private mode',
+  GATHER = 'gather all',
+  STOP_GATHER = 'stop gather all',
 }
 
 export interface Following {
   id: string;
   name: string;
   color: string;
-  slotIndex: number;
 }
 
 export interface Options {
@@ -24,3 +29,18 @@ export enum PositionOptions {
   'USE-ORIGINAL',
   'CALCULATE-NEW',
 }
+
+export interface LocalParticipantData {
+  id: string;
+  color: string;
+  joinedPresence: boolean;
+}
+
+export interface TooltipData {
+  name: string;
+  action?: string;
+}
+
+export type VerticalSide = 'top' | 'bottom';
+
+export type HorizontalSide = 'left' | 'right';

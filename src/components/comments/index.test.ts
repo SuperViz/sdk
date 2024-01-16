@@ -9,9 +9,7 @@ import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import { Participant , PinAdapter, CommentsSide, Annotation } from "./types";
-
-
+import { Participant , PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
 
 import { Comments } from './index';
 
@@ -55,7 +53,9 @@ const DummiePinAdapter: PinAdapter = {
   updateAnnotations: jest.fn(),
   removeAnnotationPin: jest.fn(),
   setPinsVisibility: jest.fn(),
+  setCommentsMetadata: jest.fn(),
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
+  participantsList: [],
 };
 
 describe('Comments', () => {
@@ -133,7 +133,7 @@ describe('Comments', () => {
   test('should call apiService when create annotation', async () => {
     const spy = jest.spyOn(ApiService, 'createAnnotations');
 
-    commentsComponent['element'].dispatchEvent(
+    document.body.dispatchEvent(
       new CustomEvent('create-annotation', {
         detail: {
           text: 'test',
@@ -392,7 +392,7 @@ describe('Comments', () => {
   });
 
   test('should add anotation to list when it is created', async () => {
-    commentsComponent['element'].dispatchEvent(
+    document.body.dispatchEvent(
       new CustomEvent('create-annotation', {
         detail: {
           text: MOCK_ANNOTATION.comments[0].text,
@@ -414,7 +414,7 @@ describe('Comments', () => {
 
     (ApiService.createAnnotations as jest.Mock).mockRejectedValueOnce('internal server error');
 
-    commentsComponent['element'].dispatchEvent(
+    document.body.dispatchEvent(
       new CustomEvent('create-annotation', {
         detail: {
           text: MOCK_ANNOTATION.comments[0].text,
@@ -645,24 +645,22 @@ describe('Comments', () => {
     ]);
   });
 
-  test('should dispatch an event to body when new annotation pin is fixed', () => {
-    const spy = jest.spyOn(window.document.body, 'dispatchEvent');
+  test('should updated annotation coordinates when new annotation is fixed', () => {
+    const coordinates: PinCoordinates = {
+      x: 10,
+      y: 10,
+      type: 'canvas',
+    };
 
-    commentsComponent['onFixedPin']({
-      x: 100,
+    commentsComponent['coordinates'] = {
+      x: 0,
       y: 0,
       type: 'canvas',
-    });
+    };
 
-    expect(spy).toHaveBeenCalledWith(
-      new CustomEvent('prepare-to-create-annotation', {
-        detail: {
-          x: 100,
-          y: 0,
-          type: 'canvas',
-        },
-      }),
-    );
+    commentsComponent['onPinFixed'](coordinates);
+
+    expect(commentsComponent['coordinates']).toEqual(coordinates);
   });
 
   test('should remove pin from canvas when resolving', async () => {

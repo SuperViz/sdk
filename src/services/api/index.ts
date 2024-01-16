@@ -1,8 +1,16 @@
+import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { doRequest } from '../../common/utils';
 import { Annotation } from '../../components/comments/types';
 import config from '../config';
 
-import { AnnotationParams, CommentParams, FetchAnnotationsParams, MentionParams } from './types';
+
+import {
+  AnnotationParams,
+  CommentParams,
+  CreateOrUpdateParticipantParams,
+  FetchAnnotationsParams,
+  MentionParams
+} from './types';
 
 export default class ApiService {
   static createUrl(baseUrl: string, path: string, query = {}): string {
@@ -98,13 +106,12 @@ export default class ApiService {
   }
 
   static async createOrUpdateParticipant(
-    apiKey: string,
-    participant: { name: string; participantId: string },
+    participant: CreateOrUpdateParticipantParams,
   ): Promise<void> {
     const baseUrl = config.get<string>('apiUrl');
     const path = '/participants';
     const url = this.createUrl(baseUrl, path);
-    return doRequest(url, 'POST', { ...participant }, { apikey: apiKey });
+    return doRequest(url, 'POST', { ...participant }, { apikey: config.get<string>('apiKey') });
   }
 
   static async sendActivity(userId: string, groupId: string, groupName: string, product: string) {
@@ -139,5 +146,34 @@ export default class ApiService {
     const baseUrl = config.get<string>('apiUrl');
     const url = this.createUrl(baseUrl, path);
     return doRequest(url, 'POST', mentionParams, { apikey: config.get('apiKey') });
+  }
+
+  static async validadeParticipantIsEnteringTwice(
+    participant: SuperVizSdkOptions['participant'],
+    roomId: string,
+    apiKey: string,
+    ablyKey: string,
+  ) {
+    const ablyKey64 = window.btoa(ablyKey);
+    const ablyRoom = `superviz:${roomId.toLowerCase()}-${apiKey}`;
+    const ablyUrl = `https://rest.ably.io/channels/${ablyRoom}/presence`;
+
+    try {
+      const response = await fetch(ablyUrl, {
+        headers: { Authorization: `Basic ${ablyKey64}` },
+      });
+
+      const participants = await response.json();
+
+      const hasParticipantWithSameId = participants.some((presence) => {
+        const data = JSON.parse(presence.data);
+
+        return data.id === participant.id;
+      });
+
+      return hasParticipantWithSameId;
+    } catch (error) {
+      throw new Error('Failed to fetch realtime participants');
+    }
   }
 }

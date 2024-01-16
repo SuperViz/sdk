@@ -15,7 +15,6 @@ import {
   CommentsOptions,
   CommentsSide,
   PinAdapter,
-  PinCoordinates,
 } from './types';
 
 export class Comments extends BaseComponent {
@@ -28,6 +27,7 @@ export class Comments extends BaseComponent {
   private clientUrl: string;
   private pinAdapter: PinAdapter;
   private layoutOptions: CommentsOptions;
+  private coordinates: AnnotationPositionInfo;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -39,9 +39,22 @@ export class Comments extends BaseComponent {
       buttonLocation: ButtonLocation.TOP_LEFT,
     };
 
+    setTimeout(() => {
+      pinAdapter.setCommentsMetadata(
+        this.layoutOptions?.position ?? 'left',
+        this.localParticipant?.avatar?.imageUrl,
+        this.localParticipant?.name,
+      );
+    });
+
     this.pinAdapter = pinAdapter;
   }
 
+  /**
+   * @function url
+   * @description Gets the URL of the client
+   * @returns {void}
+   */
   private get url(): string {
     const url = new URL(this.clientUrl);
     url.search = '';
@@ -92,7 +105,7 @@ export class Comments extends BaseComponent {
 
     // Comments component observers
     this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
-    this.element.addEventListener('create-annotation', this.createAnnotation);
+    document.body.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
@@ -108,7 +121,7 @@ export class Comments extends BaseComponent {
     this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
 
     // pin adapter observers
-    this.pinAdapter.onPinFixedObserver.subscribe(this.onFixedPin);
+    this.pinAdapter.onPinFixedObserver.subscribe(this.onPinFixed);
   }
 
   /**
@@ -137,24 +150,16 @@ export class Comments extends BaseComponent {
     this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
 
     // pin adapter observers
-    this.pinAdapter.onPinFixedObserver.unsubscribe(this.onFixedPin);
+    this.pinAdapter.onPinFixedObserver.unsubscribe(this.onPinFixed);
   }
 
   /**
-   * @function onFixedPin
-   * @description Creates a new annotation when a pin is fixed
+   * @function onPinFixed
+   * @description Sets the coordinates of the new annotation to be created
    * @param {AnnotationPositionInfo} coordinates
    */
-  private onFixedPin = (coordinates: AnnotationPositionInfo): void => {
-    document.body.dispatchEvent(
-      new CustomEvent('prepare-to-create-annotation', {
-        detail: {
-          ...coordinates,
-        },
-        composed: true,
-        bubbles: true,
-      }),
-    );
+  private onPinFixed = (coordinates: AnnotationPositionInfo): void => {
+    this.coordinates = coordinates;
   };
 
   /**
@@ -274,9 +279,9 @@ export class Comments extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { position, text, mentions } = detail;
+      const { text, mentions } = detail;
       const { url } = this;
-
+      const position = { ...this.coordinates };
       const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
@@ -300,7 +305,7 @@ export class Comments extends BaseComponent {
 
       document.body.dispatchEvent(
         new CustomEvent('select-annotation', {
-          detail: { uuid: annotation.uuid },
+          detail: { uuid: annotation.uuid, haltGoToPin: true },
           composed: true,
           bubbles: true,
         }),
@@ -531,7 +536,8 @@ export class Comments extends BaseComponent {
   private async participantsList(): Promise<void> {
     try {
       const participants: Participant[] = await ApiService.fetchParticipantsByGroup(this.group.id);
-      this.element.participantsListed(participants);
+      this.pinAdapter.participantsList = participants;
+      this.element.participantsList = participants;
     } catch (error) {
       this.logger.log('error when fetching participantsList', error);
     }

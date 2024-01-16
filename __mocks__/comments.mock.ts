@@ -20,6 +20,7 @@ export const MOCK_ANNOTATION: Annotation = {
         name: 'mock_name',
         participantId: 'mock_participant_id',
         createdAt: new Date().toISOString(),
+        avatar: 'mock_avatar',
       },
       mentions: [{
         userId: 'mock_user_id',
@@ -36,6 +37,7 @@ export const MOCK_ANNOTATION: Annotation = {
         name: 'mock_name',
         participantId: 'mock_participant_id',
         createdAt: new Date().toISOString(),
+        avatar: 'mock_avatar',
       },
       mentions: [{
         userId: 'mock_user_id',

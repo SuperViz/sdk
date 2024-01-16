@@ -1,6 +1,5 @@
 import { CommentsAnnotationItem } from './annotation-item';
 import { CommentsAnnotationPin } from './annotation-pin';
-import { CommentsAnnotations } from './annotations';
 import { CommentsCommentInput } from './comment-input';
 import { CommentsCommentItem } from './comment-item';
 import { CommentsContent } from './content';
@@ -12,11 +11,6 @@ describe('Components', () => {
   test('should be export CommentsTopbar', () => {
     expect(Components.CommentsTopbar).toBeDefined();
     expect(Components.CommentsTopbar).toBe(CommentsTopbar);
-  });
-
-  test('should be export CommentsAnnotations', () => {
-    expect(Components.CommentsAnnotations).toBeDefined();
-    expect(Components.CommentsAnnotations).toBe(CommentsAnnotations);
   });
 
   test('should be export CommentsContent', () => {

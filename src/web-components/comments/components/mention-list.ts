@@ -35,7 +35,7 @@ export class CommentsMentionList extends WebComponentsBaseElement {
   showMentionList = () => {
     const mentionList = this.shadowRoot?.getElementById('mention-list');
     mentionList?.style.setProperty('display', 'block'); 
-    mentionList?.style.setProperty('margin-top', '-27px');
+    mentionList?.style.setProperty('margin-top', '1px');
   }
 
   hideMentionList = () => {

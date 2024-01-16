@@ -1,12 +1,20 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { Following, WIODropdownOptions, PositionOptions } from './types';
+import {
+  Following,
+  WIODropdownOptions,
+  PositionOptions,
+  TooltipData,
+  VerticalSide,
+  HorizontalSide,
+} from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -16,17 +24,20 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   static styles = styles;
 
   declare open: boolean;
-  declare align: 'left' | 'right';
-  declare position: 'top' | 'bottom';
+  declare align: HorizontalSide;
+  declare position: VerticalSide;
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
-  private originalPosition: 'top' | 'bottom';
+  private originalPosition: VerticalSide;
   private menu: HTMLElement;
   private dropdownContent: HTMLElement;
   private host: HTMLElement;
   declare disableDropdown: boolean;
+  declare showSeeMoreTooltip: boolean;
+  declare showParticipantTooltip: boolean;
   declare following: Following;
+  declare localParticipantJoinedPresence: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -36,6 +47,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     selected: { type: String },
     disableDropdown: { type: Boolean },
     following: { type: Object },
+    showSeeMoreTooltip: { type: Boolean },
+    showParticipantTooltip: { type: Boolean },
+    localParticipantJoinedPresence: { type: Boolean },
   };
 
   constructor() {
@@ -43,18 +57,21 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     // should match presence-mouse textColorValues
     this.textColorValues = [2, 4, 5, 7, 8, 16];
     this.selected = '';
+    this.showParticipantTooltip = true;
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('open')) {
-      if (this.open) {
-        document.addEventListener('click', this.onClickOutDropdown);
-        return;
-      }
+    if (!changedProperties.has('open')) return;
 
-      document.removeEventListener('click', this.onClickOutDropdown);
-      this.close();
+    this.emitEvent('toggle-dropdown-state', { open: this.open, font: 'toggle' });
+
+    if (this.open) {
+      document.addEventListener('click', this.onClickOutDropdown);
+      return;
     }
+
+    document.removeEventListener('click', this.onClickOutDropdown);
+    // this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -80,9 +97,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.open = false;
     this.selected = '';
     this.emitEvent('clickout', {
-      detail: {
-        open: this.open,
-      },
       bubbles: false,
       composed: false,
     });
@@ -98,6 +112,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (participant.avatar?.imageUrl) {
       return html` <img
         class="who-is-online-dropdown__avatar"
+        style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
     }
@@ -114,41 +129,56 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     </div>`;
   }
 
+  private toggleShowTooltip = () => {
+    this.showParticipantTooltip = !this.showParticipantTooltip;
+  };
+
   private renderParticipants() {
     if (!this.participants) return;
 
     const icons = ['place', 'send'];
 
-    return this.participants.map((participant) => {
-      const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
+    return repeat(
+      this.participants,
+      (participant) => participant.id,
+      (participant) => {
+        const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
 
-      const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
+        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
-      const contentClasses = {
-        'who-is-online-dropdown__content': true,
-        'who-is-online-dropdown__content--selected': this.selected === id,
-        'disable-dropdown': disableDropdown,
-        followed: this.following?.id === id,
-      };
+        const contentClasses = {
+          'who-is-online-dropdown__content': true,
+          'who-is-online-dropdown__content--selected': this.selected === id,
+          'disable-dropdown': disableDropdown,
+          followed: this.following?.id === id,
+        };
 
-      const iconClasses = {
-        icon: true,
-        'hide-icon': disableDropdown,
-      };
+        const iconClasses = {
+          icon: true,
+          'hide-icon': disableDropdown,
+        };
 
-      const participantIsFollowed = this.following?.id === id;
+        const participantIsFollowed = this.following?.id === id;
 
-      const options = Object.values(WIODropdownOptions)
-        .map((label, index) => ({
-          label: participantIsFollowed && index ? 'UNFOLLOW' : label,
-          id,
+        const options = Object.values(WIODropdownOptions)
+          .map((label, index) => ({
+            label: participantIsFollowed && index ? 'UNFOLLOW' : label,
+            id,
+            name,
+            color,
+            slotIndex,
+          }))
+          .slice(0, 2);
+
+        const tooltipData: TooltipData = {
           name,
-          color,
-          slotIndex,
-        }))
-        .slice(0, 2);
+        };
 
-      return html`
+        if (this.localParticipantJoinedPresence && joinedPresence) {
+          tooltipData.action = 'Click to Follow';
+        }
+
+        return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
         label="label"
@@ -156,6 +186,10 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
+        onHoverData=${JSON.stringify(tooltipData)}
+        ?canShowTooltip=${this.showParticipantTooltip}
+        ?shiftTooltipLeft=${true}
+        @toggle-dropdown-state=${this.toggleShowTooltip}
         >
         <div 
           class=${classMap(contentClasses)} 
@@ -174,7 +208,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         </div>
       </superviz-dropdown>
       `;
-    });
+      },
+    );
   }
 
   private setMenu() {
@@ -292,13 +327,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     if (action === PositionOptions['USE-ORIGINAL']) {
       const originalVertical = this.originalPosition.split('-')[0];
-      this.position = this.position.replace(/top|bottom/, originalVertical) as 'top' | 'bottom';
+      this.position = this.position.replace(/top|bottom/, originalVertical) as VerticalSide;
       return;
     }
 
     const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
     const previousSide = this.position.split('-')[0];
-    const newPosition = this.position.replace(previousSide, newSide) as 'top' | 'bottom';
+    const newPosition = this.position.replace(previousSide, newSide) as VerticalSide;
 
     this.position = newPosition;
   };
@@ -307,6 +342,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (!this.originalPosition) this.originalPosition = this.position;
     this.setMenu();
     this.open = !this.open;
+
     if (!this.open) return;
     this.selected = '';
     setTimeout(() => this.adjustPosition());
@@ -321,12 +357,21 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   }
 
+  private tooltip = () => {
+    if (!this.showSeeMoreTooltip) return '';
+
+    return html`<superviz-tooltip
+      tooltipData=${JSON.stringify({ name: 'See more' })}
+    ></superviz-tooltip>`;
+  };
+
   protected render() {
     return html`
       <div class="dropdown">
         <div class="dropdown-content" @click=${this.toggle}>
           <slot name="dropdown"></slot>
         </div>
+        ${this.tooltip()}
       </div>
       <div class="dropdown-list">
         <div class=${classMap(this.menuClasses)}>${this.renderParticipants()}</div>

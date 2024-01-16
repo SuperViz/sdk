@@ -19,13 +19,12 @@ type hideMentionList = {
 };
 
 const matchParticipant = (name: string, position, participantList: Participant[]): hideMentionList => {
-  
   let mentionList = []
 
-  mentionList = participantList.filter((participant: Participant) => participant.email)
+  mentionList = participantList?.filter((participant: Participant) => participant?.email)
   if (name.length > 0) {
     mentionList = mentionList
-      .filter((participant: Participant) => participant.name
+      .filter((participant: Participant) => participant?.name
         .toLowerCase()
         .search(name.toLowerCase()) !== -1
       );
@@ -39,7 +38,7 @@ const matchParticipant = (name: string, position, participantList: Participant[]
       }
   }
 
-  if (!(mentionList.length > 0)) {
+  if (!(mentionList?.length > 0)) {
     return DEFAULT_HIDE_MENTION_LIST
   }
 
