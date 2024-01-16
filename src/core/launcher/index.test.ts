@@ -40,11 +40,13 @@ describe('Launcher', () => {
   let LauncherInstance: Launcher;
 
   beforeEach(() => {
+    console.warn = jest.fn();
+    console.error = jest.fn();
+    console.log = jest.fn();
+
     jest.clearAllMocks();
 
     LauncherInstance = new Launcher(DEFAULT_INITIALIZATION_MOCK);
-    console.error = jest.fn();
-    console.log = jest.fn();
   });
 
   test('should be defined', () => {
@@ -448,5 +450,20 @@ describe('Launcher Facade', () => {
     expect(LauncherFacadeInstance).toHaveProperty('unsubscribe');
     expect(LauncherFacadeInstance).toHaveProperty('addComponent');
     expect(LauncherFacadeInstance).toHaveProperty('removeComponent');
+  });
+
+  test('should return the same instance if already initialized', () => {
+    const instance = Facade(DEFAULT_INITIALIZATION_MOCK);
+    const instance2 = Facade(DEFAULT_INITIALIZATION_MOCK);
+
+    expect(instance).toStrictEqual(instance2);
+  });
+
+  test('should return different instances if it`s destroyed', () => {
+    const instance = Facade(DEFAULT_INITIALIZATION_MOCK);
+    instance.destroy();
+    const instance2 = Facade(DEFAULT_INITIALIZATION_MOCK);
+
+    expect(instance).not.toStrictEqual(instance2);
   });
 });

@@ -128,6 +128,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.leave();
     this.realtime = undefined;
     this.isDestroyed = true;
+
+    // clean window object
+    window.SUPERVIZ = undefined;
   };
 
   /**
@@ -353,7 +356,21 @@ export class Launcher extends Observable implements DefaultLauncher {
  * @returns {LauncherFacade}
  */
 export default (options: LauncherOptions): LauncherFacade => {
+  if (window.SUPERVIZ) {
+    console.warn('[SUPERVIZ] Room already initialized');
+
+    return {
+      destroy: window.SUPERVIZ.destroy,
+      subscribe: window.SUPERVIZ.subscribe,
+      unsubscribe: window.SUPERVIZ.unsubscribe,
+      addComponent: window.SUPERVIZ.addComponent,
+      removeComponent: window.SUPERVIZ.removeComponent,
+    };
+  }
+
   const launcher = new Launcher(options);
+
+  window.SUPERVIZ = launcher;
 
   return {
     destroy: launcher.destroy,

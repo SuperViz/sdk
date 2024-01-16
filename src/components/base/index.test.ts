@@ -45,6 +45,8 @@ describe('BaseComponent', () => {
   let DummyComponentInstance: DummyComponent;
 
   beforeEach(() => {
+    console.error = jest.fn();
+
     jest.clearAllMocks();
     DummyComponentInstance = new DummyComponent();
   });
