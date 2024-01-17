@@ -47,7 +47,7 @@ export class HTMLPin implements PinAdapter {
   private divWrappers: Map<string, HTMLElement> = new Map();
   private pins: Map<string, HTMLElement>;
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
-
+  private svgWrappers: HTMLElement;
   // Observers
   private mutationObserver: MutationObserver;
 
@@ -119,7 +119,14 @@ export class HTMLPin implements PinAdapter {
     this.logger.log('Destroying HTML Pin Adapter for Comments');
     this.removeListeners();
     this.removeObservers();
-    this.divWrappers.forEach((divWrapper) => divWrapper.remove());
+    this.divWrappers.forEach((divWrapper) => {
+      if (divWrapper.getAttribute('data-wrapper-type')) {
+        divWrapper.parentElement.remove();
+        return;
+      }
+
+      divWrapper.remove();
+    });
     this.divWrappers.clear();
     this.pins.forEach((pin) => pin.remove());
     this.pins.clear();
@@ -133,6 +140,8 @@ export class HTMLPin implements PinAdapter {
     this.voidElementsWrappers.clear();
     this.voidElementsWrappers = undefined;
     this.annotations = [];
+    this.svgWrappers?.remove();
+    this.svgWrappers = undefined;
     document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
 
@@ -177,7 +186,7 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   private addListeners(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => this.addElementListeners(id));
+    this.divWrappers.forEach((_, id) => this.addElementListeners(id));
     document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
     document.body.addEventListener('click', this.hideTemporaryPin);
@@ -201,7 +210,7 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    * */
   private removeListeners(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => this.removeElementListeners(id));
+    this.divWrappers.forEach((_, id) => this.removeElementListeners(id));
     document.body.removeEventListener('keyup', this.resetPins);
     document.body.removeEventListener('click', this.hideTemporaryPin);
   }
@@ -230,7 +239,7 @@ export class HTMLPin implements PinAdapter {
 
     elementsWithDataId.forEach((el: HTMLElement) => {
       const id = el.getAttribute(this.dataAttribute);
-      const skip = this.dataAttributeValueFilters.some((filter, index) => {
+      const skip = this.dataAttributeValueFilters.some((filter) => {
         return id.match(filter);
       });
 
@@ -241,15 +250,13 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
-   * @function setAddCursor
+   * @function addAllCursors
    * @description sets the mouse cursor to a special cursor when hovering over all the elements with the specified data-attribute.
    * @returns {void}
    */
-  private setAddCursor(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => {
-      this.divWrappers.get(id).style.cursor =
-        'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
-      this.divWrappers.get(id).style.pointerEvents = 'auto';
+  private addAllCursors(): void {
+    this.divWrappers.forEach((wrapper, id) => {
+      this.addCursor(wrapper, id);
     });
   }
 
@@ -259,9 +266,17 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   private removeAddCursor(): void {
-    Object.keys(this.elementsWithDataId).forEach((id) => {
-      this.divWrappers.get(id).style.cursor = 'default';
-      this.divWrappers.get(id).style.pointerEvents = 'none';
+    this.divWrappers.forEach((wrapper, id) => {
+      let element: HTMLElement | SVGElement = wrapper;
+
+      const isSvgElement = wrapper.getAttribute('data-wrapper-type');
+      if (isSvgElement) {
+        const elementTagname = isSvgElement.split('-')[2];
+        element = this.divWrappers.get(id).querySelector(elementTagname);
+      }
+
+      element.style.setProperty('cursor', 'default');
+      element.style.setProperty('pointer-events', 'none');
     });
   }
 
@@ -347,7 +362,7 @@ export class HTMLPin implements PinAdapter {
 
     if (this.isActive) {
       this.addListeners();
-      this.setAddCursor();
+      this.addAllCursors();
       this.prepareElements();
       return;
     }
@@ -375,7 +390,7 @@ export class HTMLPin implements PinAdapter {
     }
 
     if (!temporaryPin) {
-      const elementSides = this.elementsWithDataId[elementId].getBoundingClientRect();
+      const elementSides = this.elementsWithDataId[elementId]?.getBoundingClientRect();
 
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
       temporaryPin.id = 'superviz-temporary-pin';
@@ -429,8 +444,6 @@ export class HTMLPin implements PinAdapter {
 
       const wrapper = this.divWrappers.get(elementId);
       if (!wrapper) return;
-
-      const { width, height } = wrapper.getBoundingClientRect();
 
       const pinElement = this.createPin(annotation, x, y);
       wrapper.appendChild(pinElement);
@@ -543,9 +556,10 @@ export class HTMLPin implements PinAdapter {
    * @param {string} id
    * @returns {void}
    */
-  private setElementReadyToPin(element: HTMLElement, id: string): void {
+  private setElementReadyToPin(element: Element, id: string): void {
     if (this.elementsWithDataId[id]) return;
-    this.elementsWithDataId[id] = element;
+
+    this.elementsWithDataId[id] = element as HTMLElement;
 
     if (!this.divWrappers.get(id)) {
       const divWrapper = this.createWrapper(element, id);
@@ -554,10 +568,141 @@ export class HTMLPin implements PinAdapter {
 
     if (!this.isActive || !this.isPinsVisible) return;
 
-    this.divWrappers.get(id).style.cursor =
-      'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer';
-    this.divWrappers.get(id).style.pointerEvents = 'auto';
+    this.addCursor(this.divWrappers.get(id), id);
     this.addElementListeners(id);
+  }
+
+  /**
+   * @function handleSvgElement
+   */
+  private handleSvgElement(element: Element, wrapper: HTMLDivElement): HTMLDivElement {
+    const viewport = (element as SVGElement).viewportElement;
+
+    const isNormalHTML = viewport === undefined;
+    if (isNormalHTML) return;
+
+    const isSvgElement = element.tagName.toLowerCase() === 'svg';
+    if (isSvgElement) {
+      const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+      foreignObject.setAttribute('height', '100%');
+      foreignObject.setAttribute('width', '100%');
+      foreignObject.style.setProperty('overflow', 'visible');
+      foreignObject.appendChild(wrapper);
+      element.appendChild(foreignObject);
+      (element as SVGElement).style.setProperty('overflow', 'visible');
+      return wrapper;
+    }
+
+    const isEllipseElement = element.tagName.toLowerCase() === 'ellipse';
+    const isRectElement = element.tagName.toLowerCase() === 'rect';
+
+    if (!isEllipseElement && !isRectElement) return;
+
+    const elementName = element.tagName.toLowerCase();
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const svgElement = document.createElementNS('http://www.w3.org/2000/svg', elementName);
+
+    let x: number | string;
+    let y: number | string;
+    let width: string;
+    let height: string;
+    let rx: string;
+    let ry: string;
+
+    if (isRectElement) {
+      const rect = element as SVGRectElement;
+      x = rect.getAttribute('x');
+      y = rect.getAttribute('y');
+      width = rect.getAttribute('width');
+      height = rect.getAttribute('height');
+      rx = rect.getAttribute('rx');
+      ry = rect.getAttribute('ry');
+      svgElement.setAttribute('fill', 'transparent');
+      svgElement.setAttribute('stroke', 'transparent');
+      svgElement.setAttribute('x', x);
+      svgElement.setAttribute('y', y);
+      svgElement.setAttribute('rx', rx);
+      svgElement.setAttribute('ry', ry);
+    }
+
+    if (isEllipseElement) {
+      const cx = element.getAttribute('cx');
+      const cy = element.getAttribute('cy');
+
+      rx = element.getAttribute('rx');
+      ry = element.getAttribute('ry');
+      x = Number(cx) - Number(rx);
+      y = Number(cy) - Number(ry);
+      width = String(2 * Number(cx));
+      height = String(2 * Number(cy));
+
+      svgElement.setAttribute('fill', 'transparent');
+      svgElement.setAttribute('stroke', 'transparent');
+      svgElement.setAttribute('cx', cx);
+      svgElement.setAttribute('cy', cy);
+      svgElement.setAttribute('rx', rx);
+      svgElement.setAttribute('ry', ry);
+    }
+
+    svgElement.setAttribute('height', height);
+    svgElement.setAttribute('width', width);
+
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('width', '100%');
+
+    svg.appendChild(svgElement);
+    wrapper.appendChild(svg);
+
+    let externalViewport = viewport;
+
+    while (externalViewport.viewportElement) {
+      externalViewport = externalViewport.viewportElement;
+    }
+
+    const [transformX, transformY] = this.getTransform(element as SVGElement) ?? [0, 0];
+
+    svgElement.setAttribute('transform', `translate(${transformX}, ${transformY})`);
+
+    if (!this.svgWrappers) {
+      const { left, top, width, height } = externalViewport.getBoundingClientRect();
+      const svgWrapper = document.createElement('div');
+      svgWrapper.style.setProperty('position', 'absolute');
+      svgWrapper.style.setProperty('top', `${top}px`);
+      svgWrapper.style.setProperty('left', `${left}px`);
+      svgWrapper.style.setProperty('width', `${width}px`);
+      svgWrapper.style.setProperty('height', `${height}px`);
+      svgWrapper.style.setProperty('pointer-events', 'none');
+      svgWrapper.style.setProperty('overflow', 'visible');
+      this.svgWrappers = svgWrapper;
+      this.container.appendChild(svgWrapper);
+    }
+
+    this.svgWrappers.appendChild(wrapper);
+
+    (element as SVGElement).style.setProperty('overflow', 'visible');
+
+    wrapper.setAttribute('data-wrapper-type', 'svg-element-rect');
+
+    if (!this.svgWrappers) {
+      const { left, top, width, height } = externalViewport.getBoundingClientRect();
+      const svgWrapper = document.createElement('div');
+      svgWrapper.style.setProperty('position', 'absolute');
+      svgWrapper.style.setProperty('top', `${top}px`);
+      svgWrapper.style.setProperty('left', `${left}px`);
+      svgWrapper.style.setProperty('width', `${width}px`);
+      svgWrapper.style.setProperty('height', `${height}px`);
+      svgWrapper.style.setProperty('pointer-events', 'none');
+      svgWrapper.style.setProperty('overflow', 'visible');
+      this.svgWrappers = svgWrapper;
+      this.container.appendChild(svgWrapper);
+    }
+
+    this.svgWrappers.appendChild(wrapper);
+
+    (element as SVGElement).style.setProperty('overflow', 'visible');
+
+    wrapper.setAttribute('data-wrapper-type', `svg-element-${elementName}`);
+    return wrapper;
   }
 
   /**
@@ -626,6 +771,7 @@ export class HTMLPin implements PinAdapter {
     if (!wrapper) return;
 
     wrapper.appendChild(pin);
+    wrapper.parentElement.appendChild(wrapper);
   }
 
   // ------- helper functions -------
@@ -649,19 +795,58 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
+   * @function addCursor
+   * @description sets the mouse cursor to a special cursor when hovering over the element with the specified id
+   * @param {HTMLElement} wrapper the wrapper of the element
+   * @param {string} id the id of the element
+   * @returns {void}
+   */
+  private addCursor(wrapper: HTMLElement | SVGElement, id: string): void {
+    let element: HTMLElement | SVGElement = wrapper;
+
+    const isSvgElement = wrapper.getAttribute('data-wrapper-type');
+    if (isSvgElement) {
+      const elementTagname = isSvgElement.split('-')[2];
+      element = this.divWrappers.get(id).querySelector(elementTagname);
+    }
+
+    element.style.setProperty(
+      'cursor',
+      'url("https://production.cdn.superviz.com/static/pin-html.png") 0 100, pointer',
+    );
+    element.style.setProperty('pointer-events', 'auto');
+  }
+
+  /**
+   * @function getTransform
+   */
+  private getTransform(element: SVGElement): number[] {
+    const viewport = element.viewportElement;
+
+    const parentWithTransform = element.closest('[transform]');
+    if (!parentWithTransform) return;
+
+    if (!viewport.contains(parentWithTransform)) return;
+
+    const transform = parentWithTransform.getAttribute('transform');
+    const transformValues = transform.split(')');
+    const [x, y] = transformValues[0].split('(')[1].replace(' ', '').split(',');
+    return [Number(x), Number(y)];
+  }
+
+  /**
    * @function createWrapper
    * @description creates a wrapper for the element with the specified id
    * @param {HTMLElement} element the element to be wrapped
    * @param {string} id the id of the element to be wrapped
    * @returns {HTMLElement} the new wrapper element
    */
-  private createWrapper(element: HTMLElement, id: string): HTMLElement {
-    const container = element;
+  private createWrapper(element: Element, id: string): HTMLElement {
     const wrapperId = `superviz-id-${id}`;
 
     if (this.divWrappers.get(id)) return;
 
-    const containerRect = container.getBoundingClientRect();
+    const containerRect = element.getBoundingClientRect();
 
     const containerWrapper = document.createElement('div');
     containerWrapper.setAttribute('data-wrapper-id', id);
@@ -675,6 +860,9 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.left = `0`;
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
+
+    const svgWrapper = this.handleSvgElement(element, containerWrapper);
+    if (svgWrapper) return svgWrapper;
 
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
@@ -730,9 +918,7 @@ export class HTMLPin implements PinAdapter {
     const target = event.target as HTMLElement;
     const wrapper = event.currentTarget as HTMLElement;
 
-    if (target !== wrapper && this.pins.has(target.id)) {
-      return;
-    }
+    if (target !== wrapper && this.pins.has(target.id)) return;
 
     const elementId = wrapper.getAttribute('data-wrapper-id');
     const rect = wrapper.getBoundingClientRect();
