@@ -1,4 +1,4 @@
-import { Participant } from "../../../components/comments/types"
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 
 
 const MENTION_ACTION = {
@@ -14,17 +14,17 @@ const DEFAULT_HIDE_MENTION_LIST = {
 
 type hideMentionList = {
   action: string;
-  mentions: Participant[];
+  mentions: ParticipantByGroupApi[];
   findDigitParticipant: boolean
 };
 
-const matchParticipant = (name: string, position, participantList: Participant[]): hideMentionList => {
+const matchParticipant = (name: string, position, participantList: ParticipantByGroupApi[]): hideMentionList => {
   let mentionList = []
 
-  mentionList = participantList?.filter((participant: Participant) => participant?.email)
+  mentionList = participantList?.filter((participant: ParticipantByGroupApi) => participant?.email)
   if (name.length > 0) {
     mentionList = mentionList
-      .filter((participant: Participant) => participant?.name
+      .filter((participant: ParticipantByGroupApi) => participant?.name
         .toLowerCase()
         .search(name.toLowerCase()) !== -1
       );
@@ -51,8 +51,8 @@ const matchParticipant = (name: string, position, participantList: Participant[]
   }
 }
 
-const prepareMentionList = (users: Participant[], position): Participant[] => {
-  return users.map((user: Participant) => ({
+const prepareMentionList = (users: ParticipantByGroupApi[], position): ParticipantByGroupApi[] => {
+  return users.map((user: ParticipantByGroupApi) => ({
     id: user.id,
     name: user.name,
     avatar: user.avatar,
@@ -62,5 +62,5 @@ const prepareMentionList = (users: Participant[], position): Participant[] => {
 }
 
 export default {
-  matchParticipant: (name, position, participantList: Participant[]) => matchParticipant(name, position, participantList),
+  matchParticipant: (name, position, participantList: ParticipantByGroupApi[]) => matchParticipant(name, position, participantList),
 }

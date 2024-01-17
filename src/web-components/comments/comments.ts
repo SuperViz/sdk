@@ -1,7 +1,8 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { Annotation, Participant } from '../../components/comments/types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
+import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
 import { AnnotationFilter } from './components/types';
@@ -20,7 +21,7 @@ export class Comments extends WebComponentsBaseElement {
   declare annotationFilter: AnnotationFilter;
   declare waterMarkState: boolean;
   declare side: string;
-  declare participantsList: Participant[];
+  declare participantsList: ParticipantByGroupApi[];
 
   static properties = {
     open: { type: Boolean },
@@ -39,7 +40,7 @@ export class Comments extends WebComponentsBaseElement {
     this.participantsList = [];
   }
 
-  public participantsListed(participants: Participant[]) {
+  public participantsListed(participants: ParticipantByGroupApi[]) {
     this.participantsList = participants;
     this.side = 'left: 0px';
   }

@@ -2,7 +2,9 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { Annotation, Comment, Participant } from '../../../components/comments/types';
+
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { Annotation, Comment } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationItemStyle } from '../css';
 
@@ -20,7 +22,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare shouldShowUndoResolved: boolean;
   declare isLastAnnotation: boolean;
   declare annotationFilter: string;
-  declare participantsList: Participant[];
+  declare participantsList: ParticipantByGroupApi[];
 
   static styles = styles;
 

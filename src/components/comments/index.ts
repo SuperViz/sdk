@@ -1,3 +1,4 @@
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
@@ -7,7 +8,6 @@ import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import {
-  Participant,
   Annotation,
   AnnotationPositionInfo,
   ButtonLocation,
@@ -535,7 +535,7 @@ export class Comments extends BaseComponent {
  */
   private async participantsList(): Promise<void> {
     try {
-      const participants: Participant[] = await ApiService.fetchParticipantsByGroup(this.group.id);
+      const participants: ParticipantByGroupApi[] = await ApiService.fetchParticipantsByGroup(this.group.id);
       this.pinAdapter.participantsList = participants;
       this.element.participantsList = participants;
     } catch (error) {

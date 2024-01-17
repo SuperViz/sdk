@@ -1,6 +1,7 @@
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, Participant, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
 import { CanvasSides, SimpleParticipant } from './types';
 
@@ -23,7 +24,7 @@ export class CanvasPin implements PinAdapter {
   private movedTemporaryPin: boolean;
   private localParticipant: SimpleParticipant = {};
   private originalCanvasCursor: string;
-  declare participants: Participant[];
+  declare participants: ParticipantByGroupApi[];
 
   constructor(
     canvasId: string,
@@ -410,7 +411,7 @@ export class CanvasPin implements PinAdapter {
    * @description - all participants of developer groupId
    * @param participants - all participants list
    */
-  public set participantsList(participants: Participant[]) {
+  public set participantsList(participants: ParticipantByGroupApi[]) {
     this.participants = participants;
   }
   

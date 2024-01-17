@@ -1,6 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { WebComponentsBase } from '../../base';
 import { mentionedStyle } from '../css';
 
@@ -13,16 +14,16 @@ export class CommentsMentioned extends WebComponentsBaseElement {
 
   constructor() {
     super();
-    this.participant = {} as any
+    this.participant = {} as unknown as ParticipantByGroupApi;
   }
 
-  declare participant: { userId: string, name: string, avatar: string }
+  declare participant: ParticipantByGroupApi;
 
   static properties = {
     participant: { type: Object },
   };
 
   protected render() {
-    return html`<div class="mention">@<div class="mentioned" userId=${this.participant.userId}>${this.participant.name}</div></div>`;
+    return html`<div class="mention">@<div class="mentioned" userId=${this.participant.id}>${this.participant.name}</div></div>`;
   }
 }

@@ -1,7 +1,9 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { AnnotationPositionInfo, Participant } from '../../../components/comments/types';
+
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { AnnotationPositionInfo } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 import { AutoCompleteHandler } from '../utils/autocomplete-handler';
@@ -19,9 +21,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
-  declare mentionList: Participant[];
-  declare mentions: Participant[];
-  declare participantsList: Participant[];
+  declare mentionList: ParticipantByGroupApi[];
+  declare mentions: ParticipantByGroupApi[];
+  declare participantsList: ParticipantByGroupApi[];
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
 
@@ -229,12 +231,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (!text) return;
     const sendBtn = this.getSendBtn();
+    const mentions = this.autoCompleteHandler.getMentions()
 
     this.emitEvent(
       this.eventType,
       {
         text,
-        mentions: this.autoCompleteHandler.getMentions(),
+        mentions,
         position: this.pinCoordinates,
       },
       {
@@ -254,12 +257,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const input = this.commentInput;
     const sendBtn = this.getSendBtn();
     const text = input.value;
+    const mentions = this.autoCompleteHandler.getMentions()
 
     this.emitEvent(
       this.eventType,
       {
         text,
-        mentions: this.autoCompleteHandler.getMentions(),
+        mentions,
         position: this.pinCoordinates,
       },
       {

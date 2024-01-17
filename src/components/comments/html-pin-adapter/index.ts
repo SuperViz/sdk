@@ -1,8 +1,9 @@
 import { isEqual } from 'lodash';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
-import { Annotation, Participant, PinAdapter, PinCoordinates } from '../types';
+import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
 import {
   HorizontalSide,
@@ -22,7 +23,7 @@ export class HTMLPin implements PinAdapter {
   private annotations: Annotation[];
   private localParticipant: SimpleParticipant = {};
 
-  declare participants: Participant[];
+  declare participants: ParticipantByGroupApi[];
 
   // Loggers
   private logger: Logger;
@@ -166,7 +167,7 @@ export class HTMLPin implements PinAdapter {
   /**
    * @public setParticipantsList
    */
-  public set participantsList(participants: Participant[]) {
+  public set participantsList(participants: ParticipantByGroupApi[]) {
     this.participants = participants;
   }
   
