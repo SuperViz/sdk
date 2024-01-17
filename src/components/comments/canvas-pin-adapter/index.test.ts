@@ -1,10 +1,10 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
-import { Participant } from '../types';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 
 import { CanvasPin } from '.';
 
-const MOCK_PARTICIPANTS: Participant[] = [
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
   {
     name: 'John Zero',
     avatar: 'avatar1.png',
@@ -88,7 +88,7 @@ describe('CanvasPinAdapter', () => {
 
     test('should set participants correctly', () => {
       const canvasPinAdapter = new CanvasPin('canvas');
-      const participants: Participant[] = MOCK_PARTICIPANTS;
+      const participants: ParticipantByGroupApi[] = MOCK_PARTICIPANTS;
       canvasPinAdapter.participantsList = participants;
 
       expect(canvasPinAdapter.participants).toEqual(participants);
