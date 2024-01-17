@@ -1,9 +1,10 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
-import { Participant } from '../types';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+
 
 import { HTMLPin } from '.';
 
-const MOCK_PARTICIPANTS: Participant[] = [
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
   {
     name: 'John Zero',
     avatar: 'avatar1.png',
@@ -62,7 +63,7 @@ describe('HTMLPinAdapter', () => {
 
   test('should set participants correctly', () => {
     const htmlPinAdapter = new HTMLPin('container');
-    const participants: Participant[] = MOCK_PARTICIPANTS;
+    const participants: ParticipantByGroupApi[] = MOCK_PARTICIPANTS;
     htmlPinAdapter.participantsList = participants;
 
     expect(htmlPinAdapter.participants).toEqual(participants);

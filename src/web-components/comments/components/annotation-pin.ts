@@ -2,7 +2,9 @@ import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { Annotation, PinCoordinates, Participant } from '../../../components/comments/types';
+
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { Annotation, PinCoordinates } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationPinStyles } from '../css';
 
@@ -27,7 +29,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare annotationSent: boolean;
   declare localName: string;
   declare keepPositionRatio: boolean;
-  declare participantsList: Participant[];
+  declare participantsList: ParticipantByGroupApi[];
 
   private originalPosition: Partial<PinCoordinates>;
   private annotationSides: Sides;

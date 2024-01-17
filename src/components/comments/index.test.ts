@@ -4,16 +4,17 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import { Participant , PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
+import {  PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
 
 import { Comments } from './index';
 
-const MOCK_PARTICIPANTS: Participant[] = [
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
   {
     name: 'John Zero',
     avatar: 'avatar1.png',

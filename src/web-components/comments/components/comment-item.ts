@@ -3,7 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { DateTime } from 'luxon';
 
-import { Participant } from '../../../components/comments/types';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
@@ -33,8 +33,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare primaryComment: boolean;
   declare expandElipsis: boolean;
   declare annotationFilter: string;
-  declare participantsList: Participant[];
-  declare mentions: Participant[];
+  declare participantsList: ParticipantByGroupApi[];
+  declare mentions: ParticipantByGroupApi[];
   declare avatar: string;
 
   static properties = {

@@ -1,4 +1,4 @@
-import { Participant } from "../../../components/comments/types"
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 
 export class AutoCompleteHandler {
   constructor () {
@@ -19,10 +19,13 @@ export class AutoCompleteHandler {
     this.key = event.data
   }
 
-  getMentions () {
-    return this.mentions
-      .filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
-      .filter(mention => this.input.value.includes(mention.name))
+  getMentions() {
+    return this.mentions.filter((mention, index, self) => {
+      const isSelf = self.findIndex((m) => m.userId === mention.userId) === index;
+      const hasParticipantName = (mention, input) => input.value.includes(mention.name);
+
+      return isSelf && hasParticipantName(mention, this.input);
+    });
   }
 
   setMentions (mentions) {
@@ -30,8 +33,10 @@ export class AutoCompleteHandler {
   }
 
   addMention (mention: { userId: string, name: string }) {
-    this.mentions = [...this.mentions, mention]
-    this.mentions = this.mentions.filter((mention, index, self) => self.findIndex(m => m.userId === mention.userId) === index)
+    const isDuplicated = this.mentions.some((m) => m.userId === mention.userId);
+    if (!isDuplicated) {
+      this.mentions.push(mention);
+    }
   }
 
   clearMentions () {
@@ -83,7 +88,7 @@ export class AutoCompleteHandler {
     return null
   }
 
-  insertMention (start: number, end: number, participant: Participant) {
+  insertMention (start: number, end: number, participant: ParticipantByGroupApi) {
     const { id, name } = participant
     const text = `${`${this.getValue().slice(0, start) + name} `}${  this.getValue().slice(end, this.getValue().length)}`
 

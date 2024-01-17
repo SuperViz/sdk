@@ -2,7 +2,8 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import { Annotation, Participant } from '../../../components/comments/types';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { Annotation } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
@@ -23,7 +24,7 @@ export class CommentsContent extends WebComponentsBaseElement {
   static styles = styles;
 
   declare annotations: Annotation[];
-  declare participantsList: Participant[];
+  declare participantsList: ParticipantByGroupApi[];
   declare selectedAnnotation: string;
   declare annotationFilter: AnnotationFilter;
   private lastCommentId: string;

@@ -2,6 +2,7 @@ import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { WebComponentsBase } from '../../base';
 import { mentionListStyle } from '../css';
 
@@ -64,7 +65,7 @@ export class CommentsMentionList extends WebComponentsBaseElement {
       <div id="mention-list">
         ${repeat(
         this.participants, 
-        (participant: any) => participant.id,
+        (participant: ParticipantByGroupApi) => participant.id,
         (participant) => html`
           ${mentionItem(participant)}
         `)}
