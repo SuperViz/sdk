@@ -33,6 +33,7 @@ export class RealtimeService implements DefaultRealtimeService {
   public presence3dLeaveObserver: Observer;
   public presence3dJoinedObserver: Observer;
   public domainRefusedObserver: Observer;
+  public sameAccountObserver: Observer;
 
   constructor() {
     this.participantObservers = [];
@@ -45,6 +46,7 @@ export class RealtimeService implements DefaultRealtimeService {
     this.participantLeaveObserver = new Observer({ logger: this.logger });
     this.syncPropertiesObserver = new Observer({ logger: this.logger });
     this.reconnectObserver = new Observer({ logger: this.logger });
+    this.sameAccountObserver = new Observer({ logger: this.logger });
 
     // Room info observers helpers
     this.roomInfoUpdatedObserver = new Observer({ logger: this.logger });

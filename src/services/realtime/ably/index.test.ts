@@ -63,6 +63,7 @@ const AblyRealtimeMock = {
           update: jest.fn(),
           subscribe: jest.fn(),
           unsubscribe: jest.fn(),
+          leave: jest.fn(),
         },
       };
     }),
