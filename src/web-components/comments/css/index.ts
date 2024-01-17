@@ -10,4 +10,3 @@ export { annotationFilterStyle } from './annotation-filter.style';
 export { floatButtonStyle } from './float-button.style';
 export { poweredByStyle } from './powered-by.style';
 export { mentionListStyle } from './mention-list.style';
-export { mentionedStyle } from './mentioned.style';
