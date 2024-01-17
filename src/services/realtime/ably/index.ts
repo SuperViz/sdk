@@ -216,6 +216,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.supervizChannel.on(this.onAblyChannelStateChange);
     this.supervizChannel.subscribe('update', this.onAblyRoomUpdate);
 
+    this.supervizChannel.subscribe('same-account-error', (message) => {
+      console.log('same-account-error', message);
+    });
+
     // join the comments channel
     this.commentsChannel = this.client.channels.get(`${this.roomId}:comments`);
     this.commentsChannel.subscribe('update', this.onCommentsChannelUpdate);
@@ -238,6 +242,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public leave(): void {
     this.logger.log('REALTIME', 'Disconnecting from ably servers');
+    this.supervizChannel.presence.leave();
     this.client.close();
     this.isJoinedRoom = false;
     this.isReconnecting = false;
@@ -472,6 +477,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceEnter(presenceMessage: Ably.Types.PresenceMessage): void {
+    if (presenceMessage.clientId === this.myParticipant.data.participantId && this.isJoinedRoom) {
+      this.sameAccountObserver.publish(true);
+      return;
+    }
+
     if (presenceMessage.clientId === this.myParticipant.data.participantId) {
       this.onJoinRoom(presenceMessage);
     } else {
@@ -590,6 +600,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyRoomUpdate(message: Ably.Types.Message): void {
+    this.logger.log('REALTIME', 'Room update received', message.data);
+
     this.updateLocalRoomState(message.data);
   }
 
