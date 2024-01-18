@@ -75,7 +75,7 @@ export class Comments extends BaseComponent {
   };
 
   /**
-   * @function openThreads
+   * @function closeThreads
    * @description - Close comments thread
    * @returns {void}
    */
@@ -187,7 +187,7 @@ export class Comments extends BaseComponent {
     this.button?.addEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.addEventListener('toggle', this.togglePinActive);
+    this.element.addEventListener('close', this.closeThreads);
     document.body.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -217,7 +217,7 @@ export class Comments extends BaseComponent {
     this.button?.removeEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.removeEventListener('toggle', this.togglePinActive);
+    this.element.removeEventListener('close', this.closeThreads);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
