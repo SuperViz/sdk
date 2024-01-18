@@ -50,7 +50,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     participantsList: { type: Object },
   };
 
-  private addAtSymbolInCaretPosition = (e) => {
+  private addAtSymbolInCaretPosition = () => {
     const input = this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
     const newInputEvent = new InputEvent('input', {
       bubbles: true,
@@ -137,7 +137,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.insertMention(mentioned)
   }
 
-  private buttonAtSimbol = () => {
+  private buttonAtSymbol = () => {
     let caretIndex = this.autoCompleteHandler.getSelectionStart()
     const getValue = this.autoCompleteHandler.getValue()
 
@@ -163,11 +163,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
     let position = this.autoCompleteHandler.getSelectionPosition()
 
-    const isButtonAtSimbol = (e.data === '@' && keyIndex === -1)
-    const isButtonAtSimbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
+    const isButtonAtSymbol = (e.data === '@' && keyIndex === -1)
+    const isButtonAtSymbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
 
-    if (isButtonAtSimbol || isButtonAtSimbolAndNotStartedMention) {
-      const data = this.buttonAtSimbol()
+    if (isButtonAtSymbol || isButtonAtSymbolAndNotStartedMention) {
+      const data = this.buttonAtSymbol()
       searchText = data.searchText
       position = data.position
     }
