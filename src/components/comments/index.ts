@@ -28,6 +28,8 @@ export class Comments extends BaseComponent {
   private pinAdapter: PinAdapter;
   private layoutOptions: CommentsOptions;
   private coordinates: AnnotationPositionInfo;
+  private hideDefaultButton: boolean;
+  private pinActive: boolean;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -38,6 +40,8 @@ export class Comments extends BaseComponent {
       position: CommentsSide.LEFT,
       buttonLocation: ButtonLocation.TOP_LEFT,
     };
+
+    this.hideDefaultButton = options?.hideDefaultButton ?? false;
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
@@ -56,7 +60,18 @@ export class Comments extends BaseComponent {
    * @returns {void}
    */
   public openThreads = (): void => {
+    if (this.sidebarOpen) return;
+
     this.element?.setAttribute('open', '');
+    this.sidebarOpen = true;
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
   };
 
   /**
@@ -65,7 +80,18 @@ export class Comments extends BaseComponent {
    * @returns {void}
    */
   public closeThreads = (): void => {
+    if (!this.sidebarOpen) return;
+
     this.element?.removeAttribute('open');
+    this.sidebarOpen = false;
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
   };
 
   /**
@@ -73,6 +99,7 @@ export class Comments extends BaseComponent {
    */
   public enable() {
     this.pinAdapter.setActive(true);
+    this.pinActive = true;
     this.publish(CommentEvent.pinActive);
   }
 
@@ -81,6 +108,7 @@ export class Comments extends BaseComponent {
    */
   public disable() {
     this.pinAdapter.setActive(false);
+    this.pinActive = false;
     this.publish(CommentEvent.pinInactive);
   }
 
@@ -105,12 +133,24 @@ export class Comments extends BaseComponent {
     this.clientUrl = window.location.href;
 
     this.positionComments();
-    this.positionFloatingButton();
+
+    if (!this.hideDefaultButton) {
+      this.positionFloatingButton();
+    }
+
     this.fetchAnnotations();
     this.waterMarkState();
     this.addListeners();
     this.pinAdapter.setPinsVisibility(true);
   }
+
+  /**
+   * @function togglePinActive
+   */
+  public togglePinActive = () => {
+    this.pinActive = !this.pinActive;
+    this.pinAdapter.setActive(this.pinActive);
+  };
 
   /**
    * @function destroy
@@ -121,7 +161,7 @@ export class Comments extends BaseComponent {
     this.logger.log('comments component @ destroy');
     this.destroyListeners();
 
-    this.button.remove();
+    this.button?.remove();
     this.element.remove();
     this.element = undefined;
     this.pinAdapter.destroy();
@@ -134,10 +174,10 @@ export class Comments extends BaseComponent {
    */
   private addListeners(): void {
     // Button observers
-    this.button.addEventListener('toggle', this.toggleAnnotationSidebar);
+    this.button?.addEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
+    this.element.addEventListener('toggle', this.togglePinActive);
     document.body.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -164,10 +204,10 @@ export class Comments extends BaseComponent {
    */
   private destroyListeners(): void {
     // Button observers
-    this.button.removeEventListener('toggle', this.toggleAnnotationSidebar);
+    this.button?.removeEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.removeEventListener('toggle', this.toggleAnnotationSidebar);
+    this.element.removeEventListener('toggle', this.togglePinActive);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
