@@ -96,10 +96,23 @@ describe('HTMLPinAdapter', () => {
       const removeSpy = jest.fn();
       const removeEventListenerSpy = jest.fn();
 
+      const getAttribute = jest
+        .fn()
+        .mockResolvedValue(Math.random() > 0.5 ? '' : 'data-wrapper-type');
+      const parentElement = {
+        remove: removeSpy,
+      };
+
       const wrappers = [...instance['divWrappers']].map(([entry, value]) => {
         return [
           entry,
-          { ...value, remove: removeSpy, removeEventListener: removeEventListenerSpy },
+          {
+            ...value,
+            remove: removeSpy,
+            removeEventListener: removeEventListenerSpy,
+            getAttribute,
+            parentElement,
+          },
         ];
       });
       instance['divWrappers'] = new Map(wrappers as [key: any, value: any][]);
