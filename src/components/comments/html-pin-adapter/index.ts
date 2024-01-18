@@ -614,8 +614,8 @@ export class HTMLPin implements PinAdapter {
       height = rect.getAttribute('height');
       rx = rect.getAttribute('rx');
       ry = rect.getAttribute('ry');
-      svgElement.setAttribute('fill', 'red');
-      svgElement.setAttribute('stroke', 'blue');
+      svgElement.setAttribute('fill', 'transparent');
+      svgElement.setAttribute('stroke', 'transparent');
       svgElement.setAttribute('x', '0');
       svgElement.setAttribute('y', '0');
       svgElement.setAttribute('rx', rx);
