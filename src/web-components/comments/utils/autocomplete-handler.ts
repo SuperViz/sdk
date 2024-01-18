@@ -88,9 +88,17 @@ export class AutoCompleteHandler {
     return null
   }
 
+  isDeletion (): boolean {
+    return this.event.inputType === 'deleteContentBackward' || this.event.inputType === 'deleteContentForward' || this.event.inputType === 'deleteWordBackward'
+  }
+
   insertMention (start: number, end: number, participant: ParticipantByGroupApi) {
+    if (this.isDeletion()) {
+      return
+    }
+
     const { id, name } = participant
-    const text = `${`${this.getValue().slice(0, start) + name} `}${  this.getValue().slice(end, this.getValue().length)}`
+    const text = `${this.getValue().slice(0, start) + name} ${this.getValue().slice(end, this.getValue().length)}`
 
     this.setValue(text)
     this.input.focus()
