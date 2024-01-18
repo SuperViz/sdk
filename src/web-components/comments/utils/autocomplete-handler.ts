@@ -6,11 +6,11 @@ export class AutoCompleteHandler {
     this.mentions = []
   }
 
-  private keys = ['@']
-  private event: InputEvent
-  private input: HTMLTextAreaElement
-  private key: string
-  private mentions: { userId: string, name: string }[]
+  private readonly keys = ['@']
+  event: InputEvent
+  input: HTMLTextAreaElement
+  key: string
+  mentions: { userId: string, name: string }[]
 
   setInput (event: InputEvent) {
     this.event = event
