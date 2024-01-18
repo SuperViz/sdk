@@ -67,6 +67,9 @@ export class HTMLPin implements PinAdapter {
     'source',
     'track',
     'wbr',
+    'svg',
+    'rect',
+    'ellipse',
   ];
 
   constructor(containerId: string, options: HTMLPinOptions = {}) {
@@ -119,14 +122,7 @@ export class HTMLPin implements PinAdapter {
     this.logger.log('Destroying HTML Pin Adapter for Comments');
     this.removeListeners();
     this.removeObservers();
-    this.divWrappers.forEach((divWrapper) => {
-      if (divWrapper.getAttribute('data-wrapper-type')) {
-        divWrapper.parentElement.remove();
-        return;
-      }
-
-      divWrapper.remove();
-    });
+    this.divWrappers.forEach((divWrapper) => divWrapper.remove());
     this.divWrappers.clear();
     this.pins.forEach((pin) => pin.remove());
     this.pins.clear();
@@ -590,15 +586,16 @@ export class HTMLPin implements PinAdapter {
       foreignObject.appendChild(wrapper);
       element.appendChild(foreignObject);
       (element as SVGElement).style.setProperty('overflow', 'visible');
+      // wrapper.setAttribute()
       return wrapper;
     }
 
-    const isEllipseElement = element.tagName.toLowerCase() === 'ellipse';
-    const isRectElement = element.tagName.toLowerCase() === 'rect';
+    const elementName = element.tagName.toLowerCase();
+    const isEllipseElement = elementName === 'ellipse';
+    const isRectElement = elementName === 'rect';
 
     if (!isEllipseElement && !isRectElement) return;
 
-    const elementName = element.tagName.toLowerCase();
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', elementName);
 
@@ -617,10 +614,10 @@ export class HTMLPin implements PinAdapter {
       height = rect.getAttribute('height');
       rx = rect.getAttribute('rx');
       ry = rect.getAttribute('ry');
-      svgElement.setAttribute('fill', 'transparent');
-      svgElement.setAttribute('stroke', 'transparent');
-      svgElement.setAttribute('x', x);
-      svgElement.setAttribute('y', y);
+      svgElement.setAttribute('fill', 'red');
+      svgElement.setAttribute('stroke', 'blue');
+      svgElement.setAttribute('x', '0');
+      svgElement.setAttribute('y', '0');
       svgElement.setAttribute('rx', rx);
       svgElement.setAttribute('ry', ry);
     }
@@ -638,8 +635,8 @@ export class HTMLPin implements PinAdapter {
 
       svgElement.setAttribute('fill', 'transparent');
       svgElement.setAttribute('stroke', 'transparent');
-      svgElement.setAttribute('cx', cx);
-      svgElement.setAttribute('cy', cy);
+      svgElement.setAttribute('cx', `${Number(cx) - x}`);
+      svgElement.setAttribute('cy', `${Number(cy) - y}`);
       svgElement.setAttribute('rx', rx);
       svgElement.setAttribute('ry', ry);
     }
@@ -647,61 +644,15 @@ export class HTMLPin implements PinAdapter {
     svgElement.setAttribute('height', height);
     svgElement.setAttribute('width', width);
 
-    svg.setAttribute('height', '100%');
-    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', height);
+    svg.setAttribute('width', width);
 
     svg.appendChild(svgElement);
+
     wrapper.appendChild(svg);
 
-    let externalViewport = viewport;
-
-    while (externalViewport.viewportElement) {
-      externalViewport = externalViewport.viewportElement;
-    }
-
-    const [transformX, transformY] = this.getTransform(element as SVGElement) ?? [0, 0];
-
-    svgElement.setAttribute('transform', `translate(${transformX}, ${transformY})`);
-
-    if (!this.svgWrappers) {
-      const { left, top, width, height } = externalViewport.getBoundingClientRect();
-      const svgWrapper = document.createElement('div');
-      svgWrapper.style.setProperty('position', 'absolute');
-      svgWrapper.style.setProperty('top', `${top}px`);
-      svgWrapper.style.setProperty('left', `${left}px`);
-      svgWrapper.style.setProperty('width', `${width}px`);
-      svgWrapper.style.setProperty('height', `${height}px`);
-      svgWrapper.style.setProperty('pointer-events', 'none');
-      svgWrapper.style.setProperty('overflow', 'visible');
-      this.svgWrappers = svgWrapper;
-      this.container.appendChild(svgWrapper);
-    }
-
-    this.svgWrappers.appendChild(wrapper);
-
     (element as SVGElement).style.setProperty('overflow', 'visible');
-
-    wrapper.setAttribute('data-wrapper-type', 'svg-element-rect');
-
-    if (!this.svgWrappers) {
-      const { left, top, width, height } = externalViewport.getBoundingClientRect();
-      const svgWrapper = document.createElement('div');
-      svgWrapper.style.setProperty('position', 'absolute');
-      svgWrapper.style.setProperty('top', `${top}px`);
-      svgWrapper.style.setProperty('left', `${left}px`);
-      svgWrapper.style.setProperty('width', `${width}px`);
-      svgWrapper.style.setProperty('height', `${height}px`);
-      svgWrapper.style.setProperty('pointer-events', 'none');
-      svgWrapper.style.setProperty('overflow', 'visible');
-      this.svgWrappers = svgWrapper;
-      this.container.appendChild(svgWrapper);
-    }
-
-    this.svgWrappers.appendChild(wrapper);
-
-    (element as SVGElement).style.setProperty('overflow', 'visible');
-
-    wrapper.setAttribute('data-wrapper-type', `svg-element-${elementName}`);
+    wrapper.setAttribute('data-wrapper-type', `svg-${elementName}`);
     return wrapper;
   }
 
@@ -806,7 +757,7 @@ export class HTMLPin implements PinAdapter {
 
     const isSvgElement = wrapper.getAttribute('data-wrapper-type');
     if (isSvgElement) {
-      const elementTagname = isSvgElement.split('-')[2];
+      const elementTagname = isSvgElement.split('-')[1];
       element = this.divWrappers.get(id).querySelector(elementTagname);
     }
 
@@ -817,22 +768,22 @@ export class HTMLPin implements PinAdapter {
     element.style.setProperty('pointer-events', 'auto');
   }
 
-  /**
-   * @function getTransform
-   */
-  private getTransform(element: SVGElement): number[] {
-    const viewport = element.viewportElement;
+  // /**
+  //  * @function getTransform
+  //  */
+  // private getTransform(element: SVGElement): number[] {
+  //   const viewport = element.viewportElement;
 
-    const parentWithTransform = element.closest('[transform]');
-    if (!parentWithTransform) return;
+  //   const parentWithTransform = element.closest('[transform]');
+  //   if (!parentWithTransform) return;
 
-    if (!viewport.contains(parentWithTransform)) return;
+  //   if (!viewport.contains(parentWithTransform)) return;
 
-    const transform = parentWithTransform.getAttribute('transform');
-    const transformValues = transform.split(')');
-    const [x, y] = transformValues[0].split('(')[1].replace(' ', '').split(',');
-    return [Number(x), Number(y)];
-  }
+  //   const transform = parentWithTransform.getAttribute('transform');
+  //   const transformValues = transform.split(')');
+  //   const [x, y] = transformValues[0].split('(')[1].replace(' ', '').split(',');
+  //   return [Number(x), Number(y)];
+  // }
 
   /**
    * @function createWrapper
@@ -848,7 +799,7 @@ export class HTMLPin implements PinAdapter {
 
     const containerRect = element.getBoundingClientRect();
 
-    const containerWrapper = document.createElement('div');
+    let containerWrapper = document.createElement('div');
     containerWrapper.setAttribute('data-wrapper-id', id);
     containerWrapper.id = wrapperId;
 
@@ -861,14 +812,13 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
 
-    const svgWrapper = this.handleSvgElement(element, containerWrapper);
-    if (svgWrapper) return svgWrapper;
-
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
       this.setPositionNotStatic(this.elementsWithDataId[id]);
       return containerWrapper;
     }
+
+    containerWrapper = this.handleSvgElement(element, containerWrapper) ?? containerWrapper;
 
     containerWrapper.style.position = 'fixed';
     containerWrapper.style.top = `${containerRect.top}px`;
@@ -878,9 +828,9 @@ export class HTMLPin implements PinAdapter {
 
     let parent = this.elementsWithDataId[id].parentElement;
 
-    if (!parent) parent = document.body;
+    if (!parent || (element as SVGElement).viewportElement) parent = document.body;
 
-    this.setPositionNotStatic(parent);
+    this.setPositionNotStatic(parent as HTMLElement);
     parent.appendChild(containerWrapper);
 
     this.voidElementsWrappers.set(id, containerWrapper);
