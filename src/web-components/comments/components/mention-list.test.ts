@@ -31,8 +31,27 @@ describe('CommentsMentionList', () => {
     mentionItem.click();
   
     element['selectParticipant'](MOCK_PARTICIPANT_LIST[0]);
-    expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('none');
-  
+    expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('none'); 
   });
-  
+
+  test('should display avatar', async () => {
+    element.participants = MOCK_PARTICIPANT_LIST;
+    await element.updateComplete;
+
+    const avatar = element.shadowRoot.querySelector('.avatar');
+    expect(avatar).toBeTruthy();
+  });
+
+  test('should display default avatar', async () => {
+    element.participants = [
+      {
+        ...MOCK_PARTICIPANT_LIST[0],
+        avatar: null
+      }
+    ];
+    await element.updateComplete;
+
+    const defaultAvatar = element.shadowRoot.querySelector('.default-avatar');
+    expect(defaultAvatar).toBeTruthy();
+  });
 });

@@ -39,6 +39,22 @@ export const mentionListStyle = css`
     margin-left: 12px;
   }
 
+  .default-avatar {
+    width: 32px;
+    height: 32px;
+    margin-right: 14px;
+    margin-left: 12px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: rgb(var(--sv-gray-300));
+    border: 1px solid rgb(var(--sv-gray-500));
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .avatar-type {
     font-family: Roboto;
     font-size: 14px;

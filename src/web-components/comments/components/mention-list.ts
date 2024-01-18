@@ -18,7 +18,7 @@ export class CommentsMentionList extends WebComponentsBaseElement {
 
   static styles = styles;
   
-  declare participants: []
+  declare participants: ParticipantByGroupApi[]
 
   static properties = {
     participants: { type: Object },
@@ -53,10 +53,20 @@ export class CommentsMentionList extends WebComponentsBaseElement {
     this.hideMentionList()
   }
 
+  private getAvatar(participant: ParticipantByGroupApi) {
+    if (participant.avatar) {
+      return html`<img class="avatar" src=${participant.avatar} />`;
+    }
+
+    return html`<div class="default-avatar">
+      <p class="text text-bold">${participant.name[0]?.toUpperCase() || 'A'}</p>
+    </div>`;
+  }
+
   protected render() {
     const mentionItem = (participant) => html`
       <div class="mention-item" @click=${() => this.selectParticipant(participant)}>
-          <img class="avatar" src="${participant.avatar}" alt="${participant.name}" />
+          ${this.getAvatar(participant)}
         <div class="avatar-type">${participant.name}</div>
       </div>
     `
