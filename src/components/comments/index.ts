@@ -50,6 +50,24 @@ export class Comments extends BaseComponent {
   }
 
   /**
+   * @function openThreads
+   * @description - Open comments thread
+   * @returns {void}
+   */
+  public openThreads = (): void => {
+    this.element?.setAttribute('open', '');
+  };
+
+  /**
+   * @function openThreads
+   * @description - Close comments thread
+   * @returns {void}
+   */
+  public closeThreads = (): void => {
+    this.element?.removeAttribute('open');
+  };
+
+  /**
    * @function url
    * @description Gets the URL of the client
    * @returns {void}
