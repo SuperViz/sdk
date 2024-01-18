@@ -96,8 +96,10 @@ export class Comments extends BaseComponent {
 
   /**
    * @function enable
+   * @description - Activates the pin adapter and allows the user to create annotations
+   * @returns {void}
    */
-  public enable() {
+  public enable(): void {
     this.pinAdapter.setActive(true);
     this.pinActive = true;
     this.publish(CommentEvent.pinActive);
@@ -105,8 +107,10 @@ export class Comments extends BaseComponent {
 
   /**
    * @function disable
+   * @description - Deactivates the pin adapter and prevents the user from creating annotations
+   * @returns {void}
    */
-  public disable() {
+  public disable(): void {
     this.pinAdapter.setActive(false);
     this.pinActive = false;
     this.publish(CommentEvent.pinInactive);
@@ -146,10 +150,16 @@ export class Comments extends BaseComponent {
 
   /**
    * @function togglePinActive
+   * @description Toggles the pin adapter's active state
+   * @returns {void}
    */
-  public togglePinActive = () => {
-    this.pinActive = !this.pinActive;
-    this.pinAdapter.setActive(this.pinActive);
+  public togglePinActive = (): void => {
+    if (this.pinActive) {
+      this.disable();
+      return;
+    }
+
+    this.enable();
   };
 
   /**

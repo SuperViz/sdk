@@ -4,6 +4,7 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { CommentEvent } from '../../common/types/events.types';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
@@ -700,5 +701,140 @@ describe('Comments', () => {
 
     expect(commentsComponent['annotations'].length).toBe(2);
     expect(commentsComponent['annotations'][1]).toStrictEqual(annotationList[1]);
+  });
+
+  describe('openThreads', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+    test('should open the threads', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = false;
+      commentsComponent['element'].removeAttribute('open');
+
+      commentsComponent['openThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(true);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        new CustomEvent('toggle-annotation-sidebar', {
+          detail: { open: true },
+          composed: true,
+          bubbles: true,
+        }),
+      );
+    });
+
+    test('should not open the threads if the sidebar is already open', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = true;
+      commentsComponent['element'].setAttribute('open', '');
+
+      commentsComponent['openThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(true);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
+      expect(dispatchEventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('closeThreads', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should close the threads', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = true;
+      commentsComponent['element'].setAttribute('open', '');
+
+      commentsComponent['closeThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(false);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        new CustomEvent('toggle-annotation-sidebar', {
+          detail: { open: false },
+          composed: true,
+          bubbles: true,
+        }),
+      );
+    });
+
+    test('should not close the threads if the sidebar is already closed', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = false;
+      commentsComponent['element'].removeAttribute('open');
+
+      commentsComponent['closeThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(false);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
+      expect(dispatchEventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('enable', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should activate the pins', () => {
+      const setActiveSpy = jest.spyOn(commentsComponent['pinAdapter'], 'setActive');
+      const publishSpy = jest.spyOn(commentsComponent as any, 'publish');
+      commentsComponent['pinActive'] = false;
+
+      commentsComponent['enable']();
+
+      expect(commentsComponent['pinActive']).toBe(true);
+      expect(setActiveSpy).toHaveBeenCalledWith(true);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinActive);
+    });
+  });
+
+  describe('disable', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should deactivate the pins', () => {
+      const setActiveSpy = jest.spyOn(commentsComponent['pinAdapter'], 'setActive');
+      const publishSpy = jest.spyOn(commentsComponent as any, 'publish');
+      commentsComponent['pinActive'] = true;
+
+      commentsComponent['disable']();
+
+      expect(commentsComponent['pinActive']).toBe(false);
+      expect(setActiveSpy).toHaveBeenCalledWith(false);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinInactive);
+    });
+  });
+
+  describe('togglePinActive', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should activate the pins if they are disabled', () => {
+      const enableSpy = jest.spyOn(commentsComponent as any, 'enable');
+      const disableSpy = jest.spyOn(commentsComponent as any, 'disable');
+      commentsComponent['pinActive'] = false;
+
+      commentsComponent['togglePinActive']();
+
+      expect(enableSpy).toHaveBeenCalled();
+      expect(disableSpy).not.toHaveBeenCalled();
+    });
+
+    test('should deactivate the pins if they are enabled', () => {
+      const enableSpy = jest.spyOn(commentsComponent as any, 'enable');
+      const disableSpy = jest.spyOn(commentsComponent as any, 'disable');
+      commentsComponent['pinActive'] = true;
+
+      commentsComponent['togglePinActive']();
+
+      expect(enableSpy).not.toHaveBeenCalled();
+      expect(disableSpy).toHaveBeenCalled();
+    });
   });
 });
