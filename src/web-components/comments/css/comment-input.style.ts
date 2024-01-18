@@ -28,7 +28,6 @@ export const commentInputStyle = css`
     font-family: Roboto;
     white-space: pre-wrap;
     word-wrap: break-word;
-    overflow-y: scroll;
     resize: none;
     line-height: 1rem;
     max-height: 5rem;

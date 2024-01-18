@@ -405,30 +405,50 @@ describe('Launcher', () => {
 
       expect(LauncherInstance['activeComponentsInstances'].length).toBe(0);
     });
+
+    test('should publish REALTIME_SAME_ACCOUNT_ERROR, when same account callback is called', () => {
+      LauncherInstance['publish'] = jest.fn();
+
+      LauncherInstance['onSameAccount']();
+
+      expect(LauncherInstance['publish']).toHaveBeenCalledWith(ParticipantEvent.SAME_ACCOUNT_ERROR);
+    });
   });
 
-  test('should destroy the instance', () => {
-    LauncherInstance.destroy();
+  describe('destroy', () => {
+    test('should destroy the instance', () => {
+      LauncherInstance.destroy();
 
-    expect(ABLY_REALTIME_MOCK.leave).toHaveBeenCalled();
-    expect(EVENT_BUS_MOCK.destroy).toHaveBeenCalled();
-  });
+      expect(ABLY_REALTIME_MOCK.leave).toHaveBeenCalled();
+      expect(EVENT_BUS_MOCK.destroy).toHaveBeenCalled();
+    });
 
-  test('should unsubscribe from realtime events', () => {
-    LauncherInstance.destroy();
+    test('should unsubscribe from realtime events', () => {
+      LauncherInstance.destroy();
 
-    expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.hostAvailabilityObserver.unsubscribe).toHaveBeenCalled();
-  });
+      expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
+      expect(ABLY_REALTIME_MOCK.hostAvailabilityObserver.unsubscribe).toHaveBeenCalled();
+    });
 
-  test('should remove all components', () => {
-    LauncherInstance.addComponent(MOCK_COMPONENT);
-    LauncherInstance.destroy();
+    test('should remove all components', () => {
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+      LauncherInstance.destroy();
 
-    expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
+      expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
+    });
+
+    test('should destroy the instance when same account callback is called', () => {
+      LauncherInstance['publish'] = jest.fn();
+      LauncherInstance['destroy'] = jest.fn();
+
+      LauncherInstance['onSameAccount']();
+
+      expect(LauncherInstance['publish']).toHaveBeenCalledWith(ParticipantEvent.SAME_ACCOUNT_ERROR);
+      expect(LauncherInstance['destroy']).toHaveBeenCalled();
+    });
   });
 });
 

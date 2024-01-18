@@ -147,33 +147,4 @@ export default class ApiService {
     const url = this.createUrl(baseUrl, path);
     return doRequest(url, 'POST', mentionParams, { apikey: config.get('apiKey') });
   }
-
-  static async validadeParticipantIsEnteringTwice(
-    participant: SuperVizSdkOptions['participant'],
-    roomId: string,
-    apiKey: string,
-    ablyKey: string,
-  ) {
-    const ablyKey64 = window.btoa(ablyKey);
-    const ablyRoom = `superviz:${roomId.toLowerCase()}-${apiKey}`;
-    const ablyUrl = `https://rest.ably.io/channels/${ablyRoom}/presence`;
-
-    try {
-      const response = await fetch(ablyUrl, {
-        headers: { Authorization: `Basic ${ablyKey64}` },
-      });
-
-      const participants = await response.json();
-
-      const hasParticipantWithSameId = participants.some((presence) => {
-        const data = JSON.parse(presence.data);
-
-        return data.id === participant.id;
-      });
-
-      return hasParticipantWithSameId;
-    } catch (error) {
-      throw new Error('Failed to fetch realtime participants');
-    }
-  }
 }

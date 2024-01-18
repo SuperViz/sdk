@@ -120,6 +120,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.eventBus.destroy();
     this.eventBus = undefined;
 
+    this.realtime.sameAccountObserver.unsubscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
@@ -203,6 +204,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private subscribeToRealtimeEvents = (): void => {
+    this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
@@ -346,6 +348,11 @@ export class Launcher extends Observable implements DefaultLauncher {
       return;
     }
     this.publish(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
+  };
+
+  private onSameAccount = (): void => {
+    this.publish(ParticipantEvent.SAME_ACCOUNT_ERROR);
+    this.destroy();
   };
 }
 
