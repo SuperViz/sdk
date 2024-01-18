@@ -1,3 +1,4 @@
+import { CommentEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
@@ -66,6 +67,22 @@ export class Comments extends BaseComponent {
   public closeThreads = (): void => {
     this.element?.removeAttribute('open');
   };
+
+  /**
+   * @function enable
+   */
+  public enable() {
+    this.pinAdapter.setActive(true);
+    this.publish(CommentEvent.pinActive);
+  }
+
+  /**
+   * @function disable
+   */
+  public disable() {
+    this.pinAdapter.setActive(false);
+    this.publish(CommentEvent.pinInactive);
+  }
 
   /**
    * @function url
