@@ -745,4 +745,18 @@ describe('Comments', () => {
       expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(MOCK_PARTICIPANTS);
     });
   });
+
+  describe('Mentions', () => {
+    test('should create a mention', async () => {
+      const response = await ApiService.createMentions({
+        commentsId: 'any_comment_id',
+        participants: [{
+          id: 'any_mention_userId',
+          readed: 0,
+      }]
+      });
+
+      expect(response).toEqual([]);
+    });
+  })
 });
