@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
 
+import { RealtimeEvent } from '../../../common/types/events.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
@@ -23,6 +24,7 @@ export class MousePointersHTML extends BaseComponent {
   private userBeingFollowedId: string;
   private dataAttributeValueFilters: RegExp[] = [];
   private animationFrame: number;
+  private isPrivate: boolean;
 
   // callbacks
   private goToMouseCallback: (position: { x: number; y: number }, elementId: string) => void;
@@ -93,11 +95,11 @@ export class MousePointersHTML extends BaseComponent {
     this.realtime.enterPresenceMouseChannel(this.localParticipant);
     this.addListenersToWrappers();
     this.subscribeToRealtimeEvents();
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
 
     this.animationFrame = requestAnimationFrame(this.animate);
     // this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
     // this.eventBus.subscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
-    // this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
   }
 
   /**
@@ -131,9 +133,9 @@ export class MousePointersHTML extends BaseComponent {
 
     this.unsubscribeFromRealtimeEvents();
 
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
     // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
-    // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     // this.canvas.removeEventListener('mousemove', this.onMyParticipantMouseMove);
     // this.canvas.removeEventListener('mouseout', this.onMyParticipantMouseOut);
     this.logger &&= undefined;
@@ -217,6 +219,8 @@ export class MousePointersHTML extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
+    if (this.isPrivate) return;
+
     const elementId = (event.currentTarget as HTMLDivElement).getAttribute('data-wrapper-id');
     const x = event.offsetX;
     const y = event.offsetY;
@@ -226,7 +230,6 @@ export class MousePointersHTML extends BaseComponent {
       x,
       y,
       elementId,
-      // visible: !this.isPrivate,
       visible: true,
     });
   };
@@ -318,6 +321,16 @@ export class MousePointersHTML extends BaseComponent {
    */
   private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
     this.removePresenceMouseParticipant(participant.id);
+  };
+
+  /**
+   * @function setParticipantPrivate
+   * @description perform animation in presence mouse
+   * @returns {void}
+   */
+  private setParticipantPrivate = (isPrivate: boolean): void => {
+    this.isPrivate = isPrivate;
+    this.realtime.updatePresenceMouse({ ...this.localParticipant, visible: !isPrivate });
   };
 
   // ---------- HELPERS ----------
@@ -730,8 +743,6 @@ export class MousePointersHTML extends BaseComponent {
   };
 
   // ---------- TODO ----------
-
-  private setParticipantPrivate = (isPrivate: boolean): void => {};
 
   private goToMouse = (id: string): void => {};
 
