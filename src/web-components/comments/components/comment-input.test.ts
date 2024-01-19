@@ -1,13 +1,22 @@
+import { MOCK_PARTICIPANT_LIST } from '../../../../__mocks__/participants.mock';
 import sleep from '../../../common/utils/sleep';
+import { AutoCompleteHandler } from "../utils/autocomplete-handler";
+import mentionHandler from '../utils/mention-handler';
 import '.';
 
-let element: HTMLElement;
+import { CommentsCommentInput } from './comment-input';
+
 
 describe('CommentsCommentInput', () => {
+  let element: HTMLElement;
+  let commentsCommentInput: CommentsCommentInput;
+
   beforeEach(async () => {
     element = document.createElement('superviz-comments-comment-input');
     element.setAttribute('eventType', 'create-annotation');
     document.body.appendChild(element);
+    commentsCommentInput = new CommentsCommentInput();
+
     await sleep();
   });
 
@@ -191,4 +200,127 @@ describe('CommentsCommentInput', () => {
 
     expect(textarea.style.height).toBe('41px');
   });
+
+  describe('addAtSymbolInCaretPosition', () => {
+    test('should add the "@" symbol at the cursor position', () => {
+      const textarea = element.shadowRoot!.querySelector(
+        '#comment-input--textarea',
+      ) as HTMLTextAreaElement;
+
+      element['addAtSymbolInCaretPosition']();
+
+      const textareaValue = textarea.value;
+
+      expect(textareaValue).toBe('@');
+    });
+  });
+
+  describe('insertMention', () => {
+    test('Should insert mention and call autoCompleteHandler correctly', () => {
+      const mockInsertMention = jest.fn();
+      const createTextArea = () => {
+        const textarea = document.createElement('textarea')
+        document.body.appendChild(textarea)
+        return textarea
+      }
+      const sendInputEvent = (input: HTMLTextAreaElement, data: string): InputEvent => {
+        const event = new InputEvent('input', { data, inputType: 'insertText' })
+        input.dispatchEvent(event)
+        return event
+      }
+
+      AutoCompleteHandler.prototype.insertMention = mockInsertMention;
+    
+      const mentioned = {
+        detail: {
+          position: { start: 1, end: 5 },
+          ...MOCK_PARTICIPANT_LIST[0]
+        }
+      };
+    
+      const event = new CustomEvent('mentionInserted', { detail: mentioned.detail });
+    
+      const textarea = createTextArea();
+      const autocompleteHandler = new AutoCompleteHandler();
+    
+      const input = sendInputEvent(textarea, 'a');
+      autocompleteHandler.setInput(input)
+      autocompleteHandler.setValue('test');
+
+      autocompleteHandler.insertMention(0,1,mentioned.detail);
+      element['insertMention'](event);
+
+      expect(mockInsertMention).toHaveBeenCalledWith(0, 1, mentioned.detail);
+      expect(autocompleteHandler.getValue()).toBe('test');
+      document.dispatchEvent(event);
+      expect(mockInsertMention).toHaveBeenCalledWith(1, 5, MOCK_PARTICIPANT_LIST[0]);
+    });
+
+  });
+  
+  describe('userMentionedByTextInput', () => {
+    test('should set mentionList and call insertMention with correct data', () => {
+      const mockInsertMention = jest.fn();
+      element['insertMention'] = mockInsertMention;
+      const mentioned = [{
+        detail: {
+          position: { start: 1, end: 5 },
+          ...MOCK_PARTICIPANT_LIST[0]
+        }
+      }];
+
+      mockInsertMention(mentioned[0].detail);
+      element['userMentionedByTextInput'](mentioned[0].detail)
+
+      expect(mockInsertMention).toHaveBeenCalledWith(mentioned[0].detail);
+  
+    });
+  });
+  
+  describe('handleInput', () => {
+    test('should handle input correctly', () => {
+      const inputEvent = {
+        data: '@',
+      };
+      const mockButtonAtSimbol = jest.fn(() => ({
+        searchText: 'mockSearchText',
+        position: { start: 0, end: 5 },
+      }));
+
+      element['buttonAtSimbol'] = mockButtonAtSimbol;
+      const mockHandleInput = jest.fn();
+      element['handleInput'] = mockHandleInput;
+    
+      const originalFindDigitParticipant = mentionHandler['findDigitParticipant'];
+      mentionHandler['findDigitParticipant'] = jest.fn(() => true);
+        
+      const mockInsertMention = jest.fn();
+      element['insertMention'] = mockInsertMention;
+      const mentioned = [{
+        detail: {
+          position: { start: 1, end: 5 },
+          ...MOCK_PARTICIPANT_LIST[0]
+        }
+      }];
+
+      mockInsertMention(mentioned[0].detail);
+      element['userMentionedByTextInput'](mentioned[0].detail)
+
+      expect(mockInsertMention).toHaveBeenCalledWith(mentioned[0].detail);
+      element['handleInput'](inputEvent);
+    
+      expect(mockHandleInput).toHaveBeenCalledWith(inputEvent);
+    
+      mentionHandler['findDigitParticipant'] = originalFindDigitParticipant;
+    
+      mockButtonAtSimbol();
+    
+      const mockhandleInput = jest.fn();
+      element['handleInput'] = mockhandleInput;
+      mockhandleInput(inputEvent);
+    
+      expect(mockButtonAtSimbol).toHaveBeenCalled();
+      expect(mockhandleInput).toHaveBeenCalled();
+    });
+    });
 });

@@ -1,9 +1,9 @@
 import '.';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
-import { Participant } from '../../components/comments/types';
 
 let element: HTMLElement;
-const MOCK_PARTICIPANTS: Participant[] = [
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
   {
     name: 'John Zero',
     avatar: 'avatar1.png',
