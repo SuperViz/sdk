@@ -2,8 +2,7 @@ import { RealtimeEvent } from '../../../common/types/events.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-
-import { ParticipantMouse, PresenceMouseProps } from './types';
+import { ParticipantMouse, PresenceMouseProps } from '../types';
 
 export class MousePointers extends BaseComponent {
   public name: ComponentNames;

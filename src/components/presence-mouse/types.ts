@@ -5,8 +5,12 @@ export interface ParticipantMouse extends Participant {
   x: number;
   y: number;
   visible: boolean;
+  elementId?: string;
 }
 
 export interface PresenceMouseProps {
   onGoToPresence?: (position: { x: number; y: number }) => void;
+  dataAttributeName?: string;
 }
+
+export type Element = HTMLElement & SVGElement;
