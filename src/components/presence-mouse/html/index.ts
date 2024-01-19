@@ -106,6 +106,8 @@ export class MousePointersHTML extends BaseComponent {
    * @returns {void}
    */
   protected destroy(): void {
+    cancelAnimationFrame(this.animationFrame);
+
     this.logger.log('presence-mouse component @ destroy');
     this.realtime.leavePresenceMouseChannel();
 
@@ -132,10 +134,9 @@ export class MousePointersHTML extends BaseComponent {
     // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
     // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
     // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
-    // cancelAnimationFrame(this.animateFrame);
     // this.canvas.removeEventListener('mousemove', this.onMyParticipantMouseMove);
     // this.canvas.removeEventListener('mouseout', this.onMyParticipantMouseOut);
-    this.logger = undefined;
+    this.logger &&= undefined;
   }
 
   /**
@@ -386,6 +387,12 @@ export class MousePointersHTML extends BaseComponent {
     return [2, 4, 5, 7, 8, 16].includes(slotIndex) ? '#FFFFFF' : '#26242A';
   };
 
+  /**
+   * @function createRectWrapper
+   * @description - Creates a wrapper for a rect element
+   * @param {SVGElement} rect - The rect element
+   * @param {string} id - The data attribute value of the rect element
+   */
   private createRectWrapper(rect: SVGElement, id: string): void {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -410,7 +417,6 @@ export class MousePointersHTML extends BaseComponent {
     svg.appendChild(svgElement);
 
     wrapper.appendChild(svg);
-    // wrapper.setAttribute('data-wrapper-type', 'svg-rect');
 
     const viewportRect = rect.viewportElement.getBoundingClientRect();
 
@@ -423,11 +429,17 @@ export class MousePointersHTML extends BaseComponent {
     wrapper.style.setProperty('background-color', 'green');
     wrapper.setAttribute('data-wrapper-id', id);
 
-    // this.appendWrapperToSVGContainer(wrapper);
     this.wrappers.set(id, wrapper);
     this.voidElementsWrappers.set(id, wrapper);
   }
 
+  /**
+   * @function createEllipseWrapper
+   * @description - Creates a wrapper for an ellipse element
+   * @param {SVGElement} ellipse - The ellipse element
+   * @param {string} id - The data attribute value of the ellipse element
+   * @returns {void}
+   */
   private createEllipseWrapper(ellipse: SVGElement, id: string): void {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -459,7 +471,6 @@ export class MousePointersHTML extends BaseComponent {
 
     wrapper.appendChild(svg);
     wrapper.setAttribute('data-wrapper-id', id);
-    // wrapper.setAttribute('data-wrapper-type', 'svg-ellipse');
 
     const viewportRect = ellipse.viewportElement.getBoundingClientRect();
 
@@ -471,22 +482,9 @@ export class MousePointersHTML extends BaseComponent {
 
     wrapper.setAttribute('data-wrapper-id', id);
 
-    // this.appendWrapperToSVGContainer(wrapper);
     this.wrappers.set(id, wrapper);
     this.voidElementsWrappers.set(id, wrapper);
   }
-
-  // private appendWrapperToSVGContainer(wrapper: HTMLDivElement) {
-  //   let SVGContainer = document.getElementById('svg-wrappers-container');
-
-  //   if (!SVGContainer) {
-  //     SVGContainer = document.createElement('div');
-  //     SVGContainer.setAttribute('id', 'svg-wrappers-container');
-  //     this.container.appendChild(SVGContainer);
-  //   }
-
-  //   SVGContainer.appendChild(wrapper);
-  // }
 
   // ---------- REGULAR METHODS ----------
 
@@ -714,6 +712,13 @@ export class MousePointersHTML extends BaseComponent {
     this.voidElementsWrappers.set(id, wrapper);
   };
 
+  /**
+   * @function renderSVGElementWrapper
+   * @description - Handles the creation of wrappers for svg elements
+   * @param {SVGElement} element - The svg element (be it an ellipse or a rect)
+   * @param {string} id - The data attribute value of the svg element
+   * @returns {void}
+   */
   private renderSVGElementWrapper = (element: SVGElement, id: string): void => {
     const elementName = element.tagName.toLowerCase();
 
