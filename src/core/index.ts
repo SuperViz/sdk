@@ -107,17 +107,6 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   const { ablyKey } = environment;
   const { participant, roomId } = options;
 
-  const isEnteringTwice = await ApiService.validadeParticipantIsEnteringTwice(
-    participant,
-    roomId,
-    apiKey,
-    ablyKey,
-  );
-
-  if (isEnteringTwice) {
-    throw new Error('Participant is already in the room');
-  }
-
   config.setConfig({
     apiUrl,
     ablyKey,

@@ -18,6 +18,8 @@ export const floatButtonStyle = css`
     cursor: pointer;
     overflow: hidden;
     padding-left: 10px;
+
+    z-index: 99;
   }
 
   button.float-button p {

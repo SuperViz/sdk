@@ -6,18 +6,14 @@ on:
       - opened
       - synchronize
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  delete-comments: 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - uses: izhangzhihao/delete-comment@master
+        with: 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_user_name: SuperViz-Dev
+          issue_number: ${{ github.event.number }}
   test-unit:
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +28,7 @@ jobs:
           touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
       - name: Create a .remote-config.js file
         run: |
-           touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
+          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
       - name: Run tests
         run: yarn test:unit:ci --coverage
       - name: Code Coverage Report

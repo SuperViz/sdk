@@ -20,7 +20,6 @@ export const dropdownStyle = css`
     cursor: default;
     display: none;
     transition: opacity 0.2s ease-in-out display 0s;
-    overflow-x: clip;
     z-index: 100;
   }
 
@@ -114,7 +113,7 @@ export const dropdownStyle = css`
 
   .shift-left {
     left: 0;
-    transform: translateX(-22%);
+    transform: translateX(-6%);
     --vertical-offset: 2px;
   }
 

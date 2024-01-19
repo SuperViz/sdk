@@ -7,7 +7,14 @@ import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import { dropdownStyle } from '../css';
 
-import { Following, WIODropdownOptions, PositionOptions } from './types';
+import {
+  Following,
+  WIODropdownOptions,
+  PositionOptions,
+  TooltipData,
+  VerticalSide,
+  HorizontalSide,
+} from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -17,12 +24,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   static styles = styles;
 
   declare open: boolean;
-  declare align: 'left' | 'right';
-  declare position: 'top' | 'bottom';
+  declare align: HorizontalSide;
+  declare position: VerticalSide;
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
-  private originalPosition: 'top' | 'bottom';
+  private originalPosition: VerticalSide;
   private menu: HTMLElement;
   private dropdownContent: HTMLElement;
   private host: HTMLElement;
@@ -30,6 +37,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare showSeeMoreTooltip: boolean;
   declare showParticipantTooltip: boolean;
   declare following: Following;
+  declare localParticipantJoinedPresence: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -41,6 +49,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     following: { type: Object },
     showSeeMoreTooltip: { type: Boolean },
     showParticipantTooltip: { type: Boolean },
+    localParticipantJoinedPresence: { type: Boolean },
   };
 
   constructor() {
@@ -49,6 +58,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.textColorValues = [2, 4, 5, 7, 8, 16];
     this.selected = '';
     this.showParticipantTooltip = true;
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    this.shadowRoot.querySelector('.menu').scrollTop = 0;
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -62,7 +77,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     }
 
     document.removeEventListener('click', this.onClickOutDropdown);
-    // this.close();
   }
 
   private onClickOutDropdown = (event: Event) => {
@@ -128,11 +142,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     if (!this.participants) return;
 
     const icons = ['place', 'send'];
+    const numberOfParticipants = this.participants.length - 1;
 
     return repeat(
       this.participants,
       (participant) => participant.id,
-      (participant) => {
+      (participant, index) => {
         const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
 
         const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
@@ -161,6 +176,16 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           }))
           .slice(0, 2);
 
+        const tooltipData: TooltipData = {
+          name,
+        };
+
+        if (this.localParticipantJoinedPresence && joinedPresence) {
+          tooltipData.action = 'Click to Follow';
+        }
+
+        const isLastParticipant = index === numberOfParticipants;
+
         return html`
         <superviz-dropdown
         options=${JSON.stringify(options)}
@@ -169,9 +194,10 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         @selected=${this.close}
         icons="${JSON.stringify(icons)}"
         ?disabled=${disableDropdown}
-        onHoverData=${JSON.stringify({ name, action: 'Click to follow' })}
+        onHoverData=${JSON.stringify(tooltipData)}
         ?canShowTooltip=${this.showParticipantTooltip}
         ?shiftTooltipLeft=${true}
+        ?lastParticipant=${isLastParticipant}
         @toggle-dropdown-state=${this.toggleShowTooltip}
         >
         <div 
@@ -310,13 +336,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     if (action === PositionOptions['USE-ORIGINAL']) {
       const originalVertical = this.originalPosition.split('-')[0];
-      this.position = this.position.replace(/top|bottom/, originalVertical) as 'top' | 'bottom';
+      this.position = this.position.replace(/top|bottom/, originalVertical) as VerticalSide;
       return;
     }
 
     const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
     const previousSide = this.position.split('-')[0];
-    const newPosition = this.position.replace(previousSide, newSide) as 'top' | 'bottom';
+    const newPosition = this.position.replace(previousSide, newSide) as VerticalSide;
 
     this.position = newPosition;
   };

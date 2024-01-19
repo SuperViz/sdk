@@ -21,6 +21,7 @@ export const commentInputStyle = css`
   #comment-input--textarea {
     all: unset;
     border: 0px;
+    text-align: left;
     border-radius: 4px;
     outline: none;
     font-size: 14px;
@@ -28,7 +29,6 @@ export const commentInputStyle = css`
     font-family: Roboto;
     white-space: pre-wrap;
     word-wrap: break-word;
-    overflow-y: scroll;
     resize: none;
     line-height: 1rem;
     max-height: 5rem;

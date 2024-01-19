@@ -12,6 +12,7 @@ export const whoIsOnlineStyle = css`
     display: flex;
     flex-direction: column;
     position: fixed;
+    z-index: 99;
   }
 
   .superviz-who-is-online__participant {

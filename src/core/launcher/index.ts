@@ -120,6 +120,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.eventBus.destroy();
     this.eventBus = undefined;
 
+    this.realtime.sameAccountObserver.unsubscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
@@ -128,6 +129,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.leave();
     this.realtime = undefined;
     this.isDestroyed = true;
+
+    // clean window object
+    window.SUPERVIZ = undefined;
   };
 
   /**
@@ -200,6 +204,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private subscribeToRealtimeEvents = (): void => {
+    this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
@@ -344,6 +349,11 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
     this.publish(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
   };
+
+  private onSameAccount = (): void => {
+    this.publish(ParticipantEvent.SAME_ACCOUNT_ERROR);
+    this.destroy();
+  };
 }
 
 /**
@@ -353,7 +363,21 @@ export class Launcher extends Observable implements DefaultLauncher {
  * @returns {LauncherFacade}
  */
 export default (options: LauncherOptions): LauncherFacade => {
+  if (window.SUPERVIZ) {
+    console.warn('[SUPERVIZ] Room already initialized');
+
+    return {
+      destroy: window.SUPERVIZ.destroy,
+      subscribe: window.SUPERVIZ.subscribe,
+      unsubscribe: window.SUPERVIZ.unsubscribe,
+      addComponent: window.SUPERVIZ.addComponent,
+      removeComponent: window.SUPERVIZ.removeComponent,
+    };
+  }
+
   const launcher = new Launcher(options);
+
+  window.SUPERVIZ = launcher;
 
   return {
     destroy: launcher.destroy,
