@@ -253,5 +253,50 @@ describe('AutoComplete Handler', () => {
       const result = textarea.value
       expect(result).toEqual('abc test name @unit-test-participant1-name ')
     })
+
+    test('should\'nt insert mention if it is deletion input', () => {
+      const textarea = createTextArea()
+      const autocompleteHandler = new AutoCompleteHandler()
+      const mentions = MOCK_PARTICIPANT_LIST[0]
+      const input = sendInputEvent(textarea, '')
+      autocompleteHandler.setInput(input)
+      textarea.value = 'abc test name @'
+      
+      const event = new InputEvent('input', { data: 'a', inputType: 'deleteContentBackward' })
+      autocompleteHandler.setInput(event)
+
+      autocompleteHandler.insertMention(
+        textarea.value.length,
+        textarea.value.length + mentions.name.length,
+        mentions
+      )
+
+      const result = textarea.value
+      expect(result).toEqual('abc test name @')
+    })
   })
+
+  describe('isDeletion', () => {
+    test('should return true when deleting', () => {
+      const textarea = createTextArea()
+      const autocompleteHandler = new AutoCompleteHandler()
+      const event = new InputEvent('input', { data: 'a', inputType: 'deleteContentBackward' })
+      autocompleteHandler.setInput(event)
+      textarea.value = 'abc test name @'
+
+      const result = autocompleteHandler.isDeletion()
+      expect(result).toEqual(true)
+    })
+
+    test('should return false when not deleting', () => {
+      const textarea = createTextArea()
+      const autocompleteHandler = new AutoCompleteHandler()
+      const event = new InputEvent('input', { data: 'a', inputType: 'insertText' })
+      autocompleteHandler.setInput(event)
+      textarea.value = 'abc test name @'
+
+      const result = autocompleteHandler.isDeletion()
+      expect(result).toEqual(false)
+    })
+  })     
 })
