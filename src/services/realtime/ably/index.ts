@@ -1357,8 +1357,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const participant = Object.assign({}, this.participantsMouse[data.id] || {}, data);
 
     this.presenceMouseChannel.presence.update(participant);
-    // }, SYNC_MOUSE_INTERVAL);
-  }, 5000);
+  }, SYNC_MOUSE_INTERVAL);
 
   private onPresenceMouseChannelEnter = (presence: Ably.Types.PresenceMessage): void => {
     const slot = this.getParticipantSlot(presence.clientId);

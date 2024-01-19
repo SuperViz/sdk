@@ -1,6 +1,5 @@
 import { isEqual } from 'lodash';
 
-import { RealtimeEvent } from '../../../common/types/events.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
@@ -22,10 +21,14 @@ export class MousePointersHTML extends BaseComponent {
   // General data about states/the application
   private dataAttributeName: string = 'data-superviz-id';
   private userBeingFollowedId: string;
+  private dataAttributeValueFilters: RegExp[] = [];
   private animationFrame: number;
 
   // callbacks
   private goToMouseCallback: (position: { x: number; y: number }, elementId: string) => void;
+
+  // Observers
+  private mutationObserver: MutationObserver;
 
   private readonly VOID_ELEMENTS = [
     'area',
@@ -70,7 +73,10 @@ export class MousePointersHTML extends BaseComponent {
     this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
 
     this.elementsWithDataAttribute = this.getElementsWithDataAttribute();
-    this.renderWrappers();
+    this.renderAllWrappers();
+
+    this.mutationObserver = new MutationObserver(this.handleMutationObserverChanges);
+    this.observeContainer();
 
     this.goToMouseCallback = options?.onGoToPresence;
   }
@@ -102,8 +108,25 @@ export class MousePointersHTML extends BaseComponent {
   protected destroy(): void {
     this.logger.log('presence-mouse component @ destroy');
     this.realtime.leavePresenceMouseChannel();
+
     this.removeListenersFromWrappers();
+
     this.wrappers.forEach((wrapper) => wrapper.remove());
+    this.wrappers.clear();
+    this.wrappers = undefined;
+
+    this.voidElementsWrappers.clear();
+    this.voidElementsWrappers = undefined;
+
+    this.presences.clear();
+    this.presences = undefined;
+
+    this.elementsWithDataAttribute.clear();
+    this.elementsWithDataAttribute = undefined;
+
+    this.mutationObserver.disconnect();
+    this.mutationObserver = undefined;
+
     this.unsubscribeFromRealtimeEvents();
 
     // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
@@ -112,6 +135,7 @@ export class MousePointersHTML extends BaseComponent {
     // cancelAnimationFrame(this.animateFrame);
     // this.canvas.removeEventListener('mousemove', this.onMyParticipantMouseMove);
     // this.canvas.removeEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.logger = undefined;
   }
 
   /**
@@ -119,59 +143,69 @@ export class MousePointersHTML extends BaseComponent {
    * @description subscribe to realtime events
    * @returns {void}
    */
-  private subscribeToRealtimeEvents = (): void => {
+  private subscribeToRealtimeEvents(): void {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
     this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
     this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
-  };
+  }
 
   /**
    * @function unsubscribeFromRealtimeEvents
    * @description subscribe to realtime events
    * @returns {void}
    */
-  private unsubscribeFromRealtimeEvents = (): void => {
+  private unsubscribeFromRealtimeEvents(): void {
     this.logger.log('presence-mouse component @ unsubscribe from realtime events');
     this.realtime.presenceMouseParticipantLeaveObserver.unsubscribe(
       this.onParticipantLeftOnRealtime,
     );
     this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
-  };
-
-  private addListenersToWrappers() {
-    this.wrappers.forEach((wrapper) => {
-      wrapper.addEventListener('mousemove', this.onMyParticipantMouseMove);
-      wrapper.addEventListener('mouseout', this.onMyParticipantMouseOut);
-    });
   }
 
-  private removeListenersFromWrappers() {
-    this.wrappers.forEach((wrapper) => {
-      wrapper.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-      wrapper.removeEventListener('mouseout', this.onMyParticipantMouseOut);
+  /**
+   * @function addListenersToWrappers
+   * @description adds the mousemove and mouseout listeners to each wrapper
+   * @returns {void}
+   */
+  private addListenersToWrappers(): void {
+    this.wrappers.forEach((_, id) => {
+      this.addWrapperListeners(id);
     });
   }
 
   /**
-   * @function renderWrappers
+   * @function removeListenersFromWrappers
+   * @description removes the mousemove and mouseout listeners from each wrapper
+   * @returns {void}
+   */
+  private removeListenersFromWrappers(): void {
+    this.wrappers.forEach((_, id) => {
+      this.removeWrapperListeners(id);
+    });
+  }
+
+  /**
+   * @function observeContainer
+   * @description observes the container for changes in the specified data attribute.
+   * @returns {void}
+   */
+  private observeContainer(): void {
+    this.mutationObserver.observe(this.container, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: [this.dataAttributeName],
+      attributeOldValue: true,
+    });
+  }
+
+  /**
+   * @function renderAllWrappers
    * @description Creates a div wrapper inside or around each valid element, in which the mouse pointers will be rendered.
    * @returns {void}
    * */
-  private renderWrappers(): void {
+  private renderAllWrappers(): void {
     this.elementsWithDataAttribute.forEach((element, id) => {
-      const tagName = element.tagName.toLowerCase();
-
-      if (this.VOID_ELEMENTS.includes(tagName)) {
-        this.renderVoidElementWrapper(element, id);
-        return;
-      }
-
-      if (this.SVG_ELEMENTS.includes(tagName)) {
-        this.renderSVGElementWrapper(element, id);
-        return;
-      }
-
-      this.renderElementWrapper(element, id);
+      this.renderWrapper(element, id);
     });
   }
 
@@ -237,6 +271,45 @@ export class MousePointersHTML extends BaseComponent {
   };
 
   /**
+   * @function handleMutationObserverChanges
+   * @description handles the changes in the value of the specified data attribute of the elements inside the container
+   * @param {MutationRecord[]} changes the changes in the value of the specified data attribute of the elements inside the container
+   * @returns {void}
+   */
+  private handleMutationObserverChanges = (changes: MutationRecord[]): void => {
+    changes.forEach((change) => {
+      const { target, oldValue } = change;
+      const dataId = (target as HTMLElement).getAttribute(this.dataAttributeName);
+      if ((!dataId && !oldValue) || dataId === oldValue) return;
+
+      const oldValueSkipped = this.dataAttributeValueFilters.some((filter) =>
+        oldValue.match(filter),
+      );
+
+      const attributeRemoved = !dataId && oldValue && !oldValueSkipped;
+
+      if (attributeRemoved) {
+        this.clearElement(oldValue);
+
+        return;
+      }
+
+      const skip = this.dataAttributeValueFilters.some((filter) => dataId.match(filter));
+
+      if ((oldValue && this.elementsWithDataAttribute.get(oldValue)) || skip) {
+        this.clearElement(oldValue);
+      }
+
+      if (skip) return;
+
+      this.elementsWithDataAttribute.set(dataId, target as Element);
+      this.renderWrapper(target as Element, dataId);
+
+      this.addWrapperListeners(dataId);
+    });
+  };
+
+  /**
    * @function onParticipantLeftOnRealtime
    * @description handler for participant left event
    * @param {AblyParticipant} participant
@@ -283,6 +356,8 @@ export class MousePointersHTML extends BaseComponent {
    * @returns {HTMLDivElement}
    */
   private createMouseElement(participant: ParticipantMouse): HTMLDivElement {
+    if (!this.wrappers.get(participant.elementId)) return;
+
     const mouseFollower = document.createElement('div');
     mouseFollower.setAttribute('id', `mouse-${participant.id}`);
     mouseFollower.setAttribute('class', 'mouse-follower');
@@ -348,7 +423,7 @@ export class MousePointersHTML extends BaseComponent {
     wrapper.style.setProperty('background-color', 'green');
     wrapper.setAttribute('data-wrapper-id', id);
 
-    this.appendWrapperToSVGContainer(wrapper);
+    // this.appendWrapperToSVGContainer(wrapper);
     this.wrappers.set(id, wrapper);
     this.voidElementsWrappers.set(id, wrapper);
   }
@@ -396,22 +471,22 @@ export class MousePointersHTML extends BaseComponent {
 
     wrapper.setAttribute('data-wrapper-id', id);
 
-    this.appendWrapperToSVGContainer(wrapper);
+    // this.appendWrapperToSVGContainer(wrapper);
     this.wrappers.set(id, wrapper);
     this.voidElementsWrappers.set(id, wrapper);
   }
 
-  private appendWrapperToSVGContainer(wrapper: HTMLDivElement) {
-    let SVGContainer = document.getElementById('svg-wrappers-container');
+  // private appendWrapperToSVGContainer(wrapper: HTMLDivElement) {
+  //   let SVGContainer = document.getElementById('svg-wrappers-container');
 
-    if (!SVGContainer) {
-      SVGContainer = document.createElement('div');
-      SVGContainer.setAttribute('id', 'svg-wrappers-container');
-      this.container.appendChild(SVGContainer);
-    }
+  //   if (!SVGContainer) {
+  //     SVGContainer = document.createElement('div');
+  //     SVGContainer.setAttribute('id', 'svg-wrappers-container');
+  //     this.container.appendChild(SVGContainer);
+  //   }
 
-    SVGContainer.appendChild(wrapper);
-  }
+  //   SVGContainer.appendChild(wrapper);
+  // }
 
   // ---------- REGULAR METHODS ----------
 
@@ -455,6 +530,85 @@ export class MousePointersHTML extends BaseComponent {
       wrapper.style.setProperty('top', `${elementRect.top}px`);
       wrapper.style.setProperty('left', `${elementRect.left}px`);
     });
+  }
+
+  /**
+   * @function addWrapperListeners
+   * @description adds the mousemove and mouseout listeners to the wrapper with the specified id
+   * @param {string} id the id of the wrapper
+   * @returns {void}
+   */
+  private addWrapperListeners(id: string): void {
+    const wrapper = this.wrappers.get(id);
+    if (!wrapper) return;
+
+    wrapper.addEventListener('mousemove', this.onMyParticipantMouseMove);
+    wrapper.addEventListener('mouseout', this.onMyParticipantMouseOut);
+  }
+
+  /**
+   * @function removeWrapperListeners
+   * @description removes the mousemove and mouseout listeners from the wrapper with the specified id
+   * @param {string} id the id of the wrapper
+   * @returns {void}
+   */
+  private removeWrapperListeners(id: string): void {
+    const wrapper = this.wrappers.get(id);
+    if (!wrapper) return;
+
+    wrapper.removeEventListener('mousemove', this.onMyParticipantMouseMove);
+    wrapper.removeEventListener('mouseout', this.onMyParticipantMouseOut);
+  }
+
+  /**
+   * @function clearElement
+   * @description clears an element that no longer has the specified data attribute
+   * @param {string} id the id of the element to be cleared
+   * @returns {void}
+   */
+  private clearElement(id: string): void {
+    const element = this.elementsWithDataAttribute.get(id);
+    if (!element) return;
+
+    const wrapper = this.wrappers.get(id);
+    if (wrapper) {
+      wrapper.remove();
+    }
+
+    this.voidElementsWrappers.delete(id);
+    this.wrappers.delete(id);
+    this.elementsWithDataAttribute.delete(id);
+
+    this.removeWrapperListeners(id);
+
+    if (!this.voidElementsWrappers.size) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = undefined;
+    }
+  }
+
+  /**
+   * @function renderWrapper
+   * @description prepares, creates and renders a wrapper for the specified element
+   * @param {HTMLElement} element the element to be wrapped
+   * @param {string} id the id of the element
+   * @returns {void}
+   */
+  private renderWrapper(element: Element, id: string) {
+    if (this.wrappers.get(id)) return;
+    const tagName = element.tagName.toLowerCase();
+
+    if (this.VOID_ELEMENTS.includes(tagName)) {
+      this.renderVoidElementWrapper(element, id);
+      return;
+    }
+
+    if (this.SVG_ELEMENTS.includes(tagName)) {
+      this.renderSVGElementWrapper(element, id);
+      return;
+    }
+
+    this.renderElementWrapper(element, id);
   }
 
   /**

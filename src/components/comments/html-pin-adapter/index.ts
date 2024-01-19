@@ -48,6 +48,7 @@ export class HTMLPin implements PinAdapter {
   private pins: Map<string, HTMLElement>;
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
   private svgWrappers: HTMLElement;
+
   // Observers
   private mutationObserver: MutationObserver;
 
