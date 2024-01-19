@@ -26,6 +26,7 @@ export class Dropdown extends WebComponentsBaseElement {
   declare name?: string;
   declare onHoverData: { name: string; action: string };
   declare shiftTooltipLeft: boolean;
+  declare lastParticipant: boolean;
 
   private dropdownContent: HTMLElement;
   private originalPosition: Positions;
@@ -56,6 +57,7 @@ export class Dropdown extends WebComponentsBaseElement {
     canShowTooltip: { type: Boolean },
     drodpdownSizes: { type: Object },
     shiftTooltipLeft: { type: Boolean },
+    lastParticipant: { type: Boolean },
   };
 
   constructor() {
@@ -438,9 +440,12 @@ export class Dropdown extends WebComponentsBaseElement {
   private tooltip = () => {
     if (!this.canShowTooltip) return '';
 
+    const tooltipVerticalPosition = this.lastParticipant ? 'tooltip-top' : 'tooltip-bottom';
+
     return html` <superviz-tooltip
       tooltipData=${JSON.stringify(this.onHoverData)}
       ?shiftTooltipLeft=${this.shiftTooltipLeft}
+      tooltipVerticalPosition=${tooltipVerticalPosition}
     ></superviz-tooltip>`;
   };
 

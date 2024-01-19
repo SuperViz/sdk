@@ -85,6 +85,7 @@ export enum ParticipantEvent {
   LOCAL_LEFT = 'participant.local-left',
   LOCAL_UPDATED = 'participant.updated',
   LIST_UPDATED = 'participant.list-updated',
+  SAME_ACCOUNT_ERROR = 'participant.same-account-error',
 }
 
 /**

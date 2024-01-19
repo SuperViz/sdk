@@ -149,15 +149,4 @@ describe('initialization errors', () => {
       'Color sv-primary-900 is not a valid color variable value. Please check the documentation for more information.',
     );
   });
-
-  test('should throw an error if the participant is already in the room', async () => {
-    ApiService.validadeParticipantIsEnteringTwice = jest.fn().mockResolvedValue(true);
-    ApiService.fetchConfig = jest.fn().mockResolvedValue({
-      ablyKey: 'unit-test-ably-key',
-    });
-
-    await expect(sdk(UNIT_TEST_API_KEY, SIMPLE_INITIALIZATION_MOCK)).rejects.toThrow(
-      'Participant is already in the room',
-    );
-  });
 });

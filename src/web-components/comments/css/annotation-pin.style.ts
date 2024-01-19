@@ -8,6 +8,7 @@ export const annotationPinStyles = css`
     justify-content: center;
     position: relative;
     pointer-events: auto;
+    z-index: 10;
   }
 
   .annotation-pin {

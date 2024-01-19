@@ -76,6 +76,7 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   privateModeWIOObserver: MOCK_OBSERVER_HELPER,
   followWIOObserver: MOCK_OBSERVER_HELPER,
   gatherWIOObserver: MOCK_OBSERVER_HELPER,
+  sameAccountObserver: MOCK_OBSERVER_HELPER,
   subscribeToParticipantUpdate: jest.fn(),
   unsubscribeFromParticipantUpdate: jest.fn(),
   updateMyProperties: jest.fn(),

@@ -74,6 +74,7 @@ export default class VideoConfereceManager {
       canUseFollow,
       canUseGoTo,
       canUseGather,
+      canShowAudienceList,
       canUseDefaultToolbar,
       canUseTranscription,
       browserService,
@@ -112,6 +113,7 @@ export default class VideoConfereceManager {
       canUseScreenshare,
       canUseDefaultAvatars,
       canUseTranscription,
+      canShowAudienceList,
       camerasPosition: positions.camerasPosition ?? CamerasPosition.RIGHT,
       canUseDefaultToolbar,
       devices: {
