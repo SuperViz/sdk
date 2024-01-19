@@ -1,12 +1,12 @@
-import { MOCK_CANVAS } from '../../../__mocks__/canvas.mock';
-import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
-import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
-import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
+import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
+import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
+import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 
 import { ParticipantMouse } from './types';
 
-import { MousePointers } from './index';
+import { MousePointersHTML } from '.';
 
 const MOCK_MOUSE: ParticipantMouse = {
   ...MOCK_LOCAL_PARTICIPANT,
@@ -29,8 +29,8 @@ participants[participant3.id] = { ...participant3 };
 
 const { getElementById } = document;
 
-const createMousePointers = (): MousePointers => {
-  const presenceMouseComponent = new MousePointers('canvas');
+const createMousePointers = (): MousePointersHTML => {
+  const presenceMouseComponent = new MousePointersHTML('canvas');
 
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
@@ -49,7 +49,7 @@ const createMousePointers = (): MousePointers => {
 };
 
 describe('MousePointers', () => {
-  let presenceMouseComponent: MousePointers;
+  let presenceMouseComponent: MousePointersHTML;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -62,9 +62,10 @@ describe('MousePointers', () => {
   });
 
   test('should throw an error if no container is found', () => {
-    expect(() => new MousePointers('not-found-container')).toThrowError(
+    expect(() => new MousePointersHTML('not-found-container')).toThrowError(
       'Canvas with id not-found-container not found',
     );
+    MousePointersHTML('', {});
   });
 
   describe('start', () => {

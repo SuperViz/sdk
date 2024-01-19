@@ -12,6 +12,7 @@ import { ParticipantType } from './common/types/participant.types';
 import {
   VideoConference,
   MousePointers,
+  MousePointersHTML,
   Realtime,
   Comments,
   CanvasPin,
@@ -60,6 +61,7 @@ if (window) {
     LayoutMode,
     VideoConference,
     MousePointers,
+    MousePointersHTML,
     Realtime,
     Comments,
     CanvasPin,
