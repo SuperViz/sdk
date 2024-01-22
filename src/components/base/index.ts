@@ -70,7 +70,7 @@ export abstract class BaseComponent extends Observable {
    * */
   public detach = (): void => {
     if (!this.isAttached) {
-      this.logger.log(`${this.name} @ detach - component is not attached}`);
+      this.logger.log(`${this.name} @ detach - component is not attached`);
       return;
     }
 
