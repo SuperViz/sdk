@@ -616,18 +616,20 @@ export default class VideoConfereceManager {
     this.messageBridge?.destroy();
     this.bricklayer?.destroy();
 
-    this.frameSizeObserver.destroy();
-
-    this.realtimeEventsObserver.destroy();
-    this.sameAccountErrorObserver.destroy();
-    this.devicesObserver.destroy();
-    this.meetingStateObserver.destroy();
-    this.meetingConnectionObserver.destroy();
-    this.participantJoinedObserver.destroy();
-    this.participantLeftObserver.destroy();
+    this.frameSizeObserver?.destroy();
+    this.realtimeEventsObserver?.destroy();
+    this.sameAccountErrorObserver?.destroy();
+    this.devicesObserver?.destroy();
+    this.meetingStateObserver?.destroy();
+    this.meetingConnectionObserver?.destroy();
+    this.participantJoinedObserver?.destroy();
+    this.participantLeftObserver?.destroy();
 
     this.bricklayer = null;
     this.frameState = null;
+
+    window.removeEventListener('resize', this.onWindowResize);
+    window.removeEventListener('orientationchange', this.onWindowResize);
   }
 
   /**
@@ -640,6 +642,8 @@ export default class VideoConfereceManager {
     event: MeetingControlsEvent | MeetingEvent | RealtimeEvent,
     payload?: unknown,
   ): void {
+    if (!this.messageBridge) return;
+
     this.messageBridge.publish(event, payload);
   }
 }

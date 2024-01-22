@@ -21,6 +21,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private isDestroyed = false;
   private activeComponents: ComponentNames[] = [];
+  private componentsToAttachAfterJoin: Partial<BaseComponent>[] = [];
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
   private participant: Participant;
   private group: Group;
@@ -62,6 +63,12 @@ export class Launcher extends Observable implements DefaultLauncher {
   public addComponent = (component: Partial<BaseComponent>): void => {
     if (!this.canAddComponent(component)) return;
 
+    if (!this.realtime.isJoinedRoom) {
+      this.logger.log('launcher service @ addComponent - not joined yet');
+      this.componentsToAttachAfterJoin.push(component);
+      return;
+    }
+
     component.attach({
       localParticipant: this.participant,
       realtime: this.realtime,
@@ -75,6 +82,25 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
 
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
+  };
+
+  /**
+   * @function attachComponentsAfterJoin
+   * @description attach components after join
+   * @returns {void}
+   */
+  private attachComponentsAfterJoin = (): void => {
+    this.logger.log('launcher service @ attachComponentsAfterJoin');
+
+    this.componentsToAttachAfterJoin.forEach((component) => {
+      this.logger.log(
+        'launcher service @ attachComponentsAfterJoin - attaching component',
+        component.name,
+      );
+      this.addComponent(component);
+    });
+
+    this.componentsToAttachAfterJoin = [];
   };
 
   /**
@@ -120,6 +146,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.eventBus.destroy();
     this.eventBus = undefined;
 
+    this.realtime.authenticationObserver.unsubscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.unsubscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
@@ -141,7 +168,6 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {boolean}
    */
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
-    const isWhitelisted = this.realtime?.isDomainWhitelisted;
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
 
@@ -150,10 +176,6 @@ export class Launcher extends Observable implements DefaultLauncher {
         isValid: !this.isDestroyed,
         message:
           'Component can not be added because the superviz room is destroyed. Initialize a new room to add and use components.',
-      },
-      {
-        isValid: isWhitelisted,
-        message: `Component ${component.name} can't be used because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dev-dashboard.superviz.com/developer`,
       },
       {
         isValid: !isComponentActive,
@@ -204,6 +226,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private subscribeToRealtimeEvents = (): void => {
+    this.realtime.authenticationObserver.subscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
@@ -213,6 +236,15 @@ export class Launcher extends Observable implements DefaultLauncher {
   };
 
   /** Realtime Listeners */
+
+  private onAuthentication = (event: RealtimeEvent): void => {
+    if (event !== RealtimeEvent.REALTIME_AUTHENTICATION_FAILED) return;
+
+    this.destroy();
+    console.error(
+      `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+    );
+  };
 
   /**
    * @function onParticipantListUpdate
@@ -287,6 +319,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     if (participant.id === this.participant.id) {
       this.logger.log('launcher service @ onParticipantJoined - local participant joined');
       this.publish(ParticipantEvent.LOCAL_JOINED, participant);
+      this.attachComponentsAfterJoin();
     }
 
     this.logger.log('launcher service @ onParticipantJoined - participant joined', participant);
