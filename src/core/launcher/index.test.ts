@@ -444,6 +444,20 @@ describe('Launcher', () => {
   });
 
   describe('destroy', () => {
+    test('should destroy the instance if domain is not whitelisted', () => {
+      console.error = jest.fn();
+      jest.spyOn(LauncherInstance, 'destroy');
+
+      LauncherInstance['onAuthentication'](RealtimeEvent.REALTIME_DRAWING_CHANGE);
+      expect(LauncherInstance.destroy).not.toHaveBeenCalled();
+
+      LauncherInstance['onAuthentication'](RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
+      expect(LauncherInstance.destroy).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith(
+        `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+      );
+    });
+
     test('should destroy the instance', () => {
       LauncherInstance.destroy();
 

@@ -71,7 +71,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   presenceMouseParticipantLeaveObserver: MOCK_OBSERVER_HELPER,
   presenceMouseParticipantJoinedObserver: MOCK_OBSERVER_HELPER,
   presenceMouseObserver: MOCK_OBSERVER_HELPER,
-  domainRefusedObserver: MOCK_OBSERVER_HELPER,
   presenceSlotsInfosObserver: MOCK_OBSERVER_HELPER,
   presenceWIOObserver: MOCK_OBSERVER_HELPER,
   privateModeWIOObserver: MOCK_OBSERVER_HELPER,
