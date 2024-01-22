@@ -18,6 +18,7 @@ export class PointersHTML extends BaseComponent {
   private wrappers: Map<string, HTMLElement> = new Map();
   private elementsWithDataAttribute: Map<string, Element> = new Map();
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
+  private mouses: Map<string, HTMLElement> = new Map();
 
   // General data about states/the application
   private dataAttributeName: string = 'data-superviz-id';
@@ -25,9 +26,6 @@ export class PointersHTML extends BaseComponent {
   private dataAttributeValueFilters: RegExp[] = [];
   private animationFrame: number;
   private isPrivate: boolean;
-
-  // callbacks
-  private goToMouseCallback: (position: { x: number; y: number }, elementId: string) => void;
 
   // Observers
   private mutationObserver: MutationObserver;
@@ -79,8 +77,6 @@ export class PointersHTML extends BaseComponent {
 
     this.mutationObserver = new MutationObserver(this.handleMutationObserverChanges);
     this.observeContainer();
-
-    this.goToMouseCallback = options?.onGoToPresence;
   }
 
   // ---------- SETUP ----------
@@ -98,8 +94,8 @@ export class PointersHTML extends BaseComponent {
     this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
 
     this.animationFrame = requestAnimationFrame(this.animate);
-    // this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
-    // this.eventBus.subscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
   }
 
   /**
@@ -134,10 +130,8 @@ export class PointersHTML extends BaseComponent {
     this.unsubscribeFromRealtimeEvents();
 
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
-    // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
-    // this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
-    // this.canvas.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    // this.canvas.removeEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
+    this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
     this.logger &&= undefined;
   }
 
@@ -257,7 +251,6 @@ export class PointersHTML extends BaseComponent {
       const followingAnotherParticipant =
         this.userBeingFollowedId &&
         participant.id !== this.userBeingFollowedId &&
-        this.presences &&
         this.presences.has(participant.id);
 
       // When the user is following a participant, every other mouse pointer is removed
@@ -273,6 +266,27 @@ export class PointersHTML extends BaseComponent {
     if (isFollowingSomeone) {
       this.goToMouse(this.userBeingFollowedId);
     }
+  };
+
+  private goToMouse = (id: string): void => {
+    const participant = this.presences.get(id);
+
+    if (!participant) return;
+
+    const wrapper = this.wrappers.get(participant.elementId);
+
+    if (!wrapper) return;
+
+    this.mouses.get(id).scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+  };
+
+  /**
+   * @function followMouse
+   * @description handler for follow mouse event
+   * @param id
+   */
+  private followMouse = (id: string) => {
+    this.userBeingFollowedId = id;
   };
 
   /**
@@ -388,7 +402,7 @@ export class PointersHTML extends BaseComponent {
     mouseFollower.appendChild(mouseUserName);
 
     this.wrappers.get(participant.elementId).appendChild(mouseFollower);
-
+    this.mouses.set(participant.id, mouseFollower);
     return mouseFollower;
   }
 
@@ -536,11 +550,13 @@ export class PointersHTML extends BaseComponent {
       const wrapperRect = wrapper.getBoundingClientRect();
 
       if (isEqual(elementRect, wrapperRect)) return;
+      const left = this.elementsWithDataAttribute.get(id).offsetLeft;
+      const top = this.elementsWithDataAttribute.get(id).offsetTop;
 
       wrapper.style.setProperty('width', `${elementRect.width}px`);
       wrapper.style.setProperty('height', `${elementRect.height}px`);
-      wrapper.style.setProperty('top', `${elementRect.top}px`);
-      wrapper.style.setProperty('left', `${elementRect.left}px`);
+      wrapper.style.setProperty('top', `${top}px`);
+      wrapper.style.setProperty('left', `${left}px`);
     });
   }
 
@@ -634,6 +650,7 @@ export class PointersHTML extends BaseComponent {
     if (userMouseIdExist) {
       userMouseIdExist.remove();
       this.presences.delete(participantId);
+      this.mouses.delete(participantId);
     }
   }
 
@@ -649,6 +666,7 @@ export class PointersHTML extends BaseComponent {
 
     if (mouseFollower && mouseFollower.getAttribute('data-element-id') !== participant.elementId) {
       mouseFollower.remove();
+      this.mouses.delete(participant.id);
       mouseFollower = null;
     }
 
@@ -712,10 +730,12 @@ export class PointersHTML extends BaseComponent {
    */
   private renderVoidElementWrapper = (element: HTMLElement, id: string): void => {
     const wrapper = document.createElement('div');
-    const { left, top, width, height } = element.getBoundingClientRect();
+    const { width, height } = element.getBoundingClientRect();
+    const left = element.offsetLeft;
+    const top = element.offsetTop;
 
     wrapper.setAttribute('data-wrapper-id', id);
-    wrapper.style.position = 'fixed';
+    wrapper.style.position = 'absolute';
     wrapper.style.width = `${width}px`;
     wrapper.style.height = `${height}px`;
     wrapper.style.top = `${top}px`;
@@ -743,10 +763,4 @@ export class PointersHTML extends BaseComponent {
     const isEllipseElement = elementName === 'ellipse';
     if (isEllipseElement) this.createEllipseWrapper(element, id);
   };
-
-  // ---------- TODO ----------
-
-  private goToMouse = (id: string): void => {};
-
-  private followMouse = (id: string) => {};
 }
