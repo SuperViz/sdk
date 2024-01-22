@@ -6,7 +6,7 @@ import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import { Element, ParticipantMouse, PresenceMouseProps } from '../types';
 
-export class MousePointersHTML extends BaseComponent {
+export class PointersHTML extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
 

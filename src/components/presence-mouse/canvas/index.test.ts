@@ -3,10 +3,9 @@ import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
+import { ParticipantMouse } from '../types';
 
-import { ParticipantMouse } from './types';
-
-import { MousePointers } from './index';
+import { PointersCanvas } from './index';
 
 const MOCK_MOUSE: ParticipantMouse = {
   ...MOCK_LOCAL_PARTICIPANT,

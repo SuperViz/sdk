@@ -4,7 +4,7 @@ import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import { ParticipantMouse, PresenceMouseProps } from '../types';
 
-export class MousePointers extends BaseComponent {
+export class PointersCanvas extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private canvas: HTMLCanvasElement;

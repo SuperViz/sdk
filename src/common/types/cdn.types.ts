@@ -3,7 +3,6 @@ import {
   HTMLPin,
   Comments,
   MousePointers,
-  MousePointersHTML,
   Realtime,
   VideoConference,
   WhoIsOnline,
@@ -45,7 +44,6 @@ export interface SuperVizCdn {
   CamerasPosition: typeof CamerasPosition;
   VideoConference: typeof VideoConference;
   MousePointers: typeof MousePointers;
-  MousePointersHTML: typeof MousePointersHTML;
   Realtime: typeof Realtime;
   Comments: typeof Comments;
   CanvasPin: typeof CanvasPin;
