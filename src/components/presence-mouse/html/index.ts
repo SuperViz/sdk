@@ -18,6 +18,8 @@ export class PointersHTML extends BaseComponent {
   private wrappers: Map<string, HTMLElement> = new Map();
   private elementsWithDataAttribute: Map<string, Element> = new Map();
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
+  private svgElementsWrappers: Map<string, HTMLElement> = new Map();
+
   private mouses: Map<string, HTMLElement> = new Map();
 
   // General data about states/the application
@@ -45,10 +47,9 @@ export class PointersHTML extends BaseComponent {
     'source',
     'track',
     'wbr',
-    'svg',
   ];
 
-  private readonly SVG_ELEMENTS = ['rect', 'ellipse'];
+  private readonly SVG_ELEMENTS = ['rect', 'ellipse', 'svg'];
 
   /**
    * @function constructor
@@ -60,6 +61,7 @@ export class PointersHTML extends BaseComponent {
     super();
 
     this.container = document.getElementById(containerId);
+    this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
 
     if (!this.container) {
       const message = `Element with id ${containerId} not found`;
@@ -68,7 +70,6 @@ export class PointersHTML extends BaseComponent {
     }
 
     this.name = ComponentNames.PRESENCE;
-    this.logger = new Logger(`@superviz/sdk/${ComponentNames.PRESENCE}`);
 
     this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
 
@@ -126,6 +127,9 @@ export class PointersHTML extends BaseComponent {
 
     this.mutationObserver.disconnect();
     this.mutationObserver = undefined;
+
+    this.svgElementsWrappers.forEach((wrapper) => wrapper.remove());
+    this.svgElementsWrappers.clear();
 
     this.unsubscribeFromRealtimeEvents();
 
@@ -416,6 +420,58 @@ export class PointersHTML extends BaseComponent {
   };
 
   /**
+   * @function createSVGWrapper
+   * @description - Creates a wrapper for an svg element
+   * @param {SVGElement} svg - The svg element
+   * @param {string} id - The data attribute value of the svg element
+   */
+  private createSVGWrapper(element: SVGElement, id: string): void {
+    const wrapper = document.createElement('div');
+
+    const parentRect = element.parentElement.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const offsetLeft = elementRect.left - parentRect.left;
+    const offsetTop = elementRect.top - parentRect.top;
+
+    const { width, height } = element.getBoundingClientRect();
+    const left = offsetLeft;
+    const top = offsetTop;
+
+    wrapper.setAttribute('data-wrapper-id', id);
+    wrapper.style.position = 'absolute';
+    wrapper.style.width = `${width}px`;
+    wrapper.style.height = `${height}px`;
+    wrapper.style.top = `${top}px`;
+    wrapper.style.left = `${left}px`;
+    wrapper.style.overflow = 'visible';
+    element.parentElement.appendChild(wrapper);
+    this.wrappers.set(id, wrapper);
+    this.svgElementsWrappers.set(id, wrapper);
+  }
+
+  /**
+   * @function updateSVGPosition
+   * @description - Updates the position of the wrapper of a <svg> element
+   * @param {SVGElement} element - The svg element
+   * @returns {void}
+   */
+  private updateSVGPosition(element: SVGElement, wrapper: HTMLElement) {
+    const parentRect = element.parentElement.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const offsetLeft = elementRect.left - parentRect.left;
+    const offsetTop = elementRect.top - parentRect.top;
+
+    const { width, height } = element.getBoundingClientRect();
+    const left = offsetLeft;
+    const top = offsetTop;
+
+    wrapper.style.setProperty('width', `${width}px`);
+    wrapper.style.setProperty('height', `${height}px`);
+    wrapper.style.setProperty('top', `${top}px`);
+    wrapper.style.setProperty('left', `${left}px`);
+  }
+
+  /**
    * @function createRectWrapper
    * @description - Creates a wrapper for a rect element
    * @param {SVGElement} rect - The rect element
@@ -446,7 +502,7 @@ export class PointersHTML extends BaseComponent {
 
     wrapper.appendChild(svg);
 
-    const viewportRect = rect.viewportElement.getBoundingClientRect();
+    const viewportRect = rect.getBoundingClientRect();
 
     wrapper.style.position = 'fixed';
     wrapper.style.top = `${viewportRect.top}px`;
@@ -454,11 +510,18 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
 
-    wrapper.style.setProperty('background-color', 'green');
     wrapper.setAttribute('data-wrapper-id', id);
 
+    // here we get the topmost svg element, in case there are nested svgs
+    let externalViewport = rect.viewportElement;
+    while (externalViewport.viewportElement) {
+      externalViewport = externalViewport.viewportElement;
+    }
+
+    externalViewport.parentElement.appendChild(wrapper);
+
     this.wrappers.set(id, wrapper);
-    this.voidElementsWrappers.set(id, wrapper);
+    this.svgElementsWrappers.set(id, wrapper);
   }
 
   /**
@@ -500,7 +563,7 @@ export class PointersHTML extends BaseComponent {
     wrapper.appendChild(svg);
     wrapper.setAttribute('data-wrapper-id', id);
 
-    const viewportRect = ellipse.viewportElement.getBoundingClientRect();
+    const viewportRect = ellipse.getBoundingClientRect();
 
     wrapper.style.position = 'fixed';
     wrapper.style.top = `${viewportRect.top}px`;
@@ -511,7 +574,7 @@ export class PointersHTML extends BaseComponent {
     wrapper.setAttribute('data-wrapper-id', id);
 
     this.wrappers.set(id, wrapper);
-    this.voidElementsWrappers.set(id, wrapper);
+    this.svgElementsWrappers.set(id, wrapper);
   }
 
   // ---------- REGULAR METHODS ----------
@@ -523,6 +586,7 @@ export class PointersHTML extends BaseComponent {
    */
   private animate = (): void => {
     this.updateVoidElementWrapper();
+    this.updateSVGElementWrapper();
     this.updateParticipantsMouses();
 
     this.animationFrame = requestAnimationFrame(this.animate);
@@ -557,6 +621,31 @@ export class PointersHTML extends BaseComponent {
       wrapper.style.setProperty('height', `${elementRect.height}px`);
       wrapper.style.setProperty('top', `${top}px`);
       wrapper.style.setProperty('left', `${left}px`);
+    });
+  }
+
+  /**
+   * @function updateVoidElementWrapper
+   * @description - Updates the position of each wrapper for void elements
+   * @returns {void}
+   */
+  private updateSVGElementWrapper(): void {
+    this.svgElementsWrappers.forEach((wrapper, id) => {
+      const element = this.elementsWithDataAttribute.get(id);
+      const elementRect = element.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+
+      if (isEqual(elementRect, wrapperRect)) return;
+
+      if (this.elementsWithDataAttribute.get(id).tagName.toLowerCase() === 'svg') {
+        this.updateSVGPosition(element, wrapper);
+        return;
+      }
+
+      wrapper.style.setProperty('width', `${elementRect.width}px`);
+      wrapper.style.setProperty('height', `${elementRect.height}px`);
+      wrapper.style.setProperty('top', `${elementRect.top}px`);
+      wrapper.style.setProperty('left', `${elementRect.left}px`);
     });
   }
 
@@ -715,7 +804,6 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.top = '0';
     wrapper.style.left = '0';
     wrapper.style.overflow = 'visible';
-    wrapper.style.backgroundColor = 'red';
     this.setPositionNotStatic(element);
     element.appendChild(wrapper);
     this.wrappers.set(id, wrapper);
@@ -741,7 +829,6 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.top = `${top}px`;
     wrapper.style.left = `${left}px`;
     wrapper.style.overflow = 'visible';
-    wrapper.style.backgroundColor = 'red';
     element.parentElement.appendChild(wrapper);
     this.wrappers.set(id, wrapper);
     this.voidElementsWrappers.set(id, wrapper);
@@ -756,6 +843,9 @@ export class PointersHTML extends BaseComponent {
    */
   private renderSVGElementWrapper = (element: SVGElement, id: string): void => {
     const elementName = element.tagName.toLowerCase();
+
+    const isSvgElement = elementName === 'svg';
+    if (isSvgElement) this.createSVGWrapper(element, id);
 
     const isRectElement = elementName === 'rect';
     if (isRectElement) this.createRectWrapper(element, id);
