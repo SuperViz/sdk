@@ -20,6 +20,7 @@ export const createRealtimeHistory = () => ({
 });
 
 export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
+  isJoinedRoom: false,
   isLocalParticipantHost: true,
   setFollow: jest.fn(),
   setGather: jest.fn(),

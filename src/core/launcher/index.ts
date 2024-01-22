@@ -21,6 +21,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private isDestroyed = false;
   private activeComponents: ComponentNames[] = [];
+  private componentsToAttachAfterJoin: Partial<BaseComponent>[] = [];
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
   private participant: Participant;
   private group: Group;
@@ -62,6 +63,13 @@ export class Launcher extends Observable implements DefaultLauncher {
   public addComponent = (component: Partial<BaseComponent>): void => {
     if (!this.canAddComponent(component)) return;
 
+    if (!this.realtime.isJoinedRoom) {
+      console.log('launcher service @ addComponent - not joined yet');
+      this.logger.log('launcher service @ addComponent - not joined yet');
+      this.componentsToAttachAfterJoin.push(component);
+      return;
+    }
+
     component.attach({
       localParticipant: this.participant,
       realtime: this.realtime,
@@ -75,6 +83,25 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
 
     ApiService.sendActivity(this.participant.id, this.group.id, this.group.name, component.name);
+  };
+
+  /**
+   * @function attachComponentsAfterJoin
+   * @description attach components after join
+   * @returns {void}
+   */
+  private attachComponentsAfterJoin = (): void => {
+    this.logger.log('launcher service @ attachComponentsAfterJoin');
+
+    this.componentsToAttachAfterJoin.forEach((component) => {
+      this.logger.log(
+        'launcher service @ attachComponentsAfterJoin - attaching component',
+        component.name,
+      );
+      this.addComponent(component);
+    });
+
+    this.componentsToAttachAfterJoin = [];
   };
 
   /**
@@ -287,6 +314,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     if (participant.id === this.participant.id) {
       this.logger.log('launcher service @ onParticipantJoined - local participant joined');
       this.publish(ParticipantEvent.LOCAL_JOINED, participant);
+      this.attachComponentsAfterJoin();
     }
 
     this.logger.log('launcher service @ onParticipantJoined - participant joined', participant);
