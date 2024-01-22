@@ -220,10 +220,11 @@ export class PointersHTML extends BaseComponent {
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
     if (this.isPrivate) return;
+    const container = event.currentTarget as HTMLDivElement;
 
-    const elementId = (event.currentTarget as HTMLDivElement).getAttribute('data-wrapper-id');
-    const x = event.offsetX;
-    const y = event.offsetY;
+    const elementId = container.getAttribute('data-wrapper-id');
+    const x = event.offsetX / container.clientWidth;
+    const y = event.offsetY / container.clientHeight;
 
     this.realtime.updatePresenceMouse({
       ...this.localParticipant,
@@ -674,9 +675,10 @@ export class PointersHTML extends BaseComponent {
     }
 
     const { x, y } = participant;
+    const { width, height } = this.wrappers.get(participant.elementId).getBoundingClientRect();
 
-    mouseFollower.style.left = `${x}px`;
-    mouseFollower.style.top = `${y}px`;
+    mouseFollower.style.left = `${x * width}px`;
+    mouseFollower.style.top = `${y * height}px`;
   };
 
   /**
