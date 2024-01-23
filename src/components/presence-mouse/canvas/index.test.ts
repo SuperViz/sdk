@@ -47,7 +47,7 @@ const createMousePointers = (): PointersCanvas => {
   return presenceMouseComponent;
 };
 
-describe('MousePointers', () => {
+describe('MousePointers on Canvas', () => {
   let presenceMouseComponent: PointersCanvas;
 
   beforeEach(() => {

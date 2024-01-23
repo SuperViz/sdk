@@ -20,7 +20,7 @@ const createMousePointers = (): PointersHTML => {
   return presenceMouseComponent;
 };
 
-describe('MousePointers', () => {
+describe('MousePointers on HTML', () => {
   let presenceMouseComponent: PointersHTML;
   const participants: Record<string, ParticipantMouse> = {};
   let MOCK_MOUSE: ParticipantMouse;
