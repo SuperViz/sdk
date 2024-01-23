@@ -11,6 +11,7 @@ export interface ParticipantMouse extends Participant {
 export interface PresenceMouseProps {
   onGoToPresence?: (position: { x: number; y: number }) => void;
   dataAttributeName?: string;
+  dataAttributeValueFilters?: RegExp[];
 }
 
 export type Element = HTMLElement & SVGElement;

@@ -1040,8 +1040,13 @@ describe('HTMLPinAdapter', () => {
     });
 
     test('should not clear element if old value was skipped', () => {
-      document.body.innerHTML =
-        '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
+      document.body.innerHTML = `<div id="container">
+          <div data-superviz-id="1-matches">
+            <div>
+              <div data-superviz-id="does-not-match"></div>
+            </div>
+          </div>
+        </div>`;
       instance = new HTMLPin('container', { dataAttributeValueFilters: [/.*-matches$/] });
       const change = {
         target: document.body.querySelector('[data-superviz-id="does-not-match"]') as HTMLElement,

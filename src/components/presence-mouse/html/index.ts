@@ -72,6 +72,8 @@ export class PointersHTML extends BaseComponent {
     this.name = ComponentNames.PRESENCE;
 
     this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
+    this.dataAttributeValueFilters =
+      options?.dataAttributeValueFilters || this.dataAttributeValueFilters;
 
     this.elementsWithDataAttribute = this.getElementsWithDataAttribute();
     this.renderAllWrappers();
@@ -112,7 +114,7 @@ export class PointersHTML extends BaseComponent {
 
     this.removeListenersFromWrappers();
 
-    this.wrappers.forEach((wrapper) => wrapper.remove());
+    this.wrappers.forEach(this.removeFromDom);
     this.wrappers.clear();
     this.wrappers = undefined;
 
@@ -128,8 +130,9 @@ export class PointersHTML extends BaseComponent {
     this.mutationObserver.disconnect();
     this.mutationObserver = undefined;
 
-    this.svgElementsWrappers.forEach((wrapper) => wrapper.remove());
+    this.svgElementsWrappers.forEach(this.removeFromDom);
     this.svgElementsWrappers.clear();
+    this.svgElementsWrappers = undefined;
 
     this.unsubscribeFromRealtimeEvents();
 
@@ -218,7 +221,10 @@ export class PointersHTML extends BaseComponent {
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
     if (this.isPrivate) return;
+
     const container = event.currentTarget as HTMLDivElement;
+
+    if (!container.clientHeight || !container.clientWidth) return;
 
     const elementId = container.getAttribute('data-wrapper-id');
     const x = event.offsetX / container.clientWidth;
@@ -265,11 +271,6 @@ export class PointersHTML extends BaseComponent {
 
       this.presences.set(participant.id, participant);
     });
-
-    const isFollowingSomeone = this.presences.has(this.userBeingFollowedId);
-    if (isFollowingSomeone) {
-      this.goToMouse(this.userBeingFollowedId);
-    }
   };
 
   private goToMouse = (id: string): void => {
@@ -371,6 +372,16 @@ export class PointersHTML extends BaseComponent {
   }
 
   /**
+   * @function removeFromDom
+   * @description removes the element from the DOM
+   * @param {HTMLElement} element the element to be removed
+   * @returns {void}
+   */
+  private removeFromDom(element: HTMLElement): void {
+    element.remove();
+  }
+
+  /**
    * @function setPositionNotStatic
    * @description sets the position of the element to relative if it is static
    * @param {HTMLElement} element the element to be checked
@@ -385,6 +396,7 @@ export class PointersHTML extends BaseComponent {
 
   /**
    * @function createMouseElement
+   * @description create mouse element
    * @param mouse - participant mouse
    * @returns {HTMLDivElement}
    */
@@ -420,6 +432,28 @@ export class PointersHTML extends BaseComponent {
   };
 
   /**
+   * @function updateSVGPosition
+   * @description - Updates the position of the wrapper of a <svg> element
+   * @param {SVGElement} element - The svg element
+   * @returns {void}
+   */
+  private updateSVGPosition(element: SVGElement, wrapper: HTMLElement) {
+    const parentRect = element.parentElement.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const offsetLeft = elementRect.left - parentRect.left;
+    const offsetTop = elementRect.top - parentRect.top;
+
+    const { width, height } = element.getBoundingClientRect();
+    const left = offsetLeft;
+    const top = offsetTop;
+
+    wrapper.style.setProperty('width', `${width}px`);
+    wrapper.style.setProperty('height', `${height}px`);
+    wrapper.style.setProperty('top', `${top}px`);
+    wrapper.style.setProperty('left', `${left}px`);
+  }
+
+  /**
    * @function createSVGWrapper
    * @description - Creates a wrapper for an svg element
    * @param {SVGElement} svg - The svg element
@@ -447,28 +481,6 @@ export class PointersHTML extends BaseComponent {
     element.parentElement.appendChild(wrapper);
     this.wrappers.set(id, wrapper);
     this.svgElementsWrappers.set(id, wrapper);
-  }
-
-  /**
-   * @function updateSVGPosition
-   * @description - Updates the position of the wrapper of a <svg> element
-   * @param {SVGElement} element - The svg element
-   * @returns {void}
-   */
-  private updateSVGPosition(element: SVGElement, wrapper: HTMLElement) {
-    const parentRect = element.parentElement.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-    const offsetLeft = elementRect.left - parentRect.left;
-    const offsetTop = elementRect.top - parentRect.top;
-
-    const { width, height } = element.getBoundingClientRect();
-    const left = offsetLeft;
-    const top = offsetTop;
-
-    wrapper.style.setProperty('width', `${width}px`);
-    wrapper.style.setProperty('height', `${height}px`);
-    wrapper.style.setProperty('top', `${top}px`);
-    wrapper.style.setProperty('left', `${left}px`);
   }
 
   /**
@@ -509,6 +521,7 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.left = `${viewportRect.left}px`;
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
+    wrapper.style.overflow = 'visible';
 
     wrapper.setAttribute('data-wrapper-id', id);
 
@@ -533,7 +546,7 @@ export class PointersHTML extends BaseComponent {
    */
   private createEllipseWrapper(ellipse: SVGElement, id: string): void {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
     const wrapper = document.createElement('div');
 
     const cx = ellipse.getAttribute('cx');
@@ -570,8 +583,17 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.left = `${viewportRect.left}px`;
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
+    wrapper.style.overflow = 'visible';
 
     wrapper.setAttribute('data-wrapper-id', id);
+
+    // here we get the topmost svg element, in case there are nested svgs
+    let externalViewport = ellipse.viewportElement;
+    while (externalViewport.viewportElement) {
+      externalViewport = externalViewport.viewportElement;
+    }
+
+    externalViewport.parentElement.appendChild(wrapper);
 
     this.wrappers.set(id, wrapper);
     this.svgElementsWrappers.set(id, wrapper);
@@ -601,6 +623,11 @@ export class PointersHTML extends BaseComponent {
 
       this.renderPresenceMouses(mouse);
     });
+
+    const isFollowingSomeone = this.presences.has(this.userBeingFollowedId);
+    if (isFollowingSomeone) {
+      this.goToMouse(this.userBeingFollowedId);
+    }
   };
 
   /**
@@ -750,8 +777,7 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    * */
   private renderPresenceMouses = (participant: ParticipantMouse): void => {
-    const userMouseIdExist = document.getElementById(`mouse-${participant.id}`);
-    let mouseFollower = userMouseIdExist;
+    let mouseFollower = document.getElementById(`mouse-${participant.id}`);
 
     if (mouseFollower && mouseFollower.getAttribute('data-element-id') !== participant.elementId) {
       mouseFollower.remove();
@@ -763,13 +789,10 @@ export class PointersHTML extends BaseComponent {
       mouseFollower = this.createMouseElement(participant);
     }
 
-    const divMouseUser = document.getElementById(`mouse-${participant.id}`);
-    const divPointer = document.getElementById(`mouse-${participant.id}`);
+    if (!mouseFollower) return;
 
-    if (!divMouseUser || !divPointer) return;
-
-    const mouseUser = divMouseUser.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
-    const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
+    const mouseUser = mouseFollower.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
+    const pointerUser = mouseFollower.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
       pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${participant.slotIndex}.svg)`;

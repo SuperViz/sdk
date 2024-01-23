@@ -28,8 +28,8 @@ participants[participant3.id] = { ...participant3 };
 
 const { getElementById } = document;
 
-const createMousePointers = (): MousePointers => {
-  const presenceMouseComponent = new MousePointers('canvas');
+const createMousePointers = (): PointersCanvas => {
+  const presenceMouseComponent = new PointersCanvas('canvas');
 
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
@@ -48,7 +48,7 @@ const createMousePointers = (): MousePointers => {
 };
 
 describe('MousePointers', () => {
-  let presenceMouseComponent: MousePointers;
+  let presenceMouseComponent: PointersCanvas;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -61,7 +61,7 @@ describe('MousePointers', () => {
   });
 
   test('should throw an error if no container is found', () => {
-    expect(() => new MousePointers('not-found-container')).toThrowError(
+    expect(() => new PointersCanvas('not-found-container')).toThrowError(
       'Canvas with id not-found-container not found',
     );
   });
