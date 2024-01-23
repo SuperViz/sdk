@@ -141,13 +141,6 @@ export class VideoConference extends BaseComponent {
       this.localParticipant.type = this.params.userType as ParticipantType;
     }
 
-    this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
-
-    this.realtime.updateMyProperties({
-      name: this.localParticipant.name,
-      type: this.localParticipant.type,
-    });
-
     this.suscribeToRealtimeEvents();
     this.startVideo();
   }
@@ -468,6 +461,7 @@ export class VideoConference extends BaseComponent {
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
+    this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
 
     if (this.videoConfig.canUseDefaultAvatars) {
       this.realtime.updateMyProperties({
