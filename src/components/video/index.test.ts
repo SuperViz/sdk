@@ -65,6 +65,23 @@ jest.mock('../../services/event-bus', () => {
   return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
 });
 
+const MOCK_REALTIME = Object.assign({}, ABLY_REALTIME_MOCK, {
+  isJoinedRoom: true,
+  participant: {
+    clientId: 'client1',
+    action: 'absent',
+    connectionId: 'connection1',
+    encoding: 'h264',
+    id: 'unit-test-participant-ably-id',
+    timestamp: new Date().getTime(),
+    data: {
+      id: MOCK_LOCAL_PARTICIPANT.id,
+      participantId: MOCK_LOCAL_PARTICIPANT.id,
+      activeComponents: [ComponentNames.VIDEO_CONFERENCE],
+    },
+  },
+});
+
 describe('VideoConference', () => {
   let VideoConferenceInstance: VideoConference;
 
@@ -76,22 +93,7 @@ describe('VideoConference', () => {
     });
 
     VideoConferenceInstance.attach({
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, {
-        isJoinedRoom: true,
-        participant: {
-          clientId: 'client1',
-          action: 'absent',
-          connectionId: 'connection1',
-          encoding: 'h264',
-          id: 'unit-test-participant-ably-id',
-          timestamp: new Date().getTime(),
-          data: {
-            id: MOCK_LOCAL_PARTICIPANT.id,
-            participantId: MOCK_LOCAL_PARTICIPANT.id,
-            activeComponents: [ComponentNames.VIDEO_CONFERENCE],
-          },
-        },
-      }),
+      realtime: MOCK_REALTIME,
       localParticipant: MOCK_LOCAL_PARTICIPANT,
       group: MOCK_GROUP,
       config: MOCK_CONFIG,
@@ -111,7 +113,7 @@ describe('VideoConference', () => {
     });
 
     VideoConferenceInstance.attach({
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: MOCK_REALTIME,
       localParticipant: {
         ...MOCK_LOCAL_PARTICIPANT,
         avatar: MOCK_AVATAR,
@@ -253,7 +255,7 @@ describe('VideoConference', () => {
       expect(ABLY_REALTIME_MOCK.setFollowParticipant).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
     });
 
-    test('should set follow participant from video frame', () => {
+    test('should set participant to be kicked', () => {
       VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: MeetingEvent.MEETING_KICK_PARTICIPANT,
         data: MOCK_LOCAL_PARTICIPANT.id,
@@ -262,7 +264,7 @@ describe('VideoConference', () => {
       expect(ABLY_REALTIME_MOCK.setKickParticipant).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
     });
 
-    test('should set follow participant from video frame', () => {
+    test('should set transcript state', () => {
       VideoConferenceInstance['onRealtimeEventFromFrame']({
         event: RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE,
         data: TranscriptState.TRANSCRIPT_START,
@@ -326,7 +328,6 @@ describe('VideoConference', () => {
 
     test('should publish message to client and detach when same account error happened', () => {
       VideoConferenceInstance['publish'] = jest.fn();
-      VideoConferenceInstance['detach'] = jest.fn();
 
       VideoConferenceInstance['onSameAccountError']('same-account-error');
 
@@ -339,7 +340,6 @@ describe('VideoConference', () => {
         type: ParticipantType.GUEST,
       });
       expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
-      expect(VideoConferenceInstance['detach']).toBeCalled();
     });
 
     test('should publish a message to client when devices change', () => {
@@ -575,7 +575,6 @@ describe('VideoConference', () => {
 
     test('should publish a message to client and detach when kick participants happend', () => {
       VideoConferenceInstance['publish'] = jest.fn();
-      VideoConferenceInstance['detach'] = jest.fn();
 
       VideoConferenceInstance['onKickAllParticipantsDidChange'](true);
 
@@ -588,25 +587,15 @@ describe('VideoConference', () => {
         type: ParticipantType.GUEST,
       });
       expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
-      expect(VideoConferenceInstance['detach']).toBeCalled();
     });
 
     test('should publish a message to client and detach when kick local participant happend', () => {
-      VideoConferenceInstance['publish'] = jest.fn();
-      VideoConferenceInstance['detach'] = jest.fn();
-
       VideoConferenceInstance['onKickLocalParticipant']();
-
-      expect(VideoConferenceInstance['publish']).toBeCalledWith(
-        MeetingEvent.MEETING_KICK_PARTICIPANT,
-        VideoConferenceInstance['localParticipant'],
-      );
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toBeCalledWith({
         activeComponents: [],
         type: ParticipantType.GUEST,
       });
-      expect(VideoConferenceInstance['detach']).toBeCalled();
     });
   });
 

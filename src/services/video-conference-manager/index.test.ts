@@ -146,6 +146,18 @@ describe('VideoConferenceManager', () => {
       expect(participantJoinedSpy).toBeCalled();
       expect(participantLeftSpy).toBeCalled();
     });
+
+    test('remove window listeners', () => {
+      const spy = jest.spyOn(window, 'removeEventListener');
+
+      VideoConferenceManagerInstance.destroy();
+
+      expect(spy).toBeCalledWith('resize', VideoConferenceManagerInstance['onWindowResize']);
+      expect(spy).toBeCalledWith(
+        'orientationchange',
+        VideoConferenceManagerInstance['onWindowResize'],
+      );
+    });
   });
 
   describe('updateFrameState', () => {

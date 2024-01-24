@@ -8,14 +8,14 @@ export type OberverOptions = {
 };
 
 export class Observer {
-  private logger: Logger;
+  private logger?: Logger;
   private callbacks: Function[];
   private throttle: number;
 
   constructor(options: OberverOptions = {}) {
     const { logger, throttleTime } = options;
 
-    this.logger = logger ?? new Logger('@superviz/sdk/observer-helper');
+    this.logger = logger || new Logger('@superviz/sdk/observer-helper');
     this.throttle = throttleTime;
     this.callbacks = [];
 
@@ -55,7 +55,7 @@ export class Observer {
 
     this.callbacks.forEach((callback: Function) => {
       this.callListener(callback, event).catch((error: Error) => {
-        this.logger.log(
+        this.logger?.log(
           'superviz-sdk:observer-helper:publish:error',
           `
             Failed to execute callback on publish value.
