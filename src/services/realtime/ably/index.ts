@@ -178,7 +178,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
         if (error?.message?.includes("this domain don't have permission")) {
           this.domainWhitelisted = false;
-          this.domainRefusedObserver.publish(this.domainWhitelisted);
         }
 
         callback(error, tokenRequest);
@@ -215,10 +214,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.supervizChannel = this.client.channels.get(this.roomId);
     this.supervizChannel.on(this.onAblyChannelStateChange);
     this.supervizChannel.subscribe('update', this.onAblyRoomUpdate);
-
-    this.supervizChannel.subscribe('same-account-error', (message) => {
-      console.log('same-account-error', message);
-    });
 
     // join the comments channel
     this.commentsChannel = this.client.channels.get(`${this.roomId}:comments`);

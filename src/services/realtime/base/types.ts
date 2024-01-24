@@ -17,7 +17,6 @@ export interface DefaultRealtimeService {
   kickAllParticipantsObserver: Observer;
   kickParticipantObserver: Observer;
   authenticationObserver: Observer;
-  domainRefusedObserver: Observer;
 }
 
 export interface DefaultRealtimeMethods {
