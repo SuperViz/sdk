@@ -96,6 +96,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
     this.removeEventListener('keyup', this.sendEnter);
+    const textarea = this.getCommentInput(); 
+    textarea.removeEventListener('keydown', this.sendEnter);
   }
 
   protected firstUpdated(
@@ -107,6 +109,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (commentTextarea) {
       commentTextarea.addEventListener('input', this.handleInput);
+
+      const textarea = this.getCommentInput(); 
+      textarea.addEventListener('keydown', this.sendEnter);
     }
 
     if (this.text.length > 0) {
@@ -155,6 +160,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private handleInput = (e: InputEvent) => {
+    if (e.data === null) return
     this.autoCompleteHandler.setInput(e);
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
@@ -202,7 +208,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       avatar,
       email,
     });
-
+    this.mentionList = [];
     this.updateHeight();
   }
 
@@ -224,7 +230,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private sendEnter = (e: KeyboardEvent) => {
-    if (e.key !== 'Enter' || e.shiftKey) return;
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+    }
+
+    if (e.key !== 'Enter' || e.shiftKey || this.mentionList?.length > 0) return;
 
     const input = this.commentInput;
     const text = input.value.trim();
@@ -253,6 +263,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private send(e: Event) {
     e.preventDefault();
+    if (this.mentionList?.length > 0) return;
 
     const input = this.commentInput;
     const sendBtn = this.getSendBtn();
@@ -348,7 +359,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <div class="sv-hr"></div>
         <div class="comment-input--options">
             <button class="icon-button mention">
-              <superviz-icon name="mention" @click=${this.addAtSymbolInCaretPosition} size="sm"></superviz-icon>
+              <superviz-icon name="mention" @click=${this.addAtSymbolInCaretPosition} size="sm" allowSetSize=${true}></superviz-icon>
             </button>
             <div class="comment-input-options">
               ${commentInputOptions()} ${commentInputEditableOptions()}

@@ -155,6 +155,22 @@ describe('Observer', () => {
       expect(callback1).toBeCalledWith('unit-test-event');
       expect(callback2).toBeCalledWith('unit-test-event');
     });
+
+    test('should not log an error if logger is not defined or null', () => {
+      const observer = new Observer({ logger: null as any });
+
+      const callback1 = jest.fn(() => {
+        throw new Error('unit-test-error');
+      });
+      const callback2 = jest.fn();
+
+      observer.subscribe(callback1);
+      observer.subscribe(callback2);
+      observer.publish('unit-test-event');
+
+      expect(callback1).toBeCalledWith('unit-test-event');
+      expect(callback2).toBeCalledWith('unit-test-event');
+    });
   });
 
   describe('reset', () => {

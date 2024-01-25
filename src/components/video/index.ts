@@ -46,7 +46,6 @@ export class VideoConference extends BaseComponent {
 
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
-  private showWaterMarkType: boolean;
 
   constructor(params?: VideoComponentOptions) {
     super();
@@ -142,9 +141,7 @@ export class VideoConference extends BaseComponent {
       this.localParticipant.type = this.params.userType as ParticipantType;
     }
 
-    this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
     this.suscribeToRealtimeEvents();
-    this.showWaterMarkType = config.get<boolean>('waterMark');
     this.startVideo();
   }
 
@@ -155,6 +152,18 @@ export class VideoConference extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('video conference @ destroy');
+
+    const { data } = this.realtime.participant;
+    const activeComponents = data.activeComponents.filter((componentName: string) => {
+      return componentName !== ComponentNames.VIDEO_CONFERENCE;
+    });
+
+    this.realtime.updateMyProperties({
+      activeComponents,
+      type: ParticipantType.GUEST,
+    });
+
+    this.realtime.setKickParticipantsOnHostLeave(false);
 
     this.publish(MeetingEvent.DESTROY);
 
@@ -192,6 +201,7 @@ export class VideoConference extends BaseComponent {
       locales: this.params?.locales ?? [],
       avatars: this.params?.avatars ?? [],
       customColors: config.get<ColorsVariables>('colors'),
+      waterMark: config.get<boolean>('waterMark'),
       collaborationMode: this.params?.collaborationMode?.enabled ?? true,
       layoutPosition:
         this.params?.collaborationMode?.enabled === false
@@ -199,7 +209,6 @@ export class VideoConference extends BaseComponent {
           : (this.params?.collaborationMode?.modalPosition as LayoutPosition) ??
             LayoutPosition.CENTER,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
-      waterMark: this.showWaterMarkType,
     };
 
     this.logger.log('video conference @ start video', this.videoConfig);
@@ -373,7 +382,7 @@ export class VideoConference extends BaseComponent {
    * */
   private onSameAccountError = (error: string): void => {
     this.publish(MeetingEvent.MEETING_SAME_PARTICIPANT_ERROR, error);
-    this.internalRemoveComponent();
+    this.detach();
   };
 
   /**
@@ -452,6 +461,7 @@ export class VideoConference extends BaseComponent {
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
+    this.realtime.setKickParticipantsOnHostLeave(!this.params?.allowGuests);
 
     if (this.videoConfig.canUseDefaultAvatars) {
       this.realtime.updateMyProperties({
@@ -479,7 +489,7 @@ export class VideoConference extends BaseComponent {
     this.logger.log('video conference @ on participant left', this.localParticipant);
 
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
-    this.internalRemoveComponent();
+    this.detach();
   };
 
   private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
@@ -508,7 +518,7 @@ export class VideoConference extends BaseComponent {
     this.logger.log('video conference @ on kick all participants did change', kick);
 
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANTS, kick);
-    this.internalRemoveComponent();
+    this.detach();
   };
 
   /**
@@ -522,7 +532,7 @@ export class VideoConference extends BaseComponent {
     this.logger.log('video conference @ on kick local participant');
 
     this.publish(MeetingEvent.MEETING_KICK_PARTICIPANT, this.localParticipant);
-    this.internalRemoveComponent();
+    this.detach();
   };
 
   /**
@@ -631,26 +641,4 @@ export class VideoConference extends BaseComponent {
       this.createParticipantFromAblyPresence(participant),
     );
   };
-
-  /**
-   * @function internalRemoveComponent
-   * @description remove component from participant and detach
-   * @returns {void}
-   */
-  private internalRemoveComponent(): void {
-    this.logger.log('video conference @ internal remove component');
-
-    const { data } = this.realtime.participant;
-    const activeComponents = data.activeComponents.filter((componentName: string) => {
-      return componentName !== ComponentNames.VIDEO_CONFERENCE;
-    });
-
-    this.realtime.updateMyProperties({
-      activeComponents,
-      type: ParticipantType.GUEST,
-    });
-    this.realtime.setKickParticipantsOnHostLeave(false);
-
-    this.detach();
-  }
 }

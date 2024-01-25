@@ -6,6 +6,7 @@ export const mentionListStyle = css`
     z-index: 1;
     max-height: 200px;
     overflow-y: auto;
+    overflow-x: hidden;
     background-color: white;
     display: none;
     width: 216px;
@@ -14,6 +15,16 @@ export const mentionListStyle = css`
     box-shadow: 2px 2px 8px 0px rgba(0, 0, 0, 0.30);
     padding-top: 4px;
     padding-bottom: 4px;
+    /* Stiling scroll WebKit (Firefox) */
+    scrollbar-width: 6px; /* Firefox */
+    scrollbar-color: #888; /* Firefox */
+    /* Style scroll WebKit (Chrome, Safari, Edge) */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+    }
   }
 
   .mention-item {

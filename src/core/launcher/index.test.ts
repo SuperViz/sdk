@@ -27,7 +27,9 @@ jest.mock('../../services/api');
 
 const MOCK_COMPONENT = {
   name: ComponentNames.VIDEO_CONFERENCE,
-  attach: jest.fn(),
+  attach: jest.fn(() => {
+    console.log('attach');
+  }),
   detach: jest.fn(),
 } as unknown as BaseComponent;
 
@@ -45,6 +47,7 @@ describe('Launcher', () => {
     console.log = jest.fn();
 
     jest.clearAllMocks();
+    jest.restoreAllMocks();
 
     LauncherInstance = new Launcher(DEFAULT_INITIALIZATION_MOCK);
   });
@@ -58,6 +61,31 @@ describe('Launcher', () => {
   });
 
   describe('Components', () => {
+    beforeEach(() => {
+      LauncherInstance['realtime'].isJoinedRoom = true;
+    });
+
+    test('should not add component if realtime is not joined room', () => {
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LauncherInstance['realtime'].isJoinedRoom = false;
+      const spy = jest.spyOn(LauncherInstance, 'addComponent');
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      expect(MOCK_COMPONENT.attach).not.toBeCalled();
+      expect(LauncherInstance['activeComponentsInstances'].length).toBe(0);
+      expect(LauncherInstance['componentsToAttachAfterJoin'].length).toBe(1);
+
+      LauncherInstance['realtime'].isJoinedRoom = true;
+      LauncherInstance['onParticipantJoined']({
+        data: {
+          id: MOCK_LOCAL_PARTICIPANT.id,
+        },
+      } as unknown as AblyParticipant);
+
+      expect(spy).toHaveBeenCalledWith(MOCK_COMPONENT);
+    });
+
     test('should be add component', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
 
@@ -416,6 +444,20 @@ describe('Launcher', () => {
   });
 
   describe('destroy', () => {
+    test('should destroy the instance if domain is not whitelisted', () => {
+      console.error = jest.fn();
+      jest.spyOn(LauncherInstance, 'destroy');
+
+      LauncherInstance['onAuthentication'](RealtimeEvent.REALTIME_DRAWING_CHANGE);
+      expect(LauncherInstance.destroy).not.toHaveBeenCalled();
+
+      LauncherInstance['onAuthentication'](RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
+      expect(LauncherInstance.destroy).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith(
+        `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+      );
+    });
+
     test('should destroy the instance', () => {
       LauncherInstance.destroy();
 
