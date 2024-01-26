@@ -45,8 +45,7 @@ jest.mock('../../services/api', () => ({
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
-  fetchParticipantsByGroup: jest.fn().mockImplementation((): any => []),
-}));
+  fetchParticipantsByGroup: jest.fn().mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),}));
 
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
@@ -736,8 +735,7 @@ describe('Comments', () => {
       expect(spy).toHaveBeenCalledWith('unit-test-group-id');
 
       const response = await ApiService.fetchParticipantsByGroup('unit-test-group-id');
-      (ApiService.fetchParticipantsByGroup as jest.Mock).mockReturnValueOnce([MOCK_PARTICIPANTS]);
-      expect(response).toEqual([]);
+      expect(response).toEqual(MOCK_PARTICIPANTS);
 
       commentsComponent['element'].participantsListed = jest.fn();
       await commentsComponent['element'].participantsListed(MOCK_PARTICIPANTS);

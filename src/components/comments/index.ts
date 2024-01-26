@@ -353,7 +353,7 @@ export class Comments extends BaseComponent {
     addComment = false,
   ): Promise<Comment> {
     try {
-      let comment: Comment = await ApiService.createComment(
+      const comment: Comment = await ApiService.createComment(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         {
@@ -363,21 +363,17 @@ export class Comments extends BaseComponent {
         },
       );
 
-      await ApiService.createMentions({
-        commentsId: comment.uuid,
-        participants: mentions.map((mention) => ({
-          id: mention.userId,
-          readed: 0
-        }))
-      })
+      if(mentions.length) {
+        await ApiService.createMentions({
+          commentsId: comment.uuid,
+          participants: mentions.map((mention) => ({
+            id: mention.userId,
+            readed: 0
+          }))
+        })
+    }
 
-      comment = {
-        ...comment,
-        mentions: mentions.map((mention) => ({
-          ...mention,
-          position: JSON.stringify(mention.position),
-        })),
-      }
+    comment.mentions = mentions;
 
       if (addComment) {
         this.addComment(annotationId, comment);
@@ -407,19 +403,20 @@ export class Comments extends BaseComponent {
         text,
       );
 
-      await ApiService.createMentions({
-        commentsId: comment.uuid,
-        participants: mentions.map((mention) => ({
-          id: mention.userId,
-        }))
-      })
+      if(mentions.length) { 
+        await ApiService.createMentions({
+          commentsId: comment.uuid,
+          participants: mentions.map((mention) => ({
+            id: mention.userId,
+          }))
+        })
+       } 
 
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
           comments: annotation.comments.map((comment) => {
             if (comment.uuid === uuid) {
               return Object.assign({}, comment, {
-                ...comment,
                 text,
                 mentions,
               });

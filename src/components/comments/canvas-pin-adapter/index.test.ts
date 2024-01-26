@@ -5,8 +5,6 @@ import { HTMLPin } from '../html-pin-adapter';
 
 import { CanvasPin } from '.';
 
-export { CanvasPin, HTMLPin };
-
 const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
   {
     name: 'John Zero',
@@ -75,16 +73,6 @@ describe('CanvasPinAdapter', () => {
       expect(canvasPinAdapter.participants).toEqual(participants);
     });
 
-    test('should handle undefined participants list', () => {
-      const participants: ParticipantByGroupApi[] | undefined = undefined;
-
-      if (participants !== undefined) {
-        canvasPinAdapter.participantsList = participants;
-      } else {
-        canvasPinAdapter.participantsList = [];
-      }
-      expect(canvasPinAdapter.participants).toStrictEqual([]);
-    });
   });
 
   describe('annotationSelected', () => {
@@ -124,15 +112,6 @@ describe('CanvasPinAdapter', () => {
       expect([...instance['pins'].values()].some((pin) => pin.hasAttribute('active'))).toBeFalsy();
     });
   });
-
-    test('should set participants correctly', () => {
-      const canvasPinAdapter = new CanvasPin('canvas');
-      const participants: ParticipantByGroupApi[] = MOCK_PARTICIPANTS;
-      canvasPinAdapter.participantsList = participants;
-
-      expect(canvasPinAdapter.participants).toEqual(participants);
-    });
-
 
   test('should remove active on Escape key', () => {
     instance.updateAnnotations([MOCK_ANNOTATION]);
