@@ -4,8 +4,8 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { CommentEvent } from '../../common/types/events.types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
@@ -844,7 +844,7 @@ describe('Comments', () => {
 
       expect(commentsComponent['pinActive']).toBe(true);
       expect(setActiveSpy).toHaveBeenCalledWith(true);
-      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinActive);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_ACTIVE);
     });
   });
 
@@ -862,7 +862,7 @@ describe('Comments', () => {
 
       expect(commentsComponent['pinActive']).toBe(false);
       expect(setActiveSpy).toHaveBeenCalledWith(false);
-      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinInactive);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_INACTIVE);
     });
   });
 
