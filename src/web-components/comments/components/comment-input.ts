@@ -3,7 +3,7 @@ import { customElement } from 'lit/decorators.js';
 
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
-import { AnnotationPositionInfo } from '../../../components/comments/types';
+import { AnnotationPositionInfo, CommentMention } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { commentInputStyle } from '../css';
 import { AutoCompleteHandler } from '../utils/autocomplete-handler';
@@ -22,7 +22,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
   declare mentionList: ParticipantByGroupApi[];
-  declare mentions: ParticipantByGroupApi[];
+  declare mentions: CommentMention[];
   declare participantsList: ParticipantByGroupApi[];
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
@@ -115,7 +115,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
 
     if (this.text.length > 0) {
-      this.autoCompleteHandler.setMentions(this.mentions)
+      const mentions = this.participantsList.map(({ id, name }) => ({ userId: id, name }));
+      this.mentions = this.autoCompleteHandler.getMentions(this.text, mentions);
+      this.autoCompleteHandler.setMentions(this.mentions);
     }
   }
 
@@ -241,7 +243,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (!text) return;
     const sendBtn = this.getSendBtn();
-    const mentions = this.autoCompleteHandler.getMentions()
+    const mentions = this.autoCompleteHandler.getMentions(text)
 
     this.emitEvent(
       this.eventType,
@@ -268,7 +270,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const input = this.commentInput;
     const sendBtn = this.getSendBtn();
     const text = input.value;
-    const mentions = this.autoCompleteHandler.getMentions()
+    const mentions = this.autoCompleteHandler.getMentions(text)
 
     this.emitEvent(
       this.eventType,

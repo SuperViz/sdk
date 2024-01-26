@@ -1,4 +1,5 @@
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { CommentMention } from '../../../components/comments/types';
 
 export class AutoCompleteHandler {
   constructor () {
@@ -10,7 +11,7 @@ export class AutoCompleteHandler {
   event: InputEvent
   input: HTMLTextAreaElement
   key: string
-  mentions: { userId: string, name: string }[]
+  mentions: CommentMention[]
 
   setInput (event: InputEvent) {
     this.event = event
@@ -19,12 +20,15 @@ export class AutoCompleteHandler {
     this.key = event.data
   }
 
-  getMentions() {
-    return this.mentions.filter((mention, index, self) => {
-      const isSelf = self.findIndex((m) => m.userId === mention.userId) === index;
-      const hasParticipantName = (mention, input) => input.value.includes(mention.name);
+  getMentions(input, mentions: CommentMention[]= []) {
+    if (mentions.length > 0) {
+      this.mentions = mentions
+    }
 
-      return isSelf && hasParticipantName(mention, this.input);
+    return this.mentions.filter((mention) => {
+      const hasParticipantName = (mention, input) => input.includes(mention.name);
+
+      return hasParticipantName(mention, input);
     });
   }
 

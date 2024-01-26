@@ -109,7 +109,7 @@ describe('AutoComplete Handler', () => {
 
       autocompleteHandler.addMention(mentions)
 
-      const result = autocompleteHandler.getMentions()
+      const result = autocompleteHandler.getMentions(textarea.value)
       expect(result).toEqual([mentions])
     })
 
@@ -126,7 +126,7 @@ describe('AutoComplete Handler', () => {
       autocompleteHandler.addMention(mentions)
       autocompleteHandler.addMention(mentions)
 
-      const result = autocompleteHandler.getMentions()
+      const result = autocompleteHandler.getMentions(textarea.value)
       expect(result).toEqual([mentions])
     })
 
@@ -142,14 +142,14 @@ describe('AutoComplete Handler', () => {
 
       autocompleteHandler.addMention(mentions)
 
-      const result = autocompleteHandler.getMentions()
+      const result = autocompleteHandler.getMentions(textarea.value)
       expect(result).toEqual([mentions])
 
       textarea.value = `lorem ipsum`
       const event = sendInputEvent(textarea, 'd')
       autocompleteHandler.setInput(event)
 
-      const result2 = autocompleteHandler.getMentions()
+      const result2 = autocompleteHandler.getMentions(textarea.value)
       expect(result2).toEqual([])
     })
   })

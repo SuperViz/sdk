@@ -1,5 +1,5 @@
-import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { CommentEvent } from '../../common/types/events.types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
@@ -448,7 +448,6 @@ export class Comments extends BaseComponent {
         },
       );
 
-      if(mentions.length) {
         await ApiService.createMentions({
           commentsId: comment.uuid,
           participants: mentions.map((mention) => ({
@@ -456,7 +455,6 @@ export class Comments extends BaseComponent {
             readed: 0
           }))
         })
-    }
 
     comment.mentions = mentions;
 
@@ -488,14 +486,12 @@ export class Comments extends BaseComponent {
         text,
       );
 
-      if(mentions.length) { 
         await ApiService.createMentions({
           commentsId: comment.uuid,
           participants: mentions.map((mention) => ({
             id: mention.userId,
           }))
         })
-       } 
 
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {

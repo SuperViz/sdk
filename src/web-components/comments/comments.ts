@@ -38,11 +38,11 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
     this.participantsList = [];
+    this.side = 'left: 0px';
   }
 
   public participantsListed(participants: ParticipantByGroupApi[]) {
     this.participantsList = participants;
-    this.side = 'left: 0px';
   }
 
   public updateAnnotations(data: Annotation[]) {
