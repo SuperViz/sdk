@@ -16,6 +16,7 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  frameStyles?: VideoColors;
   camerasPosition: CamerasPosition;
   devices: {
     audioInput: boolean;
@@ -135,4 +136,279 @@ export enum VideoFrameState {
   UNINITIALIZED,
   INITIALIZING,
   INITIALIZED,
+}
+
+export interface VideoColors {
+  settings?: {
+    background?: string;
+    text?: string;
+    joinButton?: {
+      background?: string;
+      text?: string;
+      border?: string;
+      hover?: {
+        background?: string;
+        text?: string;
+        border?: string;
+      };
+      disabled?: {
+        background?: string;
+        text?: string;
+        border?: string;
+        hover?: {
+          background?: string;
+          text?: string;
+          border?: string;
+        };
+      };
+    };
+    inputField?: {
+      border?: string;
+      label?: string;
+      background?: string;
+      text?: string;
+
+      hover?: {
+        border?: string;
+        label?: string;
+      };
+      focus?: {
+        border?: string;
+        label?: string;
+      };
+    };
+    audioPreview?: {
+      background?: string;
+      border?: string;
+      level?: string;
+    };
+    videoPreview?: {
+      text?: string;
+      background?: string;
+    };
+    controls?: {
+      buttons?: {
+        icon?: string;
+        background?: string;
+        notificationBadge?: string;
+        hover?: {
+          icon?: string;
+          background?: string;
+        };
+      };
+      exitButton?: {
+        icon?: string;
+        background?: string;
+        hover?: {
+          icon?: string;
+          background?: string;
+        };
+      };
+      dropdown?: {
+        selectedOption?: {
+          default?: string;
+          hover?: string;
+        };
+        dropShadow?: string;
+        boxShadow?: string;
+        text?: {
+          default?: string;
+          hover?: string;
+        };
+        background?: {
+          default?: string;
+          hover?: string;
+        };
+      };
+    };
+    header?: {
+      background?: string;
+      text?: string;
+      closeButton?: {
+        icon?: string;
+        background?: string;
+        hover?: {
+          icon?: string;
+          background?: string;
+        };
+      };
+    };
+    avatarSelection?: {
+      hover?: string;
+      selected?: string;
+    };
+    devicesErrorModal?: {
+      background?: string;
+      text?: string;
+      header?: {
+        background?: string;
+        closeButton?: {
+          icon?: string;
+          background?: string;
+          hover?: {
+            icon?: string;
+            background?: string;
+          };
+        };
+      };
+    };
+  };
+  meeting?: {
+    controls?: {
+      buttons?: {
+        icon?: {
+          default?: string;
+          hover?: string;
+        };
+        background?: {
+          default?: string;
+          hover?: string;
+        };
+      };
+      exitButton?: {
+        icon?: {
+          default?: string;
+          hover?: string;
+        };
+        background?: {
+          default?: string;
+          hover?: string;
+        };
+      };
+      dropdown?: {};
+    };
+    background?: string;
+    header?: {
+      toggleGrid: {
+        background?: string;
+        icon?: string;
+        hover?: {
+          background?: string;
+          icon?: string;
+        };
+      };
+      toggleCameraList?: {
+        background?: string;
+        icon?: string;
+        hover?: {
+          background?: string;
+          icon?: string;
+        };
+        disabled?: {
+          background?: string;
+          icon?: string;
+          hover?: {
+            background?: string;
+            icon?: string;
+          };
+        };
+      };
+      spectatorList?: {
+        button?: {
+          background?: string;
+          content?: string;
+          hover?: {
+            background?: string;
+            content?: string;
+          };
+        };
+        dropdown?: {
+          text?: string;
+          background?: string;
+          button?: {
+            background?: string;
+            icon?: string;
+            hover?: {
+              background?: string;
+              icon?: string;
+            };
+          };
+        };
+      };
+    };
+    deviceSettings?: {
+      background?: string;
+      header?: {
+        background?: string;
+        text?: string;
+        closeButton?: {
+          icon?: string;
+          background?: string;
+          hover?: {
+            icon?: string;
+            background?: string;
+          };
+        };
+      };
+      button: {
+        background?: string;
+        text?: string;
+        border?: string;
+
+        hover?: {
+          background?: string;
+          text?: string;
+          border?: string;
+        };
+      };
+    };
+    chat?: {
+      background?: string;
+      header?: {
+        background?: string;
+        text?: string;
+        closeButton?: {
+          icon?: string;
+          background?: string;
+          hover?: {
+            icon?: string;
+            background?: string;
+          };
+        };
+      };
+      messages?: {
+        sent?: {
+          background?: string;
+          text?: string;
+          senderName?: string;
+        };
+        received?: {
+          background?: string;
+          text?: string;
+        };
+      };
+      input?: {
+        background?: string;
+        text?: string;
+        placeholder?: string;
+        sendButton?: {
+          background?: string;
+          icon?: string;
+          hover?: {
+            background?: string;
+            icon?: string;
+          };
+        };
+      };
+    };
+    hostActionsButton?: {
+      background?: string;
+      icon?: string;
+      hover?: {
+        background?: string;
+        icon?: string;
+      };
+    };
+    screenShare?: {
+      background?: string;
+      buttons?: {
+        icon?: string;
+        background?: string;
+        hover?: {
+          icon?: string;
+          background?: string;
+        };
+      };
+    };
+  };
 }

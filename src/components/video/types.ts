@@ -6,6 +6,7 @@ import {
   LayoutPosition,
   Locale,
   Offset,
+  VideoColors,
 } from '../../services/video-conference-manager/types';
 
 export interface VideoComponentOptions {
@@ -27,6 +28,7 @@ export interface VideoComponentOptions {
   skipMeetingSettings?: boolean;
   allowGuests?: boolean;
   userType?: ParticipantType | `${ParticipantType}`;
+  frameStyles?: VideoColors;
   participantType?: ParticipantType | `${ParticipantType}`;
   collaborationMode?: {
     enabled?: boolean;
