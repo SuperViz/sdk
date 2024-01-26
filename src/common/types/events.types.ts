@@ -122,8 +122,8 @@ export enum DeviceEvent {
 }
 
 export enum CommentEvent {
-  pinActive = 'pin-mode.active',
-  pinInactive = 'pin-mode.inactive',
+  PIN_ACTIVE = 'pin-mode.active',
+  PIN_INACTIVE = 'pin-mode.inactive',
 }
 
 export type Dimensions = {

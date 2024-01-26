@@ -102,7 +102,7 @@ export class Comments extends BaseComponent {
   public enable(): void {
     this.pinAdapter.setActive(true);
     this.pinActive = true;
-    this.publish(CommentEvent.pinActive);
+    this.publish(CommentEvent.PIN_ACTIVE);
   }
 
   /**
@@ -113,7 +113,7 @@ export class Comments extends BaseComponent {
   public disable(): void {
     this.pinAdapter.setActive(false);
     this.pinActive = false;
-    this.publish(CommentEvent.pinInactive);
+    this.publish(CommentEvent.PIN_INACTIVE);
   }
 
   /**
