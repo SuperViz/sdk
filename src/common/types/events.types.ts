@@ -121,6 +121,11 @@ export enum DeviceEvent {
   DEVICES_ALLOWED = 'devices.allowed',
 }
 
+export enum CommentEvent {
+  PIN_ACTIVE = 'pin-mode.active',
+  PIN_INACTIVE = 'pin-mode.inactive',
+}
+
 export type Dimensions = {
   width: number | null;
   height: number | null;

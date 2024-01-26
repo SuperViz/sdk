@@ -69,4 +69,5 @@ export enum ButtonLocation {
 export interface CommentsOptions {
   position?: CommentsSide | `${CommentsSide}`;
   buttonLocation?: ButtonLocation | `${ButtonLocation}` | string;
+  hideDefaultButton?: boolean;
 }
