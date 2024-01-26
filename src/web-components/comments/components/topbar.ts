@@ -25,7 +25,7 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
       <div class="topbar">
         <span class="text text-bold">COMMENTS</span>
         <span @click=${this.close} class="toggle-icon">
-          <superviz-icon name=${this.side} size="lg"></superviz-icon>
+          <superviz-icon name=${this.side} allowSetSize=${true}></superviz-icon>
         </span>
       </div>
     `;
