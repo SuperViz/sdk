@@ -169,9 +169,11 @@ export class CanvasPin implements PinAdapter {
 
     const currentTranslateX = transform.e;
     const currentTranslateY = transform.f;
+    const currentScaleWidth = transform.a;
+    const currentScaleHeight = transform.d;
 
-    const x = savedX + currentTranslateX;
-    const y = savedY + currentTranslateY;
+    const x = savedX * currentScaleWidth + currentTranslateX;
+    const y = savedY * currentScaleHeight + currentTranslateY;
 
     temporaryPin.setAttribute('position', JSON.stringify({ x, y }));
 
@@ -266,13 +268,12 @@ export class CanvasPin implements PinAdapter {
     let wrapper = this.divWrapper;
 
     if (!wrapper) {
-      wrapper = document.createElement('div')
+      wrapper = document.createElement('div');
       wrapper.id = 'superviz-canvas-wrapper';
       if (['', 'static'].includes(this.canvas.parentElement.style.position)) {
         this.canvas.parentElement.style.position = 'relative';
-      };
+      }
     }
-
 
     wrapper.style.position = 'absolute';
     wrapper.style.top = `${this.canvas.offsetTop}px`;
@@ -295,7 +296,10 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   private renderAnnotationsPins(): void {
-    if ((!this.annotations.length || this.canvas.style.display === 'none') && !this.pins.get('temporary-pin')) {
+    if (
+      (!this.annotations.length || this.canvas.style.display === 'none') &&
+      !this.pins.get('temporary-pin')
+    ) {
       this.removeAnnotationsPins();
       return;
     }
@@ -315,9 +319,11 @@ export class CanvasPin implements PinAdapter {
 
       const currentTranslateX = transform.e;
       const currentTranslateY = transform.f;
+      const currentScaleWidth = transform.a;
+      const currentScaleHeight = transform.d;
 
-      const x = savedX + currentTranslateX;
-      const y = savedY + currentTranslateY;
+      const x = savedX * currentScaleWidth + currentTranslateX;
+      const y = savedY * currentScaleHeight + currentTranslateY;
 
       if (this.pins.has(annotation.uuid)) {
         const pin = this.pins.get(annotation.uuid);
