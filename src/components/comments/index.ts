@@ -1,3 +1,4 @@
+import { CommentEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
@@ -27,6 +28,8 @@ export class Comments extends BaseComponent {
   private pinAdapter: PinAdapter;
   private layoutOptions: CommentsOptions;
   private coordinates: AnnotationPositionInfo;
+  private hideDefaultButton: boolean;
+  private pinActive: boolean;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -38,6 +41,8 @@ export class Comments extends BaseComponent {
       buttonLocation: ButtonLocation.TOP_LEFT,
     };
 
+    this.hideDefaultButton = options?.hideDefaultButton ?? false;
+
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
         this.layoutOptions?.position ?? 'left',
@@ -47,6 +52,68 @@ export class Comments extends BaseComponent {
     });
 
     this.pinAdapter = pinAdapter;
+  }
+
+  /**
+   * @function openThreads
+   * @description - Open comments thread
+   * @returns {void}
+   */
+  public openThreads = (): void => {
+    if (this.sidebarOpen) return;
+
+    this.element?.setAttribute('open', '');
+    this.sidebarOpen = true;
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
+
+  /**
+   * @function closeThreads
+   * @description - Close comments thread
+   * @returns {void}
+   */
+  public closeThreads = (): void => {
+    if (!this.sidebarOpen) return;
+
+    this.element?.removeAttribute('open');
+    this.sidebarOpen = false;
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
+
+  /**
+   * @function enable
+   * @description - Activates the pin adapter and allows the user to create annotations
+   * @returns {void}
+   */
+  public enable(): void {
+    this.pinAdapter.setActive(true);
+    this.pinActive = true;
+    this.publish(CommentEvent.PIN_ACTIVE);
+  }
+
+  /**
+   * @function disable
+   * @description - Deactivates the pin adapter and prevents the user from creating annotations
+   * @returns {void}
+   */
+  public disable(): void {
+    this.pinAdapter.setActive(false);
+    this.pinActive = false;
+    this.publish(CommentEvent.PIN_INACTIVE);
   }
 
   /**
@@ -70,12 +137,30 @@ export class Comments extends BaseComponent {
     this.clientUrl = window.location.href;
 
     this.positionComments();
-    this.positionFloatingButton();
+
+    if (!this.hideDefaultButton) {
+      this.positionFloatingButton();
+    }
+
     this.fetchAnnotations();
     this.waterMarkState();
     this.addListeners();
     this.pinAdapter.setPinsVisibility(true);
   }
+
+  /**
+   * @function togglePinActive
+   * @description Toggles the pin adapter's active state
+   * @returns {void}
+   */
+  public togglePinActive = (): void => {
+    if (this.pinActive) {
+      this.disable();
+      return;
+    }
+
+    this.enable();
+  };
 
   /**
    * @function destroy
@@ -86,7 +171,7 @@ export class Comments extends BaseComponent {
     this.logger.log('comments component @ destroy');
     this.destroyListeners();
 
-    this.button.remove();
+    this.button?.remove();
     this.element.remove();
     this.element = undefined;
     this.pinAdapter.destroy();
@@ -99,10 +184,10 @@ export class Comments extends BaseComponent {
    */
   private addListeners(): void {
     // Button observers
-    this.button.addEventListener('toggle', this.toggleAnnotationSidebar);
+    this.button?.addEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
+    this.element.addEventListener('close', this.closeThreads);
     document.body.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
@@ -129,10 +214,10 @@ export class Comments extends BaseComponent {
    */
   private destroyListeners(): void {
     // Button observers
-    this.button.removeEventListener('toggle', this.toggleAnnotationSidebar);
+    this.button?.removeEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.removeEventListener('toggle', this.toggleAnnotationSidebar);
+    this.element.removeEventListener('close', this.closeThreads);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {

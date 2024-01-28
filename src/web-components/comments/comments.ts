@@ -41,8 +41,8 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = data;
   }
 
-  private toggle() {
-    this.emitEvent('toggle', {});
+  private close() {
+    this.emitEvent('close', {});
   }
 
   waterMarkStatus(waterMark: boolean) {
@@ -94,7 +94,7 @@ export class Comments extends WebComponentsBaseElement {
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar
-            @close=${this.toggle}
+            @close=${this.close}
             side=${this.side.split(':')[0]}
           ></superviz-comments-topbar>
         </div>
