@@ -788,7 +788,7 @@ describe('Comments', () => {
 
       expect(commentsComponent['pinActive']).toBe(true);
       expect(setActiveSpy).toHaveBeenCalledWith(true);
-      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinActive);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_ACTIVE);
     });
   });
 
@@ -806,7 +806,7 @@ describe('Comments', () => {
 
       expect(commentsComponent['pinActive']).toBe(false);
       expect(setActiveSpy).toHaveBeenCalledWith(false);
-      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinInactive);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_INACTIVE);
     });
   });
 
