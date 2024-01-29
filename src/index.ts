@@ -7,6 +7,7 @@ import {
   MeetingControlsEvent,
   ParticipantEvent,
   FrameEvent,
+  CommentEvent,
 } from './common/types/events.types';
 import { ParticipantType } from './common/types/participant.types';
 import {
@@ -49,6 +50,7 @@ export {
 if (window) {
   window.SuperVizRoom = {
     init,
+    CommentEvent,
     MeetingEvent,
     DeviceEvent,
     RealtimeEvent,
@@ -88,6 +90,7 @@ export {
   CamerasPosition,
   RealtimeComponentState,
   RealtimeComponentEvent,
+  CommentEvent,
 };
 
 export default init;

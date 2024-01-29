@@ -139,7 +139,7 @@ export class PointersHTML extends BaseComponent {
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
-    this.logger &&= undefined;
+    this.logger = undefined;
   }
 
   /**
