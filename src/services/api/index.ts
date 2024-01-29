@@ -135,7 +135,7 @@ export default class ApiService {
   ) {
     const path = `/groups/participants/${groupId}`;
     const baseUrl = config.get<string>('apiUrl');
-    const url = this.createUrl(baseUrl, path);
+    const url = this.createUrl(baseUrl, path, { take: 10000 });
     return doRequest(url, 'GET', undefined, { apikey: config.get('apiKey') });
   }
 
