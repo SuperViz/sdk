@@ -24,6 +24,7 @@ export type ParticipantByGroupApi = {
   avatar: string;
   email: string;
 };
+
 export interface Group {
   id: string;
   name: string;
