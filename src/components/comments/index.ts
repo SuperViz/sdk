@@ -613,7 +613,8 @@ export class Comments extends BaseComponent {
  */
   private async participantsList(): Promise<void> {
     try {
-      const participants: ParticipantByGroupApi[] = await ApiService.fetchParticipantsByGroup(this.group.id);
+      const participantsList = await ApiService.fetchParticipantsByGroup(this.group.id);
+      const participants: ParticipantByGroupApi[] = participantsList.data
       this.pinAdapter.participantsList = participants;
       this.element.participantsList = participants;
     } catch (error) {
