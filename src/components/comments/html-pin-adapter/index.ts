@@ -51,6 +51,7 @@ export class HTMLPin implements PinAdapter {
   private pins: Map<string, HTMLElement>;
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
   private svgWrappers: HTMLElement;
+
   // Observers
   private mutationObserver: MutationObserver;
 
@@ -583,6 +584,10 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function handleSvgElement
+   * @description handles the svg element and creates a wrapper for it
+   * @param {Element} element the svg element to be handled
+   * @param {HTMLDivElement} wrapper the wrapper for the svg element
+   * @returns {HTMLDivElement} the wrapper for the svg element
    */
   private handleSvgElement(element: Element, wrapper: HTMLDivElement): HTMLDivElement {
     const viewport = (element as SVGElement).viewportElement;
@@ -599,7 +604,6 @@ export class HTMLPin implements PinAdapter {
       foreignObject.appendChild(wrapper);
       element.appendChild(foreignObject);
       (element as SVGElement).style.setProperty('overflow', 'visible');
-      // wrapper.setAttribute()
       return wrapper;
     }
 
