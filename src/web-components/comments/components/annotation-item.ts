@@ -2,6 +2,8 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Annotation, Comment } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationItemStyle } from '../css';
@@ -20,6 +22,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare shouldShowUndoResolved: boolean;
   declare isLastAnnotation: boolean;
   declare annotationFilter: string;
+  declare participantsList: ParticipantByGroupApi[];
 
   static styles = styles;
 
@@ -31,6 +34,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     shouldShowUndoResolved: { type: Boolean },
     isLastAnnotation: { type: Boolean },
     annotationFilter: { type: String },
+    participantsList: { type: Object },
+
   };
 
   private get filterIsAll(): boolean {
@@ -110,10 +115,11 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   };
 
   private createComment({ detail }: CustomEvent) {
-    const { text } = detail;
+    const { text, mentions } = detail;
 
     this.emitEvent('create-comment', {
       uuid: this.annotation.uuid,
+      mentions,
       text,
     });
   }
@@ -178,6 +184,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         text=${comment.text}
         createdAt=${comment.createdAt}
         annotationId=${this.annotation.uuid}
+        participantsList=${JSON.stringify(this.participantsList)}
+        mentions=${JSON.stringify(comment.mentions)}
       ></superviz-comments-comment-item>
     `;
   };
@@ -208,12 +216,14 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               username=${this.annotation.comments?.[0].participant?.name || 'Anonymous'}
               text=${this.annotation.comments?.[0].text}
               createdAt=${this.annotation.comments?.[0].createdAt}
+              participantsList=${JSON.stringify(this.participantsList)}
               primaryComment
               avatar=${this.annotation?.comments?.at(0)?.participant?.avatar}
               resolvable
               ?resolved=${this.resolved}
               annotationFilter=${this.annotationFilter}
               @resolve-annotation=${this.resolveAnnotation}
+              mentions=${JSON.stringify(this.annotation.comments?.[0].mentions)}
             ></superviz-comments-comment-item>
 
             <div class=${classMap(this.avatarCommentsClasses)}>
@@ -228,7 +238,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               eventType="create-comment"
               @click=${(event: Event) => event.stopPropagation()}
               placeholder="Reply"
-            ></superviz-comments-comment-input>
+              participantsList=${JSON.stringify(this.participantsList)}
+              ></superviz-comments-comment-input>
           </div>
         </div>
         <div class=${classMap(this.hrClasses)}></div>

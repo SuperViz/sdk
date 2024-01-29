@@ -1,6 +1,7 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 
@@ -20,6 +21,7 @@ export class Comments extends WebComponentsBaseElement {
   declare annotationFilter: AnnotationFilter;
   declare waterMarkState: boolean;
   declare side: string;
+  declare participantsList: ParticipantByGroupApi[];
 
   static properties = {
     open: { type: Boolean },
@@ -27,6 +29,7 @@ export class Comments extends WebComponentsBaseElement {
     annotationFilter: { type: String },
     waterMarkState: { type: Boolean },
     side: { type: String },
+    participantsList: { type: Object },
   };
 
   constructor() {
@@ -34,7 +37,12 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = [];
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
+    this.participantsList = [];
     this.side = 'left: 0px';
+  }
+
+  public participantsListed(participants: ParticipantByGroupApi[]) {
+    this.participantsList = participants;
   }
 
   public updateAnnotations(data: Annotation[]) {
@@ -106,6 +114,7 @@ export class Comments extends WebComponentsBaseElement {
         <superviz-comments-content
           annotations=${JSON.stringify(this.annotations)}
           annotationFilter=${this.annotationFilter}
+          participantsList=${JSON.stringify(this.participantsList)}
           class="content"
         ></superviz-comments-content>
         ${htmlPoweredByContent}

@@ -1,6 +1,29 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+
 
 import { HTMLPin } from '.';
+
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+    email: 'john.zero@mail.com',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+    email: 'john.uno@mail.com',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+    email: 'john.doe@mail.com',
+  },
+];
 
 const MOCK_ANNOTATION_HTML = {
   ...MOCK_ANNOTATION,
@@ -36,6 +59,14 @@ describe('HTMLPinAdapter', () => {
 
   afterEach(() => {
     document.body.innerHTML = '';
+  });
+
+  test('should set participants correctly', () => {
+    const htmlPinAdapter = new HTMLPin('container');
+    const participants: ParticipantByGroupApi[] = MOCK_PARTICIPANTS;
+    htmlPinAdapter.participantsList = participants;
+
+    expect(htmlPinAdapter.participants).toEqual(participants);
   });
 
   describe('constructor', () => {

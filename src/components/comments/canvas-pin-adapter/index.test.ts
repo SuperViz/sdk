@@ -1,20 +1,51 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { HTMLPin } from '../html-pin-adapter';
 
 import { CanvasPin } from '.';
 
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+    email: 'john.zero@mail.com',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+    email: 'john.uno@mail.com',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+    email: 'john.doe@mail.com',
+  },
+];
+
 describe('CanvasPinAdapter', () => {
+  let canvasPinAdapter: HTMLPin;
   let instance: CanvasPin;
 
   beforeEach(() => {
     document.body.innerHTML = `
-      <div id="parentElement" style="width: 200px; height: 200px; overflow: auto;">
-        <div id="divWrapper">
-          <canvas id="canvas"></canvas>
-        </div>
+      <div id="container">
+        <div data-superviz-id="1"></div>
+        <div data-superviz-id="2"></div>
+        <div data-superviz-id="3"></div>
       </div>
+      <div id="parentElement" style="width: 200px; height: 200px; overflow: auto;">
+      <div id="divWrapper">
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
     `;
-
+    canvasPinAdapter = new HTMLPin('container');
+    canvasPinAdapter.setActive(true);
+    canvasPinAdapter['mouseDownCoordinates'] = { x: 100, y: 100 };
     instance = new CanvasPin('canvas');
     instance.setActive(true);
     instance['mouseDownCoordinates'] = { x: 100, y: 100 };
@@ -23,6 +54,25 @@ describe('CanvasPinAdapter', () => {
 
   afterEach(() => {
     document.body.innerHTML = '';
+  });
+
+  describe('set participantsList', () => {
+    test('should set the participants list correctly', () => {
+      const participants = MOCK_PARTICIPANTS;
+
+      canvasPinAdapter.participantsList = participants;
+
+      expect(canvasPinAdapter.participants).toEqual(participants);
+    });
+
+    test('should handle an empty participants list', () => {
+      const participants: ParticipantByGroupApi[] = [];
+
+      canvasPinAdapter.participantsList = participants;
+
+      expect(canvasPinAdapter.participants).toEqual(participants);
+    });
+
   });
 
   describe('annotationSelected', () => {

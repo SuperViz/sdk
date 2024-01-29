@@ -1,3 +1,4 @@
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
@@ -23,6 +24,7 @@ export class CanvasPin implements PinAdapter {
   private movedTemporaryPin: boolean;
   private localParticipant: SimpleParticipant = {};
   private originalCanvasCursor: string;
+  declare participants: ParticipantByGroupApi[];
 
   constructor(
     canvasId: string,
@@ -157,6 +159,7 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
+      temporaryPin.setAttribute('participantsList', JSON.stringify(this.participants));
       temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
       this.divWrapper.appendChild(temporaryPin);
@@ -335,9 +338,10 @@ export class CanvasPin implements PinAdapter {
 
         return;
       }
-
       const pinElement = document.createElement('superviz-comments-annotation-pin');
       pinElement.setAttribute('type', PinMode.SHOW);
+      pinElement.setAttribute('participantsList', JSON.stringify(this.participants));
+
       pinElement.setAttribute('annotation', JSON.stringify(annotation));
       pinElement.setAttribute('position', JSON.stringify({ x, y }));
       pinElement.id = annotation.uuid;
@@ -402,6 +406,15 @@ export class CanvasPin implements PinAdapter {
     this.goToPin(uuid);
   };
 
+  /**
+   * @function participantsList
+   * @description - all participants of developer groupId
+   * @param participants - all participants list
+   */
+  public set participantsList(participants: ParticipantByGroupApi[]) {
+    this.participants = participants;
+  }
+  
   /**
    * @function goToPin
    * @description - translate the canvas to the pin position
@@ -506,8 +519,17 @@ export class CanvasPin implements PinAdapter {
    */
   private hideTemporaryPin = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
+    const isCanvasParent = target.contains(this.canvas);
+    const { x, y } = event;
+    const { left, top, right, bottom } = this.canvas.getBoundingClientRect();
+    const clickIsInsideCanvas = x > left && x < right && y > top && y < bottom;
 
-    if (this.canvas.contains(target) || this.pins.get('temporary-pin')?.contains(target)) return;
+    if (
+      this.canvas.contains(target) ||
+      this.pins.get('temporary-pin')?.contains(target) ||
+      (isCanvasParent && clickIsInsideCanvas)
+    )
+      return;
 
     this.removeAnnotationPin('temporary-pin');
     this.temporaryPinCoordinates = null;

@@ -18,6 +18,12 @@ export interface Participant {
   activeComponents?: ComponentNames[];
 }
 
+export type ParticipantByGroupApi = {
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+};
 export interface Group {
   id: string;
   name: string;
@@ -28,7 +34,7 @@ export interface Avatar {
   imageUrl: string;
 }
 
-export type ParticipantApi = {
+export type ParticipantByCommentsApi = {
   uuid: string;
   participantId: string;
   name: string;

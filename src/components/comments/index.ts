@@ -1,4 +1,5 @@
 import { CommentEvent } from '../../common/types/events.types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
@@ -144,6 +145,7 @@ export class Comments extends BaseComponent {
 
     this.fetchAnnotations();
     this.waterMarkState();
+    this.participantsList();
     this.addListeners();
     this.pinAdapter.setPinsVisibility(true);
   }
@@ -192,7 +194,7 @@ export class Comments extends BaseComponent {
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
-      this.createComment(detail.uuid, detail.text, true);
+      this.createComment(detail.uuid, detail.text, detail.mentions, true);
     });
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
@@ -221,7 +223,7 @@ export class Comments extends BaseComponent {
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
-      this.createComment(detail.uuid, detail.text, true);
+      this.createComment(detail.uuid, detail.text, detail.mentions, true);
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
@@ -362,7 +364,7 @@ export class Comments extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { text } = detail;
+      const { text, mentions } = detail;
       const { url } = this;
       const position = { ...this.coordinates };
       const annotation = await ApiService.createAnnotations(
@@ -376,7 +378,8 @@ export class Comments extends BaseComponent {
         },
       );
 
-      const comment = await this.createComment(annotation.uuid, text);
+      const comment = await this.createComment(annotation.uuid, text, mentions);
+
       this.addAnnotation({
         ...annotation,
         comments: [comment],
@@ -431,6 +434,7 @@ export class Comments extends BaseComponent {
   private async createComment(
     annotationId: string,
     text: string,
+    mentions = [],
     addComment = false,
   ): Promise<Comment> {
     try {
@@ -443,6 +447,16 @@ export class Comments extends BaseComponent {
           text,
         },
       );
+
+        await ApiService.createMentions({
+          commentsId: comment.uuid,
+          participants: mentions.map((mention) => ({
+            id: mention.userId,
+            readed: 0
+          }))
+        })
+
+    comment.mentions = mentions;
 
       if (addComment) {
         this.addComment(annotationId, comment);
@@ -464,19 +478,29 @@ export class Comments extends BaseComponent {
    */
   private updateComment = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { uuid, text } = detail;
-      await ApiService.updateComment(
+      const { uuid, text, mentions } = detail;
+      const comment = await ApiService.updateComment(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         uuid,
         text,
       );
 
+        await ApiService.createMentions({
+          commentsId: comment.uuid,
+          participants: mentions.map((mention) => ({
+            id: mention.userId,
+          }))
+        })
+
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
           comments: annotation.comments.map((comment) => {
             if (comment.uuid === uuid) {
-              return Object.assign({}, comment, { text });
+              return Object.assign({}, comment, {
+                text,
+                mentions,
+              });
             }
 
             return comment;
@@ -579,6 +603,21 @@ export class Comments extends BaseComponent {
       this.element.waterMarkStatus(dataWaterMark);
     } catch (error) {
       this.logger.log('error when fetching waterMark', error);
+    }
+  }
+
+  /**
+ * @function participantsList
+ * @description Fetch participantsList from the API to be shown
+ * @returns {Promise<void>}
+ */
+  private async participantsList(): Promise<void> {
+    try {
+      const participants: ParticipantByGroupApi[] = await ApiService.fetchParticipantsByGroup(this.group.id);
+      this.pinAdapter.participantsList = participants;
+      this.element.participantsList = participants;
+    } catch (error) {
+      this.logger.log('error when fetching participantsList', error);
     }
   }
 

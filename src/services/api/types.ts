@@ -14,7 +14,17 @@ export type CommentParams = {
 export type FetchAnnotationsParams = {
   roomId: string;
   url: string;
-};
+}
+
+export type MentionParams = {
+  commentsId: string
+  participants: MentionParticipantParams[]
+}
+
+export type MentionParticipantParams = {
+  id: string
+  readed: number
+}
 
 export type CreateOrUpdateParticipantParams = {
   name: string;

@@ -5,14 +5,36 @@ import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { CommentEvent } from '../../common/types/events.types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import { PinAdapter, CommentsSide, Annotation, PinCoordinates } from './types';
+import {  PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
 
 import { Comments } from './index';
+
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+    email: 'john.zero@mail.com',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+    email: 'john.uno@mail.com',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+    email: 'john.doe@mail.com',
+  },
+];
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
@@ -20,10 +42,11 @@ jest.mock('../../services/api', () => ({
   createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
   createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
+  createMentions: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
-}));
+  fetchParticipantsByGroup: jest.fn().mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),}));
 
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
@@ -33,6 +56,7 @@ const DummiePinAdapter: PinAdapter = {
   setPinsVisibility: jest.fn(),
   setCommentsMetadata: jest.fn(),
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
+  participantsList: [],
 };
 
 describe('Comments', () => {
@@ -419,7 +443,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(3);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(4);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
@@ -465,12 +489,14 @@ describe('Comments', () => {
 
   test('should update comment on annotation when it is updated', async () => {
     commentsComponent['annotations'] = [MOCK_ANNOTATION];
+    jest.spyOn(ApiService, 'createMentions');
 
     commentsComponent['element'].dispatchEvent(
       new CustomEvent('update-comment', {
         detail: {
           uuid: MOCK_ANNOTATION.comments[0].uuid,
           text: 'text-test',
+          mentions: [],
         },
       }),
     );
@@ -512,7 +538,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(1);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(2);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
@@ -703,6 +729,36 @@ describe('Comments', () => {
     expect(commentsComponent['annotations'][1]).toStrictEqual(annotationList[1]);
   });
 
+  describe('fetch participants into a group', () => {
+    test('should call apiServiceapiService participantsList and send to element the participantsListed to commentsComponent', async () => {
+      const spy = jest.spyOn(ApiService, 'fetchParticipantsByGroup');
+
+      expect(spy).toHaveBeenCalledWith('unit-test-group-id');
+
+      const response = await ApiService.fetchParticipantsByGroup('unit-test-group-id');
+      expect(response).toEqual(MOCK_PARTICIPANTS);
+
+      commentsComponent['element'].participantsListed = jest.fn();
+      await commentsComponent['element'].participantsListed(MOCK_PARTICIPANTS);
+
+      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(MOCK_PARTICIPANTS);
+    });
+  });
+
+  describe('Mentions', () => {
+    test('should create a mention', async () => {
+      const response = await ApiService.createMentions({
+        commentsId: 'any_comment_id',
+        participants: [{
+          id: 'any_mention_userId',
+          readed: 0,
+      }]
+      });
+
+      expect(response).toEqual([]);
+    });
+  })
+
   describe('openThreads', () => {
     afterEach(() => {
       jest.resetAllMocks();
@@ -788,7 +844,7 @@ describe('Comments', () => {
 
       expect(commentsComponent['pinActive']).toBe(true);
       expect(setActiveSpy).toHaveBeenCalledWith(true);
-      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinActive);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_ACTIVE);
     });
   });
 
@@ -806,7 +862,7 @@ describe('Comments', () => {
 
       expect(commentsComponent['pinActive']).toBe(false);
       expect(setActiveSpy).toHaveBeenCalledWith(false);
-      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.pinInactive);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_INACTIVE);
     });
   });
 

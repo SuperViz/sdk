@@ -2,6 +2,8 @@ import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Annotation, PinCoordinates } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { annotationPinStyles } from '../css';
@@ -27,10 +29,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare annotationSent: boolean;
   declare localName: string;
   declare keepPositionRatio: boolean;
+  declare participantsList: ParticipantByGroupApi[];
 
   private originalPosition: Partial<PinCoordinates>;
   private annotationSides: Sides;
   private inputElement: HTMLTextAreaElement;
+
 
   static styles = styles;
   static properties = {
@@ -48,6 +52,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     annotationSent: { type: Boolean },
     localName: { type: String },
     keepPositionRatio: { type: Boolean },
+    participantsList: { type: Object },
   };
 
   constructor() {
@@ -211,6 +216,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
         @create-annotation=${this.createComment}
         eventType="create-annotation"
         @comment-input-ready=${this.focusInput}
+        participantsList=${JSON.stringify(this.participantsList)}
       >
       </superviz-comments-comment-input>
     </div>`;

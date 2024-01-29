@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { DateTime } from 'luxon';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { WebComponentsBase } from '../../base';
 import { commentItemStyle } from '../css';
 
@@ -32,6 +33,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare primaryComment: boolean;
   declare expandElipsis: boolean;
   declare annotationFilter: string;
+  declare participantsList: ParticipantByGroupApi[];
+  declare mentions: ParticipantByGroupApi[];
   declare avatar: string;
 
   static properties = {
@@ -48,15 +51,18 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     primaryComment: { type: Boolean },
     expandElipsis: { type: Boolean },
     annotationFilter: { type: String },
+    participantsList: { type: Object },
+    mentions: { type: Array },
   };
 
   private updateComment = ({ detail }: CustomEvent) => {
-    const { text } = detail;
+    const { text, mentions } = detail;
     this.text = text;
     this.closeEditMode();
 
     this.emitEvent('update-comment', {
       uuid: this.uuid,
+      mentions,
       text,
     });
   };
@@ -149,6 +155,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           @click=${(event: Event) => event.stopPropagation()}
           text=${this.text}
           eventType="update-comment"
+          participantsList=${JSON.stringify(this.participantsList)}
+          mentions=${JSON.stringify(this.mentions)}
           @update-comment=${this.updateComment}
           @close-edit-mode=${this.closeEditMode}
         ></superviz-comments-comment-input>

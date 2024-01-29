@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
@@ -16,11 +17,13 @@ export class HTMLPin implements PinAdapter {
   // Public properties
   // Observers
   public onPinFixedObserver: Observer;
-
+  
   // Private properties
   // Comments data
   private annotations: Annotation[];
   private localParticipant: SimpleParticipant = {};
+
+  declare participants: ParticipantByGroupApi[];
 
   // Loggers
   private logger: Logger;
@@ -166,6 +169,13 @@ export class HTMLPin implements PinAdapter {
     this.divWrappers.get(id).removeEventListener('mousedown', this.onMouseDown);
   }
 
+  /**
+   * @public setParticipantsList
+   */
+  public set participantsList(participants: ParticipantByGroupApi[]) {
+    this.participants = participants;
+  }
+  
   /**
    * @function removeObservers
    * @description disconnects the observers.
@@ -389,6 +399,7 @@ export class HTMLPin implements PinAdapter {
       const elementSides = this.elementsWithDataId[elementId]?.getBoundingClientRect();
 
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
+      
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('showInput', '');
@@ -398,6 +409,8 @@ export class HTMLPin implements PinAdapter {
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
       temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
+      temporaryPin.setAttribute('participantsList', JSON.stringify(this.participants));
+
       temporaryPin.setAttribute('keepPositionRatio', '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
 
@@ -740,6 +753,7 @@ export class HTMLPin implements PinAdapter {
     pinElement.setAttribute('annotation', JSON.stringify(annotation));
     pinElement.setAttribute('position', JSON.stringify({ x, y }));
     pinElement.setAttribute('keepPositionRatio', '');
+    pinElement.setAttribute('participantsList', JSON.stringify(this.participants));
     pinElement.id = annotation.uuid;
 
     return pinElement;
