@@ -448,15 +448,15 @@ export class Comments extends BaseComponent {
         },
       );
 
-        await ApiService.createMentions({
-          commentsId: comment.uuid,
-          participants: mentions.map((mention) => ({
-            id: mention.userId,
-            readed: 0
-          }))
-        })
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+          readed: 0,
+        })),
+      });
 
-    comment.mentions = mentions;
+      comment.mentions = mentions;
 
       if (addComment) {
         this.addComment(annotationId, comment);
@@ -486,12 +486,12 @@ export class Comments extends BaseComponent {
         text,
       );
 
-        await ApiService.createMentions({
-          commentsId: comment.uuid,
-          participants: mentions.map((mention) => ({
-            id: mention.userId,
-          }))
-        })
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+        })),
+      });
 
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
@@ -607,14 +607,14 @@ export class Comments extends BaseComponent {
   }
 
   /**
- * @function participantsList
- * @description Fetch participantsList from the API to be shown
- * @returns {Promise<void>}
- */
+   * @function participantsList
+   * @description Fetch participantsList from the API to be shown
+   * @returns {Promise<void>}
+   */
   private async participantsList(): Promise<void> {
     try {
       const participantsList = await ApiService.fetchParticipantsByGroup(this.group.id);
-      const participants: ParticipantByGroupApi[] = participantsList.data
+      const participants: ParticipantByGroupApi[] = participantsList.data;
       this.pinAdapter.participantsList = participants;
       this.element.participantsList = participants;
     } catch (error) {
