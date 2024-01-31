@@ -376,6 +376,7 @@ export class HTMLPin implements PinAdapter {
       return;
     }
 
+    this.resetPins();
     this.removeListeners();
     this.removeAddCursor();
   }
@@ -814,6 +815,7 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.left = `0`;
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
+    containerWrapper.style.pointerEvents = 'none';
 
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
