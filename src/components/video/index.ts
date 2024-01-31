@@ -202,7 +202,7 @@ export class VideoConference extends BaseComponent {
       avatars: this.params?.avatars ?? [],
       customColors: config.get<ColorsVariables>('colors'),
       waterMark: config.get<boolean>('waterMark'),
-      frameStyles: this.params?.frameStyles ?? {},
+      styles: this.params?.styles,
       collaborationMode: this.params?.collaborationMode?.enabled ?? true,
       layoutPosition:
         this.params?.collaborationMode?.enabled === false

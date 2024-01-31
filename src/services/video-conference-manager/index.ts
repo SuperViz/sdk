@@ -29,7 +29,6 @@ import {
   LayoutPosition,
   CamerasPosition,
   LayoutModalsAndCameras,
-  VideoColors,
 } from './types';
 
 const FRAME_ID = 'sv-video-frame';
@@ -47,7 +46,7 @@ export default class VideoConfereceManager {
 
   private readonly frameConfig: FrameConfig;
   private readonly customColors: ColorsVariables;
-  private readonly frameStyles: VideoColors;
+  private readonly styles: string;
 
   public readonly frameStateObserver = new Observer({ logger: this.logger });
   public readonly frameSizeObserver = new Observer({ logger: this.logger });
@@ -84,7 +83,7 @@ export default class VideoConfereceManager {
       locales,
       avatars,
       customColors,
-      frameStyles,
+      styles,
       waterMark,
       layoutPosition,
       camerasPosition,
@@ -131,7 +130,7 @@ export default class VideoConfereceManager {
     };
 
     this.customColors = customColors;
-    this.frameStyles = frameStyles;
+    this.styles = styles;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
@@ -305,8 +304,7 @@ export default class VideoConfereceManager {
     if (this.customColors)
       this.messageBridge.publish(FrameEvent.FRAME_COLOR_LIST_UPDATE, this.customColors);
 
-    if (this.frameStyles)
-      this.messageBridge.publish(FrameEvent.FRAME_STYLES_UPDATE, this.frameStyles);
+    if (this.styles) this.messageBridge.publish(FrameEvent.FRAME_STYLES_UPDATE, this.styles);
   };
 
   /**
