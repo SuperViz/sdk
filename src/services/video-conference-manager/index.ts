@@ -47,6 +47,7 @@ export default class VideoConfereceManager {
   private readonly frameConfig: FrameConfig;
   private readonly customColors: ColorsVariables;
 
+  private readonly callbacks: Record<string, () => void>;
   public readonly frameStateObserver = new Observer({ logger: this.logger });
   public readonly frameSizeObserver = new Observer({ logger: this.logger });
 
@@ -89,6 +90,7 @@ export default class VideoConfereceManager {
       devices,
       layoutMode,
       collaborationMode,
+      callbacks,
     } = options;
 
     this.browserService = browserService;
@@ -128,6 +130,7 @@ export default class VideoConfereceManager {
     };
 
     this.customColors = customColors;
+    this.callbacks = callbacks;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
@@ -234,6 +237,7 @@ export default class VideoConfereceManager {
     this.updateMeetingAvatars();
     this.onWindowResize();
     this.setCustomColors();
+    this.setCallbacks();
   };
 
   /**
@@ -301,6 +305,31 @@ export default class VideoConfereceManager {
     if (!this.customColors) return;
 
     this.messageBridge.publish(FrameEvent.FRAME_COLOR_LIST_UPDATE, this.customColors);
+  };
+
+  /**
+   * @function setCallbacks
+   * @description adds the callbacks to the frame.
+   * @returns {void}
+   */
+  private setCallbacks = (): void => {
+    if (!this.callbacks) return;
+
+    const callbacks = {
+      onToggleMicrophone: !!this.callbacks.onToggleMicrophone,
+      onToggleCamera: !!this.callbacks.onToggleCamera,
+      onToggleTranscript: !!this.callbacks.onToggleTranscript,
+      onToggleChat: !!this.callbacks.onToggleChat,
+      onToggleScreenShare: !!this.callbacks.onToggleScreenShare,
+      onLeaveMeeting: !!this.callbacks.onLeaveMeeting,
+      onClickSettings: !!this.callbacks.onClickSettings,
+    };
+
+    this.messageBridge.listen(MeetingControlsEvent.CALLBACK_CALLED, (callback: string) => {
+      this.callbacks[callback]?.();
+    });
+
+    this.messageBridge.publish(FrameEvent.FRAME_CALLBACKS_UPDATE, JSON.stringify(callbacks));
   };
 
   /**
