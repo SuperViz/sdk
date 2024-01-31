@@ -17,7 +17,7 @@ export class HTMLPin implements PinAdapter {
   // Public properties
   // Observers
   public onPinFixedObserver: Observer;
-  
+
   // Private properties
   // Comments data
   private annotations: Annotation[];
@@ -176,7 +176,7 @@ export class HTMLPin implements PinAdapter {
   public set participantsList(participants: ParticipantByGroupApi[]) {
     this.participants = participants;
   }
-  
+
   /**
    * @function removeObservers
    * @description disconnects the observers.
@@ -365,6 +365,8 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   public setActive(isOpen: boolean): void {
+    if (this.isActive === isOpen) return;
+
     this.isActive = isOpen;
 
     if (this.isActive) {
@@ -400,7 +402,7 @@ export class HTMLPin implements PinAdapter {
       const elementSides = this.elementsWithDataId[elementId]?.getBoundingClientRect();
 
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
-      
+
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('showInput', '');
