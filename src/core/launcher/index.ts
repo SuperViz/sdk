@@ -151,8 +151,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
-    this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
-    this.realtime.hostAvailabilityObserver.unsubscribe(this.onHostAvailabilityChange);
     this.realtime.leave();
     this.realtime = undefined;
     this.isDestroyed = true;
@@ -231,8 +229,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
-    this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
-    this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityChange);
   };
 
   /** Realtime Listeners */

@@ -21,13 +21,11 @@ import {
   RealtimeMessage,
 } from './types';
 
-const KICK_PARTICIPANTS_TIME = 1000 * 60;
 const MESSAGE_SIZE_LIMIT = 60000;
 const CLIENT_MESSAGE_SIZE_LIMIT = 10000;
 const SYNC_PROPERTY_INTERVAL = 1000;
 const SYNC_MOUSE_INTERVAL = 100;
 
-let KICK_PARTICIPANTS_TIMEOUT = null;
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
   private participants: Record<string, AblyParticipant> = {};
@@ -57,7 +55,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private enableSync: boolean = true;
   private isSyncFrozen: boolean = false;
   private roomId: string;
-  private shouldKickParticipantsOnHostLeave: boolean = false;
   private readonly ablyKey: string;
   private apiKey: string;
   private readonly apiUrl: string;
@@ -257,18 +254,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description set a new host to the room
    * @returns {void}
    */
-  public setHost = (participantId: string): Promise<void> => {
-    if (!participantId) {
-      this.updateRoomProperties({
-        hostClientId: null,
-      });
-      return;
-    }
+  public setHost = (participantId: string): void => {
+    console.log('setting host', participantId);
 
-    const participant = this.participants[participantId];
-    this.updateRoomProperties({
-      hostClientId: participant.clientId,
-    });
+    this.updateRoomProperties({ hostClientId: participantId });
   };
 
   /**
@@ -426,16 +415,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
-   * @function setKickParticipantsOnHostLeave
-   * @param {boolean} shouldKick
-   * @description set if the participants should be kicked when the host leaves
-   * @param shouldKick
-   */
-  public setKickParticipantsOnHostLeave = (shouldKick: boolean): void => {
-    this.shouldKickParticipantsOnHostLeave = shouldKick;
-  };
-
-  /**
    * @function publishClientSyncProperties
    * @description publish client sync props
    * @returns {void}
@@ -499,26 +478,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       participantId: presenceMessage.clientId,
     });
 
-    const isLastUpdateInVideo = this.participants[
-      participant.clientId
-    ]?.data?.activeComponents?.includes(ComponentNames.VIDEO_CONFERENCE);
-
-    const isNowInVideo = participant.data?.activeComponents?.includes(
-      ComponentNames.VIDEO_CONFERENCE,
-    );
-
-    const isLeftVideo = isLastUpdateInVideo && !isNowInVideo;
-
     this.publishParticipantUpdate(participant);
 
     if (this.participants && this.participants[clientId]) {
       if (this.hostParticipantId === this.localParticipantId && this.isBroadcast) {
         this.syncBroadcast();
       }
-    }
-
-    if (isLeftVideo) {
-      this.hostPassingHandle();
     }
   }
 
@@ -610,42 +575,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
     this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
-
-    const hasAnyParticipantInTheVideoConference = Object.values(this.participants).some(
-      (participant) => {
-        return (
-          participant.data?.activeComponents?.includes(ComponentNames.VIDEO_CONFERENCE) &&
-          participant.data.type === ParticipantType.HOST
-        );
-      },
-    );
-
-    if (data.hostClientId && hasAnyParticipantInTheVideoConference && KICK_PARTICIPANTS_TIMEOUT) {
-      clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
-
-      KICK_PARTICIPANTS_TIMEOUT = null;
-
-      this.hostAvailabilityObserver.publish(true);
-    }
-
-    if (!data.hostClientId && hasAnyParticipantInTheVideoConference) {
-      this.hostParticipantId = null;
-
-      this.hostPassingHandle();
-    } else if (!!data?.hostClientId && data?.hostClientId !== this.hostParticipantId) {
-      this.updateHostInfo(data.hostClientId);
-    } else if (!hasAnyParticipantInTheVideoConference && !!data?.hostClientId) {
-      this.updateHostInfo(null);
-    } else if (
-      !data.hostClientId &&
-      !KICK_PARTICIPANTS_TIMEOUT &&
-      !hasAnyParticipantInTheVideoConference &&
-      this.hostParticipantId
-    ) {
-      this.hostParticipantId = null;
-
-      this.hostPassingHandle();
-    }
 
     this.updateParticipants();
 
@@ -757,57 +686,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
-   * @function updateHostInfo
-   * @param {string} newHostId
-   * @description update host info
-   * @returns {void}
-   */
-  private updateHostInfo = (newHostId: string): Promise<void> => {
-    const currentConnectedClients: Array<{ clientId: string; type: ParticipantType }> = [];
-
-    this.supervizChannel.presence.get((err, members) => {
-      members.forEach((member) => {
-        if (err) {
-          return;
-        }
-
-        currentConnectedClients.push({
-          clientId: member.clientId,
-          type: member.data.type,
-        });
-      });
-    });
-
-    if (
-      !newHostId ||
-      !currentConnectedClients.some(
-        (client) => client.clientId === newHostId && client.type === ParticipantType.HOST,
-      )
-    ) {
-      this.hostPassingHandle();
-      return;
-    }
-
-    if (KICK_PARTICIPANTS_TIMEOUT) {
-      clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
-      this.hostAvailabilityObserver.publish(true);
-    }
-
-    const oldHostParticipantId = this.hostParticipantId;
-    this.hostParticipantId = newHostId;
-
-    this.hostObserver.publish({
-      oldHostParticipantId,
-      newHostParticipantId: this.hostParticipantId,
-    });
-
-    this.logger.log(
-      'REALTIME',
-      `Master participant has been changed. New Master Participant: ${this.hostParticipantId}`,
-    );
-  };
-
-  /**
    * @function initializeRoomProperties
    * @description
         Initializes the room properties,
@@ -822,11 +700,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       gather: false,
       drawing: null,
     };
-
-    // set host to me if im candidate
-    if (this.myParticipant?.data.type === ParticipantType.HOST) {
-      roomProperties.hostClientId = this.myParticipant.data.participantId;
-    }
 
     this.updateParticipants();
     this.updateRoomProperties(roomProperties);
@@ -956,41 +829,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.throw(error.message);
     }
   }
-
-  /**
-   * @function hostPassingHandle
-   * @description
-     determines when guest participants should wait for the host before entering the meeting room
-   * @returns {void}
-   */
-  private hostPassingHandle = throttle(async (): Promise<void> => {
-    this.localRoomProperties = await this.fetchRoomProperties();
-
-    this.supervizChannel.presence.get((_, members) => {
-      const hostCandidates = members
-        .filter((member) => {
-          return member.data.type === ParticipantType.HOST;
-        })
-        .map((member) => member.clientId);
-
-      if (this.shouldKickParticipantsOnHostLeave && !hostCandidates.length) {
-        this.hostAvailabilityObserver.publish(false);
-        KICK_PARTICIPANTS_TIMEOUT = setTimeout(() => {
-          this.kickAllParticipantsObserver.publish(true);
-        }, KICK_PARTICIPANTS_TIME);
-
-        this.setHost(null);
-        return;
-      }
-
-      const nextHostCandidateParticipantId = hostCandidates[0];
-
-      // if there is no host candidate, or host candidate is me, update room properties
-      if (nextHostCandidateParticipantId === this.localParticipantId || !hostCandidates.length) {
-        this.setHost(nextHostCandidateParticipantId);
-      }
-    });
-  }, 1000);
 
   /**
    * @function findSlotIndex
@@ -1173,14 +1011,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     } else {
       this.updateParticipants();
 
-      const isHostCandidate = this.myParticipant.data.type === ParticipantType.HOST;
-
-      if (this.localRoomProperties?.hostClientId) {
-        await this.updateHostInfo(this.localRoomProperties.hostClientId);
-      } else if (isHostCandidate) {
-        await this.setHost(this.myParticipant.data.participantId);
-      }
-
       this.localRoomProperties = await this.fetchRoomProperties();
       this.updateLocalRoomState(this.localRoomProperties);
     }
@@ -1210,7 +1040,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private onParticipantLeave(presence: Ably.Types.PresenceMessage): void {
     if (this.state === RealtimeStateTypes.READY_TO_JOIN) return;
 
-    const hostLeft = presence.data.participantId === this.hostParticipantId;
     const followedLeft =
       presence.data.participantId === this.localRoomProperties.followParticipantId;
 
@@ -1220,20 +1049,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.participantLeaveObserver.publish(presence);
 
-    if (hostLeft) {
-      this.onHostLeft();
-    }
-
     this.updateParticipants();
-  }
-
-  /**
-   * @function onHostLeft
-   * @description Updates the room properties when the host leaves the room
-   * @returns {void}
-   */
-  private onHostLeft(): void {
-    this.updateRoomProperties({ hostClientId: null });
   }
 
   /**

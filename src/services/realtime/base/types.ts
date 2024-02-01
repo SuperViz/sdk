@@ -11,7 +11,6 @@ export interface DefaultRealtimeService {
   reconnectObserver: Observer;
   roomInfoUpdatedObserver: Observer;
   roomListUpdatedObserver: Observer;
-  hostObserver: Observer;
   realtimeStateObserver: Observer;
   syncPropertiesObserver: Observer;
   kickAllParticipantsObserver: Observer;

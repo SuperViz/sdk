@@ -65,6 +65,8 @@ jest.mock('../../services/event-bus', () => {
   return jest.fn().mockImplementation(() => EVENT_BUS_MOCK);
 });
 
+jest.useFakeTimers();
+
 const MOCK_REALTIME = Object.assign({}, ABLY_REALTIME_MOCK, {
   isJoinedRoom: true,
   participant: {
@@ -87,9 +89,11 @@ describe('VideoConference', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
 
     VideoConferenceInstance = new VideoConference({
       userType: 'host',
+      allowGuests: false,
     });
 
     VideoConferenceInstance.attach({
@@ -129,7 +133,6 @@ describe('VideoConference', () => {
   test('should subscribe to realtime events', () => {
     expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.subscribe).toHaveBeenCalled();
     expect(ABLY_REALTIME_MOCK.participantsObserver.subscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.hostObserver.subscribe).toHaveBeenCalled();
     expect(ABLY_REALTIME_MOCK.participantJoinedObserver.subscribe).toHaveBeenCalled();
     expect(ABLY_REALTIME_MOCK.participantLeaveObserver.subscribe).toHaveBeenCalled();
   });
@@ -142,6 +145,176 @@ describe('VideoConference', () => {
     expect(VIDEO_MANAGER_MOCK.participantLeftObserver.subscribe).toHaveBeenCalled();
   });
 
+  describe('host handler', () => {
+    test('should set as host the first participant that joins the room and type is host', () => {
+      const ablyParticipant: AblyParticipant = {
+        extras: null,
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          slotIndex: 0,
+          avatar: MOCK_AVATAR,
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          type: ParticipantType.HOST,
+        },
+      };
+
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
+        [MOCK_LOCAL_PARTICIPANT.id]: ablyParticipant,
+      });
+
+      expect(ABLY_REALTIME_MOCK.setHost).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
+    });
+
+    test('should keep the host if it is already set and stays in the room', () => {
+      const originalHost: AblyParticipant = {
+        extras: null,
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
+        action: 'present',
+        connectionId: 'connection1',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          slotIndex: 0,
+          avatar: MOCK_AVATAR,
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          type: ParticipantType.HOST,
+        },
+      };
+
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
+        [MOCK_LOCAL_PARTICIPANT.id]: originalHost,
+      });
+
+      expect(ABLY_REALTIME_MOCK.setHost).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
+
+      const participantComesAfterHost: AblyParticipant = {
+        extras: null,
+        clientId: 'client2',
+        action: 'present',
+        connectionId: 'connection2',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: 'client2',
+          slotIndex: 1,
+          avatar: MOCK_AVATAR,
+          id: 'client2',
+          type: ParticipantType.GUEST,
+        },
+      };
+
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
+        client2: participantComesAfterHost,
+      });
+
+      expect(ABLY_REALTIME_MOCK.setHost).toBeCalledTimes(1);
+    });
+
+    test('should not set host if the participant is not me', () => {
+      const participant: AblyParticipant = {
+        extras: null,
+        clientId: 'client2',
+        action: 'present',
+        connectionId: 'connection2',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: 'client2',
+          slotIndex: 1,
+          avatar: MOCK_AVATAR,
+          id: 'client2',
+          type: ParticipantType.HOST,
+        },
+      };
+
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
+        client2: participant,
+      });
+
+      expect(ABLY_REALTIME_MOCK.setHost).not.toBeCalled();
+    });
+
+    test('should init the timer to kick participants if the host leaves', () => {
+      VideoConferenceInstance['onParticipantJoined']({
+        ...MOCK_LOCAL_PARTICIPANT,
+        type: ParticipantType.GUEST,
+      });
+
+      expect(VideoConferenceInstance['kickParticipantsOnHostLeave']).toBe(true);
+
+      const guest: AblyParticipant = {
+        extras: null,
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
+        action: 'present',
+        connectionId: 'connection2',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          slotIndex: 1,
+          avatar: MOCK_AVATAR,
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          type: ParticipantType.GUEST,
+        },
+      };
+
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
+        [MOCK_LOCAL_PARTICIPANT.id]: guest,
+      });
+
+      jest.advanceTimersByTime(1000 * 60);
+
+      // check if the participant is kicked
+      expect(VideoConferenceInstance['kickParticipantsOnHostLeave']).toBe(false);
+      expect(VideoConferenceInstance['isAttached']).toBe(false);
+    });
+
+    test('should clear the timer to kick participants if in the room has host candidates', () => {
+      VideoConferenceInstance['onParticipantJoined']({
+        ...MOCK_LOCAL_PARTICIPANT,
+        type: ParticipantType.GUEST,
+      });
+
+      expect(VideoConferenceInstance['kickParticipantsOnHostLeave']).toBe(true);
+
+      const host: AblyParticipant = {
+        extras: null,
+        clientId: MOCK_LOCAL_PARTICIPANT.id,
+        action: 'present',
+        connectionId: 'connection2',
+        encoding: 'h264',
+        id: 'unit-test-participant-ably-id',
+        timestamp: new Date().getTime(),
+        data: {
+          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          slotIndex: 1,
+          avatar: MOCK_AVATAR,
+          id: MOCK_LOCAL_PARTICIPANT.id,
+          type: ParticipantType.HOST,
+        },
+      };
+
+      VideoConferenceInstance['onRealtimeParticipantsDidChange']({
+        [MOCK_LOCAL_PARTICIPANT.id]: host,
+      });
+
+      jest.advanceTimersByTime(1000 * 60);
+
+      expect(VideoConferenceInstance['kickParticipantsOnHostLeave']).toBe(true);
+    });
+  });
+
   describe('detach', () => {
     beforeEach(() => {
       VideoConferenceInstance.detach();
@@ -150,7 +323,6 @@ describe('VideoConference', () => {
     test('should unsubscribe from realtime events', () => {
       expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
     });
@@ -339,7 +511,6 @@ describe('VideoConference', () => {
         activeComponents: [],
         type: ParticipantType.GUEST,
       });
-      expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
     });
 
     test('should publish a message to client when devices change', () => {
@@ -411,10 +582,7 @@ describe('VideoConference', () => {
 
   describe('realtime events', () => {
     test('should update host participant', () => {
-      VideoConferenceInstance['onHostParticipantDidChange']({
-        oldHostParticipantId: '',
-        newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
-      });
+      VideoConferenceInstance['onRoomInfoUpdated']({ hostClientId: MOCK_LOCAL_PARTICIPANT.id });
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         RealtimeEvent.REALTIME_HOST_CHANGE,
@@ -586,7 +754,7 @@ describe('VideoConference', () => {
         activeComponents: [],
         type: ParticipantType.GUEST,
       });
-      expect(ABLY_REALTIME_MOCK.setKickParticipantsOnHostLeave).toBeCalledWith(false);
+      expect(VideoConferenceInstance['kickParticipantsOnHostLeave']).toBe(false);
     });
 
     test('should publish a message to client and detach when kick local participant happend', () => {

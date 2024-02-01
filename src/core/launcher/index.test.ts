@@ -471,8 +471,6 @@ describe('Launcher', () => {
       expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.hostAvailabilityObserver.unsubscribe).toHaveBeenCalled();
     });
 
     test('should remove all components', () => {
