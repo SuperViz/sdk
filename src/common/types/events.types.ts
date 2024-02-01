@@ -131,3 +131,8 @@ export type Dimensions = {
   width: number | null;
   height: number | null;
 };
+
+export enum ComponentLifeCycle {
+  MOUNT = 'mount',
+  UNMOUNT = 'unmount',
+}
