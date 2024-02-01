@@ -7,26 +7,19 @@ export const dropdownStyle = css`
     --vertical-offset: 12px;
 
     background-color: rgb(var(--sv-gray-600));
-    padding: 8px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     align-items: center;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
     opacity: 0;
     border-radius: 2px;
     cursor: default;
-    display: none;
+    visibility: hidden;
     transition: opacity 0.2s ease-in-out display 0s;
     z-index: 100;
-  }
-
-  .tooltip-extras {
-    left: 29px;
-    top: 60px;
-    z-index: 10;
+    overflow-x: clip;
   }
 
   .superviz-who-is-online__tooltip-arrow {
@@ -35,13 +28,13 @@ export const dropdownStyle = css`
     position: absolute;
     background-color: rgb(var(--sv-gray-600));
     transform: rotate(45deg);
-    border-top-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-top-left-radius: 1px;
+    border-bottom-right-radius: 1px;
   }
 
   .show-tooltip {
     opacity: 1;
-    display: block;
+    visibility: visible;
   }
 
   .tooltip-name,
@@ -50,6 +43,7 @@ export const dropdownStyle = css`
     font-family: roboto;
     white-space: nowrap;
     text-align: center;
+    line-height: 1.2;
   }
 
   .tooltip-name {
@@ -63,27 +57,15 @@ export const dropdownStyle = css`
   }
 
   .tooltip-top {
-    top: auto;
     bottom: calc(var(--host-height) + var(--vertical-offset));
   }
 
   .tooltip-bottom {
-    top: calc(var(--host-height) + var(--vertical-offset));
     bottom: auto;
   }
 
-  .tooltip-left {
-    translate: -50% 0;
-  }
-
   .tooltip-center {
-    left: 50%;
-    transform: translateX(-50%);
     right: auto;
-  }
-
-  .tooltip-right {
-    translate: 50% 0;
   }
 
   .tooltip-bottom .superviz-who-is-online__tooltip-arrow {
@@ -112,15 +94,6 @@ export const dropdownStyle = css`
   }
 
   .shift-left {
-    left: 0;
-    transform: translateX(-6%);
     --vertical-offset: 2px;
-  }
-
-  @media (max-width: 780px) {
-    .tooltip-extras {
-      top: 52px;
-      left: 25px;
-    }
   }
 `;
