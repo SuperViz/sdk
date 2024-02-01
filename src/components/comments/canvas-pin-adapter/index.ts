@@ -88,8 +88,9 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    */
   public setActive(isOpen: boolean): void {
+    if (this.isActive === isOpen) return;
+
     this.isActive = isOpen;
-    // this.canvas.style.cursor = isOpen ? 'none' : 'default';
 
     if (this.isActive) {
       this.originalCanvasCursor = this.canvas.style.cursor;
@@ -420,7 +421,7 @@ export class CanvasPin implements PinAdapter {
   public set participantsList(participants: ParticipantByGroupApi[]) {
     this.participants = participants;
   }
-  
+
   /**
    * @function goToPin
    * @description - translate the canvas to the pin position
