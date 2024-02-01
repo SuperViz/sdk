@@ -8,6 +8,8 @@ export enum MeetingEvent {
   MEETING_JOIN = 'meeting.join',
   MEETING_PARTICIPANT_PROPERTIES = 'meeting.participant-properties',
   MEETING_HOST_CHANGE = 'meeting.host-change',
+  MEETING_HOST_AVAILABLE = 'realtime.host-available',
+  MEETING_NO_HOST_AVAILABLE = 'realtime.no-host-available',
   MEETING_SAME_PARTICIPANT_ERROR = 'meeting.same-participant-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_PARTICIPANTS = 'meeting.kick-all-participants',
@@ -43,8 +45,6 @@ export enum MeetingControlsEvent {
 export enum RealtimeEvent {
   REALTIME_PARTICIPANT_LIST_UPDATE = 'realtime.participant-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
-  REALTIME_HOST_AVAILABLE = 'realtime.host-available',
-  REALTIME_NO_HOST_AVAILABLE = 'realtime.no-host-available',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
   REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',

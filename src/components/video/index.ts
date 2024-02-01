@@ -18,7 +18,6 @@ import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
-import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 import VideoConfereceManager from '../../services/video-conference-manager';
 import {
   CamerasPosition,
@@ -607,13 +606,38 @@ export class VideoConference extends BaseComponent {
   /**
    * @function onHostParticipantDidChange
    * @description handler for host participant change event
-   * @param {HostObserverCallbackResponse} data - host change data
+   * @param {hostId} string - new host ud
    * @returns {void}
    * */
   private onHostParticipantDidChange = (hostId: string): void => {
     this.logger.log('video conference @ on host participant did change', hostId);
 
     this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
+
+    const newHost = this.participantsOnMeeting.find((participant) => {
+      return participant.id === hostId;
+    });
+
+    if (this.realtime.isLocalParticipantHost) {
+      this.realtime.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, newHost);
+      this.publish(MeetingEvent.MEETING_HOST_CHANGE, newHost);
+    }
+  };
+
+  /**
+   * @function onHostAvailabilityChange
+   * @description Callback function that is called when the availability of the host changes.
+   * @param {boolean} isHostAvailable - A boolean indicating whether the host is available or not.
+   * @returns {void}
+   */
+  private onHostAvailabilityChange = (isHostAvailable: boolean): void => {
+    this.logger.log('launcher service @ onHostAvailabilityChange');
+
+    if (isHostAvailable) {
+      this.publish(MeetingEvent.MEETING_HOST_AVAILABLE);
+      return;
+    }
+    this.publish(MeetingEvent.MEETING_NO_HOST_AVAILABLE);
   };
 
   /**
@@ -681,6 +705,8 @@ export class VideoConference extends BaseComponent {
       clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
       KICK_PARTICIPANTS_TIMEOUT = null;
     }
+
+    this.onHostAvailabilityChange(!!participantsCanBeHost.length);
 
     if (!participantsCanBeHost.length || hostAlreadyInRoom) return;
 

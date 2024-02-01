@@ -55,8 +55,3 @@ export interface SlotColor {
   color: string;
   name: string;
 }
-
-export type HostObserverCallbackResponse = {
-  oldHostParticipantId: string;
-  newHostParticipantId: string;
-};

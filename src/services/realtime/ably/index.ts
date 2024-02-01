@@ -255,8 +255,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   public setHost = (participantId: string): void => {
-    console.log('setting host', participantId);
-
     this.updateRoomProperties({ hostClientId: participantId });
   };
 
