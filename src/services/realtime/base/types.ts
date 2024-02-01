@@ -11,7 +11,6 @@ export interface DefaultRealtimeService {
   reconnectObserver: Observer;
   roomInfoUpdatedObserver: Observer;
   roomListUpdatedObserver: Observer;
-  hostObserver: Observer;
   realtimeStateObserver: Observer;
   syncPropertiesObserver: Observer;
   kickAllParticipantsObserver: Observer;
@@ -56,8 +55,3 @@ export interface SlotColor {
   color: string;
   name: string;
 }
-
-export type HostObserverCallbackResponse = {
-  oldHostParticipantId: string;
-  newHostParticipantId: string;
-};
