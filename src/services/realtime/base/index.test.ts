@@ -22,7 +22,6 @@ describe('RealtimeService', () => {
     expect(RealtimeServiceInstance.reconnectObserver).toBeDefined();
     expect(RealtimeServiceInstance.roomInfoUpdatedObserver).toBeDefined();
     expect(RealtimeServiceInstance.roomListUpdatedObserver).toBeDefined();
-    expect(RealtimeServiceInstance.hostObserver).toBeDefined();
     expect(RealtimeServiceInstance.realtimeStateObserver).toBeDefined();
     expect(RealtimeServiceInstance.syncPropertiesObserver).toBeDefined();
     expect(RealtimeServiceInstance.kickAllParticipantsObserver).toBeDefined();

@@ -37,10 +37,12 @@ export class CommentsMentionList extends WebComponentsBaseElement {
     const mentionList = this.shadowRoot?.getElementById('mention-list');
     mentionList?.style.setProperty('display', 'block'); 
     mentionList?.style.setProperty('margin-top', '1px');
+    mentionList.addEventListener('wheel', this.stopHandleZoom);
   }
 
   hideMentionList = () => {
     const mentionList = this.shadowRoot?.getElementById('mention-list');
+    mentionList.removeEventListener('wheel', this.stopHandleZoom);
     mentionList?.style.setProperty('display', 'none'); 
   }
 
@@ -51,6 +53,12 @@ export class CommentsMentionList extends WebComponentsBaseElement {
     })
 
     this.hideMentionList()
+  }
+
+  private stopHandleZoom = (event) => {
+    const menu = this.shadowRoot?.getElementById('mention-list');
+    menu.scrollTop += event.deltaY;
+    event.preventDefault();
   }
 
   private getAvatar(participant: ParticipantByGroupApi) {

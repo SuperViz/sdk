@@ -46,6 +46,7 @@ export default class VideoConfereceManager {
 
   private readonly frameConfig: FrameConfig;
   private readonly customColors: ColorsVariables;
+  private readonly styles: string;
 
   private readonly callbacks: Record<string, () => void>;
   public readonly frameStateObserver = new Observer({ logger: this.logger });
@@ -83,6 +84,7 @@ export default class VideoConfereceManager {
       locales,
       avatars,
       customColors,
+      styles,
       waterMark,
       layoutPosition,
       camerasPosition,
@@ -131,6 +133,7 @@ export default class VideoConfereceManager {
 
     this.customColors = customColors;
     this.callbacks = callbacks;
+    this.styles = styles;
 
     wrapper.classList.add('sv_video_wrapper');
     wrapper.id = 'sv-video-wrapper';
@@ -302,9 +305,10 @@ export default class VideoConfereceManager {
   };
 
   private setCustomColors = (): void => {
-    if (!this.customColors) return;
+    if (this.customColors)
+      this.messageBridge.publish(FrameEvent.FRAME_COLOR_LIST_UPDATE, this.customColors);
 
-    this.messageBridge.publish(FrameEvent.FRAME_COLOR_LIST_UPDATE, this.customColors);
+    if (this.styles) this.messageBridge.publish(FrameEvent.FRAME_STYLES_UPDATE, this.styles);
   };
 
   /**

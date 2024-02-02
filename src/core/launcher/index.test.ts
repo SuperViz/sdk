@@ -333,62 +333,6 @@ describe('Launcher', () => {
       expect(LauncherInstance['publish']).not.toHaveBeenCalled();
     });
 
-    test("should not publish RealtimeEvent.REALTIME_HOST_CHANGE if my participant isn't host", () => {
-      const callback = jest.fn();
-      const spy = jest.spyOn(LauncherInstance, 'subscribe');
-      // @ts-ignore
-      ABLY_REALTIME_MOCK.isLocalParticipantHost = false;
-
-      LauncherInstance['publish'] = jest.fn();
-      LauncherInstance.subscribe(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
-
-      LauncherInstance['onHostParticipantDidChange']({
-        newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
-        oldHostParticipantId: 'test',
-      });
-
-      expect(spy).toHaveBeenCalledWith(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
-      expect(ABLY_REALTIME_MOCK.setSyncProperty).not.toHaveBeenCalled();
-    });
-
-    test('should publish RealtimeEvent.REALTIME_HOST_CHANGE', () => {
-      const callback = jest.fn();
-      const spy = jest.spyOn(LauncherInstance, 'subscribe');
-      // @ts-ignore
-      ABLY_REALTIME_MOCK.isLocalParticipantHost = true;
-
-      LauncherInstance['publish'] = jest.fn();
-      LauncherInstance.subscribe(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
-      LauncherInstance['participants'] = [MOCK_LOCAL_PARTICIPANT];
-
-      LauncherInstance['onHostParticipantDidChange']({
-        newHostParticipantId: MOCK_LOCAL_PARTICIPANT.id,
-        oldHostParticipantId: 'test',
-      });
-
-      expect(spy).toHaveBeenCalledWith(RealtimeEvent.REALTIME_HOST_CHANGE, callback);
-
-      expect(ABLY_REALTIME_MOCK.setSyncProperty).toHaveBeenCalled();
-    });
-
-    test('should publish REALTIME_HOST_AVAILABLE when host is available', () => {
-      LauncherInstance['publish'] = jest.fn();
-
-      LauncherInstance['onHostAvailabilityChange'](true);
-      expect(LauncherInstance['publish']).toHaveBeenCalledWith(
-        RealtimeEvent.REALTIME_HOST_AVAILABLE,
-      );
-    });
-
-    test('should publish REALTIME_NO_HOST_AVAILABLE when host is not available', () => {
-      LauncherInstance['publish'] = jest.fn();
-
-      LauncherInstance['onHostAvailabilityChange'](false);
-      expect(LauncherInstance['publish']).toHaveBeenCalledWith(
-        RealtimeEvent.REALTIME_NO_HOST_AVAILABLE,
-      );
-    });
-
     test('should update activeComponentsInstances when participant list is updated', () => {
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -471,8 +415,6 @@ describe('Launcher', () => {
       expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.hostObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.hostAvailabilityObserver.unsubscribe).toHaveBeenCalled();
     });
 
     test('should remove all components', () => {
