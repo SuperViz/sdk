@@ -1,11 +1,11 @@
 import { css } from 'lit';
 
 export const annotationItemStyle = css`
-  .annotation-item--selected {
+  .s-c__thread--selected {
     background-color: rgba(var(--sv-gray-200), 0.5);
   }
 
-  .annotation-item:hover:not(.annotation-item--selected) {
+  .s-c__thread:hover:not(.s-c__thread--selected) {
     background-color: rgba(var(--sv-gray-200), 0.3);
   }
 
@@ -67,7 +67,7 @@ export const annotationItemStyle = css`
     display: none;
   }
 
-  .annotation-item {
+  .s-c__thread {
     padding: 8px;
     cursor: pointer;
   }

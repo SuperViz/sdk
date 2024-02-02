@@ -55,10 +55,12 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeFalsy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar--add')).toBeFalsy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeFalsy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+    ).toBeFalsy();
   });
 
   test('renders the component with type ADD', async () => {
@@ -70,9 +72,11 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar--add')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+    ).toBeTruthy();
   });
 
   test('renders the component with type SHOW and active', async () => {
@@ -85,10 +89,12 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar--add')).toBeFalsy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+    ).toBeFalsy();
   });
 
   test('renders the component with type ADD and active', async () => {
@@ -101,10 +107,12 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar--add')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+    ).toBeTruthy();
   });
 
   test('should emit an event when the pin is clicked', async () => {
@@ -137,9 +145,11 @@ describe('annotation-pin', () => {
       const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
       expect(renderedElement).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeFalsy();
-      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeFalsy();
+      expect(
+        renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar'),
+      ).toBeTruthy();
     });
 
     test('renders the user avatar without an image', async () => {
@@ -153,9 +163,11 @@ describe('annotation-pin', () => {
       const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
       expect(renderedElement).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin')).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin--active')).toBeFalsy();
-      expect(renderedElement.shadowRoot?.querySelector('.annotation-pin__avatar')).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
+      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeFalsy();
+      expect(
+        renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar'),
+      ).toBeTruthy();
     });
 
     test('should cancel temporary annotation when Esc is pressed', async () => {

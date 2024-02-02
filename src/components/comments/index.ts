@@ -27,22 +27,25 @@ export class Comments extends BaseComponent {
   private annotations: Annotation[];
   private clientUrl: string;
   private pinAdapter: PinAdapter;
-  private layoutOptions: CommentsOptions;
+  private layoutOptions: CommentsOptions = {};
   private coordinates: AnnotationPositionInfo;
   private hideDefaultButton: boolean;
   private pinActive: boolean;
+  private styles: string;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
-    this.layoutOptions = options ?? {
-      position: CommentsSide.LEFT,
-      buttonLocation: ButtonLocation.TOP_LEFT,
+    this.layoutOptions = {
+      buttonLocation: options?.buttonLocation,
+      position: options?.position,
     };
 
     this.hideDefaultButton = options?.hideDefaultButton ?? false;
+
+    this.setStyles(options.styles);
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
@@ -334,6 +337,21 @@ export class Comments extends BaseComponent {
   };
 
   /**
+   * @function setStyles
+   * @param {string} styles - The user custom styles to be added to the comments
+   * @returns {void}
+   */
+  private setStyles(styles: string = '') {
+    if (!styles) return;
+
+    const tag = document.createElement('style');
+    tag.textContent = styles;
+    tag.id = 'superviz-comments-styles';
+
+    document.head.appendChild(tag);
+  }
+
+  /**
    * @function positionComments
    * @description put comments at the left or right side of the screen
    * @returns {void}
@@ -448,15 +466,15 @@ export class Comments extends BaseComponent {
         },
       );
 
-        await ApiService.createMentions({
-          commentsId: comment.uuid,
-          participants: mentions.map((mention) => ({
-            id: mention.userId,
-            readed: 0
-          }))
-        })
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+          readed: 0,
+        })),
+      });
 
-    comment.mentions = mentions;
+      comment.mentions = mentions;
 
       if (addComment) {
         this.addComment(annotationId, comment);
@@ -486,12 +504,12 @@ export class Comments extends BaseComponent {
         text,
       );
 
-        await ApiService.createMentions({
-          commentsId: comment.uuid,
-          participants: mentions.map((mention) => ({
-            id: mention.userId,
-          }))
-        })
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+        })),
+      });
 
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
@@ -607,14 +625,14 @@ export class Comments extends BaseComponent {
   }
 
   /**
- * @function participantsList
- * @description Fetch participantsList from the API to be shown
- * @returns {Promise<void>}
- */
+   * @function participantsList
+   * @description Fetch participantsList from the API to be shown
+   * @returns {Promise<void>}
+   */
   private async participantsList(): Promise<void> {
     try {
       const participantsList = await ApiService.fetchParticipantsByGroup(this.group.id);
-      const participants: ParticipantByGroupApi[] = participantsList.data
+      const participants: ParticipantByGroupApi[] = participantsList.data;
       this.pinAdapter.participantsList = participants;
       this.element.participantsList = participants;
     } catch (error) {

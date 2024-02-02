@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const commentInputStyle = css`
-  .comment-input {
+  .s-c__input {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -14,11 +14,11 @@ export const commentInputStyle = css`
     box-sizing: border-box;
   }
 
-  .comment-input:focus-within {
+  .s-c__input:focus-within {
     border: 1px solid rgb(var(--sv-gray-500));
   }
 
-  #comment-input--textarea {
+  #s-c__input__textarea {
     border: 0px;
     text-align: left;
     border-radius: 4px;
@@ -43,23 +43,24 @@ export const commentInputStyle = css`
     border-left: 11px solid transparent;
   }
 
-  #comment-input--textarea:invalid {
+  #s-c__input__textarea:invalid {
     border-top: 15px solid transparent;
   }
 
-  #comment-input--textarea::placeholder {
+  #s-c__input__textarea::placeholder {
     color: rgb(var(--sv-gray-400));
     font-size: 14px;
     line-height: 14px;
   }
 
-  .comment-input--options {
+  .s-c__input__options {
     display: flex;
     justify-content: space-between;
     box-sizing: border-box;
     overflow: hidden;
     height: 0;
     transition: 0.25s;
+    border-radius: 0 0 4px 4px;
   }
 
   .active-textarea {
@@ -77,7 +78,7 @@ export const commentInputStyle = css`
     position: absolute;
   }
 
-  .active-hr {
+  .s-c__input__divisor {
     border-top: 1px solid rgb(var(--sv-gray-300));
     opacity: 1;
     position: relative;
@@ -98,7 +99,7 @@ export const commentInputStyle = css`
     visibility: visible;
   }
 
-  .mention {
+  .s-c__input__mention-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -114,7 +115,7 @@ export const commentInputStyle = css`
     background-color: rgb(var(--sv-gray-200));
   }
 
-  .comment-input--send-btn {
+  .s-c__input__send-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -130,7 +131,7 @@ export const commentInputStyle = css`
     cursor: pointer;
   }
 
-  .comment-input--send-btn:disabled {
+  .s-c__input__send-btn:disabled {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -150,7 +151,12 @@ export const commentInputStyle = css`
     bottom: 4px;
   }
 
-  #comment-input--textarea:focus::placeholder {
+  #s-c__input__textarea:focus,
+  #s-c__input__textarea.active-textarea {
+    border-radius: 4px 4px 0 0;
+  }
+
+  #s-c__input__textarea:focus::placeholder {
     color: transparent;
   }
 `;

@@ -14,13 +14,6 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle]
 
 @customElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {
-  constructor() {
-    super();
-    this.annotations = [];
-    this.participantsList = [];
-
-  }
-
   static styles = styles;
 
   declare annotations: Annotation[];
@@ -35,6 +28,12 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotationFilter: { type: String },
     participantsList: { type: Object },
   };
+
+  constructor() {
+    super();
+    this.annotations = [];
+    this.participantsList = [];
+  }
 
   private unselectAnnotation = () => {
     this.selectedAnnotation = null;
@@ -111,20 +110,22 @@ export class CommentsContent extends WebComponentsBaseElement {
   };
 
   protected render() {
-    return html` ${repeat(
-      this.annotations.filter((annotation) => annotation.comments?.length),
-      (annotation: Annotation) => annotation.uuid,
-      (annotation: Annotation) => html`
-        <superviz-comments-annotation-item
-          annotation=${JSON.stringify(annotation)}
-          selected="${this.selectedAnnotation}"
-          annotationFilter=${this.annotationFilter}
-          uuid=${annotation.uuid}
-          isLastComment=${this.checkLastAnnotation(annotation.uuid)}
-          participantsList=${JSON.stringify(this.participantsList)}
-        >
-        </superviz-comments-annotation-item>
-      `,
-    )}`;
+    return html`
+      ${this.annotations
+        .filter((annotation) => annotation.comments?.length)
+        .map(
+          (annotation: Annotation) => html`
+            <superviz-comments-annotation-item
+              annotation=${JSON.stringify(annotation)}
+              selected="${this.selectedAnnotation}"
+              annotationFilter=${this.annotationFilter}
+              uuid=${annotation.uuid}
+              isLastComment=${this.checkLastAnnotation(annotation.uuid)}
+              participantsList=${JSON.stringify(this.participantsList)}
+            >
+            </superviz-comments-annotation-item>
+          `,
+        )}
+    `;
   }
 }

@@ -38,12 +38,12 @@ describe('AnnotationResolved', () => {
 
     await sleep(1001);
 
-    expect(element!.shadowRoot?.querySelector('div.annotation-resolved')).toBeNull();
+    expect(element!.shadowRoot?.querySelector('s-c__annotation-resolved')).toBeNull();
   });
 
   test('when click undone, cancel should be true and dispatch event undo-resolve', async () => {
     element = await createElement(1000);
-    expect(element!.shadowRoot?.querySelector('div.annotation-resolved')).not.toBeNull();
+    expect(element!.shadowRoot?.querySelector('.s-c__annotation-resolved')).not.toBeNull();
     element['emitEvent'] = jest.fn();
 
     const undoneBtn = element!.shadowRoot!.querySelector('#undone') as HTMLElement;

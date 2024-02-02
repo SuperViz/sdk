@@ -17,7 +17,7 @@ describe('CommentsTopbar', () => {
 
   test('dispatches a close event when the close button is clicked', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-topbar')[0];
-    const closeButton = renderedElement.shadowRoot!.querySelector('.toggle-icon');
+    const closeButton = renderedElement.shadowRoot!.querySelector('.s-c__topbar__close-threads');
     const spy = jest.fn();
 
     renderedElement.addEventListener('close', spy);

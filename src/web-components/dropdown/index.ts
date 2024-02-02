@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../base';
+import importStyle from '../base/utils/importStyle';
 
 import { dropdownStyle } from './index.style';
 import { PositionOptions, Positions, PositionsEnum } from './types';
@@ -27,6 +28,8 @@ export class Dropdown extends WebComponentsBaseElement {
   declare onHoverData: { name: string; action: string };
   declare shiftTooltipLeft: boolean;
   declare lastParticipant: boolean;
+  declare classesPrefix: string;
+  declare parentComponent: string;
 
   private dropdownContent: HTMLElement;
   private originalPosition: Positions;
@@ -58,11 +61,22 @@ export class Dropdown extends WebComponentsBaseElement {
     drodpdownSizes: { type: Object },
     shiftTooltipLeft: { type: Boolean },
     lastParticipant: { type: Boolean },
+    classesPrefix: { type: String },
+    parentComponent: { type: String },
   };
 
   constructor() {
     super();
     this.showTooltip = false;
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, [this.parentComponent]);
+    });
   }
 
   disconnectedCallback(): void {
@@ -427,12 +441,14 @@ export class Dropdown extends WebComponentsBaseElement {
     return this.options.map((option, index) => {
       const liClasses = {
         text: true,
+        [this.getClass('item')]: true,
         'text-bold': true,
         active: option?.[this.returnTo] && this.active === option?.[this.returnTo],
       };
 
       return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
-        ${this.supervizIcons?.at(index)} <span class="option-label">${option[this.label]}</span>
+        ${this.supervizIcons?.at(index)}
+        <span class="option-label ${this.getClass('item__label')}">${option[this.label]}</span>
       </li>`;
     });
   }
@@ -448,6 +464,10 @@ export class Dropdown extends WebComponentsBaseElement {
       tooltipVerticalPosition=${tooltipVerticalPosition}
     ></superviz-tooltip>`;
   };
+
+  private getClass(suffix: string) {
+    return `${this.classesPrefix}__${suffix}`;
+  }
 
   protected render() {
     const menuClasses = {
@@ -474,7 +494,7 @@ export class Dropdown extends WebComponentsBaseElement {
       <div class="dropdown-list">
         <div class=${classMap(menuClasses)}>
           ${this.renderHeader}
-          <ul class="items">
+          <ul class="${this.getClass('items')} items">
             ${this.listOptions}
           </ul>
         </div>
