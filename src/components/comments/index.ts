@@ -31,7 +31,6 @@ export class Comments extends BaseComponent {
   private coordinates: AnnotationPositionInfo;
   private hideDefaultButton: boolean;
   private pinActive: boolean;
-  private styles: string;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -39,13 +38,13 @@ export class Comments extends BaseComponent {
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
     this.layoutOptions = {
-      buttonLocation: options?.buttonLocation,
-      position: options?.position,
+      buttonLocation: options?.buttonLocation ?? 'top-left',
+      position: options?.position ?? 'left',
     };
 
     this.hideDefaultButton = options?.hideDefaultButton ?? false;
 
-    this.setStyles(options.styles);
+    this.setStyles(options?.styles);
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
