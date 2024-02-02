@@ -8,6 +8,8 @@ export enum MeetingEvent {
   MEETING_JOIN = 'meeting.join',
   MEETING_PARTICIPANT_PROPERTIES = 'meeting.participant-properties',
   MEETING_HOST_CHANGE = 'meeting.host-change',
+  MEETING_HOST_AVAILABLE = 'realtime.host-available',
+  MEETING_NO_HOST_AVAILABLE = 'realtime.no-host-available',
   MEETING_SAME_PARTICIPANT_ERROR = 'meeting.same-participant-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_PARTICIPANTS = 'meeting.kick-all-participants',
@@ -28,6 +30,7 @@ export enum FrameEvent {
   FRAME_LOCALE_UPDATE = 'frame.locales-update',
   FRAME_AVATAR_LIST_UPDATE = 'frame.avatar-list-update',
   FRAME_COLOR_LIST_UPDATE = 'frame.color-list-update',
+  FRAME_STYLES_UPDATE = 'frame.styles-update',
 }
 
 export enum MeetingControlsEvent {
@@ -43,8 +46,6 @@ export enum MeetingControlsEvent {
 export enum RealtimeEvent {
   REALTIME_PARTICIPANT_LIST_UPDATE = 'realtime.participant-list-update',
   REALTIME_HOST_CHANGE = 'realtime.host-change',
-  REALTIME_HOST_AVAILABLE = 'realtime.host-available',
-  REALTIME_NO_HOST_AVAILABLE = 'realtime.no-host-available',
   REALTIME_GRID_MODE_CHANGE = 'realtime.grid-mode-change',
   REALTIME_WAIT_FOR_HOST = 'realtime.wait-for-host',
   REALTIME_AUTHENTICATION_FAILED = 'realtime.authentication-failed',
@@ -130,3 +131,8 @@ export type Dimensions = {
   width: number | null;
   height: number | null;
 };
+
+export enum ComponentLifeCycle {
+  MOUNT = 'mount',
+  UNMOUNT = 'unmount',
+}

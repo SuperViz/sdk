@@ -16,6 +16,7 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  styles?: string;
   camerasPosition: CamerasPosition;
   devices: {
     audioInput: boolean;

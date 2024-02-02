@@ -12,7 +12,6 @@ import { EventBus } from '../../services/event-bus';
 import LimitsService from '../../services/limits';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant } from '../../services/realtime/ably/types';
-import { HostObserverCallbackResponse } from '../../services/realtime/base/types';
 
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 
@@ -151,8 +150,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
-    this.realtime.hostObserver.unsubscribe(this.onHostParticipantDidChange);
-    this.realtime.hostAvailabilityObserver.unsubscribe(this.onHostAvailabilityChange);
     this.realtime.leave();
     this.realtime = undefined;
     this.isDestroyed = true;
@@ -231,8 +228,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
-    this.realtime.hostObserver.subscribe(this.onHostParticipantDidChange);
-    this.realtime.hostAvailabilityObserver.subscribe(this.onHostAvailabilityChange);
   };
 
   /** Realtime Listeners */
@@ -348,39 +343,6 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     this.logger.log('launcher service @ onParticipantLeave - participant left', participant);
     this.publish(ParticipantEvent.LEFT, participant);
-  };
-
-  /**
-   * @function onHostParticipantDidChange
-   * @description handler for host participant change event
-   * @param {HostObserverCallbackResponse} data - host change data
-   * @returns {void}
-   * */
-  private onHostParticipantDidChange = (data: HostObserverCallbackResponse): void => {
-    const newHost = this.participants.find((participant) => {
-      return participant.id === data?.newHostParticipantId;
-    });
-
-    if (this.realtime.isLocalParticipantHost) {
-      this.realtime.setSyncProperty(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
-      this.publish(RealtimeEvent.REALTIME_HOST_CHANGE, newHost);
-    }
-  };
-
-  /**
-   * @function onHostAvailabilityChange
-   * @description Callback function that is called when the availability of the host changes.
-   * @param {boolean} isHostAvailable - A boolean indicating whether the host is available or not.
-   * @returns {void}
-   */
-  private onHostAvailabilityChange = (isHostAvailable: boolean): void => {
-    this.logger.log('launcher service @ onHostAvailabilityChange');
-
-    if (isHostAvailable) {
-      this.publish(RealtimeEvent.REALTIME_HOST_AVAILABLE);
-      return;
-    }
-    this.publish(RealtimeEvent.REALTIME_NO_HOST_AVAILABLE);
   };
 
   private onSameAccount = (): void => {
