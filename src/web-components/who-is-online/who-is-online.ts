@@ -137,6 +137,10 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         return;
       }
 
+      if (this.everyoneFollowsMe) {
+        this.stopEveryoneFollowsMe();
+      }
+
       this.following = { name, id, color };
       this.swapParticipantBeingFollowedPosition();
       this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id });
@@ -144,18 +148,27 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     if ([WIODropdownOptions.PRIVATE, WIODropdownOptions.LEAVE_PRIVATE].includes(label)) {
       this.isPrivate = label === WIODropdownOptions.PRIVATE;
+
+      if (this.everyoneFollowsMe) {
+        this.stopEveryoneFollowsMe();
+      }
+
       this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id, isPrivate: this.isPrivate });
       this.everyoneFollowsMe = false;
     }
 
     if ([WIODropdownOptions.FOLLOW, WIODropdownOptions.UNFOLLOW].includes(label)) {
+      if (this.everyoneFollowsMe) {
+        this.stopEveryoneFollowsMe();
+        return;
+      }
+
       if (this.following) {
         this.stopFollowing();
       }
 
-      if (this.everyoneFollowsMe) {
-        this.stopEveryoneFollowsMe();
-        return;
+      if (this.isPrivate) {
+        this.cancelPrivate();
       }
 
       this.everyoneFollowsMe = true;
@@ -371,8 +384,10 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   protected render() {
     return html`<div class="wio-content">
-      ${this.renderParticipants()} ${this.followingMessage()} ${this.everyoneFollowsMeMessage()}
-      ${this.privateMessage()}
+      ${this.renderParticipants()}
+      <div class="wio__controls-messages">
+        ${this.followingMessage()} ${this.everyoneFollowsMeMessage()} ${this.privateMessage()}
+      </div>
     </div> `;
   }
 }
