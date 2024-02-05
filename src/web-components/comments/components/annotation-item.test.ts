@@ -26,7 +26,7 @@ describe('CommentsAnnotationItem', () => {
     expect(element).toBeDefined();
   });
 
-  test.only('expands the comments when the annotation is selected', async () => {
+  test('expands the comments when the annotation is selected', async () => {
     element = await createElement(MOCK_ANNOTATION);
     const annotationItem = element.shadowRoot!.querySelector('.s-c__thread') as HTMLElement;
     const commentsContainer = element.shadowRoot!.querySelector(
@@ -54,11 +54,8 @@ describe('CommentsAnnotationItem', () => {
       '.comments-container',
     ) as HTMLElement;
 
-    console.log(expectedAnnotation.classList);
     expect(expectedAnnotation.classList.contains('s-c__thread--selected')).toBe(true);
-    console.log('b');
     expect(expectedCommentsContainer.classList.contains('comment-item--expand')).toBe(true);
-    console.log('c');
     expect(expectedCommentsContainer.classList.contains('hidden')).toBe(false);
   });
 

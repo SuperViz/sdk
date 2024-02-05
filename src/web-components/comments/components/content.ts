@@ -110,22 +110,20 @@ export class CommentsContent extends WebComponentsBaseElement {
   };
 
   protected render() {
-    return html`
-      ${this.annotations
-        .filter((annotation) => annotation.comments?.length)
-        .map(
-          (annotation: Annotation) => html`
-            <superviz-comments-annotation-item
-              annotation=${JSON.stringify(annotation)}
-              selected="${this.selectedAnnotation}"
-              annotationFilter=${this.annotationFilter}
-              uuid=${annotation.uuid}
-              isLastComment=${this.checkLastAnnotation(annotation.uuid)}
-              participantsList=${JSON.stringify(this.participantsList)}
-            >
-            </superviz-comments-annotation-item>
-          `,
-        )}
-    `;
+    return html` ${repeat(
+      this.annotations.filter((annotation) => annotation.comments?.length),
+      (annotation: Annotation) => annotation.uuid,
+      (annotation: Annotation) => html`
+        <superviz-comments-annotation-item
+          annotation=${JSON.stringify(annotation)}
+          selected="${this.selectedAnnotation}"
+          annotationFilter=${this.annotationFilter}
+          uuid=${annotation.uuid}
+          isLastComment=${this.checkLastAnnotation(annotation.uuid)}
+          participantsList=${JSON.stringify(this.participantsList)}
+        >
+        </superviz-comments-annotation-item>
+      `,
+    )}`;
   }
 }

@@ -18,7 +18,7 @@ export const commentInputStyle = css`
     border: 1px solid rgb(var(--sv-gray-500));
   }
 
-  #s-c__input__textarea {
+  .s-c__input__textarea {
     border: 0px;
     text-align: left;
     border-radius: 4px;
@@ -43,11 +43,11 @@ export const commentInputStyle = css`
     border-left: 11px solid transparent;
   }
 
-  #s-c__input__textarea:invalid {
+  .s-c__input__textarea:invalid {
     border-top: 15px solid transparent;
   }
 
-  #s-c__input__textarea::placeholder {
+  .s-c__input__textarea::placeholder {
     color: rgb(var(--sv-gray-400));
     font-size: 14px;
     line-height: 14px;
@@ -151,12 +151,12 @@ export const commentInputStyle = css`
     bottom: 4px;
   }
 
-  #s-c__input__textarea:focus,
-  #s-c__input__textarea.active-textarea {
+  .s-c__input__textarea:focus,
+  .s-c__input__textarea.active-textarea {
     border-radius: 4px 4px 0 0;
   }
 
-  #s-c__input__textarea:focus::placeholder {
+  .s-c__input__textarea:focus::placeholder {
     color: transparent;
   }
 `;

@@ -50,7 +50,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private addAtSymbolInCaretPosition = () => {
-    const input = this.shadowRoot!.getElementById('s-c__input__textarea') as HTMLTextAreaElement;
+    const input = this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
     const newInputEvent = new InputEvent('input', {
       bubbles: true,
       cancelable: true,
@@ -64,11 +64,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private getCommentInput = () => {
-    return this.shadowRoot!.getElementById('s-c__input__textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
   };
 
   private get commentInput() {
-    return this.shadowRoot!.getElementById('s-c__input__textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
   }
 
   private getSendBtn = () => {
