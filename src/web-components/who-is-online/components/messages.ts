@@ -2,6 +2,7 @@ import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, html
 import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { messagesStyle } from '../css';
 
 import { Following } from './types';
@@ -24,6 +25,44 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     isPrivate: { type: Boolean },
     participantColor: { type: String },
   };
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    importStyle.call(this, 'who-is-online');
+  }
+
+  // Callbacks
+
+  /**
+   * @function stopFollowing
+   * @description Emits an event to stop following a participant
+   * @returns {void}
+   */
+  private stopFollowing() {
+    this.emitEvent('stop-following', {});
+  }
+
+  /**
+   * @function cancelPrivate
+   * @description Emits an event to cancel private mode
+   * @returns {void}
+   */
+  private cancelPrivate() {
+    this.emitEvent('cancel-private', {});
+  }
+
+  /**
+   * @function stopEveryoneFollowsMe
+   * @description Emits an event to cancel the Everyone Follows Me mode (does not prevent participants from following the user individually)
+   * @returns {void}
+   */
+  private stopEveryoneFollowsMe() {
+    this.emitEvent('stop-everyone-follows-me', {});
+  }
+
+  // Content to be rendered
 
   // Regarding the classes of all "*Message()" methods:
   // The classes are used to style the messages, and they should be replicated for consistency should
@@ -83,18 +122,6 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
         >
       </p>
     </div>`;
-  }
-
-  private stopFollowing() {
-    this.emitEvent('stop-following', {});
-  }
-
-  private cancelPrivate() {
-    this.emitEvent('cancel-private', {});
-  }
-
-  private stopEveryoneFollowsMe() {
-    this.emitEvent('stop-everyone-follows-me', {});
   }
 
   protected render() {
