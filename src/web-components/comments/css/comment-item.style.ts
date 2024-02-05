@@ -5,7 +5,7 @@ export const commentItemStyle = css`
     padding-left: 24px !important;
   }
 
-  .comment-item {
+  .s-c__comment-item {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -14,7 +14,7 @@ export const commentItemStyle = css`
     gap: 4px;
   }
 
-  .comment-item__user {
+  .s-c__comment-item__header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -23,27 +23,27 @@ export const commentItemStyle = css`
     color: rgb(var(--sv-gray-500));
   }
 
-  .comment-item__actions {
+  .s-c__comment-item__actions {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .comment-item__actions superviz-dropdown,
-  .comment-item__actions button {
+  .s-c__comment-item__actions superviz-dropdown,
+  .s-c__comment-item__icons {
     width: 25px;
     height: 25px;
     border-radius: 50%;
   }
 
-  .comment-item__user-details {
+  .s-c__comment-item__metadata {
     display: flex;
     width: 100%;
     gap: 8px;
     align-items: center;
   }
 
-  .comment-item__avatar {
+  .s-c__comment-item__avatar-container {
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -57,14 +57,14 @@ export const commentItemStyle = css`
     justify-content: center;
   }
 
-  .comment-item__avatar img {
+  .s-c__comment-item__avatar-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
     border-radius: 50%;
   }
 
-  .comment-item__content {
+  .s-c__comment-item__content {
     width: 100%;
   }
 
@@ -75,7 +75,7 @@ export const commentItemStyle = css`
     overflow: hidden;
   }
 
-  .comment-item__content__body {
+  .s-c__comment-item__content__body {
     color: rgb(var(--sv-gray-700));
   }
 
@@ -83,7 +83,7 @@ export const commentItemStyle = css`
     display: none;
   }
 
-  .mentioned{
+  .mentioned {
     display: inline-block;
   }
 `;

@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const topbarStyle = css`
-  div.topbar {
+  .s-c__topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -9,12 +9,12 @@ export const topbarStyle = css`
     height: 50px;
   }
 
-  div.topbar span {
+  .s-c__topbar__title {
     margin: 0 16px;
     color: rgb(var(--sv-gray-600));
   }
 
-  .toggle-icon {
+  .s-c__topbar__close-threads {
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -27,7 +27,7 @@ export const topbarStyle = css`
     padding-left: 2px;
   }
 
-  .toggle-icon:hover {
+  .s-c__topbar__close-threads:hover {
     background-color: rgba(0, 0, 0, 0.1);
   }
 `;

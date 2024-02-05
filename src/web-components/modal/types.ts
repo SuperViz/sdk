@@ -8,4 +8,4 @@ export type ModalOptions = {
   cancelLabel?: string;
   body: TemplateResult<1>;
   footer?: TemplateResult<1>;
-}
+};

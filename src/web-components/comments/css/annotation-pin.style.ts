@@ -1,8 +1,8 @@
 import { css } from 'lit';
 
 export const annotationPinStyles = css`
-  .annotation-pin,
-  .annotation-pin__avatar {
+  .s-c__annotation-pin,
+  .s-c__annotation-pin__avatar {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -11,7 +11,7 @@ export const annotationPinStyles = css`
     z-index: 10;
   }
 
-  .annotation-pin {
+  .s-c__annotation-pin {
     position: absolute;
 
     width: 32px;
@@ -29,13 +29,13 @@ export const annotationPinStyles = css`
     cursor: pointer;
   }
 
-  .annotation-pin:hover,
-  .annotation-pin:focus,
-  .annotation-pin--active {
+  .s-c__annotation-pin:hover,
+  .s-c__annotation-pin:focus,
+  .s-c__annotation-pin--active {
     border-color: rgb(var(--sv-primary));
   }
 
-  .annotation-pin__avatar {
+  .s-c__annotation-pin__avatar {
     width: 100%;
     height: 100%;
 
@@ -45,7 +45,7 @@ export const annotationPinStyles = css`
     color: rgb(var(--sv-white));
   }
 
-  .annotation-pin__avatar img {
+  .s-c__annotation-pin__avatar img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -53,7 +53,7 @@ export const annotationPinStyles = css`
     object-fit: contain;
   }
 
-  .annotation-pin__avatar--add {
+  .s-c__annotation-pin__avatar--add {
     color: rgb(var(--sv-gray-700));
     background-color: rgb(var(--sv-white));
   }

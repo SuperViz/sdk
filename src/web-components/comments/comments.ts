@@ -1,9 +1,10 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
+import importStyle from '../base/utils/importStyle';
 
 import { AnnotationFilter } from './components/types';
 import { commentsStyle, poweredByStyle } from './css/index';
@@ -62,7 +63,7 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = filter;
   }
 
-  updated(changedProperties) {
+  updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
     this.updateComplete.then(() => {
       const supervizCommentsDiv = this.shadowRoot.querySelector('.superviz-comments');
@@ -73,14 +74,27 @@ export class Comments extends WebComponentsBaseElement {
         waterMarkElementObserver(this.shadowRoot);
       }
 
-      supervizCommentsDiv.setAttribute('style', this.side);
+      if (changedProperties.has('side')) {
+        supervizCommentsDiv.setAttribute('style', this.side);
+      }
+    });
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
     });
   }
 
   protected render() {
-    const containerClass = [this.open ? 'container' : 'container-close', 'superviz-comments'].join(
-      ' ',
-    );
+    const containerClass = [
+      this.open ? 'container' : 'container-close',
+      'superviz-comments',
+      's-c',
+    ].join(' ');
     const poweredByFooter = html` <div id="poweredby-footer" class="footer">
       <div class="powered-by powered-by--horizontal">
         <a href="https://superviz.com/" target="_blank" class="link">

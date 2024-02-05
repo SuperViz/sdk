@@ -1,4 +1,7 @@
-import { ParticipantByCommentsApi, ParticipantByGroupApi } from '../../common/types/participant.types';
+import {
+  ParticipantByCommentsApi,
+  ParticipantByGroupApi,
+} from '../../common/types/participant.types';
 import { Observer } from '../../common/utils';
 
 export type Annotation = {
@@ -7,7 +10,6 @@ export type Annotation = {
   resolved: boolean;
   comments: Comment[];
 };
-
 
 export type Comment = {
   uuid: string;
@@ -19,13 +21,13 @@ export type Comment = {
   resolved?: boolean;
   participant: ParticipantByCommentsApi;
 
-  mentions: CommentMention[]
+  mentions: CommentMention[];
 };
 
 export type CommentMention = {
-  userId: string
-  name: string
-}
+  userId: string;
+  name: string;
+};
 
 export interface PinAdapter {
   setPinsVisibility(isVisible: boolean): void;
@@ -70,4 +72,5 @@ export interface CommentsOptions {
   position?: CommentsSide | `${CommentsSide}`;
   buttonLocation?: ButtonLocation | `${ButtonLocation}` | string;
   hideDefaultButton?: boolean;
+  styles?: string;
 }
