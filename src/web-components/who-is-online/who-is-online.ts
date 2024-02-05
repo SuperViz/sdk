@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -6,6 +6,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import { RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
+import importStyle from '../base/utils/importStyle';
 
 import type { LocalParticipantData, TooltipData } from './components/types';
 import { Following, WIODropdownOptions } from './components/types';
@@ -49,6 +50,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
     // should match presence-mouse textColorValues property
     this.textColorValues = [2, 4, 5, 7, 8, 16];
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    importStyle.call(this, 'who-is-online');
   }
 
   public updateParticipants(data: Participant[]) {
@@ -95,7 +103,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       }));
 
     const classes = {
-      'superviz-who-is-online__participant': true,
+      wio__participant: true,
       excess_participants: true,
       'excess_participants--open': this.open,
     };
@@ -114,9 +122,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         @toggle=${this.toggleOpen}
         @toggle-dropdown-state=${this.toggleShowTooltip}
         ?localParticipantJoinedPresence=${this.localParticipantData?.joinedPresence}
+        classesPrefix="wio__controls"
+        parentComponent="who-is-online"
+        tooltipPrefix="wio"
       >
         <div class=${classMap(classes)} slot="dropdown">
-          <div class="superviz-who-is-online__excess" style="color: #AEA9B8;">+${excess}</div>
+          <div class="superviz-who-is-online__excess wio__extras">+${excess}</div>
         </div>
       </superviz-who-is-online-dropdown>
     `;
@@ -193,7 +204,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
       return html` <img
-        class="superviz-who-is-online__avatar"
+        class="wio__participant__avatar"
         style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
@@ -204,7 +215,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       : '#26242A';
 
     return html`<div
-      class="superviz-who-is-online__avatar"
+      class="wio__participant__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
       ${participant.name?.at(0).toUpperCase()}
@@ -274,43 +285,13 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.emitEvent(RealtimeEvent.REALTIME_PRIVATE_MODE, { id: this.localParticipantData.id });
   }
 
-  private followingMessage() {
-    if (!this.following) return '';
-
-    const { name, color } = this.following;
-
-    return html`<div class="message" style="border-color: ${color}">
-      Following: ${name} <span @click=${this.stopFollowing}>Stop</span>
-    </div>`;
-  }
-
-  private everyoneFollowsMeMessage() {
-    if (!this.everyoneFollowsMe) return '';
-
-    const { color } = this.localParticipantData;
-
-    return html`<div class="message" style="border-color: ${color}">
-      Everyone is following you <span @click=${this.stopEveryoneFollowsMe}>Stop</span>
-    </div>`;
-  }
-
-  private privateMessage() {
-    if (!this.isPrivate) return '';
-
-    const { color } = this.localParticipantData;
-
-    return html`<div class="message" style="border-color: ${color}">
-      You are in Private Mode <span @click=${this.cancelPrivate}>Cancel</span>
-    </div>`;
-  }
-
   private renderParticipants() {
     if (!this.participants) return html``;
 
     this.putLocalParticipationFirst();
     this.swapParticipantBeingFollowedPosition();
 
-    return html`<div class="superviz-who-is-online">
+    return html`<div class="wio__participant-list">
       ${repeat(
         this.participants.slice(0, 4),
         (participant) => participant.id,
@@ -324,7 +305,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           const disableDropdown = !joinedPresence || this.disableDropdown;
 
           const classList = {
-            'superviz-who-is-online__participant': true,
+            wio__participant: true,
             'disable-dropdown': disableDropdown,
             followed: participantIsFollowed || (isLocal && this.everyoneFollowsMe),
             private: isLocal && this.isPrivate,
@@ -357,8 +338,11 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               ?disabled=${disableDropdown}
               ?canShowTooltip=${this.showTooltip}
               onHoverData=${JSON.stringify(tooltipData)}
+              classesPrefix="wio__controls"
+              parentComponent="who-is-online"
+              tooltipPrefix="wio"
             >
-              <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
+              <div slot="dropdown" class=${classMap(classList)} style="border-color: ${color}">
                 ${this.getAvatar(participant)}
               </div>
             </superviz-dropdown>
@@ -373,7 +357,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     super.updated(changedProperties);
 
     this.updateComplete.then(() => {
-      const element = this.shadowRoot.querySelector('.wio-content');
+      const element = this.shadowRoot.querySelector('.wio');
       if (!element) return;
 
       const side = this.position.includes('left') ? 'flex-start' : 'flex-end';
@@ -383,11 +367,17 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   protected render() {
-    return html`<div class="wio-content">
+    return html`<div class="wio who-is-online">
       ${this.renderParticipants()}
-      <div class="wio__controls-messages">
-        ${this.followingMessage()} ${this.everyoneFollowsMeMessage()} ${this.privateMessage()}
-      </div>
+      <superviz-who-is-online-messages
+        following=${JSON.stringify(this.following)}
+        ?everyoneFollowsMe=${this.everyoneFollowsMe}
+        ?isPrivate=${this.isPrivate}
+        participantColor=${this.localParticipantData?.color}
+        @stop-following=${this.stopFollowing}
+        @cancel-private=${this.cancelPrivate}
+        @stop-everyone-follows-me=${this.stopEveryoneFollowsMe}
+      ></superviz-who-is-online-messages>
     </div> `;
   }
 }

@@ -1,23 +1,26 @@
 import { css } from 'lit';
 
 export const whoIsOnlineStyle = css`
-  .superviz-who-is-online {
+  .wio__participant-list {
     display: flex;
     align-items: center;
     gap: 4px;
     position: relative;
   }
 
-  .wio-content {
+  .wio {
     display: flex;
     flex-direction: column;
     position: fixed;
     z-index: 99;
+    background-color: #fff;
   }
 
-  .superviz-who-is-online__participant {
-    --border-color: #aea9b8;
+  .wio__presence-control-message__text {
+    margin: 0;
+  }
 
+  .wio__participant {
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -28,21 +31,19 @@ export const whoIsOnlineStyle = css`
     user-select: none;
     cursor: pointer;
     transition: opacity 0.3s ease-in-out;
-  }
-
-  .superviz-who-is-online__participant:before {
-    content: '';
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    box-sizing: border-box;
+    border: 2px solid #878291;
     border-radius: 50%;
-    border: 2px solid var(--border-color);
+    max-width: 40px;
+    flex: 1 0 40px;
   }
 
-  .followed:before {
+  .followed {
     border-style: dashed !important;
     animation: rotate 15s linear infinite;
+  }
+
+  .followed .wio__participant__avatar {
+    animation: nullifyRotate 15s linear infinite;
   }
 
   .private {
@@ -55,31 +56,17 @@ export const whoIsOnlineStyle = css`
     }
   }
 
-  .superviz-who-is-online__participant.disable-dropdown {
+  @keyframes nullifyRotate {
+    100% {
+      transform: rotate(-1turn);
+    }
+  }
+
+  .wio__participant.disable-dropdown {
     cursor: default;
   }
 
-  .message {
-    box-sizing: border-box;
-    margin-top: 9px;
-    font-size: 12px;
-    padding: 8px 10px;
-    font-family: 'Roboto';
-    border-radius: 6px;
-    align-self: flex-end;
-    background-color: #fff;
-    color: rgb(var(--sv-gray-700));
-
-    border: 2px solid #e0e0e0;
-  }
-
-  .message span {
-    margin-left: 3px;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
-  .superviz-who-is-online__avatar {
+  .wio__participant__avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -88,7 +75,7 @@ export const whoIsOnlineStyle = css`
     justify-content: center;
     font-family: 'Open Sans';
     font-size: 14px;
-    line-height: 18px;
+    line-height: 14px;
     font-weight: bold;
     color: #26242a;
     object-fit: contain;
@@ -106,8 +93,8 @@ export const whoIsOnlineStyle = css`
     line-height: 16px;
     text-align: center;
     font-weight: bold;
-    color: #26242a;
     cursor: pointer;
+    color: #aea9b8;
   }
 
   .excess_participants:hover,
@@ -121,19 +108,30 @@ export const whoIsOnlineStyle = css`
   }
 
   @media (max-width: 780px) {
-    .superviz-who-is-online__participant,
-    .superviz-who-is-online__participant::before {
+    .wio__participant {
       width: 32px;
       height: 32px;
     }
 
-    .superviz-who-is-online__avatar {
+    .wio__participant {
+      flex: 1 0 32px;
+      max-width: 32px;
+    }
+
+    .wio__participant__avatar {
       width: 24px;
       height: 24px;
     }
 
-    .superviz-who-is-online {
+    .wio__participant-list {
       gap: 8px;
+    }
+
+    .superviz-who-is-online__excess {
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
+      line-height: 12px;
     }
   }
 `;
