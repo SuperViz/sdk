@@ -27,7 +27,7 @@ export const dropdownStyle = css`
     background-color: rgb(var(--sv-gray-200));
   }
 
-  .who-is-online-dropdown__participant {
+  .wio__participant {
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -163,12 +163,12 @@ export const dropdownStyle = css`
 
   @media (max-width: 780px) {
     .sv-icon,
-    .who-is-online-dropdown__participant {
+    .wio__participant {
       width: 32px;
       height: 32px;
     }
 
-    .who-is-online-dropdown__participant {
+    .wio__participant {
       flex: 1 0 32px;
       max-width: 32px;
     }

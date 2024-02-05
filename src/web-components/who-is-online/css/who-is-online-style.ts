@@ -20,8 +20,6 @@ export const whoIsOnlineStyle = css`
   }
 
   .wio__participant {
-    --border-color: #aea9b8;
-
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -29,19 +27,12 @@ export const whoIsOnlineStyle = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    user-select: none;
-    cursor: pointer;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  .wio__participant:before {
-    content: '';
-    position: absolute;
     width: 40px;
     height: 40px;
-    box-sizing: border-box;
+    border: 2px solid #878291;
     border-radius: 50%;
-    border: 2px solid var(--border-color);
+    max-width: 40px;
+    flex: 1 0 40px;
   }
 
   .followed:before {
@@ -92,7 +83,7 @@ export const whoIsOnlineStyle = css`
     justify-content: center;
     font-family: 'Open Sans';
     font-size: 14px;
-    line-height: 18px;
+    line-height: 14px;
     font-weight: bold;
     color: #26242a;
     object-fit: contain;
@@ -126,10 +117,14 @@ export const whoIsOnlineStyle = css`
   }
 
   @media (max-width: 780px) {
-    .wio__participant,
-    .wio__participant::before {
+    .wio__participant {
       width: 32px;
       height: 32px;
+    }
+
+    .wio__participant {
+      flex: 1 0 32px;
+      max-width: 32px;
     }
 
     .wio__participant__avatar {
@@ -139,6 +134,13 @@ export const whoIsOnlineStyle = css`
 
     .wio__participant-list {
       gap: 8px;
+    }
+
+    .superviz-who-is-online__excess {
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
+      line-height: 12px;
     }
   }
 `;

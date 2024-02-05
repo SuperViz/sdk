@@ -393,7 +393,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               parentComponent="who-is-online"
               tooltipPrefix="wio"
             >
-              <div slot="dropdown" class=${classMap(classList)} style="--border-color: ${color}">
+              <div slot="dropdown" class=${classMap(classList)} style="border-color: ${color}">
                 ${this.getAvatar(participant)}
               </div>
             </superviz-dropdown>

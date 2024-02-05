@@ -208,8 +208,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         <div 
           class=${classMap(contentClasses)} 
           @click=${this.selectParticipant(id)} slot="dropdown">
-          <div class="who-is-online-dropdown__participant" style="border-color: 
-          ${color}">
+            <div class="wio__participant" style="border-color: 
+            ${color}">
               ${this.getAvatar(participant)}
             </div>
             <span class="wio__extras__username">${name}</span>
