@@ -5,6 +5,7 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { dropdownStyle } from '../css';
 
 import {
@@ -63,7 +64,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    this.shadowRoot.querySelector('.menu').scrollTop = 0;
+    this.shadowRoot.querySelector('.wio__extras-dropdown').scrollTop = 0;
+    importStyle.call(this, 'who-is-online');
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -116,7 +118,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
       return html` <img
-        class="who-is-online-dropdown__avatar"
+        class="wio__participant__avatar"
         style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
@@ -127,7 +129,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       : '#26242A';
 
     return html`<div
-      class="who-is-online-dropdown__avatar"
+      class="wio__participant__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
       ${participant.name?.at(0).toUpperCase()}
@@ -153,14 +155,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
         const contentClasses = {
-          'who-is-online-dropdown__content': true,
-          'who-is-online-dropdown__content--selected': this.selected === id,
+          'wio__extra-participant': true,
+          'wio__extra-participant--selected': this.selected === id,
           'disable-dropdown': disableDropdown,
           followed: this.following?.id === id,
         };
 
         const iconClasses = {
-          icon: true,
+          'wio__extras__arrow-icon': true,
           'hide-icon': disableDropdown,
         };
 
@@ -199,6 +201,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         ?shiftTooltipLeft=${true}
         ?lastParticipant=${isLastParticipant}
         @toggle-dropdown-state=${this.toggleShowTooltip}
+        classesPrefix="wio__controls"
+        parentComponent="who-is-online"
+        tooltipPrefix="wio"
         >
         <div 
           class=${classMap(contentClasses)} 
@@ -207,7 +212,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           ${color}">
               ${this.getAvatar(participant)}
             </div>
-            <span class="user-name">${name}</span>
+            <span class="wio__extras__username">${name}</span>
             <superviz-icon 
               class=${classMap(iconClasses)} 
               name="right" 
@@ -223,7 +228,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private setMenu() {
     if (!this.menu) {
-      this.menu = this.shadowRoot.querySelector('.menu');
+      this.menu = this.shadowRoot.querySelector('.wio__extras-dropdown');
       const options = {
         rootMargin: '0px',
         threshold: 1.0,
@@ -359,7 +364,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private get menuClasses() {
     return {
-      menu: true,
+      'wio__extras-dropdown': true,
       'menu--bottom': this.position === 'bottom',
       'menu--top': this.position === 'top',
       'menu-open': this.open,
@@ -371,6 +376,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     return html`<superviz-tooltip
       tooltipData=${JSON.stringify({ name: 'See more' })}
+      classesPrefix="wio__tooltip"
+      parentComponent="who-is-online"
     ></superviz-tooltip>`;
   };
 

@@ -1,21 +1,25 @@
 import { css } from 'lit';
 
 export const whoIsOnlineStyle = css`
-  .superviz-who-is-online {
+  .wio__participant-list {
     display: flex;
     align-items: center;
     gap: 4px;
     position: relative;
   }
 
-  .wio-content {
+  .wio {
     display: flex;
     flex-direction: column;
     position: fixed;
     z-index: 99;
   }
 
-  .superviz-who-is-online__participant {
+  .wio__presence-control-message__text {
+    margin: 0;
+  }
+
+  .wio__participant {
     --border-color: #aea9b8;
 
     border-radius: 50%;
@@ -30,7 +34,7 @@ export const whoIsOnlineStyle = css`
     transition: opacity 0.3s ease-in-out;
   }
 
-  .superviz-who-is-online__participant:before {
+  .wio__participant:before {
     content: '';
     position: absolute;
     width: 40px;
@@ -55,11 +59,11 @@ export const whoIsOnlineStyle = css`
     }
   }
 
-  .superviz-who-is-online__participant.disable-dropdown {
+  .wio__participant.disable-dropdown {
     cursor: default;
   }
 
-  .message {
+  .wio__presence-control-message {
     box-sizing: border-box;
     margin-top: 9px;
     font-size: 12px;
@@ -73,13 +77,13 @@ export const whoIsOnlineStyle = css`
     border: 2px solid #e0e0e0;
   }
 
-  .message span {
+  .wio__presence-control-message span {
     margin-left: 3px;
     text-decoration: underline;
     cursor: pointer;
   }
 
-  .superviz-who-is-online__avatar {
+  .wio__participant__avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -108,6 +112,7 @@ export const whoIsOnlineStyle = css`
     font-weight: bold;
     color: #26242a;
     cursor: pointer;
+    color: #aea9b8;
   }
 
   .excess_participants:hover,
@@ -121,18 +126,18 @@ export const whoIsOnlineStyle = css`
   }
 
   @media (max-width: 780px) {
-    .superviz-who-is-online__participant,
-    .superviz-who-is-online__participant::before {
+    .wio__participant,
+    .wio__participant::before {
       width: 32px;
       height: 32px;
     }
 
-    .superviz-who-is-online__avatar {
+    .wio__participant__avatar {
       width: 24px;
       height: 24px;
     }
 
-    .superviz-who-is-online {
+    .wio__participant-list {
       gap: 8px;
     }
   }
