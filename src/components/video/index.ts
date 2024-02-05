@@ -213,6 +213,7 @@ export class VideoConference extends BaseComponent {
           : (this.params?.collaborationMode?.modalPosition as LayoutPosition) ??
             LayoutPosition.CENTER,
       layoutMode: (this.params?.collaborationMode?.initialView as LayoutMode) ?? LayoutMode.LIST,
+      callbacks: this.params?.callbacks,
     };
 
     this.logger.log('video conference @ start video', this.videoConfig);

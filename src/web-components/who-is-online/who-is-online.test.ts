@@ -63,22 +63,22 @@ describe('Who Is Online', () => {
     element.remove();
   });
 
-  test('should render a participants with class "superviz-who-is-online"', async () => {
+  test('should render a participants with class "wio__participant-list"', async () => {
     element['updateParticipants'](MOCK_PARTICIPANTS);
     await sleep();
-    const participants = element?.shadowRoot?.querySelector('.superviz-who-is-online');
+    const participants = element?.shadowRoot?.querySelector('.wio__participant-list');
     expect(participants).not.toBeFalsy();
   });
 
   test('should have default positioning style', () => {
-    const participants = element?.shadowRoot?.querySelector('.wio-content') as HTMLElement;
+    const participants = element?.shadowRoot?.querySelector('.wio') as HTMLElement;
     expect(participants.getAttribute('style')).toBe(
       'top: 20px; right: 40px; align-items: flex-end;',
     );
   });
 
   test('should update position style', async () => {
-    const participants = element?.shadowRoot?.querySelector('.wio-content') as HTMLElement;
+    const participants = element?.shadowRoot?.querySelector('.wio') as HTMLElement;
     element['position'] = 'top: 20px; left: 40px;';
 
     await sleep();
@@ -89,8 +89,8 @@ describe('Who Is Online', () => {
   });
 
   test('should not update position style if does not find participants', async () => {
-    const participants = element?.shadowRoot?.querySelector('.wio-content') as HTMLElement;
-    participants.classList.remove('wio-content');
+    const participants = element?.shadowRoot?.querySelector('.wio') as HTMLElement;
+    participants.classList.remove('wio');
 
     element['position'] = 'top: 20px; left: 40px;';
 
@@ -102,22 +102,20 @@ describe('Who Is Online', () => {
   });
 
   test('should update participants list', async () => {
-    let participants = element?.shadowRoot?.querySelectorAll(
-      '.superviz-who-is-online__participant',
-    );
+    let participants = element?.shadowRoot?.querySelectorAll('.wio__participant');
 
     expect(participants?.length).toBe(0);
 
     element['updateParticipants'](MOCK_PARTICIPANTS);
     await sleep();
 
-    participants = element.shadowRoot?.querySelectorAll('.superviz-who-is-online__participant');
+    participants = element.shadowRoot?.querySelectorAll('.wio__participant');
     expect(participants?.length).toBe(3);
 
     element['updateParticipants'](MOCK_PARTICIPANTS.slice(0, 2));
     await sleep();
 
-    participants = element.shadowRoot?.querySelectorAll('.superviz-who-is-online__participant');
+    participants = element.shadowRoot?.querySelectorAll('.wio__participant');
 
     expect(participants?.length).toBe(2);
   });
@@ -142,7 +140,7 @@ describe('Who Is Online', () => {
     element['updateParticipants'](MOCK_PARTICIPANTS.slice(0, 1));
     await sleep();
 
-    const letter = element?.shadowRoot?.querySelector('.superviz-who-is-online__avatar');
+    const letter = element?.shadowRoot?.querySelector('.wio__participant__avatar');
     const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex];
 
     expect(letter?.getAttribute('style')).toBe(
@@ -160,7 +158,7 @@ describe('Who Is Online', () => {
     element['updateParticipants']([participant]);
     await sleep();
 
-    const letter = element?.shadowRoot?.querySelector('.superviz-who-is-online__avatar');
+    const letter = element?.shadowRoot?.querySelector('.wio__participant__avatar');
 
     const backgroundColor = MeetingColorsHex[participant.slotIndex];
     expect(letter?.getAttribute('style')).toBe(

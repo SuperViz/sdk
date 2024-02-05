@@ -30,6 +30,7 @@ export class Dropdown extends WebComponentsBaseElement {
   declare lastParticipant: boolean;
   declare classesPrefix: string;
   declare parentComponent: string;
+  declare tooltipPrefix: string;
 
   private dropdownContent: HTMLElement;
   private originalPosition: Positions;
@@ -63,6 +64,7 @@ export class Dropdown extends WebComponentsBaseElement {
     lastParticipant: { type: Boolean },
     classesPrefix: { type: String },
     parentComponent: { type: String },
+    tooltipPrefix: { type: String },
   };
 
   constructor() {
@@ -414,9 +416,9 @@ export class Dropdown extends WebComponentsBaseElement {
 
   private get renderHeader() {
     if (!this.name) return html``;
-    return html` <div class="header">
-      <span class="text username">${this.name}</span>
-      <span class="sv-hr"></span>
+    return html` <div class="header ${this.getClass('header')}">
+      <span class="text username ${this.getClass('title')}">${this.name}</span>
+      <span class="sv-hr ${this.getClass('divisor')}"></span>
     </div>`;
   }
 
@@ -447,7 +449,7 @@ export class Dropdown extends WebComponentsBaseElement {
       };
 
       return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
-        ${this.supervizIcons?.at(index)}
+        <span class=${this.getClass('item__icon')}>${this.supervizIcons?.at(index)}</span>
         <span class="option-label ${this.getClass('item__label')}">${option[this.label]}</span>
       </li>`;
     });
@@ -462,6 +464,8 @@ export class Dropdown extends WebComponentsBaseElement {
       tooltipData=${JSON.stringify(this.onHoverData)}
       ?shiftTooltipLeft=${this.shiftTooltipLeft}
       tooltipVerticalPosition=${tooltipVerticalPosition}
+      classesPrefix="${this.tooltipPrefix}__tooltip"
+      parentComponent=${this.parentComponent}
     ></superviz-tooltip>`;
   };
 

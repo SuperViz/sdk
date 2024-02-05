@@ -22,7 +22,7 @@ export const annotationPinStyles = css`
     border-bottom-left-radius: 2px;
 
     border: 2px solid rgb(var(--sv-white));
-    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.25);
+    box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.35);
     transition: border-color 0.2s ease-in-out opacity 0.2s ease-in-out;
     padding: 2px;
     box-sizing: border-box;
