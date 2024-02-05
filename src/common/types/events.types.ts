@@ -31,6 +31,7 @@ export enum FrameEvent {
   FRAME_AVATAR_LIST_UPDATE = 'frame.avatar-list-update',
   FRAME_COLOR_LIST_UPDATE = 'frame.color-list-update',
   FRAME_STYLES_UPDATE = 'frame.styles-update',
+  FRAME_CALLBACKS_UPDATE = 'frame.callbacks-update',
 }
 
 export enum MeetingControlsEvent {
@@ -41,6 +42,7 @@ export enum MeetingControlsEvent {
   TOGGLE_SCREENSHARE = 'meeting-controls.toggle-screenshare',
   TOGGLE_TRANSCRIPT = 'meeting-controls.toggle-transcript',
   HANG_UP = 'hang-up',
+  CALLBACK_CALLED = 'callback-called',
 }
 
 export enum RealtimeEvent {

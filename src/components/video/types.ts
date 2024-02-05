@@ -35,6 +35,15 @@ export interface VideoComponentOptions {
     modalPosition?: LayoutPosition | `${LayoutPosition}`;
     initialView?: LayoutMode | `${LayoutMode}`;
   };
+  callbacks?: {
+    onToggleMicrophone?: () => void;
+    onToggleCamera?: () => void;
+    onToggleTranscript?: () => void;
+    onToggleChat?: () => void;
+    onToggleScreenShare?: () => void;
+    onLeaveMeeting?: () => void;
+    onClickSettings?: () => void;
+  };
 }
 
 export type ParticipandToFrame = {
