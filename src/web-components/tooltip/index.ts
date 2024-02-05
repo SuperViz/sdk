@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../base';
+import importStyle from '../base/utils/importStyle';
 
 import { dropdownStyle } from './index.style';
 import { Positions, PositionsEnum } from './types';
@@ -22,8 +23,9 @@ export class Tooltip extends WebComponentsBaseElement {
   declare tooltipVerticalPosition: Positions;
   declare tooltipHorizontalPosition: Positions;
   declare shiftTooltipLeft: boolean;
-
   declare parentSizes: { height: number; width: number };
+  declare classesPrefix: string;
+  declare parentComponent: string;
 
   private canAnimate: boolean;
   private animationFrame: number;
@@ -37,6 +39,8 @@ export class Tooltip extends WebComponentsBaseElement {
     tooltipHorizontalPosition: { type: String },
     parentSizes: { type: Object },
     shiftTooltipLeft: { type: Boolean },
+    classesPrefix: { type: String },
+    parentComponent: { type: String },
   };
 
   constructor() {
@@ -54,6 +58,7 @@ export class Tooltip extends WebComponentsBaseElement {
     parentElement?.addEventListener('mouseenter', this.show);
     parentElement?.addEventListener('mouseleave', this.hide);
     this.adjustTooltipPosition();
+    importStyle.call(this, this.parentComponent);
   }
 
   private positionFixedTooltip = () => {
@@ -225,30 +230,34 @@ export class Tooltip extends WebComponentsBaseElement {
     this.adjustTooltipHorizontalPosition();
   };
 
+  private getClass(suffix: string) {
+    return suffix ? `${this.classesPrefix}__${suffix}` : this.classesPrefix;
+  }
+
   private renderTooltip() {
     const verticalPosition = this.tooltipVerticalPosition;
     const horizontalPosition = this.tooltipHorizontalPosition;
 
     const classList = {
       'superviz-who-is-online__tooltip': true,
+      [this.getClass('')]: true,
+      [verticalPosition]: true,
+      [horizontalPosition]: true,
       'tooltip-extras': this.tooltipOnLeft,
       'show-tooltip': this.showTooltip,
       'shift-left': this.shiftTooltipLeft,
     };
-
-    classList[verticalPosition] = true;
-    classList[horizontalPosition] = true;
 
     return html`<div
       class=${classMap(classList)}
       style="--host-height: ${this.parentSizes?.height}px; --host-width: ${this.parentSizes
         ?.width}px;"
     >
-      <p class="tooltip-name">${this.tooltipData?.name}</p>
+      <p class="tooltip-name ${this.getClass('title')}">${this.tooltipData?.name}</p>
       ${this.tooltipData?.action
-        ? html`<p class="tooltip-action">${this.tooltipData?.action}</p>`
+        ? html`<p class="tooltip-action ${this.getClass('action')}">${this.tooltipData?.action}</p>`
         : ''}
-      <div class="superviz-who-is-online__tooltip-arrow"></div>
+      <div class="superviz-who-is-online__tooltip-arrow ${this.getClass('')}"></div>
     </div>`;
   }
 
