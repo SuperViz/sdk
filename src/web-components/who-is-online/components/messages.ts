@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';

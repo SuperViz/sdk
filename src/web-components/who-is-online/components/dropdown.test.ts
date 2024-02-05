@@ -83,7 +83,7 @@ const dropdownMenu = () => {
   return element()?.shadowRoot?.querySelector('.menu') as HTMLElement | null;
 };
 
-describe('dropdown', () => {
+describe('who-is-online-dropdown', () => {
   afterEach(() => {
     document.body.innerHTML = '';
   });
