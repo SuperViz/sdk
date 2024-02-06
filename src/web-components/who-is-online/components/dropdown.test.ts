@@ -83,7 +83,7 @@ const dropdownMenu = () => {
   return element()?.shadowRoot?.querySelector('.wio__extras-dropdown') as HTMLElement | null;
 };
 
-describe('dropdown', () => {
+describe('who-is-online-dropdown', () => {
   afterEach(() => {
     document.body.innerHTML = '';
   });
@@ -237,7 +237,7 @@ describe('dropdown', () => {
       expect(el['position']).toBe('top');
 
       el.style.bottom = 'auto';
-      el.style.top = '0px';
+      el.style.top = '-100px';
       el['host'] = element();
 
       await sleep();

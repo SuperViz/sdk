@@ -13,6 +13,7 @@ export const whoIsOnlineStyle = css`
     flex-direction: column;
     position: fixed;
     z-index: 99;
+    background-color: #fff;
   }
 
   .wio__presence-control-message__text {
@@ -27,17 +28,22 @@ export const whoIsOnlineStyle = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    user-select: none;
+    cursor: pointer;
+    transition: opacity 0.3s ease-in-out;
     border: 2px solid #878291;
     border-radius: 50%;
     max-width: 40px;
     flex: 1 0 40px;
   }
 
-  .followed:before {
+  .followed {
     border-style: dashed !important;
     animation: rotate 15s linear infinite;
+  }
+
+  .followed .wio__participant__avatar {
+    animation: nullifyRotate 15s linear infinite;
   }
 
   .private {
@@ -50,28 +56,14 @@ export const whoIsOnlineStyle = css`
     }
   }
 
+  @keyframes nullifyRotate {
+    100% {
+      transform: rotate(-1turn);
+    }
+  }
+
   .wio__participant.disable-dropdown {
     cursor: default;
-  }
-
-  .wio__presence-control-message {
-    box-sizing: border-box;
-    margin-top: 9px;
-    font-size: 12px;
-    padding: 8px 10px;
-    font-family: 'Roboto';
-    border-radius: 6px;
-    align-self: flex-end;
-    background-color: #fff;
-    color: rgb(var(--sv-gray-700));
-
-    border: 2px solid #e0e0e0;
-  }
-
-  .wio__presence-control-message span {
-    margin-left: 3px;
-    text-decoration: underline;
-    cursor: pointer;
   }
 
   .wio__participant__avatar {
@@ -83,6 +75,7 @@ export const whoIsOnlineStyle = css`
     justify-content: center;
     font-family: 'Open Sans';
     font-size: 14px;
+    line-height: 14px;
     line-height: 14px;
     font-weight: bold;
     color: #26242a;
@@ -101,7 +94,6 @@ export const whoIsOnlineStyle = css`
     line-height: 16px;
     text-align: center;
     font-weight: bold;
-    color: #26242a;
     cursor: pointer;
     color: #aea9b8;
   }
