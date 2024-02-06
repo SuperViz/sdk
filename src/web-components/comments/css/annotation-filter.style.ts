@@ -1,14 +1,14 @@
 import { css } from 'lit';
 
 export const annotationFilterStyle = css`
-  .select {
+  .comments__filter-container {
     display: flex;
     width: 100%;
     justify-content: flex-start;
     align-items: center;
   }
 
-  .select-container {
+  .comments__filter {
     white-space: nowrap;
     padding: 12px;
     cursor: pointer;

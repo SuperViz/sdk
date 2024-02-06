@@ -1,7 +1,8 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { topbarStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -16,16 +17,25 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
     side: { type: String },
   };
 
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
+    });
+  }
+
   private close() {
     this.dispatchEvent(new CustomEvent('close'));
   }
 
   protected render() {
     return html`
-      <div class="topbar">
-        <span class="text text-bold">COMMENTS</span>
-        <span @click=${this.close} class="toggle-icon">
-          <superviz-icon name=${this.side} size="lg"></superviz-icon>
+      <div class="comments__topbar">
+        <span class="text text-bold comments__topbar__title">COMMENTS</span>
+        <span @click=${this.close} class="comments__topbar__close-threads">
+          <superviz-icon name=${this.side} allowSetSize=${true}></superviz-icon>
         </span>
       </div>
     `;

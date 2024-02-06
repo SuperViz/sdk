@@ -1,3 +1,5 @@
+import { CommentEvent } from '../../common/types/events.types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
@@ -25,18 +27,24 @@ export class Comments extends BaseComponent {
   private annotations: Annotation[];
   private clientUrl: string;
   private pinAdapter: PinAdapter;
-  private layoutOptions: CommentsOptions;
+  private layoutOptions: CommentsOptions = {};
   private coordinates: AnnotationPositionInfo;
+  private hideDefaultButton: boolean;
+  private pinActive: boolean;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
-    this.layoutOptions = options ?? {
-      position: CommentsSide.LEFT,
-      buttonLocation: ButtonLocation.TOP_LEFT,
+    this.layoutOptions = {
+      buttonLocation: options?.buttonLocation ?? 'top-left',
+      position: options?.position ?? 'left',
     };
+
+    this.hideDefaultButton = options?.hideDefaultButton ?? false;
+
+    this.setStyles(options?.styles);
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
@@ -47,6 +55,68 @@ export class Comments extends BaseComponent {
     });
 
     this.pinAdapter = pinAdapter;
+  }
+
+  /**
+   * @function openThreads
+   * @description - Open comments thread
+   * @returns {void}
+   */
+  public openThreads = (): void => {
+    if (this.sidebarOpen) return;
+
+    this.element?.setAttribute('open', '');
+    this.sidebarOpen = true;
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
+
+  /**
+   * @function closeThreads
+   * @description - Close comments thread
+   * @returns {void}
+   */
+  public closeThreads = (): void => {
+    if (!this.sidebarOpen) return;
+
+    this.element?.removeAttribute('open');
+    this.sidebarOpen = false;
+
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-annotation-sidebar', {
+        detail: { open: this.sidebarOpen },
+        composed: true,
+        bubbles: true,
+      }),
+    );
+  };
+
+  /**
+   * @function enable
+   * @description - Activates the pin adapter and allows the user to create annotations
+   * @returns {void}
+   */
+  public enable(): void {
+    this.pinAdapter.setActive(true);
+    this.pinActive = true;
+    this.publish(CommentEvent.PIN_ACTIVE);
+  }
+
+  /**
+   * @function disable
+   * @description - Deactivates the pin adapter and prevents the user from creating annotations
+   * @returns {void}
+   */
+  public disable(): void {
+    this.pinAdapter.setActive(false);
+    this.pinActive = false;
+    this.publish(CommentEvent.PIN_INACTIVE);
   }
 
   /**
@@ -70,12 +140,31 @@ export class Comments extends BaseComponent {
     this.clientUrl = window.location.href;
 
     this.positionComments();
-    this.positionFloatingButton();
+
+    if (!this.hideDefaultButton) {
+      this.positionFloatingButton();
+    }
+
     this.fetchAnnotations();
     this.waterMarkState();
+    this.participantsList();
     this.addListeners();
     this.pinAdapter.setPinsVisibility(true);
   }
+
+  /**
+   * @function togglePinActive
+   * @description Toggles the pin adapter's active state
+   * @returns {void}
+   */
+  public togglePinActive = (): void => {
+    if (this.pinActive) {
+      this.disable();
+      return;
+    }
+
+    this.enable();
+  };
 
   /**
    * @function destroy
@@ -86,7 +175,7 @@ export class Comments extends BaseComponent {
     this.logger.log('comments component @ destroy');
     this.destroyListeners();
 
-    this.button.remove();
+    this.button?.remove();
     this.element.remove();
     this.element = undefined;
     this.pinAdapter.destroy();
@@ -99,15 +188,15 @@ export class Comments extends BaseComponent {
    */
   private addListeners(): void {
     // Button observers
-    this.button.addEventListener('toggle', this.toggleAnnotationSidebar);
+    this.button?.addEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.addEventListener('toggle', this.toggleAnnotationSidebar);
+    this.element.addEventListener('close', this.closeThreads);
     document.body.addEventListener('create-annotation', this.createAnnotation);
     this.element.addEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.addEventListener('delete-annotation', this.deleteAnnotation);
     this.element.addEventListener('create-comment', ({ detail }: CustomEvent) => {
-      this.createComment(detail.uuid, detail.text, true);
+      this.createComment(detail.uuid, detail.text, detail.mentions, true);
     });
     this.element.addEventListener('update-comment', this.updateComment);
     this.element.addEventListener('delete-comment', this.deleteComment);
@@ -129,14 +218,14 @@ export class Comments extends BaseComponent {
    */
   private destroyListeners(): void {
     // Button observers
-    this.button.removeEventListener('toggle', this.toggleAnnotationSidebar);
+    this.button?.removeEventListener('toggle', this.togglePinActive);
 
     // Comments component observers
-    this.element.removeEventListener('toggle', this.toggleAnnotationSidebar);
+    this.element.removeEventListener('close', this.closeThreads);
     this.element.removeEventListener('create-annotation', this.createAnnotation);
     this.element.removeEventListener('resolve-annotation', this.resolveAnnotation);
     this.element.removeEventListener('create-comment', ({ detail }: CustomEvent) => {
-      this.createComment(detail.uuid, detail.text, true);
+      this.createComment(detail.uuid, detail.text, detail.mentions, true);
     });
     this.element.removeEventListener('update-comment', this.updateComment);
     this.element.removeEventListener('delete-comment', this.deleteComment);
@@ -247,6 +336,21 @@ export class Comments extends BaseComponent {
   };
 
   /**
+   * @function setStyles
+   * @param {string} styles - The user custom styles to be added to the comments
+   * @returns {void}
+   */
+  private setStyles(styles: string = '') {
+    if (!styles) return;
+
+    const tag = document.createElement('style');
+    tag.textContent = styles;
+    tag.id = 'superviz-comments-styles';
+
+    document.head.appendChild(tag);
+  }
+
+  /**
    * @function positionComments
    * @description put comments at the left or right side of the screen
    * @returns {void}
@@ -277,7 +381,7 @@ export class Comments extends BaseComponent {
    */
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { text } = detail;
+      const { text, mentions } = detail;
       const { url } = this;
       const position = { ...this.coordinates };
       const annotation = await ApiService.createAnnotations(
@@ -291,7 +395,8 @@ export class Comments extends BaseComponent {
         },
       );
 
-      const comment = await this.createComment(annotation.uuid, text);
+      const comment = await this.createComment(annotation.uuid, text, mentions);
+
       this.addAnnotation({
         ...annotation,
         comments: [comment],
@@ -346,6 +451,7 @@ export class Comments extends BaseComponent {
   private async createComment(
     annotationId: string,
     text: string,
+    mentions = [],
     addComment = false,
   ): Promise<Comment> {
     try {
@@ -358,6 +464,16 @@ export class Comments extends BaseComponent {
           text,
         },
       );
+
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+          readed: 0,
+        })),
+      });
+
+      comment.mentions = mentions;
 
       if (addComment) {
         this.addComment(annotationId, comment);
@@ -379,19 +495,29 @@ export class Comments extends BaseComponent {
    */
   private updateComment = async ({ detail }: CustomEvent): Promise<void> => {
     try {
-      const { uuid, text } = detail;
-      await ApiService.updateComment(
+      const { uuid, text, mentions } = detail;
+      const comment = await ApiService.updateComment(
         config.get<string>('apiUrl'),
         config.get<string>('apiKey'),
         uuid,
         text,
       );
 
+      await ApiService.createMentions({
+        commentsId: comment.uuid,
+        participants: mentions.map((mention) => ({
+          id: mention.userId,
+        })),
+      });
+
       const annotations = this.annotations.map((annotation) => {
         return Object.assign({}, annotation, {
           comments: annotation.comments.map((comment) => {
             if (comment.uuid === uuid) {
-              return Object.assign({}, comment, { text });
+              return Object.assign({}, comment, {
+                text,
+                mentions,
+              });
             }
 
             return comment;
@@ -494,6 +620,22 @@ export class Comments extends BaseComponent {
       this.element.waterMarkStatus(dataWaterMark);
     } catch (error) {
       this.logger.log('error when fetching waterMark', error);
+    }
+  }
+
+  /**
+   * @function participantsList
+   * @description Fetch participantsList from the API to be shown
+   * @returns {Promise<void>}
+   */
+  private async participantsList(): Promise<void> {
+    try {
+      const participantsList = await ApiService.fetchParticipantsByGroup(this.group.id);
+      const participants: ParticipantByGroupApi[] = participantsList.data;
+      this.pinAdapter.participantsList = participants;
+      this.element.participantsList = participants;
+    } catch (error) {
+      this.logger.log('error when fetching participantsList', error);
     }
   }
 

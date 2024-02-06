@@ -133,6 +133,6 @@ describe('realtime component', () => {
     expect(console.error).toHaveBeenCalledWith(
       "Realtime component is not started yet. You can't publish event test before start",
     );
-    expect(PUB_SUB_MOCK.publish).not.toHaveBeenCalled();
+    expect(PUB_SUB_MOCK.publish).not.toHaveBeenCalledWith('test', 'test');
   });
 });

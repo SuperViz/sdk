@@ -1,6 +1,8 @@
-import { CSSResultGroup, html, LitElement } from 'lit';
+import { CSSResultGroup, html, LitElement, PropertyValueMap } from 'lit';
 
 import sleep from '../../common/utils/sleep';
+
+import importStyle from './utils/importStyle';
 
 import { WebComponentsBase } from './index';
 
@@ -9,6 +11,13 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles || []];
 
 class TestElement extends WebComponentsBaseElement {
   static styles = styles;
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    importStyle.call(this, 'test');
+  }
 
   render() {
     return html`
@@ -24,7 +33,11 @@ customElements.define('test-element', TestElement);
 const createElement = (): Element => {
   const element = document.createElement('test-element');
   document.body.appendChild(element);
+  const style = document.createElement('style');
+  style.innerText = 'h6 { color: purple; }';
 
+  style.id = 'superviz-test-styles';
+  document.head.appendChild(style);
   return element;
 };
 
@@ -63,6 +76,16 @@ describe('WebComponentsBase', () => {
 
     expect(element.shadowRoot?.querySelector('style')?.innerHTML).toContain(
       '@import"https://unpkg.com/@superviz/sv-icons@0.8.7/css/style.css";',
+    );
+  });
+
+  test('should inject styles from the superviz style tag', async () => {
+    const element = createElement();
+
+    await sleep();
+
+    expect(element.shadowRoot?.adoptedStyleSheets[4].cssRules.item(0)?.cssText).toBe(
+      'h6 { color: purple; }',
     );
   });
 });

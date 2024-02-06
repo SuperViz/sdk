@@ -7,7 +7,7 @@ import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlinePosition, Position, Participant } from './types';
+import { WhoIsOnlinePosition, Position, Participant, WhoIsOnlineOptions } from './types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
@@ -17,12 +17,19 @@ export class WhoIsOnline extends BaseComponent {
   private participants: Participant[] = [];
   private following: string;
 
-  constructor(position?: WhoIsOnlinePosition) {
+  constructor(options?: WhoIsOnlinePosition | WhoIsOnlineOptions) {
     super();
 
-    this.position = position ?? Position.TOP_RIGHT;
     this.name = ComponentNames.WHO_IS_ONLINE;
     this.logger = new Logger('@superviz/sdk/who-is-online-component');
+
+    if (typeof options !== 'object') {
+      this.position = options ?? Position.TOP_RIGHT;
+      return;
+    }
+
+    this.position = options.position ?? Position.TOP_RIGHT;
+    this.setStyles(options.styles);
   }
 
   /**
@@ -160,6 +167,21 @@ export class WhoIsOnline extends BaseComponent {
     this.element.disableDropdown = disable;
     this.element.localParticipantData = { color, id: this.localParticipant.id, joinedPresence };
   };
+
+  /**
+   * @function setStyles
+   * @param {string} styles - The user custom styles to be added to the who is online
+   * @returns {void}
+   */
+  private setStyles(styles: string = '') {
+    if (!styles) return;
+
+    const tag = document.createElement('style');
+    tag.textContent = styles;
+    tag.id = 'superviz-who-is-online-styles';
+
+    document.head.appendChild(tag);
+  }
 
   /**
    * @function positionWhoIsOnline

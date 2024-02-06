@@ -1,8 +1,9 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { annotationFilterStyle } from '../css';
 
 import { AnnotationFilter } from './types';
@@ -38,6 +39,15 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
     caret: { type: String },
   };
 
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
+    });
+  }
+
   protected render() {
     const selectedLabel =
       this.filter === AnnotationFilter.ALL ? options[0].label : options[1].label;
@@ -57,13 +67,14 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
       text: true,
       'text-bold': true,
       'select-content': true,
+      'comments__filter__selected-label': true,
       'sv-gray-500': this.caret === 'down',
       'sv-gray-700': this.caret === 'up',
     };
 
     return html`
-      <div class="select">
-        <div class="select-container">
+      <div class="comments__filter-container">
+        <div class="comments__filter">
           <superviz-dropdown
             options=${JSON.stringify(options)}
             active=${active}
@@ -74,8 +85,10 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
             @click=${selectClick}
             @selected=${dropdownOptionsHandler}
             @close=${selectClick}
+            classesPrefix="comments__dropdown"
+            parentComponent="comments"
           >
-            <div class="content" slot="dropdown">
+            <div class="comments__filter__toggle-button" slot="dropdown">
               <span class=${classMap(textClasses)}>${selectedLabel}</span>
               <superviz-icon name=${this.caret} size="md"></superviz-icon>
             </div>

@@ -1,9 +1,13 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-import { AnnotationPositionInfo } from '../../../components/comments/types';
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { AnnotationPositionInfo, CommentMention } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { commentInputStyle } from '../css';
+import { AutoCompleteHandler } from '../utils/autocomplete-handler';
+import mentionHandler from '../utils/mention-handler';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
@@ -16,11 +20,20 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare editable: boolean;
   declare commentsInput: HTMLTextAreaElement;
   declare placeholder: string;
+  declare mentionList: ParticipantByGroupApi[];
+  declare mentions: CommentMention[];
+  declare participantsList: ParticipantByGroupApi[];
+
+  private pinCoordinates: AnnotationPositionInfo | null = null;
+
+  private autoCompleteHandler: AutoCompleteHandler = new AutoCompleteHandler();
 
   constructor() {
     super();
     this.btnActive = false;
     this.text = '';
+    this.mentionList = [];
+    this.mentions = [];
   }
 
   static styles = styles;
@@ -31,24 +44,41 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     btnActive: { type: Boolean },
     editable: { type: Boolean },
     placeholder: { type: String },
+    mentions: { type: Array },
+    mentionList: { type: Object },
+    participantsList: { type: Object },
   };
 
-  protected firstUpdated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
-  ): void {
-    this.emitEvent('comment-input-ready', {}, { composed: false, bubbles: false });
-  }
+  private addAtSymbolInCaretPosition = () => {
+    const input = this.shadowRoot!.querySelector(
+      '.comments__input__textarea',
+    ) as HTMLTextAreaElement;
+    const newInputEvent = new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(newInputEvent, 'data', {
+      value: '@',
+      writable: true,
+    });
+
+    input.dispatchEvent(newInputEvent);
+  };
+
+  private getCommentInput = () => {
+    return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
+  };
 
   private get commentInput() {
-    return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
   }
 
   private getSendBtn = () => {
-    return this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    return this.shadowRoot!.querySelector('.comments__input__send-button') as HTMLButtonElement;
   };
 
   private get optionsContainer() {
-    return this.shadowRoot!.querySelector('.comment-input--options') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.comments__input__options') as HTMLTextAreaElement;
   }
 
   private get horizontalRule() {
@@ -67,6 +97,33 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
     this.removeEventListener('keyup', this.sendEnter);
+    const textarea = this.getCommentInput();
+    textarea.removeEventListener('keydown', this.sendEnter);
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    this.updateComplete.then(() => {
+      this.emitEvent('comment-input-ready', {}, { composed: false, bubbles: false });
+
+      const commentTextarea = this.getCommentInput();
+
+      if (commentTextarea) {
+        commentTextarea.addEventListener('input', this.handleInput);
+
+        const textarea = this.getCommentInput();
+        textarea.addEventListener('keydown', this.sendEnter);
+      }
+
+      if (this.text.length > 0) {
+        const mentions = this.participantsList.map(({ id, name }) => ({ userId: id, name }));
+        this.mentions = this.autoCompleteHandler.getMentions(this.text, mentions);
+        this.autoCompleteHandler.setMentions(this.mentions);
+      }
+
+      importStyle.call(this, ['comments']);
+    });
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -81,6 +138,92 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       btnSend.disabled = !this.btnActive;
     }
   }
+
+  private userMentionedByTextInput = (mentions) => {
+    this.mentionList = [];
+    const mentioned = {
+      detail: {
+        ...mentions[0],
+      },
+    };
+    this.insertMention(mentioned);
+  };
+
+  private buttonAtSymbol = () => {
+    let caretIndex = this.autoCompleteHandler.getSelectionStart();
+    const getValue = this.autoCompleteHandler.getValue();
+
+    this.autoCompleteHandler.setValue(
+      `${getValue.slice(0, caretIndex)}@${getValue.slice(caretIndex, getValue.length)}`,
+    );
+
+    caretIndex += 1;
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
+    const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    const position = {
+      start: keyIndex + 1,
+      end: caretIndex,
+    };
+    return { searchText, position };
+  };
+
+  private handleInput = (e: InputEvent) => {
+    if (e.data === null) return;
+    this.autoCompleteHandler.setInput(e);
+    const caretIndex = this.autoCompleteHandler.getSelectionStart();
+    const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
+    const keyIndex = keyData?.keyIndex ?? -1;
+
+    let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
+    let position = this.autoCompleteHandler.getSelectionPosition();
+
+    const isButtonAtSymbol = e.data === '@' && keyIndex === -1;
+    const isButtonAtSymbolAndNotStartedMention = e.data === '@' && caretIndex - 1 !== keyIndex;
+
+    if (isButtonAtSymbol || isButtonAtSymbolAndNotStartedMention) {
+      const data = this.buttonAtSymbol();
+      searchText = data.searchText;
+      position = data.position;
+    }
+
+    if (searchText === null) {
+      this.mentionList = [];
+      return;
+    }
+
+    const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(
+      searchText,
+      position,
+      this.participantsList,
+    );
+
+    if (findDigitParticipant) {
+      this.userMentionedByTextInput(mentions);
+      return;
+    }
+
+    if (action === 'show') {
+      this.mentionList = mentions;
+    }
+
+    if (action === 'hide') {
+      this.mentionList = [];
+    }
+  };
+
+  private insertMention = (event) => {
+    const { id, name, avatar, email, position } = event.detail;
+
+    this.autoCompleteHandler.insertMention(position.start, position.end, {
+      id,
+      name,
+      avatar,
+      email,
+    });
+    this.mentionList = [];
+    this.updateHeight();
+  };
 
   private updateHeight() {
     const commentsInput = this.commentInput;
@@ -100,18 +243,25 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private sendEnter = (e: KeyboardEvent) => {
-    if (e.key !== 'Enter' || e.shiftKey) return;
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+    }
+
+    if (e.key !== 'Enter' || e.shiftKey || this.mentionList?.length > 0) return;
 
     const input = this.commentInput;
     const text = input.value.trim();
 
     if (!text) return;
     const sendBtn = this.getSendBtn();
+    const mentions = this.autoCompleteHandler.getMentions(text);
 
     this.emitEvent(
       this.eventType,
       {
         text,
+        mentions,
+        position: this.pinCoordinates,
       },
       {
         composed: false,
@@ -126,15 +276,19 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private send(e: Event) {
     e.preventDefault();
+    if (this.mentionList?.length > 0) return;
 
     const input = this.commentInput;
     const sendBtn = this.getSendBtn();
     const text = input.value;
+    const mentions = this.autoCompleteHandler.getMentions(text);
 
     this.emitEvent(
       this.eventType,
       {
         text,
+        mentions,
+        position: this.pinCoordinates,
       },
       {
         composed: false,
@@ -154,19 +308,23 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private onTextareaFocus = () => {
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
-
+    const textarea = this.commentInput;
     options.classList.add('active-textarea');
-    rule.classList.add('active-hr');
+    rule.classList.add('comments__input__divisor');
+    textarea.classList.add('active-textarea');
   };
 
-  private onTextareaLoseFocus = () => {
+  private onTextareaLoseFocus = (e) => {
+    if (!this.shadowRoot.contains(e.target)) return;
+
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
     const textarea = this.commentInput;
 
     if (!textarea.value.length) {
       options.classList.remove('active-textarea');
-      rule.classList.remove('active-hr');
+      rule.classList.remove('comments__input__divisor');
+      textarea.classList.remove('active-textarea');
     }
   };
 
@@ -178,12 +336,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <button
           id="close"
           @click=${() => this.closeEditMode()}
-          class="icon-button icon-button--medium icon-button--clickable"
+          class="icon-button icon-button--medium icon-button--clickable comments__input__cancel-edit-button"
           @click=${this.send}
         >
           <superviz-icon name="close" size="md"></superviz-icon>
         </button>
-        <button id="confirm" class="comment-input--send-btn" disabled @click=${this.send}>
+        <button id="confirm" class="comments__input__send-button" disabled @click=${this.send}>
           <superviz-icon name="check" size="md"></superviz-icon>
         </button>
       `;
@@ -193,31 +351,37 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       if (this.editable) return;
 
       return html`
-        <button class="comment-input--send-btn align-send-btn" disabled @click=${this.send}>
+        <button class="comments__input__send-button align-send-btn" disabled @click=${this.send}>
           <superviz-icon name="line-arrow-right" size="sm" allowSetSize=${true}></superviz-icon>
         </button>
       `;
     };
 
-    /* Insert inside .comment-input--options when mentions is ready
-    <div class="comment-actions">
-      <button class="icon-button mention">
-        <superviz-icon name="mention" size="sm" ?allowSetSize=${true}></superviz-icon>
-      </button>
-  </div> */
-
     return html`
-      <div class="comment-input">
+      <div class="comments__input">
         <textarea
-          id="comment-input--textarea"
+          id="comments__input__textarea"
+          class="comments__input__textarea"
           placeholder=${this.placeholder ?? 'Add comment...'}
           @input=${this.updateHeight}
           @focus=${this.onTextareaFocus}
           @blur=${this.onTextareaLoseFocus}
           spellcheck="false"
         ></textarea>
-        <hr class="sv-hr" />
-        <div class="comment-input--options">
+        <superviz-comments-mention-list
+          .participants=${this.mentionList}
+          @participant-selected=${this.insertMention}
+        ></superviz-comments-mention-list>
+        <div class="sv-hr"></div>
+        <div class="comments__input__options">
+          <button class="icon-button comments__input__mention-button">
+            <superviz-icon
+              name="mention"
+              @click=${this.addAtSymbolInCaretPosition}
+              size="sm"
+              allowSetSize=${true}
+            ></superviz-icon>
+          </button>
           <div class="comment-input-options">
             ${commentInputOptions()} ${commentInputEditableOptions()}
           </div>

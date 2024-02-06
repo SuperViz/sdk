@@ -41,6 +41,12 @@ export interface TooltipData {
   action?: string;
 }
 
-export type VerticalSide = 'top' | 'bottom';
+export enum VerticalSide {
+  TOP = 'top-side',
+  BOTTOM = 'bottom-side',
+}
 
-export type HorizontalSide = 'left' | 'right';
+export enum HorizontalSide {
+  LEFT = 'left-side',
+  RIGHT = 'right-side',
+}

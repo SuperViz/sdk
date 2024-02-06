@@ -46,50 +46,6 @@ export const dropdownStyle = css`
     margin: 0;
   }
 
-  .menu--bottom-left {
-    min-width: 103px;
-    position: absolute;
-    right: 0;
-    top: 4px;
-  }
-
-  .menu--bottom-center {
-    min-width: 103px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 4px;
-  }
-
-  .menu--bottom-right {
-    min-width: 103px;
-    position: absolute;
-    left: 0;
-    top: 4px;
-  }
-
-  .menu--top-left {
-    min-width: 103px;
-    position: absolute;
-    right: 0;
-    bottom: 44px;
-  }
-
-  .menu--top-center {
-    min-width: 103px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 44px;
-  }
-
-  .menu--top-right {
-    min-width: 103px;
-    position: absolute;
-    left: 0;
-    bottom: 44px;
-  }
-
   .text.username {
     font-size: 14px;
     text-align: center;
@@ -130,6 +86,7 @@ export const dropdownStyle = css`
   .menu-open {
     display: block;
     opacity: 1;
+    position: fixed;
   }
 
   .sv-hr {

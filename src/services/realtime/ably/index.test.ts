@@ -423,7 +423,6 @@ describe('AblyRealtimeService', () => {
 
       AblyRealtimeServiceInstance['initializeRoomProperties'] = jest.fn();
       AblyRealtimeServiceInstance['updateParticipants'] = jest.fn();
-      AblyRealtimeServiceInstance['updateHostInfo'] = jest.fn();
       AblyRealtimeServiceInstance['updateLocalRoomState'] = jest.fn();
       AblyRealtimeServiceInstance['publishStateUpdate'] = jest.fn();
       AblyRealtimeServiceInstance.participantJoinedObserver.publish = jest.fn();
@@ -456,7 +455,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(2);
       expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(1);
-      expect(AblyRealtimeServiceInstance['updateHostInfo']).toHaveBeenCalledTimes(1);
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).toHaveBeenCalledTimes(1);
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
@@ -495,7 +493,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(1);
       expect(AblyRealtimeServiceInstance['updateParticipants']).not.toBeCalled();
-      expect(AblyRealtimeServiceInstance['updateHostInfo']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
@@ -983,68 +980,6 @@ describe('AblyRealtimeService', () => {
     });
   });
 
-  describe('host events handlers', () => {
-    test('should update the hostClientId in the room properties', async () => {
-      const participantId = 'participant1';
-      const participant: AblyParticipant = {
-        clientId: 'client1',
-        action: 'present',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          participantId,
-        },
-        extras: null,
-      };
-      AblyRealtimeServiceInstance['participants'][participantId] = participant;
-      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
-      await AblyRealtimeServiceInstance.setHost(participantId);
-
-      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
-        hostClientId: participant.clientId,
-      });
-    });
-
-    test('should not update the hostClientId if participantId is falsy', async () => {
-      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
-
-      await AblyRealtimeServiceInstance.setHost('');
-
-      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
-        hostClientId: null,
-      });
-    });
-
-    test('when the host leaves the room, should set the hostClientId to null', async () => {
-      AblyRealtimeServiceInstance['updateRoomProperties'] = jest.fn();
-      AblyRealtimeServiceInstance['localRoomProperties'] = {
-        hostClientId: 'client1',
-      };
-      AblyRealtimeServiceInstance['participants'] = {
-        participant1: {
-          clientId: 'client1',
-          action: 'present',
-          connectionId: 'connection1',
-          encoding: 'h264',
-          id: 'unit-test-participant-ably-id',
-          timestamp: new Date().getTime(),
-          data: {
-            participantId: 'participant1',
-          },
-          extras: null,
-        },
-      };
-
-      AblyRealtimeServiceInstance['onHostLeft']();
-
-      expect(AblyRealtimeServiceInstance['updateRoomProperties']).toHaveBeenCalledWith({
-        hostClientId: null,
-      });
-    });
-  });
-
   describe('kick participant event', () => {
     test('should update the kickParticipant in the room properties', async () => {
       const participantId = 'participant1';
@@ -1370,29 +1305,6 @@ describe('AblyRealtimeService', () => {
       AblyRealtimeServiceInstance['onAblyPresenceLeave'](participantToBeRemoved);
 
       expect(spy).toHaveBeenCalled();
-    });
-
-    test('should call the onHostLeft method if the host leaves the room', async () => {
-      AblyRealtimeServiceInstance['localRoomProperties'] = {};
-      AblyRealtimeServiceInstance['hostParticipantId'] = 'unit-test-participant-id';
-
-      AblyRealtimeServiceInstance['onHostLeft'] = jest.fn();
-      const participantToBeRemoved: Ably.Types.PresenceMessage = {
-        extras: null,
-        action: 'leave',
-        clientId: 'unit-test-participant-id',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        data: {
-          participantId: 'unit-test-participant-id',
-        },
-        id: 'unit-test-participant-ably-id',
-        timestamp: new Date().getTime(),
-      };
-
-      AblyRealtimeServiceInstance['onAblyPresenceLeave'](participantToBeRemoved);
-
-      expect(AblyRealtimeServiceInstance['onHostLeft']).toHaveBeenCalled();
     });
   });
 

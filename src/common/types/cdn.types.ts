@@ -1,3 +1,4 @@
+import { CommentEvent } from '../..';
 import {
   CanvasPin,
   HTMLPin,
@@ -30,6 +31,7 @@ import { SuperVizSdkOptions } from './sdk-options.types';
 
 export interface SuperVizCdn {
   init: (apiKey: string, options: SuperVizSdkOptions) => Promise<LauncherFacade>;
+  CommentEvent: typeof CommentEvent;
   MeetingEvent: typeof MeetingEvent;
   RealtimeEvent: typeof RealtimeEvent;
   DeviceEvent: typeof DeviceEvent;

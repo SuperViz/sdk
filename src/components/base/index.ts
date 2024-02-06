@@ -1,3 +1,4 @@
+import { ComponentLifeCycle } from '../../common/types/events.types';
 import { Group, Participant } from '../../common/types/participant.types';
 import { Logger, Observable } from '../../common/utils';
 import config from '../../services/config';
@@ -61,6 +62,7 @@ export abstract class BaseComponent extends Observable {
     this.logger.log(`${this.name} @ attached`);
 
     this.start();
+    this.publish(ComponentLifeCycle.MOUNT);
   };
 
   /*
@@ -75,6 +77,7 @@ export abstract class BaseComponent extends Observable {
     }
 
     this.logger.log('detached');
+    this.publish(ComponentLifeCycle.UNMOUNT);
     this.destroy();
 
     Object.values(this.observers).forEach((observer) => {

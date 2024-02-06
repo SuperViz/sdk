@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
@@ -21,6 +22,8 @@ export class HTMLPin implements PinAdapter {
   // Comments data
   private annotations: Annotation[];
   private localParticipant: SimpleParticipant = {};
+
+  declare participants: ParticipantByGroupApi[];
 
   // Loggers
   private logger: Logger;
@@ -48,6 +51,7 @@ export class HTMLPin implements PinAdapter {
   private pins: Map<string, HTMLElement>;
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
   private svgWrappers: HTMLElement;
+
   // Observers
   private mutationObserver: MutationObserver;
 
@@ -164,6 +168,13 @@ export class HTMLPin implements PinAdapter {
   private removeElementListeners(id: string): void {
     this.divWrappers.get(id).removeEventListener('click', this.onClick, true);
     this.divWrappers.get(id).removeEventListener('mousedown', this.onMouseDown);
+  }
+
+  /**
+   * @public setParticipantsList
+   */
+  public set participantsList(participants: ParticipantByGroupApi[]) {
+    this.participants = participants;
   }
 
   /**
@@ -354,6 +365,8 @@ export class HTMLPin implements PinAdapter {
    * @returns {void}
    */
   public setActive(isOpen: boolean): void {
+    if (this.isActive === isOpen) return;
+
     this.isActive = isOpen;
 
     if (this.isActive) {
@@ -363,6 +376,7 @@ export class HTMLPin implements PinAdapter {
       return;
     }
 
+    this.resetPins();
     this.removeListeners();
     this.removeAddCursor();
   }
@@ -389,6 +403,7 @@ export class HTMLPin implements PinAdapter {
       const elementSides = this.elementsWithDataId[elementId]?.getBoundingClientRect();
 
       temporaryPin = document.createElement('superviz-comments-annotation-pin');
+
       temporaryPin.id = 'superviz-temporary-pin';
       temporaryPin.setAttribute('type', PinMode.ADD);
       temporaryPin.setAttribute('showInput', '');
@@ -398,6 +413,8 @@ export class HTMLPin implements PinAdapter {
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
       temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
       temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
+      temporaryPin.setAttribute('participantsList', JSON.stringify(this.participants));
+
       temporaryPin.setAttribute('keepPositionRatio', '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
 
@@ -570,6 +587,10 @@ export class HTMLPin implements PinAdapter {
 
   /**
    * @function handleSvgElement
+   * @description handles the svg element and creates a wrapper for it
+   * @param {Element} element the svg element to be handled
+   * @param {HTMLDivElement} wrapper the wrapper for the svg element
+   * @returns {HTMLDivElement} the wrapper for the svg element
    */
   private handleSvgElement(element: Element, wrapper: HTMLDivElement): HTMLDivElement {
     const viewport = (element as SVGElement).viewportElement;
@@ -586,7 +607,6 @@ export class HTMLPin implements PinAdapter {
       foreignObject.appendChild(wrapper);
       element.appendChild(foreignObject);
       (element as SVGElement).style.setProperty('overflow', 'visible');
-      // wrapper.setAttribute()
       return wrapper;
     }
 
@@ -740,6 +760,7 @@ export class HTMLPin implements PinAdapter {
     pinElement.setAttribute('annotation', JSON.stringify(annotation));
     pinElement.setAttribute('position', JSON.stringify({ x, y }));
     pinElement.setAttribute('keepPositionRatio', '');
+    pinElement.setAttribute('participantsList', JSON.stringify(this.participants));
     pinElement.id = annotation.uuid;
 
     return pinElement;
@@ -794,6 +815,7 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.left = `0`;
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
+    containerWrapper.style.pointerEvents = 'none';
 
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);

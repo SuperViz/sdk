@@ -16,6 +16,7 @@ export interface VideoManagerOptions {
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseDefaultToolbar: boolean;
+  styles?: string;
   camerasPosition: CamerasPosition;
   devices: {
     audioInput: boolean;
@@ -32,6 +33,15 @@ export interface VideoManagerOptions {
   waterMark?: boolean;
   layoutPosition?: LayoutPosition;
   layoutMode?: LayoutMode;
+  callbacks?: {
+    onToggleMicrophone?: () => void;
+    onToggleCamera?: () => void;
+    onToggleTranscript?: () => void;
+    onToggleChat?: () => void;
+    onToggleScreenShare?: () => void;
+    onLeaveMeeting?: () => void;
+    onClickSettings?: () => void;
+  };
 }
 
 export interface WindowSize {

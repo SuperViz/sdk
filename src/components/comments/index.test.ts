@@ -4,14 +4,37 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { CommentEvent } from '../../common/types/events.types';
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
 import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import { PinAdapter, CommentsSide, Annotation, PinCoordinates } from './types';
+import {  PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
 
 import { Comments } from './index';
+
+const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
+  {
+    name: 'John Zero',
+    avatar: 'avatar1.png',
+    id: '1',
+    email: 'john.zero@mail.com',
+  },
+  {
+    name: 'John Uno',
+    avatar: 'avatar2.png',
+    id: '2',
+    email: 'john.uno@mail.com',
+  },
+  {
+    name: 'John Doe',
+    avatar: 'avatar3.png',
+    id: '3',
+    email: 'john.doe@mail.com',
+  },
+];
 
 jest.mock('../../services/api', () => ({
   fetchAnnotation: jest.fn().mockImplementation((): any => []),
@@ -19,10 +42,11 @@ jest.mock('../../services/api', () => ({
   createAnnotations: jest.fn().mockImplementation(() => MOCK_ANNOTATION),
   createComment: jest.fn().mockImplementation(() => MOCK_ANNOTATION.comments[0]),
   updateComment: jest.fn().mockImplementation(() => []),
+  createMentions: jest.fn().mockImplementation(() => []),
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
-}));
+  fetchParticipantsByGroup: jest.fn().mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),}));
 
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
@@ -32,6 +56,7 @@ const DummiePinAdapter: PinAdapter = {
   setPinsVisibility: jest.fn(),
   setCommentsMetadata: jest.fn(),
   onPinFixedObserver: MOCK_OBSERVER_HELPER,
+  participantsList: [],
 };
 
 describe('Comments', () => {
@@ -418,7 +443,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(3);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(4);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
@@ -464,12 +489,14 @@ describe('Comments', () => {
 
   test('should update comment on annotation when it is updated', async () => {
     commentsComponent['annotations'] = [MOCK_ANNOTATION];
+    jest.spyOn(ApiService, 'createMentions');
 
     commentsComponent['element'].dispatchEvent(
       new CustomEvent('update-comment', {
         detail: {
           uuid: MOCK_ANNOTATION.comments[0].uuid,
           text: 'text-test',
+          mentions: [],
         },
       }),
     );
@@ -511,7 +538,7 @@ describe('Comments', () => {
 
     await sleep(1);
 
-    expect(commentsComponent['annotations'][0].comments.length).toBe(1);
+    expect(commentsComponent['annotations'][0].comments.length).toBe(2);
     expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
       commentsComponent['annotations'],
     );
@@ -700,5 +727,170 @@ describe('Comments', () => {
 
     expect(commentsComponent['annotations'].length).toBe(2);
     expect(commentsComponent['annotations'][1]).toStrictEqual(annotationList[1]);
+  });
+
+  describe('fetch participants into a group', () => {
+    test('should call apiServiceapiService participantsList and send to element the participantsListed to commentsComponent', async () => {
+      const spy = jest.spyOn(ApiService, 'fetchParticipantsByGroup');
+
+      expect(spy).toHaveBeenCalledWith('unit-test-group-id');
+
+      const response = await ApiService.fetchParticipantsByGroup('unit-test-group-id');
+      expect(response).toEqual(MOCK_PARTICIPANTS);
+
+      commentsComponent['element'].participantsListed = jest.fn();
+      await commentsComponent['element'].participantsListed(MOCK_PARTICIPANTS);
+
+      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(MOCK_PARTICIPANTS);
+    });
+  });
+
+  describe('Mentions', () => {
+    test('should create a mention', async () => {
+      const response = await ApiService.createMentions({
+        commentsId: 'any_comment_id',
+        participants: [{
+          id: 'any_mention_userId',
+          readed: 0,
+      }]
+      });
+
+      expect(response).toEqual([]);
+    });
+  })
+
+  describe('openThreads', () => {
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+    test('should open the threads', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = false;
+      commentsComponent['element'].removeAttribute('open');
+
+      commentsComponent['openThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(true);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        new CustomEvent('toggle-annotation-sidebar', {
+          detail: { open: true },
+          composed: true,
+          bubbles: true,
+        }),
+      );
+    });
+
+    test('should not open the threads if the sidebar is already open', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = true;
+      commentsComponent['element'].setAttribute('open', '');
+
+      commentsComponent['openThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(true);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(true);
+      expect(dispatchEventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('closeThreads', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should close the threads', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = true;
+      commentsComponent['element'].setAttribute('open', '');
+
+      commentsComponent['closeThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(false);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        new CustomEvent('toggle-annotation-sidebar', {
+          detail: { open: false },
+          composed: true,
+          bubbles: true,
+        }),
+      );
+    });
+
+    test('should not close the threads if the sidebar is already closed', () => {
+      const dispatchEventSpy = jest.spyOn(document.body, 'dispatchEvent');
+      commentsComponent['sidebarOpen'] = false;
+      commentsComponent['element'].removeAttribute('open');
+
+      commentsComponent['closeThreads']();
+
+      expect(commentsComponent['sidebarOpen']).toBe(false);
+      expect(commentsComponent['element'].hasAttribute('open')).toBe(false);
+      expect(dispatchEventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('enable', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should activate the pins', () => {
+      const setActiveSpy = jest.spyOn(commentsComponent['pinAdapter'], 'setActive');
+      const publishSpy = jest.spyOn(commentsComponent as any, 'publish');
+      commentsComponent['pinActive'] = false;
+
+      commentsComponent['enable']();
+
+      expect(commentsComponent['pinActive']).toBe(true);
+      expect(setActiveSpy).toHaveBeenCalledWith(true);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_ACTIVE);
+    });
+  });
+
+  describe('disable', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should deactivate the pins', () => {
+      const setActiveSpy = jest.spyOn(commentsComponent['pinAdapter'], 'setActive');
+      const publishSpy = jest.spyOn(commentsComponent as any, 'publish');
+      commentsComponent['pinActive'] = true;
+
+      commentsComponent['disable']();
+
+      expect(commentsComponent['pinActive']).toBe(false);
+      expect(setActiveSpy).toHaveBeenCalledWith(false);
+      expect(publishSpy).toHaveBeenCalledWith(CommentEvent.PIN_INACTIVE);
+    });
+  });
+
+  describe('togglePinActive', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should activate the pins if they are disabled', () => {
+      const enableSpy = jest.spyOn(commentsComponent as any, 'enable');
+      const disableSpy = jest.spyOn(commentsComponent as any, 'disable');
+      commentsComponent['pinActive'] = false;
+
+      commentsComponent['togglePinActive']();
+
+      expect(enableSpy).toHaveBeenCalled();
+      expect(disableSpy).not.toHaveBeenCalled();
+    });
+
+    test('should deactivate the pins if they are enabled', () => {
+      const enableSpy = jest.spyOn(commentsComponent as any, 'enable');
+      const disableSpy = jest.spyOn(commentsComponent as any, 'disable');
+      commentsComponent['pinActive'] = true;
+
+      commentsComponent['togglePinActive']();
+
+      expect(enableSpy).not.toHaveBeenCalled();
+      expect(disableSpy).toHaveBeenCalled();
+    });
   });
 });

@@ -27,12 +27,22 @@ export interface VideoComponentOptions {
   skipMeetingSettings?: boolean;
   allowGuests?: boolean;
   userType?: ParticipantType | `${ParticipantType}`;
+  styles?: string;
   participantType?: ParticipantType | `${ParticipantType}`;
   collaborationMode?: {
     enabled?: boolean;
     position?: CamerasPosition | `${CamerasPosition}`;
     modalPosition?: LayoutPosition | `${LayoutPosition}`;
     initialView?: LayoutMode | `${LayoutMode}`;
+  };
+  callbacks?: {
+    onToggleMicrophone?: () => void;
+    onToggleCamera?: () => void;
+    onToggleTranscript?: () => void;
+    onToggleChat?: () => void;
+    onToggleScreenShare?: () => void;
+    onLeaveMeeting?: () => void;
+    onClickSettings?: () => void;
   };
 }
 

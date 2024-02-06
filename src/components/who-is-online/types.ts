@@ -15,4 +15,9 @@ export interface Participant extends GeneralParticipant {
   isPrivate?: boolean;
 }
 
-export type WhoIsOnlinePosition = Position | `${Position}` | string;
+export type WhoIsOnlinePosition = Position | `${Position}` | string | '';
+
+export interface WhoIsOnlineOptions {
+  position?: WhoIsOnlinePosition;
+  styles?: string;
+}

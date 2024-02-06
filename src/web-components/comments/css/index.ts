@@ -9,3 +9,4 @@ export { annotationPinStyles } from './annotation-pin.style';
 export { annotationFilterStyle } from './annotation-filter.style';
 export { floatButtonStyle } from './float-button.style';
 export { poweredByStyle } from './powered-by.style';
+export { mentionListStyle } from './mention-list.style';

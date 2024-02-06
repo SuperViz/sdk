@@ -1,8 +1,9 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { floatButtonStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -30,6 +31,15 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     this.commentsPosition = 'left';
   }
 
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
+    });
+  }
+
   private toggle() {
     this.emitEvent('toggle', {});
   }
@@ -45,7 +55,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
   updated(changedProperties) {
     super.updated(changedProperties);
     this.updateComplete.then(() => {
-      const floatButton = this.shadowRoot.querySelector('.float-button');
+      const floatButton = this.shadowRoot.querySelector('.comments__floating-button');
       if (!floatButton) return;
 
       floatButton.setAttribute('style', this.positionStyles);
@@ -65,14 +75,19 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
 
   protected render() {
     const floatButtonClasses = {
-      'float-button': true,
+      'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
     };
 
     return html` <button @click=${this.toggle} class="${classMap(floatButtonClasses)}">
-      <superviz-icon allowSetSize=${true} size="sm" name="comment"></superviz-icon>
+      <superviz-icon
+        allowSetSize=${true}
+        size="sm"
+        name="comment"
+        class="comments__floating-button__icon"
+      ></superviz-icon>
 
-      <p class="text text-big text-bold">Comments</p>
+      <p class="text text-big text-bold comments__floating-button__text">Comments</p>
     </button>`;
   }
 }
