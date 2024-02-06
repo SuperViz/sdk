@@ -1,11 +1,12 @@
 import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { messagesStyle } from '../css';
 
-import { Following } from './types';
+import { HorizontalSide, Following, VerticalSide } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle];
@@ -18,12 +19,18 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   declare everyoneFollowsMe: boolean;
   declare isPrivate: boolean;
   declare participantColor: string;
+  declare verticalSide: VerticalSide;
+  declare horizontalSide: HorizontalSide;
+
+  private animationFrame: number | undefined;
 
   static properties = {
     following: { type: Object },
     everyoneFollowsMe: { type: Boolean },
     isPrivate: { type: Boolean },
     participantColor: { type: String },
+    verticalSide: { type: String },
+    horizontalSide: { type: String },
   };
 
   protected firstUpdated(
@@ -33,8 +40,70 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     importStyle.call(this, 'who-is-online');
   }
 
-  // Callbacks
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    super.updated(_changedProperties);
+    const _ = ['following', 'everyoneFollowsMe', 'isPrivate'];
 
+    if (_.some((property) => _changedProperties.has(property))) {
+      this.repositionMessages();
+    }
+  }
+
+  // Logic to reposition the messages if there is not enough freespace
+  /**
+   * @function repositionMessages
+   * @description Reposition the messages container based on which side there's more free space
+   * @returns {void}
+   */
+  private repositionMessages = () => {
+    const { following, everyoneFollowsMe, isPrivate } = this;
+    if (following || everyoneFollowsMe || isPrivate) {
+      this.repositionInVerticalDirection();
+      this.repositionInHorizontalDirection();
+
+      this.animationFrame = window.requestAnimationFrame(this.repositionMessages);
+      return;
+    }
+
+    window.cancelAnimationFrame(this.animationFrame);
+  };
+
+  /**
+   * @function repositionInVerticalDirection
+   * @description Reposition the messages container based on the vertical side with more free space
+   * @returns {void}
+   */
+  private repositionInVerticalDirection() {
+    const verticalMidpoint = window.innerHeight / 2;
+    const { top } = this.parentElement.getBoundingClientRect();
+
+    if (top < verticalMidpoint) {
+      this.verticalSide = VerticalSide.BOTTOM;
+      return;
+    }
+
+    this.verticalSide = VerticalSide.TOP;
+  }
+
+  /**
+   * @function repositionInHorizontalDirection
+   * @description Reposition the messages container based on the horizontal side with more free space
+   * @returns {void
+   * }
+   */
+  private repositionInHorizontalDirection() {
+    const horizontalMidpoint = window.innerWidth / 2;
+    const { left } = this.parentElement.getBoundingClientRect();
+
+    if (left < horizontalMidpoint) {
+      this.horizontalSide = HorizontalSide.LEFT;
+      return;
+    }
+
+    this.horizontalSide = HorizontalSide.RIGHT;
+  }
+
+  // Callbacks
   /**
    * @function stopFollowing
    * @description Emits an event to stop following a participant
@@ -125,7 +194,13 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   }
 
   protected render() {
-    return html` <div class="wio__controls-messages">
+    const classList = {
+      'wio__controls-messages': true,
+      [this.verticalSide]: true,
+      [this.horizontalSide]: true,
+    };
+
+    return html` <div class=${classMap(classList)}>
       ${this.followingMessage()} ${this.everyoneFollowsMeMessage()} ${this.privateMessage()}
     </div>`;
   }

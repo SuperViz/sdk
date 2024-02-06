@@ -4,16 +4,17 @@ export const messagesStyle = css`
   .wio__controls-messages {
     position: absolute;
     right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
 
   .wio__presence-control-message {
     box-sizing: border-box;
-    margin-top: 9px;
     font-size: 12px;
     padding: 8px 10px;
     font-family: 'Roboto';
     border-radius: 6px;
-    align-self: flex-end;
     background-color: #fff;
     color: rgb(var(--sv-gray-700));
     border: 2px solid #e0e0e0;
@@ -28,5 +29,31 @@ export const messagesStyle = css`
     margin-left: 3px;
     text-decoration: underline;
     cursor: pointer;
+  }
+
+  .left-side {
+    left: 0;
+  }
+
+  .right-side {
+    right: 0;
+  }
+
+  .left-side .wio__presence-control-message {
+    align-self: flex-start;
+  }
+
+  .right-side .wio__presence-control-message {
+    align-self: flex-end;
+  }
+
+  .bottom-side {
+    bottom: auto;
+    top: calc(100% + 5px);
+  }
+
+  .top-side {
+    top: auto;
+    bottom: calc(100% + 5px);
   }
 `;

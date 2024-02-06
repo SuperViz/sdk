@@ -360,8 +360,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private get menuClasses() {
     return {
       menu: true,
-      'menu--bottom': this.position === 'bottom',
-      'menu--top': this.position === 'top',
+      'menu--bottom': this.position === VerticalSide.BOTTOM,
+      'menu--top': this.position === VerticalSide.TOP,
       'menu-open': this.open,
     };
   }
