@@ -64,8 +64,16 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    this.shadowRoot.querySelector('.wio__extras-dropdown').scrollTop = 0;
+    this.shadowRoot.querySelector('.who-is-online__extras-dropdown').scrollTop = 0;
     importStyle.call(this, 'who-is-online');
+
+    const dropdownList = this.shadowRoot.querySelector('.dropdown-list') as HTMLElement;
+    const { right, bottom } = this.parentElement.getBoundingClientRect();
+    dropdownList.style.setProperty('right', `${window.innerWidth - right}px`);
+    dropdownList.style.setProperty('top', `${bottom + 5}px`);
+    dropdownList.style.setProperty('z-index', '10');
+
+    dropdownList.style.position = 'fixed';
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -118,7 +126,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
       return html` <img
-        class="wio__participant__avatar"
+        class="who-is-online__participant__avatar"
         style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
@@ -129,7 +137,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       : '#26242A';
 
     return html`<div
-      class="wio__participant__avatar"
+      class="who-is-online__participant__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
       ${participant.name?.at(0).toUpperCase()}
@@ -159,14 +167,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
         const contentClasses = {
-          'wio__extra-participant': true,
-          'wio__extra-participant--selected': this.selected === id,
+          'who-is-online__extra-participant': true,
+          'who-is-online__extra-participant--selected': this.selected === id,
           'disable-dropdown': disableDropdown,
           followed: this.following?.id === id,
         };
 
         const iconClasses = {
-          'wio__extras__arrow-icon': true,
+          'who-is-online__extras__arrow-icon': true,
           'hide-icon': disableDropdown,
         };
 
@@ -205,18 +213,18 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         ?shiftTooltipLeft=${true}
         ?lastParticipant=${isLastParticipant}
         @toggle-dropdown-state=${this.toggleShowTooltip}
-        classesPrefix="wio__controls"
+        classesPrefix="who-is-online__controls"
         parentComponent="who-is-online"
-        tooltipPrefix="wio"
+        tooltipPrefix="who-is-online"
         >
         <div 
           class=${classMap(contentClasses)} 
           @click=${this.selectParticipant(id)} slot="dropdown">
-            <div class="wio__participant" style="border-color: 
+            <div class="who-is-online__participant" style="border-color: 
             ${color}">
               ${this.getAvatar(participant)}
             </div>
-            <span class="wio__extras__username">${name}</span>
+            <span class="who-is-online__extras__username">${name}</span>
             <superviz-icon 
               class=${classMap(iconClasses)} 
               name="right" 
@@ -232,7 +240,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private setMenu() {
     if (!this.menu) {
-      this.menu = this.shadowRoot.querySelector('.wio__extras-dropdown');
+      this.menu = this.shadowRoot.querySelector('.who-is-online__extras-dropdown');
       const options = {
         rootMargin: '0px',
         threshold: 1.0,
@@ -368,7 +376,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private get menuClasses() {
     return {
-      'wio__extras-dropdown': true,
+      'who-is-online__extras-dropdown': true,
       'menu--bottom': this.position === VerticalSide.BOTTOM,
       'menu--top': this.position === VerticalSide.TOP,
       'menu-open': this.open,
@@ -380,7 +388,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     return html`<superviz-tooltip
       tooltipData=${JSON.stringify({ name: 'See more' })}
-      classesPrefix="wio__tooltip"
+      classesPrefix="who-is-online__tooltip"
       parentComponent="who-is-online"
     ></superviz-tooltip>`;
   };

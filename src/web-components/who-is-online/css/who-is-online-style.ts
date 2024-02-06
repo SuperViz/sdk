@@ -1,14 +1,14 @@
 import { css } from 'lit';
 
 export const whoIsOnlineStyle = css`
-  .wio__participant-list {
+  .who-is-online__participant-list {
     display: flex;
     align-items: center;
     gap: 4px;
     position: relative;
   }
 
-  .wio {
+  .who-is-online {
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -16,11 +16,11 @@ export const whoIsOnlineStyle = css`
     background-color: #fff;
   }
 
-  .wio__presence-control-message__text {
+  .who-is-online__presence-control-message__text {
     margin: 0;
   }
 
-  .wio__participant {
+  .who-is-online__participant {
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -42,7 +42,7 @@ export const whoIsOnlineStyle = css`
     animation: rotate 15s linear infinite;
   }
 
-  .followed .wio__participant__avatar {
+  .followed .who-is-online__participant__avatar {
     animation: nullifyRotate 15s linear infinite;
   }
 
@@ -62,11 +62,11 @@ export const whoIsOnlineStyle = css`
     }
   }
 
-  .wio__participant.disable-dropdown {
+  .who-is-online__participant.disable-dropdown {
     cursor: default;
   }
 
-  .wio__participant__avatar {
+  .who-is-online__participant__avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -109,22 +109,22 @@ export const whoIsOnlineStyle = css`
   }
 
   @media (max-width: 780px) {
-    .wio__participant {
+    .who-is-online__participant {
       width: 32px;
       height: 32px;
     }
 
-    .wio__participant {
+    .who-is-online__participant {
       flex: 1 0 32px;
       max-width: 32px;
     }
 
-    .wio__participant__avatar {
+    .who-is-online__participant__avatar {
       width: 24px;
       height: 24px;
     }
 
-    .wio__participant-list {
+    .who-is-online__participant-list {
       gap: 8px;
     }
 

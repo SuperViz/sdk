@@ -5,7 +5,7 @@ export const dropdownStyle = css`
     position: relative;
   }
 
-  .wio__extra-participant {
+  .who-is-online__extra-participant {
     display: flex;
     user-select: none;
     align-items: center;
@@ -18,16 +18,16 @@ export const dropdownStyle = css`
     cursor: pointer;
   }
 
-  .wio__extra-participant.disable-dropdown {
+  .who-is-online__extra-participant.disable-dropdown {
     cursor: default;
   }
 
-  .wio__extra-participant:hover,
-  .wio__extra-participant--selected {
+  .who-is-online__extra-participant:hover,
+  .who-is-online__extra-participant--selected {
     background-color: rgb(var(--sv-gray-200));
   }
 
-  .wio__participant {
+  .who-is-online__participant {
     border-radius: 50%;
     box-sizing: border-box;
     width: 40px;
@@ -43,7 +43,7 @@ export const dropdownStyle = css`
     flex: 1 0 40px;
   }
 
-  .wio__participant__avatar {
+  .who-is-online__participant__avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -69,7 +69,7 @@ export const dropdownStyle = css`
     min-width: 216px;
   }
 
-  .wio__extras-dropdown {
+  .who-is-online__extras-dropdown {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     opacity: 0;
     display: none;
@@ -144,7 +144,7 @@ export const dropdownStyle = css`
     font-size: 14px;
   }
 
-  .wio__extras__username {
+  .who-is-online__extras__username {
     font-size: 14px;
     line-height: 20px;
     font-family: 'Open sans';
@@ -163,17 +163,17 @@ export const dropdownStyle = css`
 
   @media (max-width: 780px) {
     .sv-icon,
-    .wio__participant {
+    .who-is-online__participant {
       width: 32px;
       height: 32px;
     }
 
-    .wio__participant {
+    .who-is-online__participant {
       flex: 1 0 32px;
       max-width: 32px;
     }
 
-    .wio__participant__avatar {
+    .who-is-online__participant__avatar {
       width: 24px;
       height: 24px;
     }
