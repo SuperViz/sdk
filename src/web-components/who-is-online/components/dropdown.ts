@@ -66,6 +66,13 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   ): void {
     this.shadowRoot.querySelector('.wio__extras-dropdown').scrollTop = 0;
     importStyle.call(this, 'who-is-online');
+
+    const dropdownList = this.shadowRoot.querySelector('.dropdown-list') as HTMLElement;
+    const { right, bottom } = this.parentElement.getBoundingClientRect();
+    dropdownList.style.setProperty('right', `${window.innerWidth - right}px`);
+    dropdownList.style.setProperty('top', `${bottom + 5}px`);
+
+    dropdownList.style.position = 'fixed';
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
