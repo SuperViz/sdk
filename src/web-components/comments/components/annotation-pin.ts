@@ -77,7 +77,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     importStyle.call(this, ['comments']);
     if (!this.showInput) return;
     this.originalPosition = { ...this.position };
-    this.pinAnnotation = this.shadowRoot?.querySelector('.s-c__annotation-pin');
+    this.pinAnnotation = this.shadowRoot?.querySelector('.comments__annotation-pin');
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
     this.setInputSide();
   }
@@ -191,19 +191,21 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
   private avatar = () => {
     if (this.type === PinMode.ADD && !this.showInput) {
-      return html`<div class="s-c__annotation-pin__avatar s-c__annotation-pin__avatar--add">
+      return html`<div
+        class="comments__annotation-pin__avatar comments__annotation-pin__avatar--add"
+      >
         <superviz-icon name="add" allowSetSize="true"></superviz-icon>
       </div>`;
     }
 
     const avatar = this.userAvatar;
     if (avatar) {
-      return html`<div class="s-c__annotation-pin__avatar">
+      return html`<div class="comments__annotation-pin__avatar">
         <img src=${avatar} />
       </div>`;
     }
 
-    return html`<div class="s-c__annotation-pin__avatar">
+    return html`<div class="comments__annotation-pin__avatar">
       <p class="text text-bold text-big">${this.userInitial}</p>
     </div>`;
   };
@@ -223,8 +225,8 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
 
   protected render() {
     const classes = {
-      's-c__annotation-pin': true,
-      's-c__annotation-pin--active': this.active,
+      'comments__annotation-pin': true,
+      'comments__annotation-pin--active': this.active,
     };
     classes[this.horizontalSide] = true;
 

@@ -78,14 +78,14 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
     if (this.isCanceled) return html``;
 
     return html`
-      <div class="s-c__annotation-resolved">
-        <span class="text text-big sv-gray-700 s-c__annotation-resolved__text"
+      <div class="comments__annotation-resolved">
+        <span class="text text-big sv-gray-700 comments__annotation-resolved__text"
           >You resolved this comment</span
         >
         <button
           id="undone"
           @click=${this.undone}
-          class="icon-button icon-button--clickable icon-button--medium s-c__annotation-resolved__unresolve_button"
+          class="icon-button icon-button--clickable icon-button--medium comments__annotation-resolved__unresolve_button"
         >
           <superviz-icon name="undo" size="md"></superviz-icon>
         </button>

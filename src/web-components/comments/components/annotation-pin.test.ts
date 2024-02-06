@@ -55,11 +55,15 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeFalsy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.comments__annotation-pin')).toBeTruthy();
     expect(
-      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin--active'),
+    ).toBeFalsy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar'),
+    ).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar--add'),
     ).toBeFalsy();
   });
 
@@ -72,10 +76,12 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.comments__annotation-pin')).toBeTruthy();
     expect(
-      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar'),
+    ).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar--add'),
     ).toBeTruthy();
   });
 
@@ -89,11 +95,15 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.comments__annotation-pin')).toBeTruthy();
     expect(
-      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin--active'),
+    ).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar'),
+    ).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar--add'),
     ).toBeFalsy();
   });
 
@@ -107,11 +117,15 @@ describe('annotation-pin', () => {
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
     expect(renderedElement).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeTruthy();
-    expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar')).toBeTruthy();
+    expect(renderedElement.shadowRoot?.querySelector('.comments__annotation-pin')).toBeTruthy();
     expect(
-      renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar--add'),
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin--active'),
+    ).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar'),
+    ).toBeTruthy();
+    expect(
+      renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar--add'),
     ).toBeTruthy();
   });
 
@@ -145,10 +159,12 @@ describe('annotation-pin', () => {
       const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
       expect(renderedElement).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeFalsy();
+      expect(renderedElement.shadowRoot?.querySelector('.comments__annotation-pin')).toBeTruthy();
       expect(
-        renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar'),
+        renderedElement.shadowRoot?.querySelector('.comments__annotation-pin--active'),
+      ).toBeFalsy();
+      expect(
+        renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar'),
       ).toBeTruthy();
     });
 
@@ -163,10 +179,12 @@ describe('annotation-pin', () => {
       const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 
       expect(renderedElement).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin')).toBeTruthy();
-      expect(renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin--active')).toBeFalsy();
+      expect(renderedElement.shadowRoot?.querySelector('.comments__annotation-pin')).toBeTruthy();
       expect(
-        renderedElement.shadowRoot?.querySelector('.s-c__annotation-pin__avatar'),
+        renderedElement.shadowRoot?.querySelector('.comments__annotation-pin--active'),
+      ).toBeFalsy();
+      expect(
+        renderedElement.shadowRoot?.querySelector('.comments__annotation-pin__avatar'),
       ).toBeTruthy();
     });
 

@@ -24,9 +24,9 @@ describe('CommentsCommentInput', () => {
   });
 
   test('renders a textarea and a send button', async () => {
-    const textarea = element.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
+    const textarea = element.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
     const sendButton = element.shadowRoot!.querySelector(
-      '.s-c__input__send-button',
+      '.comments__input__send-button',
     ) as HTMLButtonElement;
 
     expect(textarea).toBeDefined();
@@ -35,7 +35,7 @@ describe('CommentsCommentInput', () => {
 
   test('disables the send button when the textarea is empty', async () => {
     const sendButton = element.shadowRoot!.querySelector(
-      '.s-c__input__send-button',
+      '.comments__input__send-button',
     ) as HTMLButtonElement;
 
     expect(sendButton.disabled).toBe(true);
@@ -43,10 +43,10 @@ describe('CommentsCommentInput', () => {
 
   test('enables the send button when the textarea has text', async () => {
     const textarea = element.shadowRoot!.querySelector(
-      '.s-c__input__textarea',
+      '.comments__input__textarea',
     ) as HTMLTextAreaElement;
     const sendButton = element.shadowRoot!.querySelector(
-      '.s-c__input__send-button',
+      '.comments__input__send-button',
     ) as HTMLButtonElement;
 
     textarea.value = 'test';
@@ -57,10 +57,10 @@ describe('CommentsCommentInput', () => {
 
   test('emits an event when the send button is clicked', async () => {
     const textarea = element.shadowRoot!.querySelector(
-      '.s-c__input__textarea',
+      '.comments__input__textarea',
     ) as HTMLTextAreaElement;
     const sendButton = element.shadowRoot!.querySelector(
-      '.s-c__input__send-button',
+      '.comments__input__send-button',
     ) as HTMLButtonElement;
 
     const spy = jest.fn();
@@ -78,7 +78,7 @@ describe('CommentsCommentInput', () => {
 
   test('emits an event when enter is pressed', async () => {
     const textarea = element.shadowRoot!.querySelector(
-      '.s-c__input__textarea',
+      '.comments__input__textarea',
     ) as HTMLTextAreaElement;
     textarea.value = 'test';
 
@@ -97,10 +97,10 @@ describe('CommentsCommentInput', () => {
     await sleep();
 
     const textarea = element.shadowRoot!.querySelector(
-      '.s-c__input__textarea',
+      '.comments__input__textarea',
     ) as HTMLTextAreaElement;
     const btnSend = element.shadowRoot!.querySelector(
-      '.s-c__input__send-button',
+      '.comments__input__send-button',
     ) as HTMLButtonElement;
 
     expect(textarea.value).toBe('test');
@@ -113,10 +113,10 @@ describe('CommentsCommentInput', () => {
     await sleep();
 
     const textarea = element.shadowRoot!.querySelector(
-      '.s-c__input__textarea',
+      '.comments__input__textarea',
     ) as HTMLTextAreaElement;
     const btnSend = element.shadowRoot!.querySelector(
-      '.s-c__input__send-button',
+      '.comments__input__send-button',
     ) as HTMLButtonElement;
 
     expect(textarea.value).toBe('');
@@ -144,12 +144,12 @@ describe('CommentsCommentInput', () => {
     const rule = element['horizontalRule'] as HTMLElement;
 
     expect(options.classList.contains('active-textarea')).toBe(false);
-    expect(rule.classList.contains('s-c__input__divisor')).toBe(false);
+    expect(rule.classList.contains('comments__input__divisor')).toBe(false);
 
     textarea.dispatchEvent(new CustomEvent('focus'));
 
     expect(options.classList.contains('active-textarea')).toBe(true);
-    expect(rule.classList.contains('s-c__input__divisor')).toBe(true);
+    expect(rule.classList.contains('comments__input__divisor')).toBe(true);
   });
 
   test.only('should change textarea elements classes when losing focus and there is no text', async () => {
@@ -158,13 +158,13 @@ describe('CommentsCommentInput', () => {
     const rule = element['horizontalRule'] as HTMLElement;
 
     element['optionsContainer'].classList.add('active-textarea');
-    element['horizontalRule'].classList.add('s-c__input__divisor');
+    element['horizontalRule'].classList.add('comments__input__divisor');
 
     textarea.textContent = '';
     textarea.dispatchEvent(new CustomEvent('blur'));
 
     expect(options.classList.contains('active-textarea')).toBe(false);
-    expect(rule.classList.contains('s-c__input__divisor')).toBe(false);
+    expect(rule.classList.contains('comments__input__divisor')).toBe(false);
   });
 
   test('should not change textarea elements classes when losing focus and there is no text', async () => {
@@ -173,13 +173,13 @@ describe('CommentsCommentInput', () => {
     const rule = element['horizontalRule'] as HTMLElement;
 
     element['optionsContainer'].classList.add('active-textarea');
-    element['horizontalRule'].classList.add('s-c__input__divisor');
+    element['horizontalRule'].classList.add('comments__input__divisor');
 
     textarea.textContent = 'text';
     textarea.dispatchEvent(new CustomEvent('blur'));
 
     expect(options.classList.contains('active-textarea')).toBe(true);
-    expect(rule.classList.contains('s-c__input__divisor')).toBe(true);
+    expect(rule.classList.contains('comments__input__divisor')).toBe(true);
   });
 
   test('should set height to 41px if text goes back to having one line', () => {
@@ -203,7 +203,7 @@ describe('CommentsCommentInput', () => {
   describe('addAtSymbolInCaretPosition', () => {
     test('should add the "@" symbol at the cursor position', () => {
       const textarea = element.shadowRoot!.querySelector(
-        '.s-c__input__textarea',
+        '.comments__input__textarea',
       ) as HTMLTextAreaElement;
 
       element['addAtSymbolInCaretPosition']();

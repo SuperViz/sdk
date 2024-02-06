@@ -50,7 +50,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private addAtSymbolInCaretPosition = () => {
-    const input = this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
+    const input = this.shadowRoot!.querySelector(
+      '.comments__input__textarea',
+    ) as HTMLTextAreaElement;
     const newInputEvent = new InputEvent('input', {
       bubbles: true,
       cancelable: true,
@@ -64,19 +66,19 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private getCommentInput = () => {
-    return this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
   };
 
   private get commentInput() {
-    return this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
   }
 
   private getSendBtn = () => {
-    return this.shadowRoot!.querySelector('.s-c__input__send-button') as HTMLButtonElement;
+    return this.shadowRoot!.querySelector('.comments__input__send-button') as HTMLButtonElement;
   };
 
   private get optionsContainer() {
-    return this.shadowRoot!.querySelector('.s-c__input__options') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.comments__input__options') as HTMLTextAreaElement;
   }
 
   private get horizontalRule() {
@@ -308,7 +310,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const rule = this.horizontalRule;
     const textarea = this.commentInput;
     options.classList.add('active-textarea');
-    rule.classList.add('s-c__input__divisor');
+    rule.classList.add('comments__input__divisor');
     textarea.classList.add('active-textarea');
   };
 
@@ -321,7 +323,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (!textarea.value.length) {
       options.classList.remove('active-textarea');
-      rule.classList.remove('s-c__input__divisor');
+      rule.classList.remove('comments__input__divisor');
       textarea.classList.remove('active-textarea');
     }
   };
@@ -334,12 +336,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <button
           id="close"
           @click=${() => this.closeEditMode()}
-          class="icon-button icon-button--medium icon-button--clickable s-c__input__cancel-edit-button"
+          class="icon-button icon-button--medium icon-button--clickable comments__input__cancel-edit-button"
           @click=${this.send}
         >
           <superviz-icon name="close" size="md"></superviz-icon>
         </button>
-        <button id="confirm" class="s-c__input__send-button" disabled @click=${this.send}>
+        <button id="confirm" class="comments__input__send-button" disabled @click=${this.send}>
           <superviz-icon name="check" size="md"></superviz-icon>
         </button>
       `;
@@ -349,17 +351,17 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       if (this.editable) return;
 
       return html`
-        <button class="s-c__input__send-button align-send-btn" disabled @click=${this.send}>
+        <button class="comments__input__send-button align-send-btn" disabled @click=${this.send}>
           <superviz-icon name="line-arrow-right" size="sm" allowSetSize=${true}></superviz-icon>
         </button>
       `;
     };
 
     return html`
-      <div class="s-c__input">
+      <div class="comments__input">
         <textarea
-          id="s-c__input__textarea"
-          class="s-c__input__textarea"
+          id="comments__input__textarea"
+          class="comments__input__textarea"
           placeholder=${this.placeholder ?? 'Add comment...'}
           @input=${this.updateHeight}
           @focus=${this.onTextareaFocus}
@@ -371,8 +373,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
           @participant-selected=${this.insertMention}
         ></superviz-comments-mention-list>
         <div class="sv-hr"></div>
-        <div class="s-c__input__options">
-          <button class="icon-button s-c__input__mention-button">
+        <div class="comments__input__options">
+          <button class="icon-button comments__input__mention-button">
             <superviz-icon
               name="mention"
               @click=${this.addAtSymbolInCaretPosition}

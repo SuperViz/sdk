@@ -1,8 +1,8 @@
 import { css } from 'lit';
 
 export const annotationPinStyles = css`
-  .s-c__annotation-pin,
-  .s-c__annotation-pin__avatar {
+  .comments__annotation-pin,
+  .comments__annotation-pin__avatar {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -11,7 +11,7 @@ export const annotationPinStyles = css`
     z-index: 10;
   }
 
-  .s-c__annotation-pin {
+  .comments__annotation-pin {
     position: absolute;
 
     width: 32px;
@@ -29,13 +29,13 @@ export const annotationPinStyles = css`
     cursor: pointer;
   }
 
-  .s-c__annotation-pin:hover,
-  .s-c__annotation-pin:focus,
-  .s-c__annotation-pin--active {
+  .comments__annotation-pin:hover,
+  .comments__annotation-pin:focus,
+  .comments__annotation-pin--active {
     border-color: rgb(var(--sv-primary));
   }
 
-  .s-c__annotation-pin__avatar {
+  .comments__annotation-pin__avatar {
     width: 100%;
     height: 100%;
 
@@ -45,7 +45,7 @@ export const annotationPinStyles = css`
     color: rgb(var(--sv-white));
   }
 
-  .s-c__annotation-pin__avatar img {
+  .comments__annotation-pin__avatar img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -53,7 +53,7 @@ export const annotationPinStyles = css`
     object-fit: contain;
   }
 
-  .s-c__annotation-pin__avatar--add {
+  .comments__annotation-pin__avatar--add {
     color: rgb(var(--sv-gray-700));
     background-color: rgb(var(--sv-white));
   }

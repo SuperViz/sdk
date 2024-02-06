@@ -67,14 +67,14 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
       text: true,
       'text-bold': true,
       'select-content': true,
-      's-c__filter__selected-label': true,
+      'comments__filter__selected-label': true,
       'sv-gray-500': this.caret === 'down',
       'sv-gray-700': this.caret === 'up',
     };
 
     return html`
-      <div class="s-c__filter-container">
-        <div class="s-c__filter">
+      <div class="comments__filter-container">
+        <div class="comments__filter">
           <superviz-dropdown
             options=${JSON.stringify(options)}
             active=${active}
@@ -85,10 +85,10 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
             @click=${selectClick}
             @selected=${dropdownOptionsHandler}
             @close=${selectClick}
-            classesPrefix="s-c__dropdown"
+            classesPrefix="comments__dropdown"
             parentComponent="comments"
           >
-            <div class="s-c__filter__toggle-button" slot="dropdown">
+            <div class="comments__filter__toggle-button" slot="dropdown">
               <span class=${classMap(textClasses)}>${selectedLabel}</span>
               <superviz-icon name=${this.caret} size="md"></superviz-icon>
             </div>

@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const annotationResolvedStyle = css`
-  .s-c__annotation-resolved {
+  .comments__annotation-resolved {
     background: rgba(var(--sv-gray-200), 0.5);
     height: 26px;
     padding: 8px;

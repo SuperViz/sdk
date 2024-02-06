@@ -32,9 +32,9 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
 
   protected render() {
     return html`
-      <div class="s-c__topbar">
-        <span class="text text-bold s-c__topbar__title">COMMENTS</span>
-        <span @click=${this.close} class="s-c__topbar__close-threads">
+      <div class="comments__topbar">
+        <span class="text text-bold comments__topbar__title">COMMENTS</span>
+        <span @click=${this.close} class="comments__topbar__close-threads">
           <superviz-icon name=${this.side} allowSetSize=${true}></superviz-icon>
         </span>
       </div>

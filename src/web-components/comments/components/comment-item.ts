@@ -126,7 +126,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   }
 
   private getClasses(suffix: string) {
-    return `s-c__comment-item__${suffix} ${this.class}__${suffix}`;
+    return `comments__comment-item__${suffix} ${this.class}__${suffix}`;
   }
 
   protected render() {
@@ -136,7 +136,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       return DateTime.fromISO(date).toFormat('yyyy-dd-MM');
     };
 
-    const isResolvable = this.resolvable ? 's-c__comment-item__resolve' : 'hidden';
+    const isResolvable = this.resolvable ? 'comments__comment-item__resolve' : 'hidden';
 
     const options = [
       {
@@ -168,7 +168,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
       return html`
         <superviz-comments-comment-input
-          class="s-c__comment-item--editable"
+          class="comments__comment-item--editable"
           editable
           @click=${(event: Event) => event.stopPropagation()}
           text=${this.text}
@@ -200,7 +200,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
     const commentItemClass = {
       [this.class]: true,
-      's-c__comment-item': true,
+      'comments__comment-item': true,
       reply: !this.primaryComment,
     };
 
@@ -234,7 +234,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
               position="bottom-left"
               @selected=${dropdownOptionsHandler}
               @click=${(event: Event) => event.stopPropagation()}
-              classesPrefix="s-c__dropdown"
+              classesPrefix="comments__dropdown"
               parentComponent="comments"
             >
               <button
@@ -249,8 +249,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
           </div>
         </div>
 
-        <div class="s-c__comment-item__content">
-          <div class="s-c__comment-item__content__body">${textareaHtml()} ${commentText()}</div>
+        <div class="comments__comment-item__content">
+          <div class="comments__comment-item__content__body">
+            ${textareaHtml()} ${commentText()}
+          </div>
         </div>
       </div>
       <superviz-comments-delete-comments-modal

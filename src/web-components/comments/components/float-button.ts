@@ -55,7 +55,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
   updated(changedProperties) {
     super.updated(changedProperties);
     this.updateComplete.then(() => {
-      const floatButton = this.shadowRoot.querySelector('.s-c__floating-button');
+      const floatButton = this.shadowRoot.querySelector('.comments__floating-button');
       if (!floatButton) return;
 
       floatButton.setAttribute('style', this.positionStyles);
@@ -75,7 +75,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
 
   protected render() {
     const floatButtonClasses = {
-      's-c__floating-button': true,
+      'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
     };
 
@@ -84,10 +84,10 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
         allowSetSize=${true}
         size="sm"
         name="comment"
-        class="s-c__floating-button__icon"
+        class="comments__floating-button__icon"
       ></superviz-icon>
 
-      <p class="text text-big text-bold s-c__floating-button__text">Comments</p>
+      <p class="text text-big text-bold comments__floating-button__text">Comments</p>
     </button>`;
   }
 }
