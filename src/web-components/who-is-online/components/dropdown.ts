@@ -136,8 +136,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     </div>`;
   }
 
-  private toggleShowTooltip = () => {
+  private toggleShowTooltip = ({ detail: { open } }: CustomEvent) => {
     this.showParticipantTooltip = !this.showParticipantTooltip;
+
+    if (!open) {
+      this.selected = '';
+    }
   };
 
   private renderParticipants() {
