@@ -237,7 +237,7 @@ describe('who-is-online-dropdown', () => {
       expect(el['position']).toBe('top');
 
       el.style.bottom = 'auto';
-      el.style.top = '0px';
+      el.style.top = '-100px';
       el['host'] = element();
 
       await sleep();

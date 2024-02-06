@@ -57,6 +57,7 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
    */
   private repositionMessages = () => {
     const { following, everyoneFollowsMe, isPrivate } = this;
+
     if (following || everyoneFollowsMe || isPrivate) {
       this.repositionInVerticalDirection();
       this.repositionInHorizontalDirection();

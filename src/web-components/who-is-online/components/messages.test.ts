@@ -1,6 +1,8 @@
 import '.';
 import sleep from '../../../common/utils/sleep';
 
+import { HorizontalSide, VerticalSide } from './types';
+
 const createEl = (): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-who-is-online-messages');
 
@@ -16,17 +18,6 @@ const createEl = (): HTMLElement => {
   return element;
 };
 
-const element = () => {
-  return document.querySelector('superviz-who-is-online-dropdown') as HTMLElement | null;
-};
-
-const dropdown = () => element()?.shadowRoot?.querySelector('.dropdown') as HTMLElement | null;
-const dropdownContent = () => dropdown()?.querySelector('.dropdown-content') as HTMLElement | null;
-
-const dropdownMenu = () => {
-  return element()?.shadowRoot?.querySelector('.menu') as HTMLElement | null;
-};
-
 describe('messages', () => {
   let element: HTMLElement;
   const genericId1 = 'generic-id-1';
@@ -34,6 +25,7 @@ describe('messages', () => {
   const genericColor1 = 'rgb(170, 187, 204)';
 
   beforeEach(() => {
+    document.body.innerHTML = '';
     element = createEl();
   });
 
@@ -170,6 +162,106 @@ describe('messages', () => {
       await sleep();
 
       expect(element['cancelPrivate']).toHaveBeenCalled();
+    });
+  });
+
+  describe('repositionMessages', () => {
+    test('should call reposition methods if following is defined', () => {
+      element['following'] = {
+        id: genericId1,
+        name: genericName1,
+        color: genericColor1,
+      };
+
+      element['repositionInVerticalDirection'] = jest.fn();
+      element['repositionInHorizontalDirection'] = jest.fn();
+
+      element['repositionMessages']();
+
+      expect(element['repositionInVerticalDirection']).toHaveBeenCalled();
+      expect(element['repositionInHorizontalDirection']).toHaveBeenCalled();
+    });
+
+    test('should call reposition methods if everyoneFollowsMe is defined', () => {
+      element['everyoneFollowsMe'] = true;
+
+      element['repositionInVerticalDirection'] = jest.fn();
+      element['repositionInHorizontalDirection'] = jest.fn();
+
+      element['repositionMessages']();
+
+      expect(element['repositionInVerticalDirection']).toHaveBeenCalled();
+      expect(element['repositionInHorizontalDirection']).toHaveBeenCalled();
+    });
+
+    test('should call reposition methods if isPrivate is defined', () => {
+      element['following'] = true;
+
+      element['repositionInVerticalDirection'] = jest.fn();
+      element['repositionInHorizontalDirection'] = jest.fn();
+
+      element['repositionMessages']();
+
+      expect(element['repositionInVerticalDirection']).toHaveBeenCalled();
+      expect(element['repositionInHorizontalDirection']).toHaveBeenCalled();
+    });
+
+    test('should request animation frame if any of the properties is defined', () => {
+      element['following'] = true;
+
+      const originalRequestAnimationFrame = window.requestAnimationFrame;
+      window.requestAnimationFrame = jest.fn();
+
+      element['repositionMessages']();
+
+      expect(window.requestAnimationFrame).toBeCalledWith(element['repositionMessages']);
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+    });
+
+    test('should cancel animation frame if none of the properties is defined', () => {
+      const originalCancelAnimationFrame = window.cancelAnimationFrame;
+      window.cancelAnimationFrame = jest.fn();
+
+      element['repositionMessages']();
+
+      expect(window.cancelAnimationFrame).toBeCalledWith(element['animationFrame']);
+      window.cancelAnimationFrame = originalCancelAnimationFrame;
+    });
+  });
+
+  describe('repositionInVerticalDirection', () => {
+    test("should position messages to bottom if they're closer to the top", () => {
+      element['parentElement']!.style.top = '0px';
+      window['innerHeight'] = 1000;
+      element['repositionInVerticalDirection']();
+
+      expect(element['verticalSide']).toBe(VerticalSide.BOTTOM);
+    });
+
+    test("should position messages to top if they're closer to the bottom", () => {
+      element['parentElement']!.style.top = '1000px';
+      window['innerHeight'] = 1000;
+      element['repositionInVerticalDirection']();
+
+      expect(element['verticalSide']).toBe(VerticalSide.TOP);
+    });
+  });
+
+  describe('repositionInHorizontalDirection', () => {
+    test("should position messages to the left if they're closer to the left", () => {
+      element['parentElement']!.style.left = '0px';
+      window['innerWidth'] = 1000;
+      element['repositionInHorizontalDirection']();
+
+      expect(element['horizontalSide']).toBe(HorizontalSide.LEFT);
+    });
+
+    test("should position messages to the right if they're closer to the right", () => {
+      element['parentElement']!.style.left = '1000px';
+      window['innerWidth'] = 1000;
+      element['repositionInHorizontalDirection']();
+
+      expect(element['horizontalSide']).toBe(HorizontalSide.RIGHT);
     });
   });
 });
