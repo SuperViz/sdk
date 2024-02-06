@@ -103,7 +103,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       }));
 
     const classes = {
-      wio__participant: true,
+      'who-is-online__participant': true,
       excess_participants: true,
       'excess_participants--open': this.open,
     };
@@ -122,12 +122,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         @toggle=${this.toggleOpen}
         @toggle-dropdown-state=${this.toggleShowTooltip}
         ?localParticipantJoinedPresence=${this.localParticipantData?.joinedPresence}
-        classesPrefix="wio__controls"
+        classesPrefix="who-is-online__controls"
         parentComponent="who-is-online"
-        tooltipPrefix="wio"
+        tooltipPrefix="who-is-online"
       >
         <div class=${classMap(classes)} slot="dropdown">
-          <div class="superviz-who-is-online__excess wio__extras">+${excess}</div>
+          <div class="superviz-who-is-online__excess who-is-online__extras">+${excess}</div>
         </div>
       </superviz-who-is-online-dropdown>
     `;
@@ -204,7 +204,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
       return html` <img
-        class="wio__participant__avatar"
+        class="who-is-online__participant__avatar"
         style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
@@ -215,7 +215,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       : '#26242A';
 
     return html`<div
-      class="wio__participant__avatar"
+      class="who-is-online__participant__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
       ${participant.name?.at(0).toUpperCase()}
@@ -291,7 +291,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.putLocalParticipationFirst();
     this.swapParticipantBeingFollowedPosition();
 
-    return html`<div class="wio__participant-list">
+    return html`<div class="who-is-online__participant-list">
       ${repeat(
         this.participants.slice(0, 4),
         (participant) => participant.id,
@@ -305,7 +305,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
           const disableDropdown = !joinedPresence || this.disableDropdown;
 
           const classList = {
-            wio__participant: true,
+            'who-is-online__participant': true,
             'disable-dropdown': disableDropdown,
             followed: participantIsFollowed || (isLocal && this.everyoneFollowsMe),
             private: isLocal && this.isPrivate,
@@ -338,9 +338,9 @@ export class WhoIsOnline extends WebComponentsBaseElement {
               ?disabled=${disableDropdown}
               ?canShowTooltip=${this.showTooltip}
               onHoverData=${JSON.stringify(tooltipData)}
-              classesPrefix="wio__controls"
+              classesPrefix="who-is-online__controls"
               parentComponent="who-is-online"
-              tooltipPrefix="wio"
+              tooltipPrefix="who-is-online"
             >
               <div slot="dropdown" class=${classMap(classList)} style="border-color: ${color}">
                 ${this.getAvatar(participant)}
@@ -357,7 +357,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     super.updated(changedProperties);
 
     this.updateComplete.then(() => {
-      const element = this.shadowRoot.querySelector('.wio');
+      const element = this.shadowRoot.querySelector('.who-is-online');
       if (!element) return;
 
       const side = this.position.includes('left') ? 'flex-start' : 'flex-end';
@@ -367,7 +367,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   protected render() {
-    return html`<div class="wio who-is-online">
+    return html`<div class="who-is-online who-is-online">
       ${this.renderParticipants()}
       <superviz-who-is-online-messages
         following=${JSON.stringify(this.following)}

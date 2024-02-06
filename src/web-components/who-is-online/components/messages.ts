@@ -144,13 +144,13 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     const { name, color } = this.following;
 
     return html`<div
-      class="wio__following-message wio__presence-control-message wio__pcm"
+      class="who-is-online__following-message who-is-online__presence-control-message who-is-online__pcm"
       style="border-color: ${color}"
     >
-      <p class="wio__presence-control-message__text wio__pcm__text">
+      <p class="who-is-online__presence-control-message__text who-is-online__pcm__text">
         Following: ${name}
         <span
-          class="wio__presence-control-message__cancel-action-button wio__pcm__cancel-action-button"
+          class="who-is-online__presence-control-message__cancel-action-button who-is-online__pcm__cancel-action-button"
           @click=${this.stopFollowing}
           >Stop</span
         >
@@ -162,13 +162,13 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     if (!this.everyoneFollowsMe) return '';
 
     return html`<div
-      class="wio__follow-me-message wio__presence-control-message wio__pcm"
+      class="who-is-online__follow-me-message who-is-online__presence-control-message who-is-online__pcm"
       style="border-color: ${this.participantColor}"
     >
-      <p class="wio__presence-control-message__text wio__pcm__text">
+      <p class="who-is-online__presence-control-message__text who-is-online__pcm__text">
         Everyone is following you
         <span
-          class="wio__presence-control-message__cancel-action-button wio__pcm__cancel-action-button"
+          class="who-is-online__presence-control-message__cancel-action-button who-is-online__pcm__cancel-action-button"
           @click=${this.stopEveryoneFollowsMe}
           >Stop</span
         >
@@ -180,13 +180,13 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     if (!this.isPrivate) return '';
 
     return html`<div
-      class="wio__private-mode-message wio__presence-control-message wio__pcm"
+      class="who-is-online__private-mode-message who-is-online__presence-control-message who-is-online__pcm"
       style="border-color: ${this.participantColor}"
     >
-      <p class="wio__presence-control-message__text wio__pcm__text">
+      <p class="who-is-online__presence-control-message__text who-is-online__pcm__text">
         You are in Private Mode
         <span
-          class="wio__presence-control-message__cancel-action-button wio__pcm__cancel-action-button"
+          class="who-is-online__presence-control-message__cancel-action-button who-is-online__pcm__cancel-action-button"
           @click=${this.cancelPrivate}
           >Cancel</span
         >
@@ -196,7 +196,7 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
 
   protected render() {
     const classList = {
-      'wio__controls-messages': true,
+      'who-is-online__controls-messages': true,
       [this.verticalSide]: true,
       [this.horizontalSide]: true,
     };

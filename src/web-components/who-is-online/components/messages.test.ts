@@ -45,7 +45,9 @@ describe('messages', () => {
 
       await sleep();
 
-      const message = element.shadowRoot?.querySelector('.wio__following-message') as HTMLElement;
+      const message = element.shadowRoot?.querySelector(
+        '.who-is-online__following-message',
+      ) as HTMLElement;
 
       expect(message).toBeTruthy();
       expect(window.getComputedStyle(message).borderColor).toBe(genericColor1);
@@ -64,8 +66,12 @@ describe('messages', () => {
 
       await sleep();
 
-      const message = element.shadowRoot?.querySelector('.wio__following-message') as HTMLElement;
-      const stopButton = message.querySelector('.wio__pcm__cancel-action-button') as HTMLElement;
+      const message = element.shadowRoot?.querySelector(
+        '.who-is-online__following-message',
+      ) as HTMLElement;
+      const stopButton = message.querySelector(
+        '.who-is-online__pcm__cancel-action-button',
+      ) as HTMLElement;
 
       expect(stopButton).toBeTruthy();
 
@@ -90,7 +96,9 @@ describe('messages', () => {
 
       await sleep();
 
-      const message = element.shadowRoot?.querySelector('.wio__follow-me-message') as HTMLElement;
+      const message = element.shadowRoot?.querySelector(
+        '.who-is-online__follow-me-message',
+      ) as HTMLElement;
 
       expect(message).toBeTruthy();
       expect(window.getComputedStyle(message).borderColor).toBe(genericColor1);
@@ -106,8 +114,12 @@ describe('messages', () => {
 
       await sleep();
 
-      const message = element.shadowRoot?.querySelector('.wio__follow-me-message') as HTMLElement;
-      const stopButton = message.querySelector('.wio__pcm__cancel-action-button') as HTMLElement;
+      const message = element.shadowRoot?.querySelector(
+        '.who-is-online__follow-me-message',
+      ) as HTMLElement;
+      const stopButton = message.querySelector(
+        '.who-is-online__pcm__cancel-action-button',
+      ) as HTMLElement;
 
       expect(stopButton).toBeTruthy();
 
@@ -133,7 +145,7 @@ describe('messages', () => {
       await sleep();
 
       const message = element.shadowRoot?.querySelector(
-        '.wio__private-mode-message',
+        '.who-is-online__private-mode-message',
       ) as HTMLElement;
 
       expect(message).toBeTruthy();
@@ -151,9 +163,11 @@ describe('messages', () => {
       await sleep();
 
       const message = element.shadowRoot?.querySelector(
-        '.wio__private-mode-message',
+        '.who-is-online__private-mode-message',
       ) as HTMLElement;
-      const stopButton = message.querySelector('.wio__pcm__cancel-action-button') as HTMLElement;
+      const stopButton = message.querySelector(
+        '.who-is-online__pcm__cancel-action-button',
+      ) as HTMLElement;
 
       expect(stopButton).toBeTruthy();
 

@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const messagesStyle = css`
-  .wio__controls-messages {
+  .who-is-online__controls-messages {
     position: absolute;
     right: 0;
     display: flex;
@@ -9,7 +9,7 @@ export const messagesStyle = css`
     gap: 5px;
   }
 
-  .wio__presence-control-message {
+  .who-is-online__presence-control-message {
     box-sizing: border-box;
     font-size: 12px;
     padding: 8px 10px;
@@ -21,11 +21,11 @@ export const messagesStyle = css`
     white-space: nowrap;
   }
 
-  .wio__pcm__text {
+  .who-is-online__pcm__text {
     margin: 0;
   }
 
-  .wio__presence-control-message span {
+  .who-is-online__presence-control-message span {
     margin-left: 3px;
     text-decoration: underline;
     cursor: pointer;
@@ -39,11 +39,11 @@ export const messagesStyle = css`
     right: 0;
   }
 
-  .left-side .wio__presence-control-message {
+  .left-side .who-is-online__presence-control-message {
     align-self: flex-start;
   }
 
-  .right-side .wio__presence-control-message {
+  .right-side .who-is-online__presence-control-message {
     align-self: flex-end;
   }
 
