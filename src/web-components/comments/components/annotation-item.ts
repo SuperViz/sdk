@@ -1,11 +1,11 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Annotation, Comment } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { annotationItemStyle } from '../css';
 
 import { AnnotationFilter } from './types';
@@ -35,8 +35,17 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     isLastAnnotation: { type: Boolean },
     annotationFilter: { type: String },
     participantsList: { type: Object },
-
   };
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      this.resolved = this.annotation.resolved;
+      importStyle.call(this, ['comments']);
+    });
+  }
 
   private get filterIsAll(): boolean {
     return this.annotationFilter === AnnotationFilter.ALL;
@@ -46,7 +55,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     return this.annotationFilter === AnnotationFilter.RESOLVED;
   }
 
-  private get shouldHiddenAnnotation() {
+  private get shouldHideAnnotation() {
     return {
       hidden: (this.resolved && this.filterIsAll) || (!this.resolved && this.filterIsResolved),
     };
@@ -70,8 +79,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
   private get annotationClasses() {
     return {
-      'annotation-item': true,
-      'annotation-item--selected': this.isSelected,
+      's-c__thread': true,
+      's-c__thread--selected': this.isSelected,
     };
   }
 
@@ -96,10 +105,6 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
       'comment-item--expand': this.isSelected && this.expandComments,
       hidden: !(this.isSelected && this.expandComments),
     };
-  }
-
-  protected firstUpdated(): void {
-    this.resolved = this.annotation.resolved;
   }
 
   protected updated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -173,7 +178,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     `;
   }
 
-  private generateExpantedCommentesTemplate = (comment: Comment, index: number) => {
+  private generateExpandedCommentsTemplate = (comment: Comment, index: number) => {
     if (index === 0) return html``;
 
     return html`
@@ -186,6 +191,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         annotationId=${this.annotation.uuid}
         participantsList=${JSON.stringify(this.participantsList)}
         mentions=${JSON.stringify(comment.mentions)}
+        class="s-c__replies"
       ></superviz-comments-comment-item>
     `;
   };
@@ -207,7 +213,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     return html`
       ${this.annotationResolvedTemplate()}
 
-      <div class=${classMap(this.shouldHiddenAnnotation)}>
+      <div class=${classMap(this.shouldHideAnnotation)}>
         <div class=${classMap(this.annotationClasses)} @click=${this.selectAnnotation}>
           <div>
             <superviz-comments-comment-item
@@ -224,22 +230,22 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               annotationFilter=${this.annotationFilter}
               @resolve-annotation=${this.resolveAnnotation}
               mentions=${JSON.stringify(this.annotation.comments?.[0].mentions)}
+              class="s-c__annotation"
             ></superviz-comments-comment-item>
-
             <div class=${classMap(this.avatarCommentsClasses)}>
               <div class="avatar-container">${this.generateAvatarCommentsTemplate()}</div>
             </div>
           </div>
 
           <div class=${classMap(this.commentsClasses)}>
-            ${this.annotation.comments?.map(this.generateExpantedCommentesTemplate)}
+            ${this.annotation.comments?.map(this.generateExpandedCommentsTemplate)}
             <superviz-comments-comment-input
               @create-comment=${this.createComment}
               eventType="create-comment"
               @click=${(event: Event) => event.stopPropagation()}
               placeholder="Reply"
               participantsList=${JSON.stringify(this.participantsList)}
-              ></superviz-comments-comment-input>
+            ></superviz-comments-comment-input>
           </div>
         </div>
         <div class=${classMap(this.hrClasses)}></div>

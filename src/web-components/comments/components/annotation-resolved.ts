@@ -2,6 +2,7 @@ import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { annotationResolvedStyle } from '../css';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -29,8 +30,14 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
     isCanceled: { type: Boolean },
   };
 
-  protected firstUpdated(): void {
-    this.setTimer();
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
+      this.setTimer();
+    });
   }
 
   private setTimer = () => {
@@ -71,12 +78,14 @@ export class CommentsAnnotationResolved extends WebComponentsBaseElement {
     if (this.isCanceled) return html``;
 
     return html`
-      <div class="annotation-resolved">
-        <span class="text text-big sv-gray-700">You resolved this comment</span>
+      <div class="s-c__annotation-resolved">
+        <span class="text text-big sv-gray-700 s-c__annotation-resolved__text"
+          >You resolved this comment</span
+        >
         <button
           id="undone"
           @click=${this.undone}
-          class="icon-button icon-button--clickable icon-button--medium"
+          class="icon-button icon-button--clickable icon-button--medium s-c__annotation-resolved__unresolve_button"
         >
           <superviz-icon name="undo" size="md"></superviz-icon>
         </button>

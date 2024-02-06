@@ -8,8 +8,8 @@ export enum MeetingEvent {
   MEETING_JOIN = 'meeting.join',
   MEETING_PARTICIPANT_PROPERTIES = 'meeting.participant-properties',
   MEETING_HOST_CHANGE = 'meeting.host-change',
-  MEETING_HOST_AVAILABLE = 'realtime.host-available',
-  MEETING_NO_HOST_AVAILABLE = 'realtime.no-host-available',
+  MEETING_HOST_AVAILABLE = 'meeting.host-available',
+  MEETING_NO_HOST_AVAILABLE = 'meeting.no-host-available',
   MEETING_SAME_PARTICIPANT_ERROR = 'meeting.same-participant-error',
   MEETING_DEVICES_CHANGE = 'meeting.devices-change',
   MEETING_KICK_PARTICIPANTS = 'meeting.kick-all-participants',
@@ -31,6 +31,7 @@ export enum FrameEvent {
   FRAME_AVATAR_LIST_UPDATE = 'frame.avatar-list-update',
   FRAME_COLOR_LIST_UPDATE = 'frame.color-list-update',
   FRAME_STYLES_UPDATE = 'frame.styles-update',
+  FRAME_CALLBACKS_UPDATE = 'frame.callbacks-update',
 }
 
 export enum MeetingControlsEvent {
@@ -41,6 +42,7 @@ export enum MeetingControlsEvent {
   TOGGLE_SCREENSHARE = 'meeting-controls.toggle-screenshare',
   TOGGLE_TRANSCRIPT = 'meeting-controls.toggle-transcript',
   HANG_UP = 'hang-up',
+  CALLBACK_CALLED = 'callback-called',
 }
 
 export enum RealtimeEvent {

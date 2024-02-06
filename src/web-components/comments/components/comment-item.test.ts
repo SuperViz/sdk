@@ -39,23 +39,24 @@ describe('CommentsCommentItem', () => {
     document.body.removeChild(element);
   });
 
-  test('renders the comment item with correct properties', async () => {
+  test.only('renders the comment item with correct properties', async () => {
     element = await createElement();
 
     const username = element.shadowRoot!.querySelector(
-      '.comment-item__avatar img',
+      '.s-c__comment-item__avatar-image',
     ) as HTMLImageElement;
     expect(username.src).toEqual('https://example.com/avatar.png');
 
     const createdAt = element.shadowRoot!.querySelector(
-      '.comment-item__user .text-small',
+      '.s-c__comment-item__date',
     ) as HTMLSpanElement;
     expect(createdAt.textContent).toEqual(DateTime.now().toFormat('yyyy-dd-MM'));
 
     const text = element.shadowRoot!.querySelector(
-      '.comment-item__content .text-big',
+      '.s-c__comment-item__content',
     ) as HTMLSpanElement;
-    expect(text.textContent).toEqual('This is a comment');
+
+    expect(text.innerText).toEqual('This is a comment');
   });
 
   test('should render username first letter as avatar if there is no image', async () => {

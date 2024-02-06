@@ -27,7 +27,7 @@ export class Comments extends BaseComponent {
   private annotations: Annotation[];
   private clientUrl: string;
   private pinAdapter: PinAdapter;
-  private layoutOptions: CommentsOptions;
+  private layoutOptions: CommentsOptions = {};
   private coordinates: AnnotationPositionInfo;
   private hideDefaultButton: boolean;
   private pinActive: boolean;
@@ -37,12 +37,14 @@ export class Comments extends BaseComponent {
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
     this.annotations = [];
-    this.layoutOptions = options ?? {
-      position: CommentsSide.LEFT,
-      buttonLocation: ButtonLocation.TOP_LEFT,
+    this.layoutOptions = {
+      buttonLocation: options?.buttonLocation ?? 'top-left',
+      position: options?.position ?? 'left',
     };
 
     this.hideDefaultButton = options?.hideDefaultButton ?? false;
+
+    this.setStyles(options?.styles);
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
@@ -332,6 +334,21 @@ export class Comments extends BaseComponent {
     this.button.positionStyles = style;
     this.button.commentsPosition = position;
   };
+
+  /**
+   * @function setStyles
+   * @param {string} styles - The user custom styles to be added to the comments
+   * @returns {void}
+   */
+  private setStyles(styles: string = '') {
+    if (!styles) return;
+
+    const tag = document.createElement('style');
+    tag.textContent = styles;
+    tag.id = 'superviz-comments-styles';
+
+    document.head.appendChild(tag);
+  }
 
   /**
    * @function positionComments

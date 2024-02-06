@@ -80,7 +80,7 @@ const dropdown = () => element()?.shadowRoot?.querySelector('.dropdown') as HTML
 const dropdownContent = () => dropdown()?.querySelector('.dropdown-content') as HTMLElement | null;
 
 const dropdownMenu = () => {
-  return element()?.shadowRoot?.querySelector('.menu') as HTMLElement | null;
+  return element()?.shadowRoot?.querySelector('.wio__extras-dropdown') as HTMLElement | null;
 };
 
 describe('who-is-online-dropdown', () => {
@@ -173,7 +173,7 @@ describe('who-is-online-dropdown', () => {
 
     await sleep();
 
-    const letter = element()?.shadowRoot?.querySelector('.who-is-online-dropdown__avatar');
+    const letter = element()?.shadowRoot?.querySelector('.wio__participant__avatar');
 
     const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex];
     expect(letter?.getAttribute('style')).toBe(
@@ -192,7 +192,7 @@ describe('who-is-online-dropdown', () => {
 
     await sleep();
 
-    const letter = element()?.shadowRoot?.querySelector('.who-is-online-dropdown__avatar');
+    const letter = element()?.shadowRoot?.querySelector('.wio__participant__avatar');
 
     const backgroundColor = MeetingColorsHex[2];
     expect(letter?.getAttribute('style')).toBe(
@@ -221,7 +221,7 @@ describe('who-is-online-dropdown', () => {
     await sleep();
 
     const participant = element()?.shadowRoot?.querySelector(
-      '.who-is-online-dropdown__content',
+      '.wio__extra-participant',
     ) as HTMLElement;
 
     participant.click();

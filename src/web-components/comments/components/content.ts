@@ -14,13 +14,6 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle]
 
 @customElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {
-  constructor() {
-    super();
-    this.annotations = [];
-    this.participantsList = [];
-
-  }
-
   static styles = styles;
 
   declare annotations: Annotation[];
@@ -35,6 +28,12 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotationFilter: { type: String },
     participantsList: { type: Object },
   };
+
+  constructor() {
+    super();
+    this.annotations = [];
+    this.participantsList = [];
+  }
 
   private unselectAnnotation = () => {
     this.selectedAnnotation = null;

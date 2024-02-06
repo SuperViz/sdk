@@ -76,6 +76,7 @@ export const whoIsOnlineStyle = css`
     font-family: 'Open Sans';
     font-size: 14px;
     line-height: 14px;
+    line-height: 14px;
     font-weight: bold;
     color: #26242a;
     object-fit: contain;

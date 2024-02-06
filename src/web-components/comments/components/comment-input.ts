@@ -1,14 +1,13 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { AnnotationPositionInfo, CommentMention } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { commentInputStyle } from '../css';
 import { AutoCompleteHandler } from '../utils/autocomplete-handler';
 import mentionHandler from '../utils/mention-handler';
-
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
@@ -51,7 +50,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private addAtSymbolInCaretPosition = () => {
-    const input = this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+    const input = this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
     const newInputEvent = new InputEvent('input', {
       bubbles: true,
       cancelable: true,
@@ -62,22 +61,22 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     });
 
     input.dispatchEvent(newInputEvent);
-  }
+  };
 
   private getCommentInput = () => {
-    return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
   };
 
   private get commentInput() {
-    return this.shadowRoot!.getElementById('comment-input--textarea') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.s-c__input__textarea') as HTMLTextAreaElement;
   }
 
   private getSendBtn = () => {
-    return this.shadowRoot!.querySelector('.comment-input--send-btn') as HTMLButtonElement;
+    return this.shadowRoot!.querySelector('.s-c__input__send-button') as HTMLButtonElement;
   };
 
   private get optionsContainer() {
-    return this.shadowRoot!.querySelector('.comment-input--options') as HTMLTextAreaElement;
+    return this.shadowRoot!.querySelector('.s-c__input__options') as HTMLTextAreaElement;
   }
 
   private get horizontalRule() {
@@ -96,29 +95,33 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
 
     this.removeEventListener('keyup', this.sendEnter);
-    const textarea = this.getCommentInput(); 
+    const textarea = this.getCommentInput();
     textarea.removeEventListener('keydown', this.sendEnter);
   }
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    this.emitEvent('comment-input-ready', {}, { composed: false, bubbles: false });
+    this.updateComplete.then(() => {
+      this.emitEvent('comment-input-ready', {}, { composed: false, bubbles: false });
 
-    const commentTextarea = this.getCommentInput();
+      const commentTextarea = this.getCommentInput();
 
-    if (commentTextarea) {
-      commentTextarea.addEventListener('input', this.handleInput);
+      if (commentTextarea) {
+        commentTextarea.addEventListener('input', this.handleInput);
 
-      const textarea = this.getCommentInput(); 
-      textarea.addEventListener('keydown', this.sendEnter);
-    }
+        const textarea = this.getCommentInput();
+        textarea.addEventListener('keydown', this.sendEnter);
+      }
 
-    if (this.text.length > 0) {
-      const mentions = this.participantsList.map(({ id, name }) => ({ userId: id, name }));
-      this.mentions = this.autoCompleteHandler.getMentions(this.text, mentions);
-      this.autoCompleteHandler.setMentions(this.mentions);
-    }
+      if (this.text.length > 0) {
+        const mentions = this.participantsList.map(({ id, name }) => ({ userId: id, name }));
+        this.mentions = this.autoCompleteHandler.getMentions(this.text, mentions);
+        this.autoCompleteHandler.setMentions(this.mentions);
+      }
+
+      importStyle.call(this, ['comments']);
+    });
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -138,68 +141,74 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.mentionList = [];
     const mentioned = {
       detail: {
-        ...mentions[0]
-      }
+        ...mentions[0],
+      },
     };
-    this.insertMention(mentioned)
-  }
+    this.insertMention(mentioned);
+  };
 
   private buttonAtSymbol = () => {
-    let caretIndex = this.autoCompleteHandler.getSelectionStart()
-    const getValue = this.autoCompleteHandler.getValue()
+    let caretIndex = this.autoCompleteHandler.getSelectionStart();
+    const getValue = this.autoCompleteHandler.getValue();
 
-    this.autoCompleteHandler.setValue(`${getValue.slice(0, caretIndex)  }@${  getValue.slice(caretIndex, getValue.length)}`)
+    this.autoCompleteHandler.setValue(
+      `${getValue.slice(0, caretIndex)}@${getValue.slice(caretIndex, getValue.length)}`,
+    );
 
-    caretIndex +=1
+    caretIndex += 1;
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
     const keyIndex = keyData?.keyIndex ?? -1;
     const searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
     const position = {
       start: keyIndex + 1,
       end: caretIndex,
-    }
-    return {searchText, position}
-  }
+    };
+    return { searchText, position };
+  };
 
   private handleInput = (e: InputEvent) => {
-    if (e.data === null) return
+    if (e.data === null) return;
     this.autoCompleteHandler.setInput(e);
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
     const keyIndex = keyData?.keyIndex ?? -1;
 
     let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
-    let position = this.autoCompleteHandler.getSelectionPosition()
+    let position = this.autoCompleteHandler.getSelectionPosition();
 
-    const isButtonAtSymbol = (e.data === '@' && keyIndex === -1)
-    const isButtonAtSymbolAndNotStartedMention = (e.data === '@' && caretIndex - 1 !== keyIndex)
+    const isButtonAtSymbol = e.data === '@' && keyIndex === -1;
+    const isButtonAtSymbolAndNotStartedMention = e.data === '@' && caretIndex - 1 !== keyIndex;
 
     if (isButtonAtSymbol || isButtonAtSymbolAndNotStartedMention) {
-      const data = this.buttonAtSymbol()
-      searchText = data.searchText
-      position = data.position
+      const data = this.buttonAtSymbol();
+      searchText = data.searchText;
+      position = data.position;
     }
 
     if (searchText === null) {
-      this.mentionList = []
+      this.mentionList = [];
       return;
     }
 
-    const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(searchText, position, this.participantsList)
+    const { action, mentions, findDigitParticipant } = mentionHandler.matchParticipant(
+      searchText,
+      position,
+      this.participantsList,
+    );
 
     if (findDigitParticipant) {
-      this.userMentionedByTextInput(mentions)
-      return
+      this.userMentionedByTextInput(mentions);
+      return;
     }
 
     if (action === 'show') {
-      this.mentionList = mentions
+      this.mentionList = mentions;
     }
 
     if (action === 'hide') {
       this.mentionList = [];
     }
-  }
+  };
 
   private insertMention = (event) => {
     const { id, name, avatar, email, position } = event.detail;
@@ -212,7 +221,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     });
     this.mentionList = [];
     this.updateHeight();
-  }
+  };
 
   private updateHeight() {
     const commentsInput = this.commentInput;
@@ -243,7 +252,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (!text) return;
     const sendBtn = this.getSendBtn();
-    const mentions = this.autoCompleteHandler.getMentions(text)
+    const mentions = this.autoCompleteHandler.getMentions(text);
 
     this.emitEvent(
       this.eventType,
@@ -270,7 +279,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const input = this.commentInput;
     const sendBtn = this.getSendBtn();
     const text = input.value;
-    const mentions = this.autoCompleteHandler.getMentions(text)
+    const mentions = this.autoCompleteHandler.getMentions(text);
 
     this.emitEvent(
       this.eventType,
@@ -295,15 +304,17 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private onTextareaFocus = () => {
+    console.log('aaa');
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
-
+    const textarea = this.commentInput;
     options.classList.add('active-textarea');
-    rule.classList.add('active-hr');
+    rule.classList.add('s-c__input__divisor');
+    textarea.classList.add('active-textarea');
   };
 
   private onTextareaLoseFocus = (e) => {
-    if (!e.target.contains(this)) return;
+    if (!this.shadowRoot.contains(e.target)) return;
 
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
@@ -311,7 +322,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     if (!textarea.value.length) {
       options.classList.remove('active-textarea');
-      rule.classList.remove('active-hr');
+      rule.classList.remove('s-c__input__divisor');
+      textarea.classList.remove('active-textarea');
     }
   };
 
@@ -323,12 +335,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <button
           id="close"
           @click=${() => this.closeEditMode()}
-          class="icon-button icon-button--medium icon-button--clickable"
+          class="icon-button icon-button--medium icon-button--clickable s-c__input__cancel-edit-button"
           @click=${this.send}
         >
           <superviz-icon name="close" size="md"></superviz-icon>
         </button>
-        <button id="confirm" class="comment-input--send-btn" disabled @click=${this.send}>
+        <button id="confirm" class="s-c__input__send-button" disabled @click=${this.send}>
           <superviz-icon name="check" size="md"></superviz-icon>
         </button>
       `;
@@ -338,35 +350,42 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       if (this.editable) return;
 
       return html`
-        <button class="comment-input--send-btn align-send-btn" disabled @click=${this.send}>
+        <button class="s-c__input__send-button align-send-btn" disabled @click=${this.send}>
           <superviz-icon name="line-arrow-right" size="sm" allowSetSize=${true}></superviz-icon>
         </button>
       `;
     };
 
     return html`
-      <div class="comment-input">
-          <textarea
-            id="comment-input--textarea"
-            placeholder=${this.placeholder ?? 'Add comment...'}
-            @input=${this.updateHeight}
-            @focus=${this.onTextareaFocus}
-            @blur=${this.onTextareaLoseFocus}
-            spellcheck="false"
-          ></textarea>
-          <superviz-comments-mention-list
-            .participants=${this.mentionList}
-            @participant-selected=${this.insertMention}
-          ></superviz-comments-mention-list>
+      <div class="s-c__input">
+        <textarea
+          id="s-c__input__textarea"
+          class="s-c__input__textarea"
+          placeholder=${this.placeholder ?? 'Add comment...'}
+          @input=${this.updateHeight}
+          @focus=${this.onTextareaFocus}
+          @blur=${this.onTextareaLoseFocus}
+          spellcheck="false"
+        ></textarea>
+        <superviz-comments-mention-list
+          .participants=${this.mentionList}
+          @participant-selected=${this.insertMention}
+        ></superviz-comments-mention-list>
         <div class="sv-hr"></div>
-        <div class="comment-input--options">
-            <button class="icon-button mention">
-              <superviz-icon name="mention" @click=${this.addAtSymbolInCaretPosition} size="sm" allowSetSize=${true}></superviz-icon>
-            </button>
-            <div class="comment-input-options">
-              ${commentInputOptions()} ${commentInputEditableOptions()}
-            </div>
+        <div class="s-c__input__options">
+          <button class="icon-button s-c__input__mention-button">
+            <superviz-icon
+              name="mention"
+              @click=${this.addAtSymbolInCaretPosition}
+              size="sm"
+              allowSetSize=${true}
+            ></superviz-icon>
+          </button>
+          <div class="comment-input-options">
+            ${commentInputOptions()} ${commentInputEditableOptions()}
+          </div>
         </div>
+      </div>
     `;
   }
 }
