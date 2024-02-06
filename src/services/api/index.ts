@@ -3,11 +3,13 @@ import { doRequest } from '../../common/utils';
 import { Annotation } from '../../components/comments/types';
 import config from '../config';
 
+
 import {
   AnnotationParams,
   CommentParams,
   CreateOrUpdateParticipantParams,
   FetchAnnotationsParams,
+  MentionParams
 } from './types';
 
 export default class ApiService {
@@ -126,5 +128,23 @@ export default class ApiService {
       userId,
     };
     return doRequest(url, 'POST', body, { apikey });
+  }
+
+  static async fetchParticipantsByGroup(
+    groupId: string,
+  ) {
+    const path = `/groups/participants/${groupId}`;
+    const baseUrl = config.get<string>('apiUrl');
+    const url = this.createUrl(baseUrl, path, { take: 10000 });
+    return doRequest(url, 'GET', undefined, { apikey: config.get('apiKey') });
+  }
+
+  static async createMentions(
+    mentionParams: MentionParams
+  ) {
+    const path = '/mentions';
+    const baseUrl = config.get<string>('apiUrl');
+    const url = this.createUrl(baseUrl, path);
+    return doRequest(url, 'POST', mentionParams, { apikey: config.get('apiKey') });
   }
 }

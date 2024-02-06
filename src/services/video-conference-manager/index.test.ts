@@ -270,6 +270,49 @@ describe('VideoConferenceManager', () => {
     });
   });
 
+  describe('setCallbacks', () => {
+    test('should skip set callbacks if callbacks are not defined', () => {
+      VideoConferenceManagerInstance['onFrameLoad']();
+      VideoConferenceManagerInstance['messageBridge'].publish = jest.fn();
+
+      VideoConferenceManagerInstance['setCallbacks']();
+
+      expect(VideoConferenceManagerInstance['messageBridge'].publish).not.toBeCalled();
+    });
+
+    test('should set callbacks if callbacks are defined', () => {
+      const callbacks = {
+        onToggleMicrophone: jest.fn(),
+        onToggleCamera: jest.fn(),
+        onToggleTranscript: jest.fn(),
+        onToggleChat: jest.fn(),
+        onToggleScreenShare: jest.fn(),
+        onLeaveMeeting: jest.fn(),
+        onClickSettings: jest.fn(),
+      };
+
+      VideoConferenceManagerInstance['onFrameLoad']();
+      VideoConferenceManagerInstance['messageBridge'].publish = jest.fn();
+
+      // @ts-ignore
+      VideoConferenceManagerInstance['callbacks'] = callbacks;
+
+      VideoConferenceManagerInstance['setCallbacks']();
+
+      expect(VideoConferenceManagerInstance['messageBridge'].publish).toBeCalledWith(
+        FrameEvent.FRAME_CALLBACKS_UPDATE,
+        JSON.stringify({
+          onToggleMicrophone: true,
+          onToggleCamera: true,
+          onToggleTranscript: true,
+          onToggleChat: true,
+          onToggleScreenShare: true,
+          onLeaveMeeting: true,
+          onClickSettings: true,
+        }),
+      );
+    });
+  });
   describe('updateFrameLocale', () => {
     test('should skip update frame locale if locale is not defined', () => {
       VideoConferenceManagerInstance['onFrameLoad']();

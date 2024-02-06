@@ -2,6 +2,7 @@ import { CSSResultGroup, LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
+import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { Annotation } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
@@ -13,14 +14,10 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle]
 
 @customElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {
-  constructor() {
-    super();
-    this.annotations = [];
-  }
-
   static styles = styles;
 
   declare annotations: Annotation[];
+  declare participantsList: ParticipantByGroupApi[];
   declare selectedAnnotation: string;
   declare annotationFilter: AnnotationFilter;
   private lastCommentId: string;
@@ -29,7 +26,14 @@ export class CommentsContent extends WebComponentsBaseElement {
     annotations: { type: Object },
     selectedAnnotation: { type: String },
     annotationFilter: { type: String },
+    participantsList: { type: Object },
   };
+
+  constructor() {
+    super();
+    this.annotations = [];
+    this.participantsList = [];
+  }
 
   private unselectAnnotation = () => {
     this.selectedAnnotation = null;
@@ -116,6 +120,7 @@ export class CommentsContent extends WebComponentsBaseElement {
           annotationFilter=${this.annotationFilter}
           uuid=${annotation.uuid}
           isLastComment=${this.checkLastAnnotation(annotation.uuid)}
+          participantsList=${JSON.stringify(this.participantsList)}
         >
         </superviz-comments-annotation-item>
       `,

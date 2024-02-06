@@ -5,6 +5,7 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
+import importStyle from '../../base/utils/importStyle';
 import { dropdownStyle } from '../css';
 
 import {
@@ -63,7 +64,16 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    this.shadowRoot.querySelector('.menu').scrollTop = 0;
+    this.shadowRoot.querySelector('.who-is-online__extras-dropdown').scrollTop = 0;
+    importStyle.call(this, 'who-is-online');
+
+    const dropdownList = this.shadowRoot.querySelector('.dropdown-list') as HTMLElement;
+    const { right, bottom } = this.parentElement.getBoundingClientRect();
+    dropdownList.style.setProperty('right', `${window.innerWidth - right}px`);
+    dropdownList.style.setProperty('top', `${bottom + 5}px`);
+    dropdownList.style.setProperty('z-index', '10');
+
+    dropdownList.style.position = 'fixed';
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -116,7 +126,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private getAvatar(participant: Participant) {
     if (participant.avatar?.imageUrl) {
       return html` <img
-        class="who-is-online-dropdown__avatar"
+        class="who-is-online__participant__avatar"
         style="background-color: ${participant.color}"
         src=${participant.avatar.imageUrl}
       />`;
@@ -127,15 +137,19 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       : '#26242A';
 
     return html`<div
-      class="who-is-online-dropdown__avatar"
+      class="who-is-online__participant__avatar"
       style="background-color: ${participant.color}; color: ${letterColor}"
     >
       ${participant.name?.at(0).toUpperCase()}
     </div>`;
   }
 
-  private toggleShowTooltip = () => {
+  private toggleShowTooltip = ({ detail: { open } }: CustomEvent) => {
     this.showParticipantTooltip = !this.showParticipantTooltip;
+
+    if (!open) {
+      this.selected = '';
+    }
   };
 
   private renderParticipants() {
@@ -153,14 +167,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
 
         const contentClasses = {
-          'who-is-online-dropdown__content': true,
-          'who-is-online-dropdown__content--selected': this.selected === id,
+          'who-is-online__extra-participant': true,
+          'who-is-online__extra-participant--selected': this.selected === id,
           'disable-dropdown': disableDropdown,
           followed: this.following?.id === id,
         };
 
         const iconClasses = {
-          icon: true,
+          'who-is-online__extras__arrow-icon': true,
           'hide-icon': disableDropdown,
         };
 
@@ -199,15 +213,18 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         ?shiftTooltipLeft=${true}
         ?lastParticipant=${isLastParticipant}
         @toggle-dropdown-state=${this.toggleShowTooltip}
+        classesPrefix="who-is-online__controls"
+        parentComponent="who-is-online"
+        tooltipPrefix="who-is-online"
         >
         <div 
           class=${classMap(contentClasses)} 
           @click=${this.selectParticipant(id)} slot="dropdown">
-          <div class="who-is-online-dropdown__participant" style="border-color: 
-          ${color}">
+            <div class="who-is-online__participant" style="border-color: 
+            ${color}">
               ${this.getAvatar(participant)}
             </div>
-            <span class="user-name">${name}</span>
+            <span class="who-is-online__extras__username">${name}</span>
             <superviz-icon 
               class=${classMap(iconClasses)} 
               name="right" 
@@ -223,7 +240,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private setMenu() {
     if (!this.menu) {
-      this.menu = this.shadowRoot.querySelector('.menu');
+      this.menu = this.shadowRoot.querySelector('.who-is-online__extras-dropdown');
       const options = {
         rootMargin: '0px',
         threshold: 1.0,
@@ -359,9 +376,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   private get menuClasses() {
     return {
-      menu: true,
-      'menu--bottom': this.position === 'bottom',
-      'menu--top': this.position === 'top',
+      'who-is-online__extras-dropdown': true,
+      'menu--bottom': this.position === VerticalSide.BOTTOM,
+      'menu--top': this.position === VerticalSide.TOP,
       'menu-open': this.open,
     };
   }
@@ -371,6 +388,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
     return html`<superviz-tooltip
       tooltipData=${JSON.stringify({ name: 'See more' })}
+      classesPrefix="who-is-online__tooltip"
+      parentComponent="who-is-online"
     ></superviz-tooltip>`;
   };
 

@@ -80,10 +80,12 @@ const dropdown = () => element()?.shadowRoot?.querySelector('.dropdown') as HTML
 const dropdownContent = () => dropdown()?.querySelector('.dropdown-content') as HTMLElement | null;
 
 const dropdownMenu = () => {
-  return element()?.shadowRoot?.querySelector('.menu') as HTMLElement | null;
+  return element()?.shadowRoot?.querySelector(
+    '.who-is-online__extras-dropdown',
+  ) as HTMLElement | null;
 };
 
-describe('dropdown', () => {
+describe('who-is-online-dropdown', () => {
   afterEach(() => {
     document.body.innerHTML = '';
   });
@@ -173,7 +175,7 @@ describe('dropdown', () => {
 
     await sleep();
 
-    const letter = element()?.shadowRoot?.querySelector('.who-is-online-dropdown__avatar');
+    const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
     const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex];
     expect(letter?.getAttribute('style')).toBe(
@@ -192,7 +194,7 @@ describe('dropdown', () => {
 
     await sleep();
 
-    const letter = element()?.shadowRoot?.querySelector('.who-is-online-dropdown__avatar');
+    const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
     const backgroundColor = MeetingColorsHex[2];
     expect(letter?.getAttribute('style')).toBe(
@@ -221,7 +223,7 @@ describe('dropdown', () => {
     await sleep();
 
     const participant = element()?.shadowRoot?.querySelector(
-      '.who-is-online-dropdown__content',
+      '.who-is-online__extra-participant',
     ) as HTMLElement;
 
     participant.click();
@@ -229,41 +231,5 @@ describe('dropdown', () => {
     await sleep();
 
     expect(element()?.['selected']).toBe(mockParticipants[0].id);
-  });
-
-  describe('based on dropdown original position', () => {
-    test('should reposition dropdown to bottom if top is out of screen', async () => {
-      const el = createEl({ position: 'top', participants: mockParticipants });
-      expect(el['position']).toBe('top');
-
-      el.style.bottom = 'auto';
-      el.style.top = '0px';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-
-      await sleep();
-
-      expect(el['position']).toBe('bottom');
-    });
-
-    test('should reposition dropdown to top if bottom is out of screen', async () => {
-      const el = createEl({ position: 'bottom', participants: mockParticipants });
-      expect(el['position']).toBe('bottom');
-
-      el.style.top = 'auto';
-      el.style.bottom = '-10px';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-
-      await sleep();
-
-      expect(el['position']).toBe('top');
-    });
   });
 });

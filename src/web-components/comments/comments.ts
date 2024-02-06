@@ -1,8 +1,10 @@
-import { CSSResultGroup, LitElement, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import { Annotation } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
+import importStyle from '../base/utils/importStyle';
 
 import { AnnotationFilter } from './components/types';
 import { commentsStyle, poweredByStyle } from './css/index';
@@ -20,6 +22,7 @@ export class Comments extends WebComponentsBaseElement {
   declare annotationFilter: AnnotationFilter;
   declare waterMarkState: boolean;
   declare side: string;
+  declare participantsList: ParticipantByGroupApi[];
 
   static properties = {
     open: { type: Boolean },
@@ -27,6 +30,7 @@ export class Comments extends WebComponentsBaseElement {
     annotationFilter: { type: String },
     waterMarkState: { type: Boolean },
     side: { type: String },
+    participantsList: { type: Object },
   };
 
   constructor() {
@@ -34,15 +38,20 @@ export class Comments extends WebComponentsBaseElement {
     this.annotations = [];
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
+    this.participantsList = [];
     this.side = 'left: 0px';
+  }
+
+  public participantsListed(participants: ParticipantByGroupApi[]) {
+    this.participantsList = participants;
   }
 
   public updateAnnotations(data: Annotation[]) {
     this.annotations = data;
   }
 
-  private toggle() {
-    this.emitEvent('toggle', {});
+  private close() {
+    this.emitEvent('close', {});
   }
 
   waterMarkStatus(waterMark: boolean) {
@@ -54,7 +63,7 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = filter;
   }
 
-  updated(changedProperties) {
+  updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
     this.updateComplete.then(() => {
       const supervizCommentsDiv = this.shadowRoot.querySelector('.superviz-comments');
@@ -65,14 +74,27 @@ export class Comments extends WebComponentsBaseElement {
         waterMarkElementObserver(this.shadowRoot);
       }
 
-      supervizCommentsDiv.setAttribute('style', this.side);
+      if (changedProperties.has('side')) {
+        supervizCommentsDiv.setAttribute('style', this.side);
+      }
+    });
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
     });
   }
 
   protected render() {
-    const containerClass = [this.open ? 'container' : 'container-close', 'superviz-comments'].join(
-      ' ',
-    );
+    const containerClass = [
+      this.open ? 'container' : 'container-close',
+      'superviz-comments',
+      'comments',
+    ].join(' ');
     const poweredByFooter = html` <div id="poweredby-footer" class="footer">
       <div class="powered-by powered-by--horizontal">
         <a href="https://superviz.com/" target="_blank" class="link">
@@ -94,7 +116,7 @@ export class Comments extends WebComponentsBaseElement {
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar
-            @close=${this.toggle}
+            @close=${this.close}
             side=${this.side.split(':')[0]}
           ></superviz-comments-topbar>
         </div>
@@ -106,6 +128,7 @@ export class Comments extends WebComponentsBaseElement {
         <superviz-comments-content
           annotations=${JSON.stringify(this.annotations)}
           annotationFilter=${this.annotationFilter}
+          participantsList=${JSON.stringify(this.participantsList)}
           class="content"
         ></superviz-comments-content>
         ${htmlPoweredByContent}

@@ -8,3 +8,4 @@ export { DeleteCommentModal } from './delete-comment-modal';
 export { CommentsAnnotationResolved } from './annotation-resolved';
 export { CommentsAnnotationFilter } from './annotation-filter';
 export { CommentsFloatButton } from './float-button';
+export { CommentsMentionList } from './mention-list';
