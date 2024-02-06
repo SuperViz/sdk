@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const floatButtonStyle = css`
-  .s-c__floating-button {
+  .comments__floating-button {
     position: fixed;
     border-radius: 50%;
     width: 38px;
@@ -22,17 +22,17 @@ export const floatButtonStyle = css`
     z-index: 99;
   }
 
-  .s-c__floating-button__text {
+  .comments__floating-button__text {
     opacity: 0;
     transition: opacity 100ms linear;
   }
 
-  .s-c__floating-button:hover .s-c__floating-button__text {
+  .comments__floating-button:hover .comments__floating-button__text {
     opacity: 1;
     transition-delay: 200ms;
   }
 
-  .s-c__floating-button:not(:hover) {
+  .comments__floating-button:not(:hover) {
     transition-delay: 100ms;
   }
 
@@ -40,7 +40,7 @@ export const floatButtonStyle = css`
     display: none !important;
   }
 
-  .s-c__floating-button:hover {
+  .comments__floating-button:hover {
     width: 110px;
     border-radius: 30px;
   }

@@ -43,17 +43,17 @@ describe('CommentsCommentItem', () => {
     element = await createElement();
 
     const username = element.shadowRoot!.querySelector(
-      '.s-c__comment-item__avatar-image',
+      '.comments__comment-item__avatar-image',
     ) as HTMLImageElement;
     expect(username.src).toEqual('https://example.com/avatar.png');
 
     const createdAt = element.shadowRoot!.querySelector(
-      '.s-c__comment-item__date',
+      '.comments__comment-item__date',
     ) as HTMLSpanElement;
     expect(createdAt.textContent).toEqual(DateTime.now().toFormat('yyyy-dd-MM'));
 
     const text = element.shadowRoot!.querySelector(
-      '.s-c__comment-item__content',
+      '.comments__comment-item__content',
     ) as HTMLSpanElement;
 
     expect(text.innerText).toEqual('This is a comment');

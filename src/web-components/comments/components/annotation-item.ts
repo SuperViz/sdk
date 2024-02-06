@@ -79,8 +79,8 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
 
   private get annotationClasses() {
     return {
-      's-c__thread': true,
-      's-c__thread--selected': this.isSelected,
+      comments__thread: true,
+      'comments__thread--selected': this.isSelected,
     };
   }
 
@@ -191,7 +191,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
         annotationId=${this.annotation.uuid}
         participantsList=${JSON.stringify(this.participantsList)}
         mentions=${JSON.stringify(comment.mentions)}
-        class="s-c__replies"
+        class="comments__replies"
       ></superviz-comments-comment-item>
     `;
   };
@@ -230,7 +230,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
               annotationFilter=${this.annotationFilter}
               @resolve-annotation=${this.resolveAnnotation}
               mentions=${JSON.stringify(this.annotation.comments?.[0].mentions)}
-              class="s-c__annotation"
+              class="comments__annotation"
             ></superviz-comments-comment-item>
             <div class=${classMap(this.avatarCommentsClasses)}>
               <div class="avatar-container">${this.generateAvatarCommentsTemplate()}</div>

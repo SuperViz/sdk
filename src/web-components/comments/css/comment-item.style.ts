@@ -5,7 +5,7 @@ export const commentItemStyle = css`
     padding-left: 24px !important;
   }
 
-  .s-c__comment-item {
+  .comments__comment-item {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -14,7 +14,7 @@ export const commentItemStyle = css`
     gap: 4px;
   }
 
-  .s-c__comment-item__header {
+  .comments__comment-item__header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -23,27 +23,27 @@ export const commentItemStyle = css`
     color: rgb(var(--sv-gray-500));
   }
 
-  .s-c__comment-item__actions {
+  .comments__comment-item__actions {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .s-c__comment-item__actions superviz-dropdown,
-  .s-c__comment-item__icons {
+  .comments__comment-item__actions superviz-dropdown,
+  .comments__comment-item__icons {
     width: 25px;
     height: 25px;
     border-radius: 50%;
   }
 
-  .s-c__comment-item__metadata {
+  .comments__comment-item__metadata {
     display: flex;
     width: 100%;
     gap: 8px;
     align-items: center;
   }
 
-  .s-c__comment-item__avatar-container {
+  .comments__comment-item__avatar-container {
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -57,14 +57,14 @@ export const commentItemStyle = css`
     justify-content: center;
   }
 
-  .s-c__comment-item__avatar-image {
+  .comments__comment-item__avatar-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
     border-radius: 50%;
   }
 
-  .s-c__comment-item__content {
+  .comments__comment-item__content {
     width: 100%;
   }
 
@@ -75,7 +75,7 @@ export const commentItemStyle = css`
     overflow: hidden;
   }
 
-  .s-c__comment-item__content__body {
+  .comments__comment-item__content__body {
     color: rgb(var(--sv-gray-700));
   }
 

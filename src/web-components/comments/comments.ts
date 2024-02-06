@@ -93,7 +93,7 @@ export class Comments extends WebComponentsBaseElement {
     const containerClass = [
       this.open ? 'container' : 'container-close',
       'superviz-comments',
-      's-c',
+      'comments',
     ].join(' ');
     const poweredByFooter = html` <div id="poweredby-footer" class="footer">
       <div class="powered-by powered-by--horizontal">
