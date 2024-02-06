@@ -304,7 +304,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private onTextareaFocus = () => {
-    console.log('aaa');
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
     const textarea = this.commentInput;

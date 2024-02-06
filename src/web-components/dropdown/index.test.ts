@@ -312,152 +312,6 @@ describe('dropdown', () => {
     );
   });
 
-  describe('based on dropdown original position', () => {
-    test('should reposition dropdown to bottom-left if top, center and right are out of screen', async () => {
-      const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
-
-      el.style.top = '0px';
-      el.style.right = '0px';
-      el.style.left = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position']).toBe('bottom-left');
-    });
-
-    test('should reposition dropdown to bottom-center if top and right are out of screen', async () => {
-      const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
-
-      el.style.top = '0px';
-      el.style.right = '70px';
-      el.style.left = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position']).toBe('bottom-center');
-    });
-
-    test('should reposition dropdown to bottom-right if top is out of screen', async () => {
-      const el = createEl({ position: 'top-right', align: 'left', icons: ['left', 'right'] });
-
-      el.style.top = '0px';
-      el.style.right = '150px';
-      el.style.left = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position']).toBe('bottom-right');
-    });
-
-    test('should reposition dropdown to top-right if bottom, center and left are out of screen', async () => {
-      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
-
-      el.style.left = '0px';
-      el.style.bottom = '0px';
-      el.style.top = 'auto';
-      el.style.right = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position']).toBe('top-right');
-    });
-
-    test('should reposition dropdown to top-center if bottom and left are out of screen', async () => {
-      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
-
-      el.style.left = '70px';
-      el.style.bottom = '0px';
-      el.style.top = 'auto';
-      el.style.right = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position']).toBe('top-center');
-    });
-
-    test('should reposition dropdown to top-left if bottom is out of screen', async () => {
-      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
-
-      el.style.left = '150px';
-      el.style.bottom = '0px';
-      el.style.top = 'auto';
-      el.style.right = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position']).toBe('top-left');
-    });
-
-    test('should keep dropdown orientation even if outside of screen', async () => {
-      const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
-
-      el.style.left = 'auto';
-      el.style.right = '-50px';
-      el['host'] = element();
-
-      await sleep();
-
-      dropdownContent()?.click();
-      await sleep();
-
-      expect(el['position'].includes('left')).toBeTruthy();
-    });
-
-    test('should return to the original position after having more space', async () => {
-      const el = createEl({ position: 'bottom-center', align: 'left', icons: ['left', 'right'] });
-
-      await sleep();
-
-      dropdownContent()?.click();
-
-      await sleep();
-
-      expect(el['originalPosition']).toBe('bottom-center');
-      expect(el['position']).toBe(el['originalPosition']);
-
-      el.style.bottom = '0px';
-      el.style.top = 'auto';
-      el['host'] = element();
-
-      await sleep();
-
-      expect(el['position']).toBe('top-center');
-
-      el.style.bottom = 'auto';
-      el.style.top = '0px';
-      el['host'] = element();
-
-      await sleep();
-
-      expect(el['originalPosition']).toBe('bottom-center');
-      expect(el['position']).toBe(el['originalPosition']);
-    });
-  });
-
   describe('tooltip', () => {
     test('should render tooltip if can show it', async () => {
       createEl({ position: 'bottom-right', align: 'left', showTooltip: true });
@@ -466,6 +320,132 @@ describe('dropdown', () => {
       const tooltip = element()?.shadowRoot?.querySelector('superviz-tooltip');
 
       expect(tooltip).toBeTruthy();
+    });
+  });
+
+  describe('setHorizontalPosition', () => {
+    beforeEach(() => {
+      window.innerWidth = 1000;
+    });
+
+    test('should center dropdown if it fits in the window', async () => {
+      const element = createEl({ position: 'bottom-right', align: 'left' });
+      await sleep();
+
+      const slotDropdown = element.shadowRoot!.querySelector(
+        'slot[name="dropdown"]',
+      ) as HTMLSlotElement;
+      slotDropdown.parentElement!.getBoundingClientRect = () =>
+        ({
+          left: 300,
+          right: 340,
+          width: 100,
+        } as any);
+
+      element['menu'].getBoundingClientRect = () => ({ width: 100 });
+
+      element['setHorizontalPosition']();
+
+      expect(element['menu'].style.left).toBe('300px');
+      expect(element['menu'].style.right).toBe('');
+      expect(element['menu'].style.transform).toContain('translate(calc(-50% + 50px)');
+    });
+
+    test('should align dropdown to the left if it does not fit to the right of the window', async () => {
+      const element = createEl({ position: 'bottom-right', align: 'left' });
+      await sleep();
+
+      const slotDropdown = element.shadowRoot!.querySelector(
+        'slot[name="dropdown"]',
+      ) as HTMLSlotElement;
+      slotDropdown.parentElement!.getBoundingClientRect = () =>
+        ({
+          left: 980,
+          right: 1020,
+          width: 100,
+        } as any);
+
+      element['menu'].getBoundingClientRect = () => ({ width: 100 });
+
+      element['setHorizontalPosition']();
+
+      const right = window.innerWidth - 1020;
+      expect(element['menu'].style.left).toBe('');
+      expect(element['menu'].style.right).toBe(`${right}px`);
+      expect(element['menu'].style.transform).toContain('translate(0px');
+    });
+
+    test('should align dropdown to the right if it does not fit to the left of the window', async () => {
+      const element = createEl({ position: 'bottom-right', align: 'left' });
+      await sleep();
+
+      const slotDropdown = element.shadowRoot!.querySelector(
+        'slot[name="dropdown"]',
+      ) as HTMLSlotElement;
+      slotDropdown.parentElement!.getBoundingClientRect = () =>
+        ({
+          left: 0,
+          right: 40,
+          width: 40,
+        } as any);
+
+      element['menu'].getBoundingClientRect = () => ({ width: 100 });
+
+      element['setHorizontalPosition']();
+
+      const left = 40 - 40;
+      expect(element['menu'].style.left).toBe(`${left}px`);
+      expect(element['menu'].style.right).toBe('');
+      expect(element['menu'].style.transform).toContain('translate(0px');
+    });
+  });
+
+  describe('setPositionVertical', () => {
+    beforeEach(() => {
+      window.innerHeight = 1000;
+    });
+
+    test('should position dropdown below the dropdown button if it fits in the window', async () => {
+      const element = createEl({ position: 'bottom-right', align: 'left' });
+      await sleep();
+
+      const slotDropdown = element.shadowRoot!.querySelector(
+        'slot[name="dropdown"]',
+      ) as HTMLSlotElement;
+      slotDropdown.parentElement!.getBoundingClientRect = () =>
+        ({
+          top: 100,
+          bottom: 140,
+        } as any);
+
+      element['menu'].getBoundingClientRect = () => ({ height: 40 });
+
+      element['setPositionVertical']();
+
+      expect(element['menu'].style.bottom).toBe('');
+      expect(element['menu'].style.top).toBe('148px');
+    });
+
+    test('should position dropdown above the dropdown button if it does not fit below the button', async () => {
+      const element = createEl({ position: 'bottom-right', align: 'left' });
+      await sleep();
+
+      const slotDropdown = element.shadowRoot!.querySelector(
+        'slot[name="dropdown"]',
+      ) as HTMLSlotElement;
+      slotDropdown.parentElement!.getBoundingClientRect = () =>
+        ({
+          top: 959,
+          bottom: 999,
+        } as any);
+
+      element['menu'].getBoundingClientRect = () => ({ height: 100 });
+
+      element['setPositionVertical']();
+
+      const bottom = 1000 - 959 + 8;
+      expect(element['menu'].style.top).toBe('auto');
+      expect(element['menu'].style.bottom).toBe(`${bottom}px`);
     });
   });
 });
