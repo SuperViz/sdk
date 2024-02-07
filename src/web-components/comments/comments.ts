@@ -51,7 +51,7 @@ export class Comments extends WebComponentsBaseElement {
   }
 
   private close() {
-    this.emitEvent('close', {});
+    this.emitEvent('close-threads', {});
   }
 
   waterMarkStatus(waterMark: boolean) {
@@ -116,7 +116,7 @@ export class Comments extends WebComponentsBaseElement {
       <div id="superviz-comments" class=${containerClass}>
         <div class="header">
           <superviz-comments-topbar
-            @close=${this.close}
+            @close-threads=${this.close}
             side=${this.side.split(':')[0]}
           ></superviz-comments-topbar>
         </div>
