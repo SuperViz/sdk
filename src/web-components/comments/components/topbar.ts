@@ -27,7 +27,7 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
   }
 
   private close() {
-    this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(new CustomEvent('close-threads'));
   }
 
   protected render() {
