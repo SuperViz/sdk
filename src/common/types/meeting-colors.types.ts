@@ -18,6 +18,8 @@ export enum MeetingColors {
   'gray',
 }
 
+export const INDEX_IS_WHITE_TEXT = [1, 3, 4, 6, 7, 14, 16];
+
 export enum MeetingColorsHex {
   '#31E0B0',
   '#FF5E10',

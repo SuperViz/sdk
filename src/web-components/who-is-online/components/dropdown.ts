@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
+import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
@@ -28,7 +29,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare align: HorizontalSide;
   declare position: VerticalSide;
   declare participants: Participant[];
-  private textColorValues: number[];
   declare selected: string;
   private originalPosition: VerticalSide;
   private menu: HTMLElement;
@@ -56,7 +56,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   constructor() {
     super();
     // should match presence-mouse textColorValues
-    this.textColorValues = [2, 4, 5, 7, 8, 16];
     this.selected = '';
     this.showParticipantTooltip = true;
   }
@@ -132,9 +131,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       />`;
     }
 
-    const letterColor = this.textColorValues.includes(participant.slotIndex)
-      ? '#FFFFFF'
-      : '#26242A';
+    const letterColor = INDEX_IS_WHITE_TEXT.includes(participant.slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"

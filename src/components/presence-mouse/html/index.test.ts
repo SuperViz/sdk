@@ -2,6 +2,7 @@ import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
+import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { ParticipantMouse, Element } from '../types';
 
 import { PointersHTML } from '.';
@@ -876,7 +877,7 @@ describe('MousePointers on HTML', () => {
       }
 
       indexArray.forEach((index, i) => {
-        if ([2, 4, 5, 7, 8, 16].includes(i)) {
+        if (INDEX_IS_WHITE_TEXT.includes(i)) {
           expect(presenceMouseComponent['getTextColorValue'](index)).toBe('#FFFFFF');
           return;
         }

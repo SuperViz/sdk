@@ -186,8 +186,8 @@ describe('who-is-online-dropdown', () => {
   test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
     const participant = {
       ...mockParticipants[0],
-      slotIndex: 2,
-      color: MeetingColorsHex[2],
+      slotIndex: 1,
+      color: MeetingColorsHex[1],
     };
 
     createEl({ position: 'bottom', participants: [participant] });
@@ -196,7 +196,7 @@ describe('who-is-online-dropdown', () => {
 
     const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
-    const backgroundColor = MeetingColorsHex[2];
+    const backgroundColor = MeetingColorsHex[1];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #FFFFFF`,
     );

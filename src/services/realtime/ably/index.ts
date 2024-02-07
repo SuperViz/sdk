@@ -836,9 +836,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private findSlotIndex = (): void => {
-    const slots = new Array(16).fill(null).map((_, i) => ({ slotIndex: i, clientId: null }));
+    let slots = new Array(16).fill(null).map((_, i) => ({ slotIndex: i, clientId: null }));
 
-    this.supervizChannel.presence.get((_, presences) => {
+    this.supervizChannel.presence.get((error, presences) => {
+      if (error) {
+        slots = [];
+        return;
+      }
+
       presences.forEach((presence) => {
         if (presence.clientId === this.myParticipant.clientId) return;
 

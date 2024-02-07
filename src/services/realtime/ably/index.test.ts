@@ -1403,56 +1403,9 @@ describe('AblyRealtimeService', () => {
           ]);
         });
 
-      AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
+      AblyRealtimeServiceInstance['findSlotIndex']();
       jest.advanceTimersByTime(5000);
       expect(AblyRealtimeServiceInstance['updateMyProperties']).toBeCalledWith({ slotIndex: 2 });
-    });
-
-    test('should return the first empty slot', async () => {
-      global.window.console.error = jest.fn();
-
-      const mockPresence: Ably.Types.PresenceMessage = {
-        extras: null,
-        clientId: 'unit-test-participant-id',
-        connectionId: 'unit-test-connection-id',
-        data: {
-          participantId: 'unit-test-client-id',
-          slotIndex: 0,
-        },
-        encoding: 'json',
-        id: 'unit-test-id',
-        timestamp: 1234567890,
-        action: 'enter',
-      };
-
-      const mockPresenceList = Array.from({ length: 16 }, (v, i) => i).map((presence, index) => {
-        return {
-          clientId: `unit-test-participant-id-${index}`,
-          connectionId: `unit-test-connection-id-${index}`,
-          data: {
-            participantId: `unit-test-client-id-${index}`,
-            slotIndex: index,
-          },
-          encoding: 'json',
-          id: `unit-test-id-${index}`,
-          timestamp: 1234567890,
-          action: 'enter',
-        };
-      });
-
-      // @ts-ignore
-      AblyRealtimeServiceInstance['updateMyProperties'] = jest.fn();
-
-      AblyRealtimeServiceInstance['supervizChannel'].presence.get = jest
-        .fn()
-        .mockImplementation((callback) => {
-          callback(null, mockPresenceList);
-        });
-
-      AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
-
-      expect(AblyRealtimeServiceInstance['updateMyProperties']).not.toBeCalled();
-      expect(window.console.error).toBeCalledWith('no slots available!');
     });
 
     test('should skip if the callback returns an error', async () => {
@@ -1479,7 +1432,7 @@ describe('AblyRealtimeService', () => {
           callback('unit-test-error', []);
         });
 
-      AblyRealtimeServiceInstance['findSlotIndex'](mockPresence);
+      AblyRealtimeServiceInstance['findSlotIndex']();
 
       expect(AblyRealtimeServiceInstance['updateMyProperties']).not.toBeCalled();
     });

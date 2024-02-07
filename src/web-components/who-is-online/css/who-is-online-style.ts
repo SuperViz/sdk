@@ -13,7 +13,6 @@ export const whoIsOnlineStyle = css`
     flex-direction: column;
     position: fixed;
     z-index: 99;
-    background-color: #fff;
   }
 
   .who-is-online__presence-control-message__text {

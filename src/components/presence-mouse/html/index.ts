@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
+import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
@@ -428,7 +429,7 @@ export class PointersHTML extends BaseComponent {
    * @returns {string} - The color of the text in hex format
    * */
   private getTextColorValue = (slotIndex: number): string => {
-    return [2, 4, 5, 7, 8, 16].includes(slotIndex) ? '#FFFFFF' : '#26242A';
+    return INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
   };
 
   /**
