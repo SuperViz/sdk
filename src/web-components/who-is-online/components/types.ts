@@ -24,12 +24,6 @@ export interface Options {
   slotIndex: number;
 }
 
-export enum PositionOptions {
-  'DO-NOTHING',
-  'USE-ORIGINAL',
-  'CALCULATE-NEW',
-}
-
 export interface LocalParticipantData {
   id: string;
   color: string;

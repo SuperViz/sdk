@@ -8,14 +8,7 @@ import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { dropdownStyle } from '../css';
 
-import {
-  Following,
-  WIODropdownOptions,
-  PositionOptions,
-  TooltipData,
-  VerticalSide,
-  HorizontalSide,
-} from './types';
+import { Following, WIODropdownOptions, TooltipData, VerticalSide, HorizontalSide } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -30,15 +23,14 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare participants: Participant[];
   private textColorValues: number[];
   declare selected: string;
-  private originalPosition: VerticalSide;
-  private menu: HTMLElement;
-  private dropdownContent: HTMLElement;
-  private host: HTMLElement;
   declare disableDropdown: boolean;
   declare showSeeMoreTooltip: boolean;
   declare showParticipantTooltip: boolean;
   declare following: Following;
   declare localParticipantJoinedPresence: boolean;
+  declare dropdownList: HTMLElement;
+
+  private animationFrame: number;
 
   static properties = {
     open: { type: Boolean },
@@ -51,6 +43,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     showSeeMoreTooltip: { type: Boolean },
     showParticipantTooltip: { type: Boolean },
     localParticipantJoinedPresence: { type: Boolean },
+    dropdownList: { type: Object },
   };
 
   constructor() {
@@ -67,13 +60,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.shadowRoot.querySelector('.who-is-online__extras-dropdown').scrollTop = 0;
     importStyle.call(this, 'who-is-online');
 
-    const dropdownList = this.shadowRoot.querySelector('.dropdown-list') as HTMLElement;
-    const { right, bottom } = this.parentElement.getBoundingClientRect();
-    dropdownList.style.setProperty('right', `${window.innerWidth - right}px`);
-    dropdownList.style.setProperty('top', `${bottom + 5}px`);
-    dropdownList.style.setProperty('z-index', '10');
-
-    dropdownList.style.position = 'fixed';
+    this.dropdownList = this.shadowRoot.querySelector('.dropdown-list') as HTMLElement;
+    this.dropdownList.style.position = 'fixed';
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -238,140 +226,12 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     );
   }
 
-  private setMenu() {
-    if (!this.menu) {
-      this.menu = this.shadowRoot.querySelector('.who-is-online__extras-dropdown');
-      const options = {
-        rootMargin: '0px',
-        threshold: 1.0,
-      };
-
-      const intersectionObserver = new IntersectionObserver(this.adjustPosition, options);
-      const resizeObserver = new ResizeObserver(this.adjustPosition);
-      const target = this.menu;
-      intersectionObserver.observe(target);
-      resizeObserver.observe(this.scrollableParent ?? document.body);
-    }
-  }
-
-  private get scrollableParent() {
-    let elementWithOverflow: HTMLElement;
-
-    if (!this.host) {
-      this.host = (this.getRootNode() as ShadowRoot).host as HTMLElement;
-    }
-
-    let nextElement = this.host;
-
-    while (!elementWithOverflow) {
-      const parent = nextElement?.parentElement;
-
-      const hasOverflow = this.isScrollable(parent);
-
-      if (hasOverflow) {
-        elementWithOverflow = parent;
-        break;
-      }
-
-      nextElement = parent;
-
-      if (!nextElement) break;
-    }
-
-    return elementWithOverflow;
-  }
-
-  private isScrollable(element: HTMLElement): boolean {
-    if (!element) return false;
-
-    const hasScrollableContent = element.scrollHeight > element.clientHeight;
-    const overflowYStyle = window.getComputedStyle(element).overflowY;
-    const overflowXStyle = window.getComputedStyle(element).overflowX;
-    const isOverflowYHidden = overflowYStyle.indexOf('hidden') !== -1;
-    const isOverflowXHidden = overflowXStyle.indexOf('hidden') !== -1;
-
-    return hasScrollableContent && !isOverflowYHidden && !isOverflowXHidden;
-  }
-
-  private get dropdownBounds() {
-    if (!this.dropdownContent) {
-      this.dropdownContent = this.shadowRoot.querySelector('.dropdown-content');
-    }
-
-    const bounds = this.dropdownContent.getBoundingClientRect();
-
-    const { y, height } = this.menu.getBoundingClientRect();
-
-    return {
-      top: y,
-      bottom: y + height + 4,
-      height: height + 4,
-      contentY: bounds.y,
-    };
-  }
-
-  private shouldUseOriginalVertical() {
-    const { height, contentY } = this.dropdownBounds;
-    const { innerHeight } = window;
-    const bottom = contentY + height;
-
-    if (this.originalPosition.includes('bottom')) {
-      return height + bottom < innerHeight;
-    }
-
-    return contentY - height > 0;
-  }
-
-  private positionAction(): PositionOptions {
-    const { top, bottom } = this.dropdownBounds;
-    const { innerHeight } = window;
-
-    const isOutsideWindowBottom = bottom > innerHeight;
-    const isOutsideWindowTop = top < 0;
-
-    if (
-      (isOutsideWindowBottom && this.position.includes('bottom')) ||
-      (isOutsideWindowTop && this.position.includes('top'))
-    ) {
-      return PositionOptions['CALCULATE-NEW'];
-    }
-
-    if (!isOutsideWindowBottom && !isOutsideWindowTop && this.shouldUseOriginalVertical()) {
-      return PositionOptions['USE-ORIGINAL'];
-    }
-
-    return PositionOptions['DO-NOTHING'];
-  }
-
-  private adjustPosition = () => {
-    const { top, bottom } = this.dropdownBounds;
-    const { innerHeight } = window;
-
-    const action = this.positionAction();
-
-    if (action === PositionOptions['DO-NOTHING']) return;
-
-    if (action === PositionOptions['USE-ORIGINAL']) {
-      const originalVertical = this.originalPosition.split('-')[0];
-      this.position = this.position.replace(/top|bottom/, originalVertical) as VerticalSide;
-      return;
-    }
-
-    const newSide = innerHeight - bottom > top ? 'bottom' : 'top';
-    const previousSide = this.position.split('-')[0];
-    const newPosition = this.position.replace(previousSide, newSide) as VerticalSide;
-
-    this.position = newPosition;
-  };
-
   private toggle() {
-    if (!this.originalPosition) this.originalPosition = this.position;
-    this.setMenu();
     this.open = !this.open;
 
     if (!this.open) return;
     this.selected = '';
-    setTimeout(() => this.adjustPosition());
+    this.repositionDropdown();
   }
 
   private get menuClasses() {
@@ -391,6 +251,39 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       classesPrefix="who-is-online__tooltip"
       parentComponent="who-is-online"
     ></superviz-tooltip>`;
+  };
+
+  private repositionDropdown = () => {
+    if (!this.open) {
+      window.cancelAnimationFrame(this.animationFrame);
+      return;
+    }
+
+    this.repositionInVerticalDirection();
+    this.repositionInHorizontalDirection();
+
+    this.animationFrame = window.requestAnimationFrame(this.repositionDropdown);
+  };
+
+  private repositionInVerticalDirection = () => {
+    const { bottom, top, height } = this.parentElement.getBoundingClientRect();
+    const windowVerticalMidpoint = window.innerHeight / 2;
+    const dropdownVerticalMidpoint = top + height / 2;
+
+    if (dropdownVerticalMidpoint > windowVerticalMidpoint) {
+      this.dropdownList.style.setProperty('bottom', `${window.innerHeight - top + 8}px`);
+      this.dropdownList.style.setProperty('top', '');
+      return;
+    }
+
+    this.dropdownList.style.setProperty('top', `${bottom + 8}px`);
+    this.dropdownList.style.setProperty('bottom', '');
+  };
+
+  private repositionInHorizontalDirection = () => {
+    const { right, left } = this.parentElement.getBoundingClientRect();
+    this.dropdownList.style.setProperty('right', `${window.innerWidth - right}px`);
+    this.dropdownList.style.setProperty('left', `${left}px`);
   };
 
   protected render() {
