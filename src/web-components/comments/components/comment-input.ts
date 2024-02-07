@@ -352,7 +352,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
       return html`
         <button class="comments__input__send-button align-send-btn" disabled @click=${this.send}>
-          <superviz-icon name="line-arrow-right" size="sm" allowSetSize=${true}></superviz-icon>
+          <superviz-icon name="line-arrow-right" size="sm"></superviz-icon>
         </button>
       `;
     };
@@ -379,7 +379,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
               name="mention"
               @click=${this.addAtSymbolInCaretPosition}
               size="sm"
-              allowSetSize=${true}
             ></superviz-icon>
           </button>
           <div class="comment-input-options">

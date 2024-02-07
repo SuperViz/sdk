@@ -84,6 +84,12 @@ export const dropdownStyle = css`
     overflow: auto;
   }
 
+  .who-is-online__extras__arrow-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .menu--bottom {
     top: 4px;
     min-width: 103px;

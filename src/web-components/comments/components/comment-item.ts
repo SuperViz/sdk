@@ -225,7 +225,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
                 'resolve-icon',
               )} icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
             >
-              <superviz-icon name=${resolveIcon} size="md"></superviz-icon>
+              <superviz-icon name=${resolveIcon} size="sm"></superviz-icon>
             </button>
             <superviz-dropdown
               options=${JSON.stringify(options)}

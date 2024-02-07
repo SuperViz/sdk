@@ -216,7 +216,9 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
             <superviz-icon 
               class=${classMap(iconClasses)} 
               name="right" 
-              color="var(--sv-gray-600)">
+              color="var(--sv-gray-600)"
+              size="sm"
+            >
           </superviz-icon>
           </div>
         </div>
