@@ -1,5 +1,4 @@
 export enum MeetingColors {
-  'yellow',
   'turquoise',
   'orange',
   'blue',
@@ -15,11 +14,11 @@ export enum MeetingColors {
   'bluelight',
   'redlight',
   'brown',
+  'yellow',
   'gray',
 }
 
 export enum MeetingColorsHex {
-  '#FFEF33',
   '#31E0B0',
   '#FF5E10',
   '#00ABF7',
@@ -35,5 +34,6 @@ export enum MeetingColorsHex {
   '#75DEFE',
   '#FAA291',
   '#BB813F',
+  '#FFEF33',
   '#878291',
 }

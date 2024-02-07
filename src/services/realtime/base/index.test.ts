@@ -71,8 +71,8 @@ describe('RealtimeService', () => {
 
   test('should return slot color', () => {
     const slotColor = RealtimeServiceInstance.getSlotColor(0);
-    expect(slotColor.color).toEqual('#FFEF33');
-    expect(slotColor.name).toEqual('yellow');
+    expect(slotColor.color).toEqual('#31E0B0');
+    expect(slotColor.name).toEqual('turquoise');
   });
 
   test('should return gray if slot index is undefined', () => {
