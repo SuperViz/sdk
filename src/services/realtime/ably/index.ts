@@ -2,6 +2,7 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
+import { Nullable } from '../../../common/types/global.types';
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -64,6 +65,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private supervizChannelState: Ably.Types.ChannelStateChange;
   private connectionState: Ably.Types.ConnectionStateChange;
+
   constructor(apiUrl: string, ablyKey: string) {
     super();
 
@@ -589,7 +591,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates local participant properties
    * @returns {void}
    */
-  public updateMyProperties = throttle((newProperties: ParticipantInfo = {}): void => {
+  public updateMyProperties = (newProperties: ParticipantInfo = {}): void => {
     const properties = newProperties;
 
     if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
@@ -609,7 +611,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.supervizChannel.presence.update(this.myParticipant.data);
     this.logger.log('REALTIME', 'updating my properties', this.myParticipant.data);
-  }, SYNC_PROPERTY_INTERVAL);
+  };
 
   /**
    * @function updateRoomProperties
@@ -836,8 +838,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   findSlotIndex = (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
     let myPresence = myPresenceParam;
-
-    let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
+    let availableSlots = Array.apply(null, { length: 16 }).map(Number.call, Number);
 
     this.supervizChannel.presence.get((error, members) => {
       if (error) {
@@ -849,6 +850,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         if (member.connectionId === myPresence.connectionId) {
           myPresence = member;
         }
+
         if (
           member.connectionId !== myPresence.connectionId &&
           member.data.hasOwnProperty('slotIndex')
@@ -864,15 +866,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     }
 
     const slotChosen = availableSlots[0];
-
     this.myParticipant.data.slotIndex = slotChosen;
     this.updateMyProperties({ slotIndex: slotChosen });
-
-    const timeToWait = Math.floor(Math.random() * 500);
-
-    setTimeout(() => {
-      this.confirmSlot(myPresence);
-    }, timeToWait);
+    this.confirmSlot(myPresence);
   };
 
   /**
@@ -881,37 +877,36 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} participant
    * @returns {void}
    */
-  private confirmSlot = throttle(
-    async (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
-      const usedSlots: Ably.Types.PresenceMessage[] = [];
-      let myPresence = myPresenceParam;
-      this.supervizChannel.presence.get((err, members) => {
-        members.forEach((member) => {
-          if (member.connectionId === myPresence.connectionId) {
-            myPresence = member;
-          }
-          if (
-            member.connectionId !== myPresence.connectionId &&
-            member.data.slotIndex !== undefined
-          ) {
-            usedSlots.push(member.data.slotIndex);
-          }
-        });
-      });
+  private confirmSlot = async (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
+    const usedSlots: Ably.Types.PresenceMessage[] = [];
+    let myPresence = myPresenceParam;
+    this.supervizChannel.presence.get((err, members) => {
+      members.forEach((member) => {
+        if (member.connectionId === myPresence.connectionId) {
+          myPresence = member;
+        }
 
-      if (
-        this.myParticipant.data.slotIndex === undefined ||
-        usedSlots.includes(this.myParticipant.data.slotIndex)
-      ) {
-        this.findSlotIndex(myPresence);
-      } else {
-        // confirm slot and propagate
-        const roomProperties = await this.fetchRoomProperties();
-        this.updateRoomProperties(roomProperties);
-      }
-    },
-    1000,
-  );
+        if (
+          member.connectionId !== myPresence.connectionId &&
+          member.data.slotIndex !== undefined
+        ) {
+          usedSlots.push(member.data.slotIndex);
+        }
+      });
+    });
+
+    if (
+      this.myParticipant.data.slotIndex === null ||
+      this.myParticipant.data.slotIndex === undefined ||
+      usedSlots.includes(this.myParticipant.data.slotIndex)
+    ) {
+      this.findSlotIndex(myPresence);
+    } else {
+      // confirm slot and propagate
+      const roomProperties = await this.fetchRoomProperties();
+      this.updateRoomProperties(roomProperties);
+    }
+  };
 
   /**
    * @function onStateChange
