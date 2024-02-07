@@ -20,17 +20,21 @@ export class ModalContainer extends WebComponentsBaseElement {
   }
 
   private closeModal = () => {
-    window.document.body.dispatchEvent(new CustomEvent('superviz-modal--close', {
-      bubbles: true,
-      composed: true,
-    }));
+    window.document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--close', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   };
 
   private confirmModal = () => {
-    window.document.body.dispatchEvent(new CustomEvent('superviz-modal--confirm', {
-      bubbles: true,
-      composed: true,
-    }));
+    window.document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--confirm', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   };
 
   protected render() {
@@ -48,20 +52,14 @@ export class ModalContainer extends WebComponentsBaseElement {
     const body = () => {
       return html`
         <div class="modal--body">
-          <div class="modal--body-content">
-            ${this.options.body}
-          </div>
+          <div class="modal--body-content">${this.options.body}</div>
         </div>
       `;
     };
 
     const footer = () => {
       if (this.options.footer) {
-        return html`
-          <div class="modal--footer">
-            ${this.options.footer}
-          </div>
-        `;
+        return html` <div class="modal--footer">${this.options.footer}</div> `;
       }
 
       const confirmLabel = this.options.confirmLabel || 'OK';
@@ -70,15 +68,21 @@ export class ModalContainer extends WebComponentsBaseElement {
       if (this.options.confirm && this.options.cancel) {
         return html`
           <div class="modal--footer">
-            <button class="text text-bold btn btn--cancel" @click=${this.closeModal}>${cancelLabel}</button>
-            <button class="text text-bold btn btn--confirm" @click=${this.confirmModal}>${confirmLabel}</button>
+            <button class="text text-bold btn btn--cancel" @click=${this.closeModal}>
+              ${cancelLabel}
+            </button>
+            <button class="text text-bold btn btn--confirm" @click=${this.confirmModal}>
+              ${confirmLabel}
+            </button>
           </div>
         `;
       }
 
       return html`
         <div class="modal--footer">
-          <button class="text text-bold btn btn--confirm" @click=${this.confirmModal}>${confirmLabel}</button>
+          <button class="text text-bold btn btn--confirm" @click=${this.confirmModal}>
+            ${confirmLabel}
+          </button>
         </div>
       `;
     };
@@ -86,13 +90,7 @@ export class ModalContainer extends WebComponentsBaseElement {
     return html`
       <div class="modal--overlay"></div>
       <div class="modal--container">
-        <div class="modal">
-          ${header()}
-
-          ${body()}
-
-          ${footer()}
-        </div>
+        <div class="modal">${header()} ${body()} ${footer()}</div>
       </div>
     `;
   }

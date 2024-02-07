@@ -12,7 +12,6 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 export class Icon extends WebComponentsBaseElement {
   declare name: string;
   declare size: string;
-  declare allowSetSize: boolean;
 
   constructor() {
     super();
@@ -24,11 +23,9 @@ export class Icon extends WebComponentsBaseElement {
   static properties = {
     name: { type: String },
     size: { type: String },
-    allowSetSize: { type: Boolean },
   };
 
   private get iconSize(): string {
-    if (!this.allowSetSize) return;
     return IconSizes[this.size];
   }
 
