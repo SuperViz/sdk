@@ -22,7 +22,7 @@ describe('CommentsTopbar', () => {
     );
     const spy = jest.fn();
 
-    renderedElement.addEventListener('close', spy);
+    renderedElement.addEventListener('close-threads', spy);
     closeButton?.dispatchEvent(new Event('click'));
     expect(spy).toHaveBeenCalledTimes(1);
   });
