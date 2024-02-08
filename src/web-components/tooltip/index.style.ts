@@ -89,8 +89,9 @@ export const dropdownStyle = css`
   }
 
   .tooltip-right .superviz-who-is-online__tooltip-arrow {
-    translate: -100% 0;
+    translate: -50% 0;
     border-radius: 0;
+    left: 0;
   }
 
   .shift-left {
