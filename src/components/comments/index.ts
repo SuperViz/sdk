@@ -263,7 +263,6 @@ export class Comments extends BaseComponent {
   private toggleAnnotationSidebar = (): void => {
     this.element.toggleAttribute('open');
     this.sidebarOpen = this.element.hasAttribute('open');
-    this.pinAdapter.setActive(this.sidebarOpen);
 
     // removes the annotation being created
     document.body.dispatchEvent(

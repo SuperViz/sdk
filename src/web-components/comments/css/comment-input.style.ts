@@ -115,32 +115,28 @@ export const commentInputStyle = css`
     background-color: rgb(var(--sv-gray-200));
   }
 
-  .comments__input__send-button {
+  .comments__input__button {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgb(var(--sv-primary));
     border-radius: 100%;
     width: 32px;
     height: 32px;
-    color: rgba(var(--sv-white), 1);
     border: 0px;
+  }
+
+  .comments__input__send-button {
+    background: rgb(var(--sv-primary));
+    color: rgba(var(--sv-white), 1);
   }
 
   .align-send-btn > superviz-icon {
     cursor: pointer;
   }
 
-  .comments__input__send-btn:disabled {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .comments__input__button:disabled {
     background: rgb(var(--sv-gray-200));
-    border-radius: 100%;
-    width: 32px;
-    height: 32px;
     color: rgb(var(--sv-gray-600));
-    border: 0px;
   }
 
   .comment-input-options {
