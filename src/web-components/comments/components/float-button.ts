@@ -68,6 +68,14 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     window.document.body.removeEventListener('toggle-pin-active', this.onTogglePinActive);
   }
 
+  private async getTextWithDelay() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('Comment');
+      }, 300);
+    });
+  }
+
   updated(changedProperties) {
     super.updated(changedProperties);
     this.updateComplete.then(() => {
@@ -96,14 +104,24 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
       isActive: this.isActive,
     };
 
+    const textClasses = {
+      text: true,
+      'text-big': true,
+      'text-bold': true,
+      'comments__floating-button__text': true,
+      textActive: this.isActive,
+      textInactive: !this.isActive,
+    };
+
     return html` <button @click=${this.toggle} class="${classMap(floatButtonClasses)}">
       <superviz-icon
         size="sm"
         name="comment"
         class="comments__floating-button__icon"
+        color=${this.isActive ? 'white' : 'black'}
       ></superviz-icon>
 
-      <p class="text text-big text-bold comments__floating-button__text">Comments</p>
+      <p class="${classMap(textClasses)}">${this.isActive ? 'Close' : 'Comment'}</p>
     </button>`;
   }
 }
