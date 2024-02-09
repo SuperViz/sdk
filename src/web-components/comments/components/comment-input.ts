@@ -85,6 +85,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.querySelector('.sv-hr') as HTMLDivElement;
   }
 
+  private get closeButton() {
+    return this.shadowRoot!.querySelector('.comments__input__close-button') as HTMLButtonElement;
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
@@ -315,7 +319,22 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private onTextareaLoseFocus = (e) => {
-    if (!this.shadowRoot.contains(e.target)) return;
+    const target = e.explicitOriginalTarget?.parentNode?.host;
+
+    // explicitOriginalTarget is for Firefox
+    // relatedTarget is for Chrome
+    if (
+      this.closeButton.contains(target) ||
+      this.closeButton.contains(e.explicitOriginalTarget) ||
+      this.closeButton.contains(e.relatedTarget)
+    ) {
+      this.cancelComment();
+      return;
+    }
+
+    if (!this.shadowRoot.contains(e.target)) {
+      return;
+    }
 
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
@@ -328,35 +347,53 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   };
 
+  private cancelComment = () => {
+    document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape' }));
+  };
+
+  private commentInputEditableOptions = () => {
+    if (!this.editable) return;
+
+    return html`
+      <button
+        id="close"
+        @click=${this.closeEditMode}
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__cancel-edit-button"
+      >
+        <superviz-icon name="close" size="sm"></superviz-icon>
+      </button>
+      <button
+        id="confirm"
+        class="comments__input__button comments__input__send-button"
+        disabled
+        @click=${this.send}
+      >
+        <superviz-icon name="check" size="md"></superviz-icon>
+      </button>
+    `;
+  };
+
+  private commentInputOptions = () => {
+    if (this.editable) return;
+
+    return html`
+      <button
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__close-button align-send-btn"
+        @click=${this.cancelComment}
+      >
+        <superviz-icon name="close" size="sm"></superviz-icon>
+      </button>
+      <button
+        class="comments__input__button comments__input__send-button align-send-btn"
+        disabled
+        @click=${this.send}
+      >
+        <superviz-icon name="line-arrow-right" size="sm"></superviz-icon>
+      </button>
+    `;
+  };
+
   protected render() {
-    const commentInputEditableOptions = () => {
-      if (!this.editable) return;
-
-      return html`
-        <button
-          id="close"
-          @click=${() => this.closeEditMode()}
-          class="icon-button icon-button--medium icon-button--clickable comments__input__cancel-edit-button"
-          @click=${this.send}
-        >
-          <superviz-icon name="close" size="md"></superviz-icon>
-        </button>
-        <button id="confirm" class="comments__input__send-button" disabled @click=${this.send}>
-          <superviz-icon name="check" size="md"></superviz-icon>
-        </button>
-      `;
-    };
-
-    const commentInputOptions = () => {
-      if (this.editable) return;
-
-      return html`
-        <button class="comments__input__send-button align-send-btn" disabled @click=${this.send}>
-          <superviz-icon name="line-arrow-right" size="sm"></superviz-icon>
-        </button>
-      `;
-    };
-
     return html`
       <div class="comments__input">
         <textarea
@@ -382,7 +419,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
             ></superviz-icon>
           </button>
           <div class="comment-input-options">
-            ${commentInputOptions()} ${commentInputEditableOptions()}
+            ${this.commentInputOptions()} ${this.commentInputEditableOptions()}
           </div>
         </div>
       </div>
