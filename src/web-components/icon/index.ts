@@ -56,6 +56,8 @@ export class Icon extends WebComponentsBaseElement {
   ];
 
   protected render() {
+    this.color ||= 'black';
+
     return html`
       <i
         class="sv-icon sv-icon-${this.name}_${this.size} ${this.color}"

@@ -325,22 +325,6 @@ describe('CommentsCommentInput', () => {
     });
   });
 
-  /**
-   *   private onTextareaLoseFocus = (e) => {
-    const target = e.explicitOriginalTarget?.parentNode?.host;
-
-    // explicitOriginalTarget is for Firefox
-    // relatedTarget is for Chrome
-    if (
-      this.closeButton.contains(target) ||
-      this.closeButton.contains(e.explicitOriginalTarget) ||
-      this.closeButton.contains(e.relatedTarget)
-    ) {
-      this.cancelComment();
-      return;
-    }
-  }
-   */
   describe('onTextareaLoseFocus', () => {
     test('should call cancelComment when target is closeButton', () => {
       const mockCancelComment = jest.fn();
