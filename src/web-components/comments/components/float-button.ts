@@ -121,7 +121,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
         color=${this.isActive ? 'white' : 'black'}
       ></superviz-icon>
 
-      <p class="${classMap(textClasses)}">${this.isActive ? 'Close' : 'Comment'}</p>
+      <p class="${classMap(textClasses)}">${this.isActive ? 'Close' : 'Cancel'}</p>
     </button>`;
   }
 }
