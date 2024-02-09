@@ -16,11 +16,13 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
   declare positionStyles: string;
   declare commentsPosition: string;
   private shouldHide: boolean;
+  declare isActive: boolean;
 
   static properties = {
     positionStyles: { type: String },
     isHidden: { type: Boolean },
     commentsPosition: { type: String },
+    isActive: { type: Boolean },
   };
 
   constructor() {
@@ -44,12 +46,26 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     this.emitEvent('toggle', {});
   }
 
+  private onTogglePinActive = ({ detail: { isActive } }: CustomEvent) => {
+    this.isActive = isActive;
+  };
+
   connectedCallback(): void {
     super.connectedCallback();
 
     window.document.body.addEventListener('toggle-annotation-sidebar', () => {
       this.isHidden = !this.isHidden;
     });
+    window.document.body.addEventListener('toggle-pin-active', this.onTogglePinActive);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    window.document.body.removeEventListener('toggle-annotation-sidebar', () => {
+      this.isHidden = !this.isHidden;
+    });
+    window.document.body.removeEventListener('toggle-pin-active', this.onTogglePinActive);
   }
 
   updated(changedProperties) {
@@ -77,6 +93,7 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     const floatButtonClasses = {
       'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
+      isActive: this.isActive,
     };
 
     return html` <button @click=${this.toggle} class="${classMap(floatButtonClasses)}">

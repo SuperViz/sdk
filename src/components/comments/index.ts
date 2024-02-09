@@ -106,6 +106,9 @@ export class Comments extends BaseComponent {
     this.pinAdapter.setActive(true);
     this.pinActive = true;
     this.publish(CommentEvent.PIN_ACTIVE);
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-pin-active', { detail: { isActive: true } }),
+    );
   }
 
   /**
@@ -117,6 +120,9 @@ export class Comments extends BaseComponent {
     this.pinAdapter.setActive(false);
     this.pinActive = false;
     this.publish(CommentEvent.PIN_INACTIVE);
+    document.body.dispatchEvent(
+      new CustomEvent('toggle-pin-active', { detail: { isActive: false } }),
+    );
   }
 
   /**

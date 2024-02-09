@@ -44,4 +44,9 @@ export const floatButtonStyle = css`
     width: 110px;
     border-radius: 30px;
   }
+
+  .isActive {
+    color: rgba(var(--sv-white));
+    background-color: rgb(var(--sv-gray-400));
+  }
 `;
