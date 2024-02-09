@@ -12,6 +12,7 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 export class Icon extends WebComponentsBaseElement {
   declare name: string;
   declare size: string;
+  declare color: 'white' | 'black';
 
   constructor() {
     super();
@@ -23,6 +24,7 @@ export class Icon extends WebComponentsBaseElement {
   static properties = {
     name: { type: String },
     size: { type: String },
+    color: { type: String },
   };
 
   private get iconSize(): string {
@@ -41,13 +43,22 @@ export class Icon extends WebComponentsBaseElement {
         background-color: black;
         color: white;
       }
+
+      i,
+      i.black {
+        color: rgba(var(--sv-gray-600));
+      }
+
+      i.white {
+        color: white;
+      }
     `,
   ];
 
   protected render() {
     return html`
       <i
-        class="sv-icon sv-icon-${this.name}_${this.size}"
+        class="sv-icon sv-icon-${this.name}_${this.size} ${this.color}"
         style="font-size: ${this.iconSize}px"
       ></i>
     `;

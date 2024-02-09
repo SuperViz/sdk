@@ -73,9 +73,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
   }
 
-  private getSendBtn = () => {
+  private get sendBtn() {
     return this.shadowRoot!.querySelector('.comments__input__send-button') as HTMLButtonElement;
-  };
+  }
 
   private get optionsContainer() {
     return this.shadowRoot!.querySelector('.comments__input__options') as HTMLTextAreaElement;
@@ -138,8 +138,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
 
     if (changedProperties.has('btnActive')) {
-      const btnSend = this.getSendBtn();
-      btnSend.disabled = !this.btnActive;
+      this.sendBtn.disabled = !this.btnActive;
     }
   }
 
@@ -173,7 +172,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private handleInput = (e: InputEvent) => {
+    if (this.commentInput?.value.length === 0) this.btnActive = false;
+    else this.btnActive = true;
+
     if (e.data === null) return;
+
     this.autoCompleteHandler.setInput(e);
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
@@ -242,8 +245,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     commentsInput.style.height = `${textareaHeight}px`;
 
-    const btnSend = this.getSendBtn();
-    btnSend.disabled = !(commentsInput.value.length > 0);
+    this.sendBtn.disabled = !(commentsInput.value.length > 0);
   }
 
   private sendEnter = (e: KeyboardEvent) => {
@@ -257,7 +259,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const text = input.value.trim();
 
     if (!text) return;
-    const sendBtn = this.getSendBtn();
     const mentions = this.autoCompleteHandler.getMentions(text);
 
     this.emitEvent(
@@ -274,7 +275,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     );
 
     input.value = '';
-    sendBtn.disabled = true;
+    this.sendBtn.disabled = true;
     this.updateHeight();
   };
 
@@ -283,7 +284,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (this.mentionList?.length > 0) return;
 
     const input = this.commentInput;
-    const sendBtn = this.getSendBtn();
     const text = input.value;
     const mentions = this.autoCompleteHandler.getMentions(text);
 
@@ -301,7 +301,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     );
 
     input.value = '';
-    sendBtn.disabled = true;
+    this.sendBtn.disabled = true;
     this.updateHeight();
   }
 
@@ -368,7 +368,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         disabled
         @click=${this.send}
       >
-        <superviz-icon name="check" size="md"></superviz-icon>
+        <superviz-icon
+          color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
+          name="check"
+          size="md"
+        ></superviz-icon>
       </button>
     `;
   };
@@ -388,7 +392,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         disabled
         @click=${this.send}
       >
-        <superviz-icon name="line-arrow-right" size="sm"></superviz-icon>
+        <superviz-icon
+          color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
+          name="line-arrow-right"
+          size="sm"
+        ></superviz-icon>
       </button>
     `;
   };
