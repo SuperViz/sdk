@@ -1,6 +1,6 @@
 import { isEqual } from 'lodash';
 
-import { RealtimeEvent } from '../../common/types/events.types';
+import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
@@ -219,8 +219,11 @@ export class WhoIsOnline extends BaseComponent {
    * @param {CustomEvent} event
    * @returns {void}
    */
-  private goToMousePointer = ({ detail }: CustomEvent) => {
-    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, detail.id);
+  private goToMousePointer = ({ detail: { id } }: CustomEvent) => {
+    if (id === this.localParticipant.id) return;
+
+    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, id);
+    this.publish(WhoIsOnlineEvent.GO_TO_PARTICIPANT, id);
   };
 
   /**
@@ -232,6 +235,13 @@ export class WhoIsOnline extends BaseComponent {
   private followMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, detail.id);
     this.following = detail.id;
+
+    if (this.following) {
+      this.publish(WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT, this.following);
+      return;
+    }
+
+    this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
   };
 
   /**
@@ -243,6 +253,13 @@ export class WhoIsOnline extends BaseComponent {
   private setPrivate = ({ detail: { isPrivate, id } }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, isPrivate);
     this.realtime.setPrivateWIOParticipant(id, isPrivate);
+
+    if (isPrivate) {
+      this.publish(WhoIsOnlineEvent.ENTER_PRIVATE_MODE);
+      return;
+    }
+
+    this.publish(WhoIsOnlineEvent.LEAVE_PRIVATE_MODE);
   };
 
   private setFollow = (following) => {
@@ -262,17 +279,26 @@ export class WhoIsOnline extends BaseComponent {
   private follow = (data: CustomEvent) => {
     this.realtime.setFollowWIOParticipant({ ...data.detail });
     this.following = data.detail?.id;
+
+    if (this.following) {
+      this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);
+      return;
+    }
+
+    this.publish(WhoIsOnlineEvent.STOP_FOLLOW_ME);
   };
 
   private stopFollowing = (participant: { clientId: string }) => {
-    if (participant.clientId === this.element.following?.id) {
-      this.element.following = undefined;
-      this.following = undefined;
-      this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
-    }
+    if (participant.clientId !== this.element.following?.id) return;
+
+    this.element.following = undefined;
+    this.following = undefined;
+    this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
+    this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
   };
 
   private gather = (data: CustomEvent) => {
     this.realtime.setGatherWIOParticipant({ ...data.detail });
+    this.publish(WhoIsOnlineEvent.GATHER_ALL, data.detail.id);
   };
 }

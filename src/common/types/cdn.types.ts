@@ -25,6 +25,8 @@ import {
   MeetingControlsEvent,
   ParticipantEvent,
   FrameEvent,
+  ComponentLifeCycleEvent,
+  WhoIsOnlineEvent,
 } from './events.types';
 import { ParticipantType } from './participant.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
@@ -39,6 +41,8 @@ export interface SuperVizCdn {
   MeetingConnectionStatus: typeof MeetingConnectionStatus;
   MeetingControlsEvent: typeof MeetingControlsEvent;
   ParticipantEvent: typeof ParticipantEvent;
+  WhoIsOnlineEvent: typeof WhoIsOnlineEvent;
+  ComponentLifeCycleEvent: typeof ComponentLifeCycleEvent;
   FrameEvent: typeof FrameEvent;
   LayoutMode: typeof LayoutMode;
   ParticipantType: typeof ParticipantType;

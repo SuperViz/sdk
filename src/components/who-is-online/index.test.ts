@@ -8,7 +8,7 @@ import {
   MOCK_ABLY_PARTICIPANT_DATA_1,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { RealtimeEvent } from '../../common/types/events.types';
+import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 
 import { WhoIsOnline } from './index';
@@ -36,41 +36,62 @@ describe('Who Is Online', () => {
 
   afterEach(() => {
     whoIsOnlineComponent.detach();
+    document.body.innerHTML = '';
+    document.head.innerHTML = '';
   });
 
-  test('should create a new instance of Who Is Online', () => {
-    expect(whoIsOnlineComponent).toBeInstanceOf(WhoIsOnline);
-  });
+  describe('start', () => {
+    test('should create a new instance of Who Is Online', () => {
+      expect(whoIsOnlineComponent).toBeInstanceOf(WhoIsOnline);
+    });
 
-  test('should position component inside div if id is provided', async () => {
-    whoIsOnlineComponent['element'].remove();
-    whoIsOnlineComponent['breakLayout'] = true;
+    test('should position component inside div if id is provided', async () => {
+      whoIsOnlineComponent['element'].remove();
+      whoIsOnlineComponent['breakLayout'] = true;
 
-    const div = document.createElement('div');
+      const div = document.createElement('div');
 
-    div.id = 'unit-test-div';
-    document.body.appendChild(div);
-    whoIsOnlineComponent['position'] = 'unit-test-div';
-    whoIsOnlineComponent['positionWhoIsOnline']();
+      div.id = 'unit-test-div';
+      document.body.appendChild(div);
+      whoIsOnlineComponent['position'] = 'unit-test-div';
+      whoIsOnlineComponent['positionWhoIsOnline']();
 
-    expect(div.parentElement).toBe(document.body);
-    expect(whoIsOnlineComponent['element'].parentElement).toBe(div);
-    expect(whoIsOnlineComponent['element'].position).toBe('position: relative;');
-  });
+      expect(div.parentElement).toBe(document.body);
+      expect(whoIsOnlineComponent['element'].parentElement).toBe(div);
+      expect(whoIsOnlineComponent['element'].position).toBe('position: relative;');
+    });
 
-  test('should position at top-right if no id is provided', async () => {
-    expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
-    expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 40px;');
-  });
+    test('should position at top-right if no id is provided', async () => {
+      expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
+      expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 40px;');
+    });
 
-  test('should position at top-right if invalid id is provided', async () => {
-    whoIsOnlineComponent['element'].remove();
-    const randomIdNumber = Math.ceil(Math.random() * 100);
-    whoIsOnlineComponent['position'] = `random-id${randomIdNumber}`;
-    whoIsOnlineComponent['positionWhoIsOnline']();
+    test('should position at top-right if invalid id is provided', async () => {
+      whoIsOnlineComponent['element'].remove();
+      const randomIdNumber = Math.ceil(Math.random() * 100);
+      whoIsOnlineComponent['position'] = `random-id${randomIdNumber}`;
+      whoIsOnlineComponent['positionWhoIsOnline']();
 
-    expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
-    expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 40px;');
+      expect(whoIsOnlineComponent['element'].parentElement).toBe(document.body);
+      expect(whoIsOnlineComponent['element'].position).toBe('top: 20px; right: 40px;');
+    });
+
+    test('should allow an object with options in the constructor', () => {
+      const whoIsOnlineComponent = new WhoIsOnline({
+        position: 'bottom-left',
+        styles: '.unit-test-class { color: red; }',
+      });
+
+      expect(whoIsOnlineComponent['position']).toBe('bottom-left');
+    });
+
+    test('should set default position when passing an object without position', () => {
+      const whoIsOnlineComponent = new WhoIsOnline({
+        styles: '.unit-test-class { color: red; }',
+      });
+
+      expect(whoIsOnlineComponent['position']).toBe('top-right');
+    });
   });
 
   describe('onParticipantListUpdate', () => {
@@ -335,6 +356,138 @@ describe('Who Is Online', () => {
       expect(whoIsOnlineComponent['realtime'].setGatherWIOParticipant).toHaveBeenCalledWith({
         ...event.detail,
       });
+    });
+  });
+
+  describe('events', () => {
+    beforeEach(() => {
+      whoIsOnlineComponent['publish'] = jest.fn();
+    });
+
+    test('should publish "go to" event when goToMousePointer is called', () => {
+      whoIsOnlineComponent['goToMousePointer']({
+        detail: { id: 'unit-test-id' },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.GO_TO_PARTICIPANT,
+        'unit-test-id',
+      );
+    });
+
+    test('should not publish "go to" event if id is equal to local participant id', () => {
+      whoIsOnlineComponent['goToMousePointer']({
+        detail: { id: MOCK_LOCAL_PARTICIPANT.id },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).not.toHaveBeenCalled();
+    });
+
+    test('should publish "follow" event when followMousePointer is called', () => {
+      whoIsOnlineComponent['followMousePointer']({
+        detail: { id: 'unit-test-id' },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT,
+        'unit-test-id',
+      );
+    });
+
+    test('should publish "stop following" if follow is called with undefined id', () => {
+      whoIsOnlineComponent['followMousePointer']({
+        detail: { id: undefined },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT,
+      );
+    });
+
+    test('should publish "stop following" event when stopFollowing is called', () => {
+      whoIsOnlineComponent['element'].following = {
+        id: 'unit-test-id',
+        color: 'unit-test-color',
+        name: 'unit-test-name',
+      };
+
+      whoIsOnlineComponent['stopFollowing']({
+        clientId: 'unit-test-id',
+      });
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT,
+      );
+    });
+
+    test('should publish "enter private mode" event when setPrivate is called with isPrivate as true', () => {
+      whoIsOnlineComponent['setPrivate']({
+        detail: { isPrivate: true, id: 'unit-test-id' },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.ENTER_PRIVATE_MODE,
+      );
+    });
+
+    test('should publish "leave private mode" event when setPrivate is called with isPrivate as false', () => {
+      whoIsOnlineComponent['setPrivate']({
+        detail: { isPrivate: false, id: 'unit-test-id' },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.LEAVE_PRIVATE_MODE,
+      );
+    });
+
+    test('should publish "follow me" event when follow is called with defined id', () => {
+      whoIsOnlineComponent['follow']({
+        detail: { id: 'unit-test-id' },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
+        WhoIsOnlineEvent.START_FOLLOW_ME,
+        'unit-test-id',
+      );
+    });
+
+    test('should publish "stop follow me" event when follow is called with undefined id', () => {
+      whoIsOnlineComponent['follow']({
+        detail: { id: undefined },
+      } as CustomEvent);
+
+      expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(WhoIsOnlineEvent.STOP_FOLLOW_ME);
+    });
+  });
+
+  /**
+   *  private setStyles(styles: string = '') {
+    Iif (!styles) return;
+ 
+    const tag = document.createElement('style');
+    tag.textContent = styles;
+    tag.id = 'superviz-who-is-online-styles';
+ 
+    document.head.appendChild(tag);
+  }
+   */
+
+  describe('setStyles', () => {
+    test('should append style element with user styles to head', () => {
+      const styles = `
+        .unit-test-class {
+          color: red;
+        }`;
+
+      whoIsOnlineComponent['setStyles'](styles);
+      const styleElement = document.getElementById('superviz-who-is-online-styles');
+      expect(styleElement).toBeTruthy();
+    });
+
+    test('should do nothing if no styles are passed', () => {
+      whoIsOnlineComponent['setStyles']();
+      const styleElement = document.getElementById('superviz-who-is-online-styles');
+      expect(styleElement).toBeFalsy();
     });
   });
 });
