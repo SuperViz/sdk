@@ -477,7 +477,13 @@ export class HTMLPin implements PinAdapter {
   private updatePinsPositions() {
     this.voidElementsWrappers.forEach((wrapper, id) => {
       const wrapperRect = JSON.stringify(wrapper.getBoundingClientRect());
-      const elementRect = this.elementsWithDataId[id].getBoundingClientRect();
+      let elementRect = this.elementsWithDataId[id].getBoundingClientRect();
+
+      if (this.elementsWithDataId[id].tagName.toLowerCase() === 'ellipse') {
+        elementRect = (
+          this.elementsWithDataId[id] as unknown as SVGEllipseElement
+        ).viewportElement.getBoundingClientRect();
+      }
 
       if (isEqual(JSON.stringify(elementRect), wrapperRect)) return;
 
@@ -666,13 +672,16 @@ export class HTMLPin implements PinAdapter {
       ry = element.getAttribute('ry');
       x = Number(cx) - Number(rx);
       y = Number(cy) - Number(ry);
-      width = String(2 * Number(cx));
-      height = String(2 * Number(cy));
+
+      const { width: elementWidth, height: elementHeight } = viewport.getBoundingClientRect();
+
+      width = `${elementWidth}px`;
+      height = `${elementHeight}px`;
 
       svgElement.setAttribute('fill', 'transparent');
       svgElement.setAttribute('stroke', 'transparent');
-      svgElement.setAttribute('cx', `${Number(cx) - x}`);
-      svgElement.setAttribute('cy', `${Number(cy) - y}`);
+      svgElement.setAttribute('cx', cx);
+      svgElement.setAttribute('cy', cy);
       svgElement.setAttribute('rx', rx);
       svgElement.setAttribute('ry', ry);
     }
