@@ -1,7 +1,6 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 
-
 import { HTMLPin } from '.';
 
 const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
@@ -187,7 +186,7 @@ describe('HTMLPinAdapter', () => {
       instance['addListeners']();
 
       expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(3);
-      expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(6);
+      expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(12);
     });
 
     test('should remove event listeners from the HTML container', () => {
@@ -203,7 +202,7 @@ describe('HTMLPinAdapter', () => {
       instance['removeListeners']();
 
       expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(2);
-      expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(6);
+      expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(12);
     });
   });
 
@@ -1245,6 +1244,23 @@ describe('HTMLPinAdapter', () => {
       instance['prepareElements']();
 
       expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('onMouseEnter', () => {
+    test('should add an outline to the wrapper', () => {
+      const target = document.createElement('div');
+      instance['onMouseEnter']({ target } as unknown as MouseEvent);
+      expect(target.style.outline).toEqual('1px solid rgb(var(--sv-primary))');
+    });
+  });
+
+  describe('onMouseLeave', () => {
+    test('should remove the outline from the wrapper', () => {
+      const target = document.createElement('div');
+      target.style.outline = '1px solid rgb(var(--sv-primary))';
+      instance['onMouseLeave']({ target } as unknown as MouseEvent);
+      expect(target.style.outline).toEqual('');
     });
   });
 });

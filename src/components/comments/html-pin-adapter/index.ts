@@ -51,6 +51,7 @@ export class HTMLPin implements PinAdapter {
   private pins: Map<string, HTMLElement>;
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
   private svgWrappers: HTMLElement;
+  private hoveredWrapper: HTMLElement;
 
   // Observers
   private mutationObserver: MutationObserver;
@@ -157,6 +158,8 @@ export class HTMLPin implements PinAdapter {
   private addElementListeners(id: string): void {
     this.divWrappers.get(id).addEventListener('click', this.onClick, true);
     this.divWrappers.get(id).addEventListener('mousedown', this.onMouseDown);
+    this.divWrappers.get(id).addEventListener('mouseenter', this.onMouseEnter);
+    this.divWrappers.get(id).addEventListener('mouseleave', this.onMouseLeave);
   }
 
   /**
@@ -168,6 +171,8 @@ export class HTMLPin implements PinAdapter {
   private removeElementListeners(id: string): void {
     this.divWrappers.get(id).removeEventListener('click', this.onClick, true);
     this.divWrappers.get(id).removeEventListener('mousedown', this.onMouseDown);
+    this.divWrappers.get(id).removeEventListener('mouseenter', this.onMouseEnter);
+    this.divWrappers.get(id).removeEventListener('mouseleave', this.onMouseLeave);
   }
 
   /**
@@ -988,5 +993,29 @@ export class HTMLPin implements PinAdapter {
       this.removeAnnotationPin('temporary-pin');
       this.temporaryPinCoordinates.elementId = undefined;
     }
+  };
+
+  /**
+   * @function onMouseEnter
+   * @description sets the outline of the hovered wrapper
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private onMouseEnter = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    this.hoveredWrapper = target;
+    this.hoveredWrapper.style.setProperty('outline', '1px solid rgb(var(--sv-primary))');
+  };
+
+  /**
+   * @function onMouseLeave
+   * @description removes the outline of the not-hovered-anymore wrapper
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private onMouseLeave = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    this.hoveredWrapper = target;
+    this.hoveredWrapper.style.setProperty('outline', '');
   };
 }
