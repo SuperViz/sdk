@@ -544,6 +544,16 @@ describe('HTMLPinAdapter', () => {
 
       expect(instance['pins'].has('temporary-pin')).toBeTruthy();
     });
+
+    test('should remove outline from wrapper being hovered when inactive', () => {
+      const wrapper = instance['divWrappers'].get('1') as HTMLElement;
+      wrapper.style.outline = '1px solid red';
+      instance['hoveredWrapper'] = wrapper;
+
+      instance.setActive(false);
+
+      expect(wrapper.style.outline).toEqual('');
+    });
   });
 
   describe('annotationSelected', () => {

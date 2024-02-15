@@ -555,6 +555,17 @@ export class HTMLPin implements PinAdapter {
   }
 
   /**
+   * @function resetHoveredWrapper
+   * @description removes the outline of the currently hovered wrapper
+   * @returns {void}
+   */
+  private resetHoveredWrapper(): void {
+    if (!this.hoveredWrapper) return;
+    this.hoveredWrapper.style.setProperty('outline', '');
+    this.hoveredWrapper = null;
+  }
+
+  /**
    * @function removeAnnotationsPins
    * @description clears all pins from the container.
    * @returns {void}
@@ -691,6 +702,7 @@ export class HTMLPin implements PinAdapter {
     if (event && event?.key !== 'Escape') return;
 
     this.resetSelectedPin();
+    this.resetHoveredWrapper();
 
     if (!this.temporaryPinCoordinates.elementId) return;
 
@@ -821,6 +833,9 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
     containerWrapper.style.pointerEvents = 'none';
+
+    const elementBorderRadius = window.getComputedStyle(element).getPropertyValue('border-radius');
+    containerWrapper.style.borderRadius = elementBorderRadius;
 
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
