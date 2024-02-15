@@ -1,7 +1,6 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 
-
 import { HTMLPin } from '.';
 
 const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
@@ -186,7 +185,7 @@ describe('HTMLPinAdapter', () => {
 
       instance['addListeners']();
 
-      expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(3);
+      expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(2);
       expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(6);
     });
 
