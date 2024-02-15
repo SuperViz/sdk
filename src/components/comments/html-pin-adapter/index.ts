@@ -113,7 +113,6 @@ export class HTMLPin implements PinAdapter {
     document.body.addEventListener('select-annotation', this.annotationSelected);
 
     if (!this.voidElementsWrappers.size) return;
-
     this.animateFrame = requestAnimationFrame(this.animate);
   }
 
