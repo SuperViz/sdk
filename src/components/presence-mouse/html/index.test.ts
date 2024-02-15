@@ -659,6 +659,25 @@ describe('MousePointers on HTML', () => {
         presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView,
       ).not.toHaveBeenCalled();
     });
+
+    test('should call callback and not scrollIntoView if there is a callback', () => {
+      presenceMouseComponent['createMouseElement'](
+        presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
+      );
+
+      presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView =
+        jest.fn();
+
+      const { x, y } = presenceMouseComponent['mouses']
+        .get('unit-test-participant2-ably-id')!
+        .getBoundingClientRect();
+
+      const callback = jest.fn();
+      presenceMouseComponent['goToPresenceCallback'] = callback;
+      presenceMouseComponent['goToMouse']('unit-test-participant2-ably-id');
+
+      expect(callback).toHaveBeenCalledWith({ x, y });
+    });
   });
 
   describe('followMouse', () => {
