@@ -24,7 +24,7 @@ export const floatButtonStyle = css`
 
   .comments__floating-button__text {
     opacity: 0;
-    transition: opacity 100ms linear, width 200ms linear;
+    transition: opacity 100ms linear, width 150ms linear;
     text-align: left;
     width: 0px;
     overflow: hidden;
@@ -58,7 +58,7 @@ export const floatButtonStyle = css`
   }
 
   .comments__floating-button:hover .textActive {
-    width: 35.6px;
+    width: 54.2px;
   }
 
   .comments__floating-button:hover .textInactive {
