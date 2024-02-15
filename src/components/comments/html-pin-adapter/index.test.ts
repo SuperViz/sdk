@@ -1263,6 +1263,16 @@ describe('HTMLPinAdapter', () => {
       instance['onMouseEnter']({ target } as unknown as MouseEvent);
       expect(target.style.outline).toEqual('1px solid rgb(var(--sv-primary))');
     });
+
+    test('should add stroke if element is an ellipse', () => {
+      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('data-wrapper-type', 'svg-ellipse');
+      svg.appendChild(ellipse);
+      instance['onMouseEnter']({ target: svg } as unknown as MouseEvent);
+      expect(ellipse.getAttribute('stroke')).toEqual('rgb(var(--sv-primary))');
+      expect(ellipse.getAttribute('stroke-width')).toEqual('1');
+    });
   });
 
   describe('onMouseLeave', () => {
@@ -1271,6 +1281,19 @@ describe('HTMLPinAdapter', () => {
       target.style.outline = '1px solid rgb(var(--sv-primary))';
       instance['onMouseLeave']({ target } as unknown as MouseEvent);
       expect(target.style.outline).toEqual('');
+    });
+
+    test('should remove stroke if element is an ellipse', () => {
+      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      ellipse.setAttribute('stroke', 'red');
+      ellipse.setAttribute('stroke-width', '1');
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('data-wrapper-type', 'svg-ellipse');
+      svg.appendChild(ellipse);
+      instance['onMouseLeave']({ target: svg } as unknown as MouseEvent);
+      expect(ellipse.getAttribute('stroke')).toBeFalsy();
+      expect(ellipse.getAttribute('stroke-width')).toBeFalsy();
     });
   });
 });

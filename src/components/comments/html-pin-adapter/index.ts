@@ -283,7 +283,7 @@ export class HTMLPin implements PinAdapter {
 
       const isSvgElement = wrapper.getAttribute('data-wrapper-type');
       if (isSvgElement) {
-        const elementTagname = isSvgElement.split('-')[2];
+        const elementTagname = isSvgElement.split('-')[1];
         element = this.divWrappers.get(id).querySelector(elementTagname);
       }
 
@@ -567,8 +567,7 @@ export class HTMLPin implements PinAdapter {
    */
   private resetHoveredWrapper(): void {
     if (!this.hoveredWrapper) return;
-    this.hoveredWrapper.style.setProperty('outline', '');
-    this.hoveredWrapper = null;
+    this.onMouseLeave({ target: this.hoveredWrapper } as unknown as MouseEvent);
   }
 
   /**
@@ -1028,7 +1027,17 @@ export class HTMLPin implements PinAdapter {
   private onMouseEnter = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
     this.hoveredWrapper = target;
-    this.hoveredWrapper.style.setProperty('outline', '1px solid rgb(var(--sv-primary))');
+
+    const isEllipse = target.getAttribute('data-wrapper-type')?.includes('ellipse');
+
+    if (!isEllipse) {
+      this.hoveredWrapper.style.setProperty('outline', '1px solid rgb(var(--sv-primary))');
+      return;
+    }
+
+    const ellipse = target.querySelector('ellipse');
+    ellipse.setAttribute('stroke', 'rgb(var(--sv-primary))');
+    ellipse.setAttribute('stroke-width', '1');
   };
 
   /**
@@ -1040,6 +1049,16 @@ export class HTMLPin implements PinAdapter {
   private onMouseLeave = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
     this.hoveredWrapper = target;
-    this.hoveredWrapper.style.setProperty('outline', '');
+
+    const isEllipse = target.getAttribute('data-wrapper-type')?.includes('ellipse');
+
+    if (!isEllipse) {
+      this.hoveredWrapper.style.setProperty('outline', '');
+      return;
+    }
+
+    const ellipse = target.querySelector('ellipse');
+    ellipse.removeAttribute('stroke');
+    ellipse.removeAttribute('stroke-width');
   };
 }
