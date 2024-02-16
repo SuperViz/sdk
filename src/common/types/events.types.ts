@@ -134,7 +134,18 @@ export type Dimensions = {
   height: number | null;
 };
 
-export enum ComponentLifeCycle {
+export enum ComponentLifeCycleEvent {
   MOUNT = 'mount',
   UNMOUNT = 'unmount',
+}
+
+export enum WhoIsOnlineEvent {
+  START_FOLLOWING_PARTICIPANT = 'who-is-online.start-following-participant',
+  STOP_FOLLOWING_PARTICIPANT = 'who-is-online.stop-following-participant',
+  ENTER_PRIVATE_MODE = 'who-is-online.enter-private-mode',
+  LEAVE_PRIVATE_MODE = 'who-is-online.leave-private-mode',
+  GATHER_ALL = 'who-is-online.gather-all',
+  GO_TO_PARTICIPANT = 'who-is-online.go-to-participant',
+  START_FOLLOW_ME = 'who-is-online.start-follow-me',
+  STOP_FOLLOW_ME = 'who-is-online.stop-follow-me',
 }
