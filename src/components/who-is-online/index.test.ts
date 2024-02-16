@@ -460,18 +460,6 @@ describe('Who Is Online', () => {
     });
   });
 
-  /**
-   *  private setStyles(styles: string = '') {
-    Iif (!styles) return;
- 
-    const tag = document.createElement('style');
-    tag.textContent = styles;
-    tag.id = 'superviz-who-is-online-styles';
- 
-    document.head.appendChild(tag);
-  }
-   */
-
   describe('setStyles', () => {
     test('should append style element with user styles to head', () => {
       const styles = `

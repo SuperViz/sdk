@@ -1,4 +1,3 @@
-import { CommentEvent } from '../..';
 import {
   CanvasPin,
   HTMLPin,
@@ -25,6 +24,7 @@ import {
   MeetingControlsEvent,
   ParticipantEvent,
   FrameEvent,
+  CommentEvent,
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
 } from './events.types';
