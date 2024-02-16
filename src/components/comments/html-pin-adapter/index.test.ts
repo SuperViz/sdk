@@ -1257,6 +1257,98 @@ describe('HTMLPinAdapter', () => {
     });
   });
 
+  describe('handleSvgElement', () => {
+    test('should return undefined if element is a normal HTML element', () => {
+      const element = document.createElement('div');
+      const wrapper = document.createElement('div');
+
+      const result = instance['handleSvgElement'](element, wrapper);
+
+      expect(result).toBeUndefined();
+    });
+
+    test('should return undefined if element is a SVG element but not an ellipse or rectangle', () => {
+      const wrapper = document.createElement('div');
+
+      const element = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+
+      element.appendChild(image);
+      document.body.appendChild(element);
+
+      const result = instance['handleSvgElement'](image, wrapper);
+
+      expect(result).toBeUndefined();
+    });
+
+    test('should append foreignObject with wrapper inside if element is a <svg /> element', () => {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'wrapper';
+      const element = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+      const result = instance['handleSvgElement'](element, wrapper);
+
+      expect(result).toBe(wrapper);
+      const foreignObject = element.querySelector('foreignObject');
+
+      expect(foreignObject).toBeDefined();
+
+      const foreignObjectWrapper = foreignObject?.querySelector('#wrapper');
+      expect(foreignObjectWrapper).toBe(wrapper);
+    });
+
+    test('should append svg to the wrapper with ellipse in a equal position of the element if element is a <ellipse /> element', () => {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'wrapper';
+      const container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const element = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      container.appendChild(element);
+
+      element.setAttribute('cx', '100');
+      element.setAttribute('cy', '100');
+      element.setAttribute('rx', '50');
+      element.setAttribute('ry', '50');
+
+      const result = instance['handleSvgElement'](element, wrapper);
+
+      expect(result).toBe(wrapper);
+      const svg = wrapper.querySelector('svg');
+      const svgElement = svg?.querySelector('ellipse');
+
+      expect(svg).toBeDefined();
+      expect(svgElement).toBeDefined();
+      expect(svgElement?.getAttribute('cx')).toEqual('100');
+      expect(svgElement?.getAttribute('cy')).toEqual('100');
+      expect(svgElement?.getAttribute('rx')).toEqual('50');
+      expect(svgElement?.getAttribute('ry')).toEqual('50');
+    });
+
+    test('should append svg to the wrapper with rect in a equal position of the element if element is a <rect /> element', () => {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'wrapper';
+      const element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      element.setAttribute('x', '100');
+      element.setAttribute('y', '100');
+      element.setAttribute('width', '50');
+      element.setAttribute('height', '50');
+      element.setAttribute('rx', '5');
+      element.setAttribute('ry', '5');
+
+      const result = instance['handleSvgElement'](element, wrapper);
+
+      expect(result).toBe(wrapper);
+      const svg = wrapper.querySelector('svg');
+      const svgElement = svg?.querySelector('rect');
+
+      expect(svg).toBeDefined();
+      expect(svgElement).toBeDefined();
+      expect(svgElement?.getAttribute('x')).toEqual('0');
+      expect(svgElement?.getAttribute('y')).toEqual('0');
+      expect(svgElement?.getAttribute('rx')).toEqual('5');
+      expect(svgElement?.getAttribute('ry')).toEqual('5');
+    });
+  });
+
   describe('onMouseEnter', () => {
     test('should add an outline to the wrapper', () => {
       const target = document.createElement('div');
