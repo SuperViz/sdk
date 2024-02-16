@@ -51,6 +51,7 @@ export class HTMLPin implements PinAdapter {
   private pins: Map<string, HTMLElement>;
   private voidElementsWrappers: Map<string, HTMLElement> = new Map();
   private svgWrappers: HTMLElement;
+  private hoveredWrapper: HTMLElement;
 
   // Observers
   private mutationObserver: MutationObserver;
@@ -110,9 +111,9 @@ export class HTMLPin implements PinAdapter {
     this.annotations = [];
 
     document.body.addEventListener('select-annotation', this.annotationSelected);
+    document.body.addEventListener('keyup', this.resetPins);
 
     if (!this.voidElementsWrappers.size) return;
-
     this.animateFrame = requestAnimationFrame(this.animate);
   }
 
@@ -157,6 +158,8 @@ export class HTMLPin implements PinAdapter {
   private addElementListeners(id: string): void {
     this.divWrappers.get(id).addEventListener('click', this.onClick, true);
     this.divWrappers.get(id).addEventListener('mousedown', this.onMouseDown);
+    this.divWrappers.get(id).addEventListener('mouseenter', this.onMouseEnter);
+    this.divWrappers.get(id).addEventListener('mouseleave', this.onMouseLeave);
   }
 
   /**
@@ -168,6 +171,8 @@ export class HTMLPin implements PinAdapter {
   private removeElementListeners(id: string): void {
     this.divWrappers.get(id).removeEventListener('click', this.onClick, true);
     this.divWrappers.get(id).removeEventListener('mousedown', this.onMouseDown);
+    this.divWrappers.get(id).removeEventListener('mouseenter', this.onMouseEnter);
+    this.divWrappers.get(id).removeEventListener('mouseleave', this.onMouseLeave);
   }
 
   /**
@@ -194,7 +199,6 @@ export class HTMLPin implements PinAdapter {
    */
   private addListeners(): void {
     this.divWrappers.forEach((_, id) => this.addElementListeners(id));
-    document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
     document.body.addEventListener('click', this.hideTemporaryPin);
   }
@@ -278,7 +282,7 @@ export class HTMLPin implements PinAdapter {
 
       const isSvgElement = wrapper.getAttribute('data-wrapper-type');
       if (isSvgElement) {
-        const elementTagname = isSvgElement.split('-')[2];
+        const elementTagname = isSvgElement.split('-')[1];
         element = this.divWrappers.get(id).querySelector(elementTagname);
       }
 
@@ -472,7 +476,13 @@ export class HTMLPin implements PinAdapter {
   private updatePinsPositions() {
     this.voidElementsWrappers.forEach((wrapper, id) => {
       const wrapperRect = JSON.stringify(wrapper.getBoundingClientRect());
-      const elementRect = this.elementsWithDataId[id].getBoundingClientRect();
+      let elementRect = this.elementsWithDataId[id].getBoundingClientRect();
+
+      if (this.elementsWithDataId[id].tagName.toLowerCase() === 'ellipse') {
+        elementRect = (
+          this.elementsWithDataId[id] as unknown as SVGEllipseElement
+        ).viewportElement.getBoundingClientRect();
+      }
 
       if (isEqual(JSON.stringify(elementRect), wrapperRect)) return;
 
@@ -547,6 +557,16 @@ export class HTMLPin implements PinAdapter {
     if (!this.selectedPin) return;
     this.selectedPin.removeAttribute('active');
     this.selectedPin = null;
+  }
+
+  /**
+   * @function resetHoveredWrapper
+   * @description removes the outline of the currently hovered wrapper
+   * @returns {void}
+   */
+  private resetHoveredWrapper(): void {
+    if (!this.hoveredWrapper) return;
+    this.onMouseLeave({ target: this.hoveredWrapper } as unknown as MouseEvent);
   }
 
   /**
@@ -650,13 +670,16 @@ export class HTMLPin implements PinAdapter {
       ry = element.getAttribute('ry');
       x = Number(cx) - Number(rx);
       y = Number(cy) - Number(ry);
-      width = String(2 * Number(cx));
-      height = String(2 * Number(cy));
+
+      const { width: elementWidth, height: elementHeight } = viewport.getBoundingClientRect();
+
+      width = `${elementWidth}px`;
+      height = `${elementHeight}px`;
 
       svgElement.setAttribute('fill', 'transparent');
       svgElement.setAttribute('stroke', 'transparent');
-      svgElement.setAttribute('cx', `${Number(cx) - x}`);
-      svgElement.setAttribute('cy', `${Number(cy) - y}`);
+      svgElement.setAttribute('cx', cx);
+      svgElement.setAttribute('cy', cy);
       svgElement.setAttribute('rx', rx);
       svgElement.setAttribute('ry', ry);
     }
@@ -686,6 +709,7 @@ export class HTMLPin implements PinAdapter {
     if (event && event?.key !== 'Escape') return;
 
     this.resetSelectedPin();
+    this.resetHoveredWrapper();
 
     if (!this.temporaryPinCoordinates.elementId) return;
 
@@ -816,6 +840,9 @@ export class HTMLPin implements PinAdapter {
     containerWrapper.style.width = `100%`;
     containerWrapper.style.height = `100%`;
     containerWrapper.style.pointerEvents = 'none';
+
+    const elementBorderRadius = window.getComputedStyle(element).getPropertyValue('border-radius');
+    containerWrapper.style.borderRadius = elementBorderRadius;
 
     if (!this.VOID_ELEMENTS.includes(this.elementsWithDataId[id].tagName.toLowerCase())) {
       this.elementsWithDataId[id].appendChild(containerWrapper);
@@ -988,5 +1015,49 @@ export class HTMLPin implements PinAdapter {
       this.removeAnnotationPin('temporary-pin');
       this.temporaryPinCoordinates.elementId = undefined;
     }
+  };
+
+  /**
+   * @function onMouseEnter
+   * @description sets the outline of the hovered wrapper
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private onMouseEnter = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    this.hoveredWrapper = target;
+
+    const isEllipse = target.getAttribute('data-wrapper-type')?.includes('ellipse');
+
+    if (!isEllipse) {
+      this.hoveredWrapper.style.setProperty('outline', '1px solid rgb(var(--sv-primary))');
+      return;
+    }
+
+    const ellipse = target.querySelector('ellipse');
+    ellipse.setAttribute('stroke', 'rgb(var(--sv-primary))');
+    ellipse.setAttribute('stroke-width', '1');
+  };
+
+  /**
+   * @function onMouseLeave
+   * @description removes the outline of the not-hovered-anymore wrapper
+   * @param {MouseEvent} event the mouse event object
+   * @returns {void}
+   */
+  private onMouseLeave = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    this.hoveredWrapper = target;
+
+    const isEllipse = target.getAttribute('data-wrapper-type')?.includes('ellipse');
+
+    if (!isEllipse) {
+      this.hoveredWrapper.style.setProperty('outline', '');
+      return;
+    }
+
+    const ellipse = target.querySelector('ellipse');
+    ellipse.removeAttribute('stroke');
+    ellipse.removeAttribute('stroke-width');
   };
 }

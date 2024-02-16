@@ -194,7 +194,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       return html`<div
         class="comments__annotation-pin__avatar comments__annotation-pin__avatar--add"
       >
-        <superviz-icon name="add" allowSetSize="true"></superviz-icon>
+        <superviz-icon name="add"></superviz-icon>
       </div>`;
     }
 

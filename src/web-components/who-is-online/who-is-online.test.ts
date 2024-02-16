@@ -151,8 +151,8 @@ describe('Who Is Online', () => {
   test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
     const participant = {
       ...MOCK_PARTICIPANTS[0],
-      slotIndex: 2,
-      color: MeetingColorsHex[2],
+      slotIndex: 1,
+      color: MeetingColorsHex[1],
     };
 
     element['updateParticipants']([participant]);

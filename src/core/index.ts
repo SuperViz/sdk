@@ -23,7 +23,7 @@ const validateOptions = ({
   customColors,
 }: SuperVizSdkOptions): void => {
   if (customColors) {
-    validadeColorsVariablesNames(customColors);
+    validateColorsVariablesNames(customColors);
   }
 
   if (!group || !group.name || !group.id) {
@@ -40,11 +40,11 @@ const validateOptions = ({
 };
 
 /**
- * @function validadeColorsVariablesNames
- * @description validade if the custom colors variables names are valid
+ * @function validateColorsVariablesNames
+ * @description validate if the custom colors variables names are valid
  * @param colors {ColorsVariables}
  */
-const validadeColorsVariablesNames = (colors: ColorsVariables) => {
+const validateColorsVariablesNames = (colors: ColorsVariables) => {
   Object.entries(colors).forEach(([key, value]) => {
     if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
       throw new Error(
@@ -57,6 +57,20 @@ const validadeColorsVariablesNames = (colors: ColorsVariables) => {
         `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
       );
     }
+  });
+};
+
+/**
+ * @function setColorVariables
+ * @description - add color variables as variables in the root of the document
+ * @returns
+ */
+const setColorVariables = (colors: ColorsVariables): void => {
+  if (!colors) return;
+
+  Object.entries(colors).forEach(([key, value]) => {
+    const color = value.replace(/\s/g, ', ');
+    document.documentElement.style.setProperty(`--${key}`, color);
   });
 };
 
@@ -105,7 +119,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   }
 
   const { ablyKey } = environment;
-  const { participant, roomId } = options;
+  const { participant, roomId, customColors: colors } = options;
 
   config.setConfig({
     apiUrl,
@@ -113,12 +127,14 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     apiKey,
     conferenceLayerUrl,
     environment,
-    roomId: options.roomId,
+    roomId,
     debug: options.debug,
     limits,
     waterMark,
     colors: options.customColors,
   });
+
+  setColorVariables(options.customColors);
 
   ApiService.createOrUpdateParticipant({
     name: participant.name,

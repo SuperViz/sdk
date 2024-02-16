@@ -2,6 +2,7 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
+import { Nullable } from '../../../common/types/global.types';
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
@@ -64,6 +65,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private supervizChannelState: Ably.Types.ChannelStateChange;
   private connectionState: Ably.Types.ConnectionStateChange;
+
   constructor(apiUrl: string, ablyKey: string) {
     super();
 
@@ -589,7 +591,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description updates local participant properties
    * @returns {void}
    */
-  public updateMyProperties = throttle((newProperties: ParticipantInfo = {}): void => {
+  public updateMyProperties = (newProperties: ParticipantInfo = {}): void => {
     const properties = newProperties;
 
     if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
@@ -609,7 +611,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.supervizChannel.presence.update(this.myParticipant.data);
     this.logger.log('REALTIME', 'updating my properties', this.myParticipant.data);
-  }, SYNC_PROPERTY_INTERVAL);
+  };
 
   /**
    * @function updateRoomProperties
@@ -831,87 +833,84 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   /**
    * @function findSlotIndex
    * @description Finds an available slot index for the participant and confirms it.
-   * @param {Ably.Types.PresenceMessage} myPresenceParam - The presence message of the participant.
    * @returns {void}
    */
-  findSlotIndex = (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
-    let myPresence = myPresenceParam;
+  private findSlotIndex = (): void => {
+    let slots = new Array(16).fill(null).map((_, i) => ({ slotIndex: i, clientId: null }));
 
-    let availableSlots = Array.apply(null, { length: 15 }).map(Number.call, Number);
-
-    this.supervizChannel.presence.get((error, members) => {
+    this.supervizChannel.presence.get((error, presences) => {
       if (error) {
-        availableSlots = [];
+        slots = [];
         return;
       }
 
-      members.forEach((member) => {
-        if (member.connectionId === myPresence.connectionId) {
-          myPresence = member;
-        }
-        if (
-          member.connectionId !== myPresence.connectionId &&
-          member.data.hasOwnProperty('slotIndex')
-        ) {
-          availableSlots.splice(availableSlots.indexOf(member.data.slotIndex), 1);
+      presences.forEach((presence) => {
+        if (presence.clientId === this.myParticipant.clientId) return;
+
+        if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
+          slots[presence.data.slotIndex].clientId = presence.clientId;
         }
       });
     });
 
-    if (availableSlots.length === 0) {
-      console.error('no slots available!');
-      return;
-    }
+    const slotToUse = slots.find((slot) => slot.clientId === null);
 
-    const slotChosen = availableSlots[0];
+    if (!slotToUse) return;
 
-    this.myParticipant.data.slotIndex = slotChosen;
-    this.updateMyProperties({ slotIndex: slotChosen });
-
-    const timeToWait = Math.floor(Math.random() * 500);
-
-    setTimeout(() => {
-      this.confirmSlot(myPresence);
-    }, timeToWait);
+    this.myParticipant.data.slotIndex = slotToUse.slotIndex;
+    this.updateMyProperties({ slotIndex: slotToUse.slotIndex });
   };
 
-  /**
-   * @function confirmSlot
-   * @description confirms that my slot is valid
-   * @param {Ably.Types.PresenceMessage} participant
-   * @returns {void}
-   */
-  private confirmSlot = throttle(
-    async (myPresenceParam: AblyParticipant | Ably.Types.PresenceMessage) => {
-      const usedSlots: Ably.Types.PresenceMessage[] = [];
-      let myPresence = myPresenceParam;
-      this.supervizChannel.presence.get((err, members) => {
-        members.forEach((member) => {
-          if (member.connectionId === myPresence.connectionId) {
-            myPresence = member;
-          }
-          if (
-            member.connectionId !== myPresence.connectionId &&
-            member.data.slotIndex !== undefined
-          ) {
-            usedSlots.push(member.data.slotIndex);
-          }
-        });
-      });
+  private validateSlots() {
+    const slots = [];
 
-      if (
-        this.myParticipant.data.slotIndex === undefined ||
-        usedSlots.includes(this.myParticipant.data.slotIndex)
-      ) {
-        this.findSlotIndex(myPresence);
-      } else {
-        // confirm slot and propagate
-        const roomProperties = await this.fetchRoomProperties();
-        this.updateRoomProperties(roomProperties);
+    this.supervizChannel.presence.get((_, presences) => {
+      presences.forEach((presence) => {
+        if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
+          slots.push({
+            slotIndex: presence.data.slotIndex,
+            clientId: presence.clientId,
+            timestamp: presence.timestamp,
+          });
+        }
+      });
+    });
+
+    const duplicatesMap: Record<
+      string,
+      {
+        slotIndex: number;
+        clientId: string;
+        timestamp: number;
+      }[]
+    > = {};
+
+    slots.forEach((a, index) => {
+      if (slots.findIndex((b) => b.slotIndex === a.slotIndex) === index) return;
+
+      if (!duplicatesMap[a.slotIndex]) {
+        duplicatesMap[a.slotIndex] = [];
       }
-    },
-    1000,
-  );
+
+      duplicatesMap[a.slotIndex].push(a);
+    });
+
+    Object.values(duplicatesMap).forEach((arr) => {
+      if (arr.length === 1 && arr[0].clientId === this.myParticipant.clientId) {
+        this.findSlotIndex();
+        return;
+      }
+
+      const ordered = arr.sort((a, b) => a.timestamp - b.timestamp);
+      ordered.shift();
+
+      ordered.forEach((slot) => {
+        if (slot.clientId !== this.myParticipant.clientId) return;
+
+        this.findSlotIndex();
+      });
+    });
+  }
 
   /**
    * @function onStateChange
@@ -1001,8 +1000,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   ): Promise<void> {
     this.isJoinedRoom = true;
     this.localRoomProperties = await this.fetchRoomProperties();
+    this.myParticipant = myPresence;
 
-    if (this.enableSync) this.findSlotIndex(myPresence);
+    if (this.enableSync) this.findSlotIndex();
 
     if (!this.localRoomProperties) {
       this.initializeRoomProperties();
@@ -1028,6 +1028,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.updateParticipants();
     this.participantJoinedObserver.publish(presence);
     this.updateMyProperties(); // send a sync
+    this.validateSlots();
   };
 
   /**

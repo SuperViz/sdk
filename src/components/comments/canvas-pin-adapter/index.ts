@@ -51,6 +51,9 @@ export class CanvasPin implements PinAdapter {
     this.renderAnnotationsPins();
 
     this.animateFrame = requestAnimationFrame(this.animate);
+
+    document.body.addEventListener('select-annotation', this.annotationSelected);
+    document.body.addEventListener('keyup', this.resetPins);
   }
 
   /**
@@ -69,6 +72,8 @@ export class CanvasPin implements PinAdapter {
     this.annotations = [];
 
     cancelAnimationFrame(this.animateFrame);
+    document.body.removeEventListener('select-annotation', this.annotationSelected);
+    document.body.removeEventListener('keyup', this.resetPins);
   }
 
   public setPinsVisibility(isVisible: boolean): void {
@@ -192,8 +197,6 @@ export class CanvasPin implements PinAdapter {
   private addListeners(): void {
     this.canvas.addEventListener('click', this.onClick);
     this.canvas.addEventListener('mousedown', this.setMouseDownCoordinates);
-    document.body.addEventListener('keyup', this.resetPins);
-    document.body.addEventListener('select-annotation', this.annotationSelected);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
     document.body.addEventListener('click', this.hideTemporaryPin);
   }
@@ -212,8 +215,6 @@ export class CanvasPin implements PinAdapter {
   private removeListeners(): void {
     this.canvas.removeEventListener('click', this.onClick);
     this.canvas.removeEventListener('mousedown', this.setMouseDownCoordinates);
-    document.body.removeEventListener('keyup', this.resetPins);
-    document.body.removeEventListener('select-annotation', this.annotationSelected);
     document.body.removeEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
     document.body.addEventListener('click', this.hideTemporaryPin);
   }

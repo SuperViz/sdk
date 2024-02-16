@@ -8,6 +8,8 @@ import {
   ParticipantEvent,
   FrameEvent,
   CommentEvent,
+  ComponentLifeCycleEvent,
+  WhoIsOnlineEvent,
 } from './common/types/events.types';
 import { ParticipantType } from './common/types/participant.types';
 import {
@@ -72,6 +74,8 @@ if (window) {
     CamerasPosition,
     RealtimeComponentState,
     RealtimeComponentEvent,
+    ComponentLifeCycleEvent,
+    WhoIsOnlineEvent,
   };
 }
 
@@ -91,6 +95,8 @@ export {
   RealtimeComponentState,
   RealtimeComponentEvent,
   CommentEvent,
+  ComponentLifeCycleEvent,
+  WhoIsOnlineEvent,
 };
 
 export default init;

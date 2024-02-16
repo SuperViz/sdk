@@ -14,14 +14,16 @@ const createEl = (options: ModalOptions): HTMLElement => {
 
 describe('modal-container', () => {
   afterEach(() => {
-    document.body.querySelector('superviz-modal')
-      ?.remove();
+    document.body.querySelector('superviz-modal')?.remove();
   });
 
   test('should render modal container when open is true', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirmLabel: 'DELETE',
       confirm: true,
       cancel: true,
@@ -35,7 +37,10 @@ describe('modal-container', () => {
   test('should render title in header', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirmLabel: 'DELETE',
       confirm: true,
       cancel: true,
@@ -51,7 +56,10 @@ describe('modal-container', () => {
   test('should render body', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirmLabel: 'DELETE',
       confirm: true,
       cancel: true,
@@ -59,15 +67,22 @@ describe('modal-container', () => {
 
     await sleep(100);
 
-    const body = element?.shadowRoot?.querySelector('.modal--body .modal--body-content')?.textContent;
+    const body = element?.shadowRoot?.querySelector(
+      '.modal--body .modal--body-content',
+    )?.textContent;
 
-    expect(body?.trim()).toBe('Are you sure you want to delete this comment?  This action cannot be undone');
+    expect(body?.trim().replace('  ', ' ').replace('\n', '')).toBe(
+      'Are you sure you want to delete this comment?        This action cannot be undone',
+    );
   });
 
   test('should render footer', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
     });
 
     await sleep(100);
@@ -80,7 +95,10 @@ describe('modal-container', () => {
   test('should render confirm button', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirm: true,
     });
 
@@ -94,7 +112,10 @@ describe('modal-container', () => {
   test('should render confirm and cancel button', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirm: true,
       cancel: true,
     });
@@ -111,7 +132,10 @@ describe('modal-container', () => {
   test('should render confirm and cancel button with custom label', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirmLabel: 'DELETE',
       cancelLabel: 'CANCEL',
       confirm: true,
@@ -123,14 +147,17 @@ describe('modal-container', () => {
     const confirm = element?.shadowRoot?.querySelector('.modal--footer .btn--confirm');
     const cancel = element?.shadowRoot?.querySelector('.modal--footer .btn--cancel');
 
-    expect(confirm?.textContent).toEqual('DELETE');
-    expect(cancel?.textContent).toEqual('CANCEL');
+    expect(confirm?.textContent?.trim()).toEqual('DELETE');
+    expect(cancel?.textContent?.trim()).toEqual('CANCEL');
   });
 
   test('should close modal when click on close button', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirm: true,
       cancel: true,
     });
@@ -149,7 +176,10 @@ describe('modal-container', () => {
   test('should close modal when click on cancel button', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirm: true,
       cancel: true,
     });
@@ -168,7 +198,10 @@ describe('modal-container', () => {
   test('should confirm modal when click on confirm button', async () => {
     const element = createEl({
       title: 'DELETE COMMENT',
-      body: html`<span class="text text-big">Are you sure you want to delete this comment? <br /> This action cannot be undone</span>`,
+      body: html`<span class="text text-big"
+        >Are you sure you want to delete this comment? <br />
+        This action cannot be undone</span
+      >`,
       confirm: true,
       cancel: true,
     });

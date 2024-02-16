@@ -73,9 +73,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
   }
 
-  private getSendBtn = () => {
+  private get sendBtn() {
     return this.shadowRoot!.querySelector('.comments__input__send-button') as HTMLButtonElement;
-  };
+  }
 
   private get optionsContainer() {
     return this.shadowRoot!.querySelector('.comments__input__options') as HTMLTextAreaElement;
@@ -83,6 +83,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private get horizontalRule() {
     return this.shadowRoot!.querySelector('.sv-hr') as HTMLDivElement;
+  }
+
+  private get closeButton() {
+    return this.shadowRoot!.querySelector('.comments__input__close-button') as HTMLButtonElement;
   }
 
   connectedCallback(): void {
@@ -134,8 +138,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
 
     if (changedProperties.has('btnActive')) {
-      const btnSend = this.getSendBtn();
-      btnSend.disabled = !this.btnActive;
+      this.sendBtn.disabled = !this.btnActive;
     }
   }
 
@@ -169,7 +172,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private handleInput = (e: InputEvent) => {
+    if (this.commentInput?.value.length === 0) this.btnActive = false;
+    else this.btnActive = true;
+
     if (e.data === null) return;
+
     this.autoCompleteHandler.setInput(e);
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
@@ -238,8 +245,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     commentsInput.style.height = `${textareaHeight}px`;
 
-    const btnSend = this.getSendBtn();
-    btnSend.disabled = !(commentsInput.value.length > 0);
+    this.sendBtn.disabled = !(commentsInput.value.length > 0);
   }
 
   private sendEnter = (e: KeyboardEvent) => {
@@ -253,7 +259,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     const text = input.value.trim();
 
     if (!text) return;
-    const sendBtn = this.getSendBtn();
     const mentions = this.autoCompleteHandler.getMentions(text);
 
     this.emitEvent(
@@ -270,7 +275,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     );
 
     input.value = '';
-    sendBtn.disabled = true;
+    this.sendBtn.disabled = true;
     this.updateHeight();
   };
 
@@ -279,7 +284,6 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (this.mentionList?.length > 0) return;
 
     const input = this.commentInput;
-    const sendBtn = this.getSendBtn();
     const text = input.value;
     const mentions = this.autoCompleteHandler.getMentions(text);
 
@@ -297,7 +301,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     );
 
     input.value = '';
-    sendBtn.disabled = true;
+    this.sendBtn.disabled = true;
     this.updateHeight();
   }
 
@@ -315,7 +319,22 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   private onTextareaLoseFocus = (e) => {
-    if (!this.shadowRoot.contains(e.target)) return;
+    const target = e.explicitOriginalTarget?.parentNode?.host;
+
+    // explicitOriginalTarget is for Firefox
+    // relatedTarget is for Chrome
+    if (
+      this.closeButton.contains(target) ||
+      this.closeButton.contains(e.explicitOriginalTarget) ||
+      this.closeButton.contains(e.relatedTarget)
+    ) {
+      this.cancelComment();
+      return;
+    }
+
+    if (!this.shadowRoot.contains(e.target)) {
+      return;
+    }
 
     const options = this.optionsContainer;
     const rule = this.horizontalRule;
@@ -328,35 +347,61 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     }
   };
 
+  private cancelComment = () => {
+    document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape' }));
+  };
+
+  private commentInputEditableOptions = () => {
+    if (!this.editable) return;
+
+    return html`
+      <button
+        id="close"
+        @click=${this.closeEditMode}
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__cancel-edit-button"
+      >
+        <superviz-icon name="close" size="sm"></superviz-icon>
+      </button>
+      <button
+        id="confirm"
+        class="comments__input__button comments__input__send-button"
+        disabled
+        @click=${this.send}
+      >
+        <superviz-icon
+          color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
+          name="check"
+          size="md"
+        ></superviz-icon>
+      </button>
+    `;
+  };
+
+  private commentInputOptions = () => {
+    if (this.editable) return;
+
+    return html`
+      <button
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__close-button align-send-btn"
+        @click=${this.cancelComment}
+      >
+        <superviz-icon name="close" size="sm"></superviz-icon>
+      </button>
+      <button
+        class="comments__input__button comments__input__send-button align-send-btn"
+        disabled
+        @click=${this.send}
+      >
+        <superviz-icon
+          color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
+          name="line-arrow-right"
+          size="sm"
+        ></superviz-icon>
+      </button>
+    `;
+  };
+
   protected render() {
-    const commentInputEditableOptions = () => {
-      if (!this.editable) return;
-
-      return html`
-        <button
-          id="close"
-          @click=${() => this.closeEditMode()}
-          class="icon-button icon-button--medium icon-button--clickable comments__input__cancel-edit-button"
-          @click=${this.send}
-        >
-          <superviz-icon name="close" size="md"></superviz-icon>
-        </button>
-        <button id="confirm" class="comments__input__send-button" disabled @click=${this.send}>
-          <superviz-icon name="check" size="md"></superviz-icon>
-        </button>
-      `;
-    };
-
-    const commentInputOptions = () => {
-      if (this.editable) return;
-
-      return html`
-        <button class="comments__input__send-button align-send-btn" disabled @click=${this.send}>
-          <superviz-icon name="line-arrow-right" size="sm" allowSetSize=${true}></superviz-icon>
-        </button>
-      `;
-    };
-
     return html`
       <div class="comments__input">
         <textarea
@@ -379,11 +424,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
               name="mention"
               @click=${this.addAtSymbolInCaretPosition}
               size="sm"
-              allowSetSize=${true}
             ></superviz-icon>
           </button>
           <div class="comment-input-options">
-            ${commentInputOptions()} ${commentInputEditableOptions()}
+            ${this.commentInputOptions()} ${this.commentInputEditableOptions()}
           </div>
         </div>
       </div>

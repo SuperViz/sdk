@@ -152,7 +152,7 @@ describe('CommentsCommentInput', () => {
     expect(rule.classList.contains('comments__input__divisor')).toBe(true);
   });
 
-  test.only('should change textarea elements classes when losing focus and there is no text', async () => {
+  test('should change textarea elements classes when losing focus and there is no text', async () => {
     const textarea = element['commentInput'] as HTMLElement;
     const options = element['optionsContainer'] as HTMLElement;
     const rule = element['horizontalRule'] as HTMLElement;
@@ -322,6 +322,60 @@ describe('CommentsCommentInput', () => {
 
       expect(mockButtonAtSimbol).toHaveBeenCalled();
       expect(mockhandleInput).toHaveBeenCalled();
+    });
+  });
+
+  describe('onTextareaLoseFocus', () => {
+    test('should call cancelComment when target is closeButton', () => {
+      const mockCancelComment = jest.fn();
+      element['cancelComment'] = mockCancelComment;
+
+      const div = document.createElement('div');
+      element['closeButton'].appendChild(div);
+
+      const e = {
+        explicitOriginalTarget: {
+          parentNode: {
+            host: div,
+          },
+        },
+      };
+
+      element['onTextareaLoseFocus'](e);
+
+      expect(mockCancelComment).toHaveBeenCalled();
+    });
+
+    test('should call cancelComment when explicitOriginalTarget is closeButton', () => {
+      const mockCancelComment = jest.fn();
+      element['cancelComment'] = mockCancelComment;
+
+      const div = document.createElement('div');
+      element['closeButton'].appendChild(div);
+
+      const e = {
+        explicitOriginalTarget: div,
+      };
+
+      element['onTextareaLoseFocus'](e);
+
+      expect(mockCancelComment).toHaveBeenCalled();
+    });
+
+    test('should call cancelComment when relatedTarget is closeButton', () => {
+      const mockCancelComment = jest.fn();
+      element['cancelComment'] = mockCancelComment;
+
+      const div = document.createElement('div');
+      element['closeButton'].appendChild(div);
+
+      const e = {
+        relatedTarget: div,
+      };
+
+      element['onTextareaLoseFocus'](e);
+
+      expect(mockCancelComment).toHaveBeenCalled();
     });
   });
 });

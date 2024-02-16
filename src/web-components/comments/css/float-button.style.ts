@@ -24,12 +24,15 @@ export const floatButtonStyle = css`
 
   .comments__floating-button__text {
     opacity: 0;
-    transition: opacity 100ms linear;
+    transition: opacity 100ms linear, width 150ms linear;
+    text-align: left;
+    width: 0px;
+    overflow: hidden;
   }
 
   .comments__floating-button:hover .comments__floating-button__text {
     opacity: 1;
-    transition-delay: 200ms;
+    transition-delay: opacity 200ms;
   }
 
   .comments__floating-button:not(:hover) {
@@ -43,5 +46,22 @@ export const floatButtonStyle = css`
   .comments__floating-button:hover {
     width: 110px;
     border-radius: 30px;
+  }
+
+  .isActive {
+    color: rgba(var(--sv-white));
+    background-color: rgb(var(--sv-gray-400));
+  }
+
+  .isActive:hover {
+    width: 90px;
+  }
+
+  .comments__floating-button:hover .textActive {
+    width: 54.2px;
+  }
+
+  .comments__floating-button:hover .textInactive {
+    width: 61.5px;
   }
 `;

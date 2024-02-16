@@ -186,8 +186,8 @@ describe('who-is-online-dropdown', () => {
   test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
     const participant = {
       ...mockParticipants[0],
-      slotIndex: 2,
-      color: MeetingColorsHex[2],
+      slotIndex: 1,
+      color: MeetingColorsHex[1],
     };
 
     createEl({ position: 'bottom', participants: [participant] });
@@ -196,7 +196,7 @@ describe('who-is-online-dropdown', () => {
 
     const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
-    const backgroundColor = MeetingColorsHex[2];
+    const backgroundColor = MeetingColorsHex[1];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #FFFFFF`,
     );
@@ -231,5 +231,97 @@ describe('who-is-online-dropdown', () => {
     await sleep();
 
     expect(element()?.['selected']).toBe(mockParticipants[0].id);
+  });
+
+  describe('repositionDropdown', () => {
+    test('should call reposition methods if is open', () => {
+      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      el['open'] = true;
+
+      el['repositionInVerticalDirection'] = jest.fn();
+      el['repositionInHorizontalDirection'] = jest.fn();
+
+      el['repositionDropdown']();
+
+      expect(el['repositionInVerticalDirection']).toHaveBeenCalled();
+      expect(el['repositionInHorizontalDirection']).toHaveBeenCalled();
+    });
+
+    test('should do nothing if is not open', () => {
+      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      el['open'] = false;
+
+      el['repositionInVerticalDirection'] = jest.fn();
+      el['repositionInHorizontalDirection'] = jest.fn();
+
+      el['repositionDropdown']();
+
+      expect(el['repositionInVerticalDirection']).not.toHaveBeenCalled();
+      expect(el['repositionInHorizontalDirection']).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   *   private repositionInVerticalDirection = () => {
+    const { bottom, top, height } = this.parentElement.getBoundingClientRect();
+    const windowVerticalMidpoint = window.innerHeight / 2;
+    const dropdownVerticalMidpoint = top + height / 2;
+
+    if (dropdownVerticalMidpoint > windowVerticalMidpoint) {
+      this.dropdownList.style.setProperty('bottom', `${window.innerHeight - top + 8}px`);
+      this.dropdownList.style.setProperty('top', '');
+      return;
+    }
+
+    this.dropdownList.style.setProperty('top', `${bottom + 8}px`);
+    this.dropdownList.style.setProperty('bottom', '');
+  };
+   */
+  describe('repositionInVerticalDirection', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '';
+      window.innerHeight = 1000;
+    });
+
+    test('should set bottom and top styles when dropdownVerticalMidpoint is greater than windowVerticalMidpoint', async () => {
+      const el = createEl({ position: 'bottom', participants: mockParticipants });
+
+      await sleep();
+
+      const parentTop = 692;
+      const parentBottom = 740;
+      const windowHeight = 1000;
+
+      const parentElement = el.parentElement as HTMLElement;
+      parentElement.style.top = `${parentTop}px`;
+      parentElement.style.bottom = `${parentBottom}px`;
+
+      parentElement.style.height = '40px';
+
+      el['repositionInVerticalDirection']();
+
+      expect(el['dropdownList'].style.bottom).toBe(`${windowHeight - parentTop}px`);
+      expect(el['dropdownList'].style.top).toBe('');
+    });
+
+    test('should set top and bottom styles when dropdownVerticalMidpoint is less than windowVerticalMidpoint', async () => {
+      const el = createEl({ position: 'bottom', participants: mockParticipants });
+
+      await sleep();
+
+      const parentTop = 100;
+      const parentBottom = 140;
+      const windowHeight = 1000;
+
+      const parentElement = el.parentElement as HTMLElement;
+      parentElement.style.top = `${parentTop}px`;
+      parentElement.style.bottom = `${parentBottom}px`;
+      parentElement.style.height = '1000px';
+
+      el['repositionInVerticalDirection']();
+
+      expect(el['dropdownList'].style.bottom).toBe(`${windowHeight - parentTop}px`);
+      expect(el['dropdownList'].style.top).toBe('');
+    });
   });
 });

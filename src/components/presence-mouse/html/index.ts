@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
+import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
@@ -31,6 +32,9 @@ export class PointersHTML extends BaseComponent {
 
   // Observers
   private mutationObserver: MutationObserver;
+
+  // callbacks
+  private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
 
   private readonly VOID_ELEMENTS = [
     'area',
@@ -71,6 +75,7 @@ export class PointersHTML extends BaseComponent {
 
     this.name = ComponentNames.PRESENCE;
 
+    this.goToPresenceCallback = options?.onGoToPresence;
     this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
     this.dataAttributeValueFilters =
       options?.dataAttributeValueFilters || this.dataAttributeValueFilters;
@@ -275,12 +280,16 @@ export class PointersHTML extends BaseComponent {
 
   private goToMouse = (id: string): void => {
     const participant = this.presences.get(id);
-
     if (!participant) return;
 
     const wrapper = this.wrappers.get(participant.elementId);
-
     if (!wrapper) return;
+
+    if (this.goToPresenceCallback) {
+      const { x, y } = this.mouses.get(id).getBoundingClientRect();
+      this.goToPresenceCallback({ x, y });
+      return;
+    }
 
     this.mouses.get(id).scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
@@ -428,7 +437,7 @@ export class PointersHTML extends BaseComponent {
    * @returns {string} - The color of the text in hex format
    * */
   private getTextColorValue = (slotIndex: number): string => {
-    return [2, 4, 5, 7, 8, 16].includes(slotIndex) ? '#FFFFFF' : '#26242A';
+    return INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
   };
 
   /**
@@ -795,7 +804,7 @@ export class PointersHTML extends BaseComponent {
     const pointerUser = mouseFollower.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${participant.slotIndex}.svg)`;
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${participant.slotIndex}.svg)`;
     }
 
     if (mouseUser) {
