@@ -27,7 +27,7 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
   }
 
   private close() {
-    this.dispatchEvent(new CustomEvent('close'));
+    this.dispatchEvent(new CustomEvent('close-threads'));
   }
 
   protected render() {
@@ -35,7 +35,7 @@ export class CommentsTopbar extends WebComponentsBase(LitElement) {
       <div class="comments__topbar">
         <span class="text text-bold comments__topbar__title">COMMENTS</span>
         <span @click=${this.close} class="comments__topbar__close-threads">
-          <superviz-icon name=${this.side} allowSetSize=${true}></superviz-icon>
+          <superviz-icon name=${this.side}></superviz-icon>
         </span>
       </div>
     `;

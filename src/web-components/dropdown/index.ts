@@ -225,7 +225,7 @@ export class Dropdown extends WebComponentsBaseElement {
 
   private get supervizIcons() {
     return this.icons?.map((icon) => {
-      return html`<superviz-icon allowSetSize=${true} name="${icon}" size="sm"></superviz-icon>`;
+      return html`<superviz-icon name="${icon}" size="sm"></superviz-icon>`;
     });
   }
 

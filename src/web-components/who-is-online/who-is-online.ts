@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { RealtimeEvent } from '../../common/types/events.types';
+import { INDEX_IS_WHITE_TEXT } from '../../common/types/meeting-colors.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 import importStyle from '../base/utils/importStyle';
@@ -27,7 +28,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare isPrivate: boolean;
   declare everyoneFollowsMe: boolean;
 
-  private textColorValues: number[];
   declare showTooltip: boolean;
 
   static properties = {
@@ -47,9 +47,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.position = 'top: 20px; right: 40px;';
     this.showTooltip = true;
     this.open = false;
-
-    // should match presence-mouse textColorValues property
-    this.textColorValues = [2, 4, 5, 7, 8, 16];
   }
 
   protected firstUpdated(
@@ -210,9 +207,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       />`;
     }
 
-    const letterColor = this.textColorValues.includes(participant.slotIndex)
-      ? '#FFFFFF'
-      : '#26242A';
+    const letterColor = INDEX_IS_WHITE_TEXT.includes(participant.slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"

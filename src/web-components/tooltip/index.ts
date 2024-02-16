@@ -67,6 +67,8 @@ export class Tooltip extends WebComponentsBaseElement {
       return;
     }
 
+    this.adjustTooltipPosition();
+
     const {
       bottom: parentBottom,
       left: parentLeft,
@@ -132,7 +134,6 @@ export class Tooltip extends WebComponentsBaseElement {
   private show = () => {
     this.canAnimate = true;
     this.showTooltip = true;
-    this.adjustTooltipPosition();
     this.positionFixedTooltip();
   };
 

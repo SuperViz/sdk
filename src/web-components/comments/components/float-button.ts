@@ -16,11 +16,13 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
   declare positionStyles: string;
   declare commentsPosition: string;
   private shouldHide: boolean;
+  declare isActive: boolean;
 
   static properties = {
     positionStyles: { type: String },
     isHidden: { type: Boolean },
     commentsPosition: { type: String },
+    isActive: { type: Boolean },
   };
 
   constructor() {
@@ -44,11 +46,33 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     this.emitEvent('toggle', {});
   }
 
+  private onTogglePinActive = ({ detail: { isActive } }: CustomEvent) => {
+    this.isActive = isActive;
+  };
+
   connectedCallback(): void {
     super.connectedCallback();
 
     window.document.body.addEventListener('toggle-annotation-sidebar', () => {
       this.isHidden = !this.isHidden;
+    });
+    window.document.body.addEventListener('toggle-pin-active', this.onTogglePinActive);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    window.document.body.removeEventListener('toggle-annotation-sidebar', () => {
+      this.isHidden = !this.isHidden;
+    });
+    window.document.body.removeEventListener('toggle-pin-active', this.onTogglePinActive);
+  }
+
+  private async getTextWithDelay() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('Comment');
+      }, 300);
     });
   }
 
@@ -77,17 +101,27 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     const floatButtonClasses = {
       'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
+      isActive: this.isActive,
+    };
+
+    const textClasses = {
+      text: true,
+      'text-big': true,
+      'text-bold': true,
+      'comments__floating-button__text': true,
+      textActive: this.isActive,
+      textInactive: !this.isActive,
     };
 
     return html` <button @click=${this.toggle} class="${classMap(floatButtonClasses)}">
       <superviz-icon
-        allowSetSize=${true}
         size="sm"
         name="comment"
         class="comments__floating-button__icon"
+        color=${this.isActive ? 'white' : 'black'}
       ></superviz-icon>
 
-      <p class="text text-big text-bold comments__floating-button__text">Comments</p>
+      <p class="${classMap(textClasses)}">${this.isActive ? 'Cancel' : 'Comment'}</p>
     </button>`;
   }
 }

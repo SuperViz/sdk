@@ -42,4 +42,13 @@ describe('comments-float-button', () => {
 
     expect(spy).toHaveBeenCalled();
   });
+
+  test('should toggle pinActive state', () => {
+    element = createElement();
+    element['isActive'] = false;
+
+    element['onTogglePinActive']({ detail: { isActive: true } } as CustomEvent);
+
+    expect(element['isActive']).toBe(true);
+  });
 });

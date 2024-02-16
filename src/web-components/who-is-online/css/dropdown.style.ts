@@ -62,11 +62,13 @@ export const dropdownStyle = css`
     position: relative;
     display: flex;
     flex-direction: column;
+    z-index: 10;
   }
 
   .dropdown-list > div {
     padding: 4px;
-    min-width: 216px;
+    width: 216px;
+    box-sizing: border-box;
   }
 
   .who-is-online__extras-dropdown {
@@ -80,6 +82,12 @@ export const dropdownStyle = css`
     border-radius: 3px;
     max-height: 240px;
     overflow: auto;
+  }
+
+  .who-is-online__extras__arrow-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .menu--bottom {
@@ -179,7 +187,7 @@ export const dropdownStyle = css`
     }
 
     .dropdown-list > div {
-      min-width: 192px;
+      width: 192px;
     }
 
     .menu--top {
