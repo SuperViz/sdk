@@ -1300,7 +1300,10 @@ describe('HTMLPinAdapter', () => {
     test('should append svg to the wrapper with ellipse in a equal position of the element if element is a <ellipse /> element', () => {
       const wrapper = document.createElement('div');
       wrapper.id = 'wrapper';
+      const container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       const element = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      container.appendChild(element);
+
       element.setAttribute('cx', '100');
       element.setAttribute('cy', '100');
       element.setAttribute('rx', '50');
@@ -1314,8 +1317,8 @@ describe('HTMLPinAdapter', () => {
 
       expect(svg).toBeDefined();
       expect(svgElement).toBeDefined();
-      expect(svgElement?.getAttribute('cx')).toEqual('50');
-      expect(svgElement?.getAttribute('cy')).toEqual('50');
+      expect(svgElement?.getAttribute('cx')).toEqual('100');
+      expect(svgElement?.getAttribute('cy')).toEqual('100');
       expect(svgElement?.getAttribute('rx')).toEqual('50');
       expect(svgElement?.getAttribute('ry')).toEqual('50');
     });
