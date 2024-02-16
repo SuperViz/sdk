@@ -33,6 +33,9 @@ export class PointersHTML extends BaseComponent {
   // Observers
   private mutationObserver: MutationObserver;
 
+  // callbacks
+  private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
+
   private readonly VOID_ELEMENTS = [
     'area',
     'base',
@@ -72,6 +75,7 @@ export class PointersHTML extends BaseComponent {
 
     this.name = ComponentNames.PRESENCE;
 
+    this.goToPresenceCallback = options?.onGoToPresence;
     this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
     this.dataAttributeValueFilters =
       options?.dataAttributeValueFilters || this.dataAttributeValueFilters;
@@ -276,12 +280,16 @@ export class PointersHTML extends BaseComponent {
 
   private goToMouse = (id: string): void => {
     const participant = this.presences.get(id);
-
     if (!participant) return;
 
     const wrapper = this.wrappers.get(participant.elementId);
-
     if (!wrapper) return;
+
+    if (this.goToPresenceCallback) {
+      const { x, y } = this.mouses.get(id).getBoundingClientRect();
+      this.goToPresenceCallback({ x, y });
+      return;
+    }
 
     this.mouses.get(id).scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
@@ -796,7 +804,7 @@ export class PointersHTML extends BaseComponent {
     const pointerUser = mouseFollower.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${participant.slotIndex}.svg)`;
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${participant.slotIndex}.svg)`;
     }
 
     if (mouseUser) {
