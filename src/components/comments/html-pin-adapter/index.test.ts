@@ -185,7 +185,7 @@ describe('HTMLPinAdapter', () => {
 
       instance['addListeners']();
 
-      expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(3);
+      expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(2);
       expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(12);
     });
 

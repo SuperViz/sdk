@@ -111,6 +111,7 @@ export class HTMLPin implements PinAdapter {
     this.annotations = [];
 
     document.body.addEventListener('select-annotation', this.annotationSelected);
+    document.body.addEventListener('keyup', this.resetPins);
 
     if (!this.voidElementsWrappers.size) return;
     this.animateFrame = requestAnimationFrame(this.animate);
@@ -198,7 +199,6 @@ export class HTMLPin implements PinAdapter {
    */
   private addListeners(): void {
     this.divWrappers.forEach((_, id) => this.addElementListeners(id));
-    document.body.addEventListener('keyup', this.resetPins);
     document.body.addEventListener('toggle-annotation-sidebar', this.onToggleAnnotationSidebar);
     document.body.addEventListener('click', this.hideTemporaryPin);
   }
