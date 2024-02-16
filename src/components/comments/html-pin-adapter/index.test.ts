@@ -186,7 +186,7 @@ describe('HTMLPinAdapter', () => {
       instance['addListeners']();
 
       expect(bodyAddEventListenerSpy).toHaveBeenCalledTimes(2);
-      expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(6);
+      expect(wrapperAddEventListenerSpy).toHaveBeenCalledTimes(12);
     });
 
     test('should remove event listeners from the HTML container', () => {
@@ -202,7 +202,7 @@ describe('HTMLPinAdapter', () => {
       instance['removeListeners']();
 
       expect(bodyRemoveEventListenerSpy).toHaveBeenCalledTimes(2);
-      expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(6);
+      expect(wrapperRemoveEventListenerSpy).toHaveBeenCalledTimes(12);
     });
   });
 
@@ -543,6 +543,16 @@ describe('HTMLPinAdapter', () => {
       instance['resetPins']({ key: 'Enter' } as unknown as KeyboardEvent);
 
       expect(instance['pins'].has('temporary-pin')).toBeTruthy();
+    });
+
+    test('should remove outline from wrapper being hovered when inactive', () => {
+      const wrapper = instance['divWrappers'].get('1') as HTMLElement;
+      wrapper.style.outline = '1px solid red';
+      instance['hoveredWrapper'] = wrapper;
+
+      instance.setActive(false);
+
+      expect(wrapper.style.outline).toEqual('');
     });
   });
 
@@ -1244,6 +1254,46 @@ describe('HTMLPinAdapter', () => {
       instance['prepareElements']();
 
       expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('onMouseEnter', () => {
+    test('should add an outline to the wrapper', () => {
+      const target = document.createElement('div');
+      instance['onMouseEnter']({ target } as unknown as MouseEvent);
+      expect(target.style.outline).toEqual('1px solid rgb(var(--sv-primary))');
+    });
+
+    test('should add stroke if element is an ellipse', () => {
+      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('data-wrapper-type', 'svg-ellipse');
+      svg.appendChild(ellipse);
+      instance['onMouseEnter']({ target: svg } as unknown as MouseEvent);
+      expect(ellipse.getAttribute('stroke')).toEqual('rgb(var(--sv-primary))');
+      expect(ellipse.getAttribute('stroke-width')).toEqual('1');
+    });
+  });
+
+  describe('onMouseLeave', () => {
+    test('should remove the outline from the wrapper', () => {
+      const target = document.createElement('div');
+      target.style.outline = '1px solid rgb(var(--sv-primary))';
+      instance['onMouseLeave']({ target } as unknown as MouseEvent);
+      expect(target.style.outline).toEqual('');
+    });
+
+    test('should remove stroke if element is an ellipse', () => {
+      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      ellipse.setAttribute('stroke', 'red');
+      ellipse.setAttribute('stroke-width', '1');
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('data-wrapper-type', 'svg-ellipse');
+      svg.appendChild(ellipse);
+      instance['onMouseLeave']({ target: svg } as unknown as MouseEvent);
+      expect(ellipse.getAttribute('stroke')).toBeFalsy();
+      expect(ellipse.getAttribute('stroke-width')).toBeFalsy();
     });
   });
 });
