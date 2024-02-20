@@ -283,12 +283,12 @@ describe('VideoConferenceManager', () => {
     test('should set callbacks if callbacks are defined', () => {
       const callbacks = {
         onToggleMicrophone: jest.fn(),
-        onToggleCamera: jest.fn(),
+        onToggleCam: jest.fn(),
         onToggleTranscript: jest.fn(),
         onToggleChat: jest.fn(),
         onToggleScreenShare: jest.fn(),
-        onLeaveMeeting: jest.fn(),
-        onClickSettings: jest.fn(),
+        onClickHangup: jest.fn(),
+        onToggleMeetingSetup: jest.fn(),
       };
 
       VideoConferenceManagerInstance['onFrameLoad']();
@@ -303,12 +303,12 @@ describe('VideoConferenceManager', () => {
         FrameEvent.FRAME_CALLBACKS_UPDATE,
         JSON.stringify({
           onToggleMicrophone: true,
-          onToggleCamera: true,
+          onToggleCam: true,
           onToggleTranscript: true,
           onToggleChat: true,
           onToggleScreenShare: true,
-          onLeaveMeeting: true,
-          onClickSettings: true,
+          onClickHangup: true,
+          onToggleMeetingSetup: true,
         }),
       );
     });

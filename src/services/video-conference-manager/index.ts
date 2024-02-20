@@ -321,12 +321,12 @@ export default class VideoConfereceManager {
 
     const callbacks = {
       onToggleMicrophone: !!this.callbacks.onToggleMicrophone,
-      onToggleCamera: !!this.callbacks.onToggleCamera,
+      onToggleCam: !!this.callbacks.onToggleCam,
       onToggleTranscript: !!this.callbacks.onToggleTranscript,
       onToggleChat: !!this.callbacks.onToggleChat,
       onToggleScreenShare: !!this.callbacks.onToggleScreenShare,
-      onLeaveMeeting: !!this.callbacks.onLeaveMeeting,
-      onClickSettings: !!this.callbacks.onClickSettings,
+      onClickHangup: !!this.callbacks.onClickHangup,
+      onToggleMeetingSetup: !!this.callbacks.onToggleMeetingSetup,
     };
 
     this.messageBridge.listen(MeetingControlsEvent.CALLBACK_CALLED, (callback: string) => {
