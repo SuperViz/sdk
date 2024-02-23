@@ -3,6 +3,7 @@ import { css } from 'lit';
 export const dropdownStyle = css`
   .dropdown {
     position: relative;
+    z-index: 100;
   }
 
   .dropdown-content {
