@@ -835,72 +835,60 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description Finds an available slot index for the participant and confirms it.
    * @returns {void}
    */
-  private findSlotIndex = (): void => {
-    let slots = new Array(16).fill(null).map((_, i) => ({ slotIndex: i, clientId: null }));
+  private findSlotIndex = async (): Promise<void> => {
+    const slot = Math.floor(Math.random() * 16);
 
-    this.supervizChannel.presence.get((error, presences) => {
-      if (error) {
-        slots = [];
-        return;
-      }
-
-      presences.forEach((presence) => {
-        // if the slot is not defined, ignore it
-        if (presence.data.slotIndex === null || presence.data.slotIndex === undefined) return;
-
-        const isMe = presence.clientId === this.myParticipant.clientId;
-        const isDuplicated =
-          slots[presence.data.slotIndex].clientId !== null &&
-          slots[presence.data.slotIndex].clientId !== presence.clientId;
-
-        // if the slot is already taken by me, ignore it
-        if (isDuplicated && isMe) {
-          this.myParticipant.data.slotIndex = null;
-          this.logger.log('slot already taken by', presence.clientId, this.myParticipant.clientId);
+    const hasAnyOneUsingMySlot = await new Promise((resolve) => {
+      this.supervizChannel.presence.get((error, presences) => {
+        if (error) {
+          resolve(true);
           return;
         }
 
-        // if the slot is already taken by someone else, ignore it
-        if (isDuplicated) return;
+        presences.forEach((presence) => {
+          if (presence.clientId === this.myParticipant.clientId) return;
 
-        slots[presence.data.slotIndex].clientId = presence.clientId;
+          if (presence.data.slotIndex === slot) resolve(true);
+        });
+
+        resolve(false);
       });
     });
 
-    // next available slot
-    const slotToUse = slots.find((slot) => slot.clientId === null);
-
-    // if there is no slot available, ignore it
-    if (!slotToUse) return;
-
-    // if the slot is already taken by me, ignore it
-    if (slots.find((slot) => slot.clientId === this.myParticipant.clientId)) {
+    if (hasAnyOneUsingMySlot) {
+      this.logger.log(
+        'slot already taken by someone else, trying again',
+        this.myParticipant.clientId,
+      );
+      this.findSlotIndex();
       return;
     }
 
-    // set the slot index
-    this.myParticipant.data.slotIndex = slotToUse.slotIndex;
-    this.updateMyProperties({ slotIndex: slotToUse.slotIndex });
+    this.updateMyProperties({ slotIndex: slot });
   };
 
-  private validateSlots() {
+  /**
+   * @function validateSlots
+   * @description Validates the slot index of all participants and resolves conflicts.
+   * @returns {void}
+   */
+  private async validateSlots(): Promise<void> {
     const slots = [];
+    await new Promise((resolve) => {
+      this.supervizChannel.presence.get((_, presences) => {
+        presences.forEach((presence) => {
+          const hasValidSlot =
+            presence.data.slotIndex !== undefined && presence.data.slotIndex !== null;
 
-    this.supervizChannel.presence.get((_, presences) => {
-      presences.forEach((presence) => {
-        const isMe = presence.clientId === this.myParticipant.clientId;
-        const hasValidSlot =
-          presence.data.slotIndex !== undefined && presence.data.slotIndex !== null;
-
-        if (hasValidSlot) {
-          slots.push({
-            slotIndex: presence.data.slotIndex,
-            clientId: presence.clientId,
-            timestamp: presence.timestamp,
-          });
-        } else if (isMe) {
-          this.findSlotIndex();
-        }
+          if (hasValidSlot) {
+            slots.push({
+              slotIndex: presence.data.slotIndex,
+              clientId: presence.clientId,
+              timestamp: presence.timestamp,
+            });
+          }
+        });
+        resolve(true);
       });
     });
 
