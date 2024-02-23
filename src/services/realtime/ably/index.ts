@@ -835,59 +835,60 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @description Finds an available slot index for the participant and confirms it.
    * @returns {void}
    */
-  private findSlotIndex = (): void => {
-    let slots = new Array(16).fill(null).map((_, i) => ({ slotIndex: i, clientId: null }));
+  private findSlotIndex = async (): Promise<void> => {
+    const slot = Math.floor(Math.random() * 16);
 
-    this.supervizChannel.presence.get((error, presences) => {
-      if (error) {
-        slots = [];
-        return;
-      }
-
-      presences.forEach((presence) => {
-        if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
-          if (
-            slots[presence.data.slotIndex].clientId !== null &&
-            slots[presence.data.slotIndex].clientId !== presence.clientId &&
-            presence.clientId === this.myParticipant.clientId
-          ) {
-            this.myParticipant.data.slotIndex = null;
-            return;
-          }
-
-          slots[presence.data.slotIndex].clientId = presence.clientId;
+    const hasAnyOneUsingMySlot = await new Promise((resolve) => {
+      this.supervizChannel.presence.get((error, presences) => {
+        if (error) {
+          resolve(true);
+          return;
         }
+
+        presences.forEach((presence) => {
+          if (presence.clientId === this.myParticipant.clientId) return;
+
+          if (presence.data.slotIndex === slot) resolve(true);
+        });
+
+        resolve(false);
       });
     });
 
-    const slotToUse = slots.find((slot) => slot.clientId === null);
-
-    if (!slotToUse) {
+    if (hasAnyOneUsingMySlot) {
+      this.logger.log(
+        'slot already taken by someone else, trying again',
+        this.myParticipant.clientId,
+      );
+      this.findSlotIndex();
       return;
     }
 
-    if (slots.find((slot) => slot.clientId === this.myParticipant.clientId)) {
-      return;
-    }
-
-    this.myParticipant.data.slotIndex = slotToUse.slotIndex;
-    this.updateMyProperties({ slotIndex: slotToUse.slotIndex });
+    this.updateMyProperties({ slotIndex: slot });
   };
 
-  private validateSlots() {
+  /**
+   * @function validateSlots
+   * @description Validates the slot index of all participants and resolves conflicts.
+   * @returns {void}
+   */
+  private async validateSlots(): Promise<void> {
     const slots = [];
+    await new Promise((resolve) => {
+      this.supervizChannel.presence.get((_, presences) => {
+        presences.forEach((presence) => {
+          const hasValidSlot =
+            presence.data.slotIndex !== undefined && presence.data.slotIndex !== null;
 
-    this.supervizChannel.presence.get((_, presences) => {
-      presences.forEach((presence) => {
-        if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
-          slots.push({
-            slotIndex: presence.data.slotIndex,
-            clientId: presence.clientId,
-            timestamp: presence.timestamp,
-          });
-        } else if (presence.clientId === this.myParticipant.clientId) {
-          this.findSlotIndex();
-        }
+          if (hasValidSlot) {
+            slots.push({
+              slotIndex: presence.data.slotIndex,
+              clientId: presence.clientId,
+              timestamp: presence.timestamp,
+            });
+          }
+        });
+        resolve(true);
       });
     });
 
@@ -900,9 +901,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       }[]
     > = {};
 
-    slots.forEach((a, index) => {
-      if (slots.findIndex((b) => b.slotIndex === a.slotIndex) === index) return;
-
+    slots.forEach((a) => {
       if (!duplicatesMap[a.slotIndex]) {
         duplicatesMap[a.slotIndex] = [];
       }
@@ -911,12 +910,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     });
 
     Object.values(duplicatesMap).forEach((arr) => {
-      if (arr.length === 1 && arr[0].clientId === this.myParticipant.clientId) {
-        this.findSlotIndex();
-
-        return;
-      }
-
       const ordered = arr.sort((a, b) => a.timestamp - b.timestamp);
       ordered.shift();
 
