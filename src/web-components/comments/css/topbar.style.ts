@@ -29,6 +29,6 @@ export const topbarStyle = css`
   }
 
   .comments__topbar__close-threads:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background: rgb(var(--sv-gray-300));
   }
 `;
