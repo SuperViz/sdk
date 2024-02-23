@@ -24,7 +24,8 @@ export const topbarStyle = css`
     width: 32px;
     height: 32px;
     box-sizing: border-box;
-    padding-left: 2px;
+    margin-right: 8px;
+    padding-right: 2px;
   }
 
   .comments__topbar__close-threads:hover {
