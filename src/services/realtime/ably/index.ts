@@ -845,9 +845,16 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       }
 
       presences.forEach((presence) => {
-        if (presence.clientId === this.myParticipant.clientId) return;
-
         if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
+          if (
+            slots[presence.data.slotIndex].clientId !== null &&
+            slots[presence.data.slotIndex].clientId !== presence.clientId &&
+            presence.clientId === this.myParticipant.clientId
+          ) {
+            this.myParticipant.data.slotIndex = null;
+            return;
+          }
+
           slots[presence.data.slotIndex].clientId = presence.clientId;
         }
       });
@@ -855,7 +862,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     const slotToUse = slots.find((slot) => slot.clientId === null);
 
-    if (!slotToUse) return;
+    if (!slotToUse) {
+      return;
+    }
+
+    if (slots.find((slot) => slot.clientId === this.myParticipant.clientId)) {
+      return;
+    }
 
     this.myParticipant.data.slotIndex = slotToUse.slotIndex;
     this.updateMyProperties({ slotIndex: slotToUse.slotIndex });
@@ -872,6 +885,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
             clientId: presence.clientId,
             timestamp: presence.timestamp,
           });
+        } else if (presence.clientId === this.myParticipant.clientId) {
+          this.findSlotIndex();
         }
       });
     });
@@ -898,6 +913,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     Object.values(duplicatesMap).forEach((arr) => {
       if (arr.length === 1 && arr[0].clientId === this.myParticipant.clientId) {
         this.findSlotIndex();
+
         return;
       }
 
