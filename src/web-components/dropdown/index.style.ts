@@ -15,7 +15,7 @@ export const dropdownStyle = css`
 
   .dropdown-list {
     position: relative;
-    z-index: 20;
+    z-index: 100;
   }
 
   .header {
