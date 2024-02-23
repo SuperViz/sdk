@@ -845,31 +845,40 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       }
 
       presences.forEach((presence) => {
-        if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
-          if (
-            slots[presence.data.slotIndex].clientId !== null &&
-            slots[presence.data.slotIndex].clientId !== presence.clientId &&
-            presence.clientId === this.myParticipant.clientId
-          ) {
-            this.myParticipant.data.slotIndex = null;
-            return;
-          }
+        // if the slot is not defined, ignore it
+        if (presence.data.slotIndex === null || presence.data.slotIndex === undefined) return;
 
-          slots[presence.data.slotIndex].clientId = presence.clientId;
+        const isMe = presence.clientId === this.myParticipant.clientId;
+        const isDuplicated =
+          slots[presence.data.slotIndex].clientId !== null &&
+          slots[presence.data.slotIndex].clientId !== presence.clientId;
+
+        // if the slot is already taken by me, ignore it
+        if (isDuplicated && isMe) {
+          this.myParticipant.data.slotIndex = null;
+          this.logger.log('slot already taken by', presence.clientId, this.myParticipant.clientId);
+          return;
         }
+
+        // if the slot is already taken by someone else, ignore it
+        if (isDuplicated) return;
+
+        slots[presence.data.slotIndex].clientId = presence.clientId;
       });
     });
 
+    // next available slot
     const slotToUse = slots.find((slot) => slot.clientId === null);
 
-    if (!slotToUse) {
-      return;
-    }
+    // if there is no slot available, ignore it
+    if (!slotToUse) return;
 
+    // if the slot is already taken by me, ignore it
     if (slots.find((slot) => slot.clientId === this.myParticipant.clientId)) {
       return;
     }
 
+    // set the slot index
     this.myParticipant.data.slotIndex = slotToUse.slotIndex;
     this.updateMyProperties({ slotIndex: slotToUse.slotIndex });
   };
@@ -879,13 +888,17 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.supervizChannel.presence.get((_, presences) => {
       presences.forEach((presence) => {
-        if (presence.data.slotIndex !== undefined && presence.data.slotIndex !== null) {
+        const isMe = presence.clientId === this.myParticipant.clientId;
+        const hasValidSlot =
+          presence.data.slotIndex !== undefined && presence.data.slotIndex !== null;
+
+        if (hasValidSlot) {
           slots.push({
             slotIndex: presence.data.slotIndex,
             clientId: presence.clientId,
             timestamp: presence.timestamp,
           });
-        } else if (presence.clientId === this.myParticipant.clientId) {
+        } else if (isMe) {
           this.findSlotIndex();
         }
       });
@@ -900,9 +913,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       }[]
     > = {};
 
-    slots.forEach((a, index) => {
-      if (slots.findIndex((b) => b.slotIndex === a.slotIndex) === index) return;
-
+    slots.forEach((a) => {
       if (!duplicatesMap[a.slotIndex]) {
         duplicatesMap[a.slotIndex] = [];
       }
@@ -911,12 +922,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     });
 
     Object.values(duplicatesMap).forEach((arr) => {
-      if (arr.length === 1 && arr[0].clientId === this.myParticipant.clientId) {
-        this.findSlotIndex();
-
-        return;
-      }
-
       const ordered = arr.sort((a, b) => a.timestamp - b.timestamp);
       ordered.shift();
 
