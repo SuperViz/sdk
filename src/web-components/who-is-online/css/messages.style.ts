@@ -7,6 +7,7 @@ export const messagesStyle = css`
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-top: 4px;
   }
 
   .who-is-online__presence-control-message {

@@ -8,12 +8,12 @@ export const commentsStyle = css`
     position: fixed;
     color: rgb(var(--sv-gray-700));
     background: rgb(var(--sv-white));
-    top: 0;
+    top: 0px;
     bottom: 0;
     box-shadow: -2px 0 4px 0 rgba(0, 0, 0, 0.1);
     height: 100%;
 
-    z-index: 99;
+    z-index: 100;
   }
 
   .container-close {
