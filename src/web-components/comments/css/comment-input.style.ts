@@ -99,18 +99,6 @@ export const commentInputStyle = css`
     visibility: visible;
   }
 
-  .comments__input__mention-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 32px;
-    width: 32px;
-    border-radius: 100%;
-    color: rgb(var(--sv-gray-600));
-    cursor: pointer;
-    transition: 0.25s background-color ease-in;
-  }
-
   .mention:hover {
     background-color: rgb(var(--sv-gray-200));
   }
