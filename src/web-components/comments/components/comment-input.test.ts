@@ -197,7 +197,7 @@ describe('CommentsCommentInput', () => {
 
     element['updateHeight']();
 
-    expect(textarea.style.height).toBe('41px');
+    expect(textarea.style.height).toBe('43px');
   });
 
   describe('addAtSymbolInCaretPosition', () => {

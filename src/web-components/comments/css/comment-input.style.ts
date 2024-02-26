@@ -29,7 +29,7 @@ export const commentInputStyle = css`
     white-space: pre-wrap;
     word-wrap: break-word;
     resize: none;
-    line-height: 1rem;
+    line-height: 1.15rem;
     max-height: 5rem;
     appearance: none;
     height: 40px;
