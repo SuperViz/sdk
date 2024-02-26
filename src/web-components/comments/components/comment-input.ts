@@ -249,6 +249,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   private sendEnter = (e: KeyboardEvent) => {
+    if (e.key !== 'Escape') {
+      e.stopImmediatePropagation();
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
     }
