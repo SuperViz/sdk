@@ -108,9 +108,6 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
       bottom: fbBottom,
     } = floatButton.getBoundingClientRect();
 
-    console.log(sbLeft, sbRight, sbTop, sbBottom);
-    console.log(fbLeft, fbRight, fbTop, fbBottom);
-
     const sidebarHidesTop = sbBottom > fbTop && fbBottom > sbTop;
     const sidebarHidesBottom = sbTop < fbBottom && fbTop < sbBottom;
     const sidebarHidesLeft = sbRight > fbLeft && fbRight > sbLeft;
