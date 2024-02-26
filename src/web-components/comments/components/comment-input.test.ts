@@ -378,4 +378,13 @@ describe('CommentsCommentInput', () => {
       expect(mockCancelComment).toHaveBeenCalled();
     });
   });
+
+  describe('focusInput', () => {
+    test('should focus keyboard cursor on input when clicking on it', () => {
+      element['getCommentInput']().focus = jest.fn();
+      element['focusInput']();
+
+      expect(element['getCommentInput']().focus).toHaveBeenCalled();
+    });
+  });
 });

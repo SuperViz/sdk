@@ -99,10 +99,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     if (!['create-annotation', 'create-comment'].includes(this.eventType)) return;
+    const textarea = this.getCommentInput();
 
     this.removeEventListener('keyup', this.sendEnter);
-    const textarea = this.getCommentInput();
     textarea.removeEventListener('keydown', this.sendEnter);
+    textarea.removeEventListener('click', this.focusInput);
+    textarea.addEventListener('input', this.handleInput);
   }
 
   protected firstUpdated(
@@ -115,9 +117,8 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
       if (commentTextarea) {
         commentTextarea.addEventListener('input', this.handleInput);
-
-        const textarea = this.getCommentInput();
-        textarea.addEventListener('keydown', this.sendEnter);
+        commentTextarea.addEventListener('click', this.focusInput);
+        commentTextarea.addEventListener('keydown', this.sendEnter);
       }
 
       if (this.text.length > 0) {
@@ -169,6 +170,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       end: caretIndex,
     };
     return { searchText, position };
+  };
+
+  private focusInput = () => {
+    this.getCommentInput().focus();
   };
 
   private handleInput = (e: InputEvent) => {
