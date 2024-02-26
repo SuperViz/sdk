@@ -373,14 +373,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       </button>
       <button
         id="confirm"
-        class="comments__input__button comments__input__send-button"
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__send-button"
         disabled
         @click=${this.send}
       >
         <superviz-icon
           color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
           name="check"
-          size="md"
+          size="sm"
         ></superviz-icon>
       </button>
     `;
