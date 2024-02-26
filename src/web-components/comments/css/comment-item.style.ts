@@ -86,8 +86,4 @@ export const commentItemStyle = css`
   .mentioned {
     display: inline-block;
   }
-
-  .comments__comment-item__username {
-    font-size: 14px;
-  }
 `;

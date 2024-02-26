@@ -24,10 +24,11 @@ export const topbarStyle = css`
     width: 32px;
     height: 32px;
     box-sizing: border-box;
-    padding-left: 2px;
+    margin-right: 8px;
+    padding-right: 2px;
   }
 
   .comments__topbar__close-threads:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background: rgb(var(--sv-gray-300));
   }
 `;

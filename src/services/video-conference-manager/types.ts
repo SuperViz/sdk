@@ -35,12 +35,12 @@ export interface VideoManagerOptions {
   layoutMode?: LayoutMode;
   callbacks?: {
     onToggleMicrophone?: () => void;
-    onToggleCamera?: () => void;
+    onToggleCam?: () => void;
     onToggleTranscript?: () => void;
     onToggleChat?: () => void;
     onToggleScreenShare?: () => void;
-    onLeaveMeeting?: () => void;
-    onClickSettings?: () => void;
+    onClickHangup?: () => void;
+    onToggleMeetingSetup?: () => void;
   };
 }
 

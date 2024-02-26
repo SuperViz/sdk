@@ -83,21 +83,43 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
       if (!floatButton) return;
 
       floatButton.setAttribute('style', this.positionStyles);
-
-      const windowSize = window.document.body.getBoundingClientRect().width;
-      const buttonPosition = floatButton.getBoundingClientRect();
-      const sideBarWidth = 320;
-
-      if (!this.commentsPosition || this.commentsPosition === 'left') {
-        this.shouldHide = buttonPosition.x < sideBarWidth;
-        return;
-      }
-
-      this.shouldHide = windowSize - buttonPosition.right < sideBarWidth;
     });
   }
 
+  private calculateIfShouldHide() {
+    const sidebar = document
+      .getElementsByTagName('superviz-comments')[0]
+      ?.shadowRoot.querySelector('.superviz-comments');
+
+    const floatButton = this.shadowRoot.querySelector('.comments__floating-button');
+
+    if (!sidebar || !floatButton) return;
+
+    const {
+      left: sbLeft,
+      right: sbRight,
+      top: sbTop,
+      bottom: sbBottom,
+    } = sidebar.getBoundingClientRect();
+    const {
+      left: fbLeft,
+      right: fbRight,
+      top: fbTop,
+      bottom: fbBottom,
+    } = floatButton.getBoundingClientRect();
+
+    const sidebarHidesTop = sbBottom > fbTop && fbBottom > sbTop;
+    const sidebarHidesBottom = sbTop < fbBottom && fbTop < sbBottom;
+    const sidebarHidesLeft = sbRight > fbLeft && fbRight > sbLeft;
+    const sidebarHidesRight = sbLeft < fbRight && fbLeft < sbRight;
+
+    this.shouldHide =
+      (sidebarHidesBottom || sidebarHidesTop) && (sidebarHidesLeft || sidebarHidesRight);
+  }
+
   protected render() {
+    this.calculateIfShouldHide();
+
     const floatButtonClasses = {
       'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
