@@ -62,7 +62,7 @@ export const dropdownStyle = css`
     position: relative;
     display: flex;
     flex-direction: column;
-    z-index: 10;
+    z-index: 100;
   }
 
   .dropdown-list > div {
