@@ -380,7 +380,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         <superviz-icon
           color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
           name="check"
-          size="md"
+          size="sm"
         ></superviz-icon>
       </button>
     `;
