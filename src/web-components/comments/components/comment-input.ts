@@ -424,7 +424,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         ></superviz-comments-mention-list>
         <div class="sv-hr"></div>
         <div class="comments__input__options">
-          <button class="icon-button comments__input__mention-button">
+          <button class="icon-button icon-button--medium icon-button--clickable">
             <superviz-icon
               name="mention"
               @click=${this.addAtSymbolInCaretPosition}
