@@ -22,4 +22,14 @@ export const annotationFilterStyle = css`
     align-items: center;
     gap: 6px;
   }
+
+  .comments__filter__toggle-button {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .comments__filter__icon {
+    margin-top: -2px;
+  }
 `;

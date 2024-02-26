@@ -90,7 +90,9 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
           >
             <div class="comments__filter__toggle-button" slot="dropdown">
               <span class=${classMap(textClasses)}>${selectedLabel}</span>
-              <superviz-icon name=${this.caret} size="xs"></superviz-icon>
+              <div class="comments__filter__icon">
+                <superviz-icon name=${this.caret} size="xs"></superviz-icon>
+              </div>
             </div>
           </superviz-dropdown>
         </div>
