@@ -1,10 +1,6 @@
 import { css } from 'lit';
 
 export const annotationItemStyle = css`
-  .comments__thread--selected {
-    background-color: rgba(var(--sv-gray-200), 0.5);
-  }
-
   .comments__thread:hover:not(.comments__thread--selected) {
     background-color: rgba(var(--sv-gray-200), 0.3);
   }
@@ -70,5 +66,10 @@ export const annotationItemStyle = css`
   .comments__thread {
     padding: 8px;
     cursor: pointer;
+  }
+
+  .comments__thread--selected {
+    background-color: rgba(var(--sv-gray-200), 0.5);
+    padding-bottom: 16px;
   }
 `;
