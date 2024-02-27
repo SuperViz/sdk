@@ -21,10 +21,10 @@ export const dropdownStyle = css`
 
   .header {
     display: grid;
-    grid-template-rows: 41px 1px;
+    grid-template-rows: 1fr 1px;
     align-items: center;
     padding: 0 10px;
-    height: 42px;
+    min-height: 42px;
     font-size: 16px;
     color: rgb(var(--sv-gray-600));
   }
@@ -49,11 +49,12 @@ export const dropdownStyle = css`
 
   .text.username {
     font-size: 14px;
-    text-align: center;
+    text-align: left;
 
     display: inline-block;
     vertical-align: middle;
     line-height: normal;
+    padding: 8px 0;
   }
 
   .items li {
@@ -101,6 +102,15 @@ export const dropdownStyle = css`
 
   .option-label {
     white-space: nowrap;
+    line-height: 1;
+  }
+
+  .who-is-online__controls__item__icon {
+    line-height: 1;
+  }
+
+  .who-is-online__controls__item {
+    align-items: center;
   }
 
   @media (max-width: 780px) {
