@@ -5,7 +5,7 @@ export const commentInputStyle = css`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 288px;
+    width: min(288px, 100%);
     background: rgb(var(--sv-white));
     border-radius: 4px;
     border: 1px solid rgb(var(--sv-gray-300));

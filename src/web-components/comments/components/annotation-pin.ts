@@ -227,15 +227,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     const classes = {
       'comments__annotation-pin': true,
       'comments__annotation-pin--active': this.active,
+      'comments__cursor-pointer': this.type === PinMode.ADD && !this.showInput,
     };
     classes[this.horizontalSide] = true;
 
-    let style = '';
-    if (this.keepPositionRatio) {
-      style = `top: ${this.position.y}%; left: ${this.position.x}%;`;
-    } else {
-      style = `top: ${this.position.y}px; left: ${this.position.x}px;`;
-    }
+    const unit = this.keepPositionRatio ? '%' : 'px';
+    const style = `top: ${this.position.y}${unit}; left: ${this.position.x}${unit};`;
 
     if (this.type === PinMode.ADD) {
       return html`
