@@ -211,7 +211,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         <div class=${this.getClasses('header')}>
           <div class=${this.getClasses('metadata')}>
             ${this.getAvatar()}
-            <span class="text text-bold sv-gray-600 ${this.getClasses('username')}"
+            <span class="text text-big text-bold sv-gray-700 ${this.getClasses('username')}"
               >${this.username}</span
             >
             <span class="text text-small sv-gray-500 ${this.getClasses('date')}"

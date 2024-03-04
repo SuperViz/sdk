@@ -35,6 +35,11 @@ export const annotationPinStyles = css`
     border-color: rgb(var(--sv-primary));
   }
 
+  .comments__cursor-pointer,
+  .comments__cursor-pointer .comments__annotation-pin__avatar {
+    pointer-events: none;
+  }
+
   .comments__annotation-pin__avatar {
     width: 100%;
     height: 100%;
@@ -49,7 +54,6 @@ export const annotationPinStyles = css`
     width: 100%;
     height: 100%;
     border-radius: 50%;
-
     object-fit: contain;
   }
 

@@ -197,7 +197,7 @@ describe('CommentsCommentInput', () => {
 
     element['updateHeight']();
 
-    expect(textarea.style.height).toBe('41px');
+    expect(textarea.style.height).toBe('43px');
   });
 
   describe('addAtSymbolInCaretPosition', () => {
@@ -376,6 +376,15 @@ describe('CommentsCommentInput', () => {
       element['onTextareaLoseFocus'](e);
 
       expect(mockCancelComment).toHaveBeenCalled();
+    });
+  });
+
+  describe('focusInput', () => {
+    test('should focus keyboard cursor on input when clicking on it', () => {
+      element['getCommentInput']().focus = jest.fn();
+      element['focusInput']();
+
+      expect(element['getCommentInput']().focus).toHaveBeenCalled();
     });
   });
 });

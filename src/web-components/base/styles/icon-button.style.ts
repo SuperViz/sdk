@@ -42,9 +42,11 @@ export const iconButtonStyle = css`
 
   .icon-button--clickable:hover:not(.icon-button--no-hover) {
     background: rgb(var(--sv-gray-300));
+    transition: 0.25s background-color ease-in;
   }
-
+  
   .icon-button--clickable:focus:not(.icon-button--no-hover) {
+    transition: 0.25s background-color ease-in;
     background: rgb(var(--sv-gray-300));
   }
 `;

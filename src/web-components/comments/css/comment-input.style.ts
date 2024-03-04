@@ -5,7 +5,7 @@ export const commentInputStyle = css`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 288px;
+    width: min(288px, 100%);
     background: rgb(var(--sv-white));
     border-radius: 4px;
     border: 1px solid rgb(var(--sv-gray-300));
@@ -29,7 +29,7 @@ export const commentInputStyle = css`
     white-space: pre-wrap;
     word-wrap: break-word;
     resize: none;
-    line-height: 1rem;
+    line-height: 1.15rem;
     max-height: 5rem;
     appearance: none;
     height: 40px;
@@ -97,18 +97,6 @@ export const commentInputStyle = css`
   .active-textarea > .comment-actions {
     opacity: 1;
     visibility: visible;
-  }
-
-  .comments__input__mention-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 32px;
-    width: 32px;
-    border-radius: 100%;
-    color: rgb(var(--sv-gray-600));
-    cursor: pointer;
-    transition: 0.25s background-color ease-in;
   }
 
   .mention:hover {
