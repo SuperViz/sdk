@@ -813,11 +813,14 @@ export class PointersHTML extends BaseComponent {
       mouseUser.innerHTML = participant.name;
     }
 
+    const currentWrapper = this.wrappers.get(participant.elementId);
+    const scale = currentWrapper.getBoundingClientRect().width / currentWrapper.offsetWidth || 1;
+
     const { x, y } = participant;
     const { width, height } = this.wrappers.get(participant.elementId).getBoundingClientRect();
 
-    mouseFollower.style.left = `${x * width}px`;
-    mouseFollower.style.top = `${y * height}px`;
+    mouseFollower.style.left = `${(x * width) / scale}px`;
+    mouseFollower.style.top = `${(y * height) / scale}px`;
   };
 
   /**
