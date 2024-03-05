@@ -66,7 +66,6 @@ export class Comments extends WebComponentsBaseElement {
       }
 
       if (changedProperties.has('offset')) {
-        console.log(this.offset, 'offset');
         this.applyOffset();
       }
     });
@@ -108,21 +107,21 @@ export class Comments extends WebComponentsBaseElement {
   private applyOffset() {
     const supervizCommentsDiv: HTMLDivElement = this.shadowRoot.querySelector('.superviz-comments');
     if (!supervizCommentsDiv) return;
+
     const defaultDistanceFromEdge = 10;
-    const width = supervizCommentsDiv.clientWidth;
+    const defaultWidth = 320;
+
+    supervizCommentsDiv.style.top = `${defaultDistanceFromEdge + this.offset.top}px`;
+    supervizCommentsDiv.style.bottom = `${defaultDistanceFromEdge + this.offset.bottom}px`;
 
     if (this.side === CommentsSide.LEFT) {
-      supervizCommentsDiv.style.top = `${defaultDistanceFromEdge + this.offset.top}px`;
       supervizCommentsDiv.style.left = `${defaultDistanceFromEdge + this.offset.left}px`;
-      supervizCommentsDiv.style.bottom = `${defaultDistanceFromEdge + this.offset.bottom}px`;
-      supervizCommentsDiv.style.width = `${width + this.offset.right}px`;
+      supervizCommentsDiv.style.width = `${defaultWidth + this.offset.right}px`;
       return;
     }
 
-    supervizCommentsDiv.style.top = `${defaultDistanceFromEdge + this.offset.top}px`;
     supervizCommentsDiv.style.right = `${defaultDistanceFromEdge + this.offset.right}px`;
-    supervizCommentsDiv.style.bottom = `${defaultDistanceFromEdge + this.offset.bottom}px`;
-    supervizCommentsDiv.style.width = `${width + this.offset.left}px`;
+    supervizCommentsDiv.style.width = `${defaultWidth + this.offset.left}px`;
   }
 
   private get poweredBy() {

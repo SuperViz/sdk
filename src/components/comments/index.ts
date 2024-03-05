@@ -373,8 +373,7 @@ export class Comments extends BaseComponent {
     const position = this.layoutOptions?.position;
     if (!position) return;
 
-    const parsedPosition = position.toLowerCase() as CommentsSide;
-
+    const parsedPosition = position.toUpperCase() as CommentsSide;
     if (!CommentsSide[parsedPosition]) return;
 
     this.element.side = CommentsSide[parsedPosition];
