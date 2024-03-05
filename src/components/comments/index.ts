@@ -15,6 +15,7 @@ import {
   Comment,
   CommentsOptions,
   CommentsSide,
+  Offset,
   PinAdapter,
 } from './types';
 
@@ -31,6 +32,7 @@ export class Comments extends BaseComponent {
   private coordinates: AnnotationPositionInfo;
   private hideDefaultButton: boolean;
   private pinActive: boolean;
+  private offset: Offset;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -45,6 +47,7 @@ export class Comments extends BaseComponent {
     this.hideDefaultButton = options?.hideDefaultButton ?? false;
 
     this.setStyles(options?.styles);
+    this.offset = options?.offset;
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(
@@ -364,6 +367,7 @@ export class Comments extends BaseComponent {
     this.element = document.createElement('superviz-comments') as CommentElement;
     this.element.setAttribute('comments', JSON.stringify([]));
     this.element.side = CommentsSide.LEFT;
+    this.element.offset = this.offset;
     document.body.appendChild(this.element);
 
     const position = this.layoutOptions?.position;

@@ -3,7 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
-import { Annotation, CommentsSide } from '../../components/comments/types';
+import { Annotation, CommentsSide, Offset } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 import importStyle from '../base/utils/importStyle';
 
@@ -24,6 +24,7 @@ export class Comments extends WebComponentsBaseElement {
   declare waterMarkState: boolean;
   declare side: CommentsSide;
   declare participantsList: ParticipantByGroupApi[];
+  declare offset: Offset;
 
   static properties = {
     open: { type: Boolean },
@@ -32,6 +33,7 @@ export class Comments extends WebComponentsBaseElement {
     waterMarkState: { type: Boolean },
     side: { type: String },
     participantsList: { type: Object },
+    offset: { type: Object },
   };
 
   constructor() {
@@ -61,6 +63,11 @@ export class Comments extends WebComponentsBaseElement {
 
       if (changedProperties.has('side')) {
         this.positionThreads();
+      }
+
+      if (changedProperties.has('offset')) {
+        console.log(this.offset, 'offset');
+        this.applyOffset();
       }
     });
   }
@@ -94,8 +101,28 @@ export class Comments extends WebComponentsBaseElement {
 
     const className =
       this.side === CommentsSide.LEFT ? 'threads-on-left-side' : 'threads-on-right-side';
-    console.log(className, 'a');
+
     supervizCommentsDiv.classList.add(className);
+  }
+
+  private applyOffset() {
+    const supervizCommentsDiv: HTMLDivElement = this.shadowRoot.querySelector('.superviz-comments');
+    if (!supervizCommentsDiv) return;
+    const defaultDistanceFromEdge = 10;
+    const width = supervizCommentsDiv.clientWidth;
+
+    if (this.side === CommentsSide.LEFT) {
+      supervizCommentsDiv.style.top = `${defaultDistanceFromEdge + this.offset.top}px`;
+      supervizCommentsDiv.style.left = `${defaultDistanceFromEdge + this.offset.left}px`;
+      supervizCommentsDiv.style.bottom = `${defaultDistanceFromEdge + this.offset.bottom}px`;
+      supervizCommentsDiv.style.width = `${width + this.offset.right}px`;
+      return;
+    }
+
+    supervizCommentsDiv.style.top = `${defaultDistanceFromEdge + this.offset.top}px`;
+    supervizCommentsDiv.style.right = `${defaultDistanceFromEdge + this.offset.right}px`;
+    supervizCommentsDiv.style.bottom = `${defaultDistanceFromEdge + this.offset.bottom}px`;
+    supervizCommentsDiv.style.width = `${width + this.offset.left}px`;
   }
 
   private get poweredBy() {
