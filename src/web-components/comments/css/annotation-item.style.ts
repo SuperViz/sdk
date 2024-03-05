@@ -43,7 +43,7 @@ export const annotationItemStyle = css`
   }
 
   div:last-child {
-    margin-left: 8px;
+    margin-inline: 8px;
   }
 
   .comments-container {
