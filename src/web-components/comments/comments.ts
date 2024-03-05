@@ -1,8 +1,9 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
-import { Annotation } from '../../components/comments/types';
+import { Annotation, CommentsSide } from '../../components/comments/types';
 import { WebComponentsBase } from '../base';
 import importStyle from '../base/utils/importStyle';
 
@@ -21,7 +22,7 @@ export class Comments extends WebComponentsBaseElement {
   declare annotations: Annotation[];
   declare annotationFilter: AnnotationFilter;
   declare waterMarkState: boolean;
-  declare side: string;
+  declare side: CommentsSide;
   declare participantsList: ParticipantByGroupApi[];
 
   static properties = {
@@ -39,7 +40,29 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = AnnotationFilter.ALL;
     this.waterMarkState = false;
     this.participantsList = [];
-    this.side = 'left: 0px';
+    this.side = CommentsSide.LEFT;
+  }
+
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
+  ): void {
+    super.firstUpdated(_changedProperties);
+    this.updateComplete.then(() => {
+      importStyle.call(this, ['comments']);
+    });
+  }
+
+  protected updated(changedProperties: Map<string, any>) {
+    super.updated(changedProperties);
+    this.updateComplete.then(() => {
+      if (this.waterMarkState) {
+        waterMarkElementObserver(this.shadowRoot);
+      }
+
+      if (changedProperties.has('side')) {
+        this.positionThreads();
+      }
+    });
   }
 
   public participantsListed(participants: ParticipantByGroupApi[]) {
@@ -63,39 +86,22 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = filter;
   }
 
-  updated(changedProperties: Map<string, any>) {
-    super.updated(changedProperties);
-    this.updateComplete.then(() => {
-      const supervizCommentsDiv = this.shadowRoot.querySelector('.superviz-comments');
+  private positionThreads() {
+    const supervizCommentsDiv = this.shadowRoot.querySelector('.superviz-comments');
+    if (!supervizCommentsDiv) return;
 
-      if (!supervizCommentsDiv) return;
+    supervizCommentsDiv.classList.remove('threads-on-left-side', 'threads-on-right-side');
 
-      if (this.waterMarkState) {
-        waterMarkElementObserver(this.shadowRoot);
-      }
-
-      if (changedProperties.has('side')) {
-        supervizCommentsDiv.setAttribute('style', this.side);
-      }
-    });
+    const className =
+      this.side === CommentsSide.LEFT ? 'threads-on-left-side' : 'threads-on-right-side';
+    console.log(className, 'a');
+    supervizCommentsDiv.classList.add(className);
   }
 
-  protected firstUpdated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
-  ): void {
-    super.firstUpdated(_changedProperties);
-    this.updateComplete.then(() => {
-      importStyle.call(this, ['comments']);
-    });
-  }
+  private get poweredBy() {
+    if (!this.waterMarkState) return html``;
 
-  protected render() {
-    const containerClass = [
-      this.open ? 'container' : 'container-close',
-      'superviz-comments',
-      'comments',
-    ].join(' ');
-    const poweredByFooter = html` <div id="poweredby-footer" class="footer">
+    return html` <div id="poweredby-footer" class="footer">
       <div class="powered-by powered-by--horizontal">
         <a href="https://superviz.com/" target="_blank" class="link">
           <div class="">
@@ -109,11 +115,16 @@ export class Comments extends WebComponentsBaseElement {
         </a>
       </div>
     </div>`;
+  }
 
-    const htmlPoweredByContent = this.waterMarkState ? poweredByFooter : '';
+  protected render() {
+    const classes = {
+      'superviz-comments': true,
+      close: !this.open,
+    };
 
     return html`
-      <div id="superviz-comments" class=${containerClass}>
+      <div id="superviz-comments" class=${classMap(classes)}>
         <div class="header">
           <superviz-comments-topbar
             @close-threads=${this.close}
@@ -131,7 +142,7 @@ export class Comments extends WebComponentsBaseElement {
           participantsList=${JSON.stringify(this.participantsList)}
           class="content"
         ></superviz-comments-content>
-        ${htmlPoweredByContent}
+        ${this.poweredBy}
       </div>
     `;
   }

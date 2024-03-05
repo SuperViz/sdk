@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const commentsStyle = css`
-  .container {
+  .superviz-comments {
     display: flex;
     flex-direction: column;
     width: 320px;
@@ -11,12 +11,11 @@ export const commentsStyle = css`
     top: 0px;
     bottom: 0;
     box-shadow: -2px 0 4px 0 rgba(0, 0, 0, 0.1);
-    height: 100%;
-
     z-index: 100;
+    overflow: hidden;
   }
 
-  .container-close {
+  .close {
     display: none;
   }
 
@@ -39,5 +38,19 @@ export const commentsStyle = css`
     top: 0;
     right: 0;
     bottom: 0;
+  }
+
+  .threads-on-left-side {
+    left: 10px;
+    top: 10px;
+    bottom: 10px;
+    border-radius: 8px;
+  }
+
+  .threads-on-right-side {
+    right: 10px;
+    top: 10px;
+    bottom: 10px;
+    border-radius: 8px;
   }
 `;

@@ -363,19 +363,17 @@ export class Comments extends BaseComponent {
   private positionComments = (): void => {
     this.element = document.createElement('superviz-comments') as CommentElement;
     this.element.setAttribute('comments', JSON.stringify([]));
-    this.element.side = 'left: 0;';
+    this.element.side = CommentsSide.LEFT;
     document.body.appendChild(this.element);
 
     const position = this.layoutOptions?.position;
     if (!position) return;
 
-    const sidesOptions = Object.values(CommentsSide);
-    const parsedPosition = position.toLocaleLowerCase() as CommentsSide;
+    const parsedPosition = position.toLowerCase() as CommentsSide;
 
-    if (!sidesOptions.includes(parsedPosition)) return;
+    if (!CommentsSide[parsedPosition]) return;
 
-    const style = position === CommentsSide.LEFT ? 'left: 0;' : 'right: 0;';
-    this.element.side = style;
+    this.element.side = CommentsSide[parsedPosition];
   };
 
   /**
