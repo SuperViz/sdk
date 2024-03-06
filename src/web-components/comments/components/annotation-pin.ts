@@ -75,6 +75,10 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   ): void {
     super.firstUpdated(_changedProperties);
     importStyle.call(this, ['comments']);
+
+    const pin: HTMLDivElement = this.shadowRoot.querySelector('.comments__annotation-pin');
+    setTimeout(() => pin.classList.remove('preload'), 500);
+
     if (!this.showInput) return;
     this.originalPosition = { ...this.position };
     this.pinAnnotation = this.shadowRoot?.querySelector('.comments__annotation-pin');
@@ -226,10 +230,11 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   protected render() {
     const classes = {
       'comments__annotation-pin': true,
+      preload: true,
       'comments__annotation-pin--active': this.active,
       'comments__cursor-pointer': this.type === PinMode.ADD && !this.showInput,
+      [this.horizontalSide]: true,
     };
-    classes[this.horizontalSide] = true;
 
     const unit = this.keepPositionRatio ? '%' : 'px';
     const style = `top: ${this.position.y}${unit}; left: ${this.position.x}${unit};`;

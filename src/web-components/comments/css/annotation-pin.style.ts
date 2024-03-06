@@ -9,6 +9,26 @@ export const annotationPinStyles = css`
     position: relative;
     pointer-events: auto;
     z-index: 10;
+    transform-origin: bottom left;
+  }
+
+  .comments__annotation-pin:hover {
+    transform: scale(1.2);
+    animation: growing-spring 0.3s linear;
+  }
+
+  .comments__annotation-pin:not(:hover) {
+    animation: shrinking-spring 0.3s linear;
+  }
+
+  .comments__annotation-pin--active:not(:hover) {
+    transform: scale(1.2);
+    animation: growing-spring 0.3s linear;
+  }
+
+  .comments__annotation-pin--active:hover {
+    transform: scale(1);
+    animation: shrinking-spring 0.3s linear;
   }
 
   .comments__annotation-pin {
@@ -80,5 +100,49 @@ export const annotationPinStyles = css`
     right: 0;
     transform: translateX(calc(100% + 7px));
     opacity: 1;
+  }
+
+  .preload {
+    animation-duration: 0s !important;
+  }
+
+  @keyframes growing-spring {
+    0% {
+      transform: scale(1);
+    }
+
+    25% {
+      transform: scale(1.3);
+    }
+
+    50% {
+      transform: scale(1.2);
+    }
+
+    75% {
+      transform: scale(1.25);
+    }
+
+    100% {
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes shrinking-spring {
+    0% {
+      transform: scale(1.2);
+    }
+
+    33% {
+      transform: scale(1);
+    }
+
+    66% {
+      transform: scale(1.1);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
 `;
