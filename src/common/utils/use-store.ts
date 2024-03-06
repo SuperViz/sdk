@@ -27,6 +27,8 @@ function subscribeTo<T>(
   });
 
   this.unsubscribeFrom.push(subject.unsubscribe);
+
+  if (this.requestUpdate) this.requestUpdate();
 }
 
 /**
