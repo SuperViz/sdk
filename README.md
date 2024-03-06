@@ -3,30 +3,33 @@
 </p>
 
 <p align="center">
-<img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/superviz/sdk/Publish%20SDK">
-<img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/superviz/sdk">
-<img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/superviz/sdk">
-<img alt="GitHub" src="https://img.shields.io/github/license/superviz/sdk">
-<img alt="npm type definitions" src="https://img.shields.io/npm/types/@superviz/sdk">
-<img alt="npm" src="https://img.shields.io/npm/dw/@superviz/sdk">
+  <img alt="Discord" src="https://img.shields.io/discord/1171797567223378002">
+  <img alt="GitHub Release" src="https://img.shields.io/github/v/release/superviz/sdk">
+  <img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/superviz/sdk">
+  <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/superviz/sdk">
+  <img alt="License" src="https://img.shields.io/github/license/superviz/sdk">
+  <img alt="npm type definitions" src="https://img.shields.io/npm/types/@superviz/sdk">
+  <img alt="Downloads" src="https://img.shields.io/npm/dw/@superviz/sdk">
 </p>
 
 SuperViz provides a suite of programmable low-code Collaboration and Communication components, all synchronized with an advanced Real-time Data Engine, enabling real-time and asynchronous collaboration and communication within any JavaScript based application.
 
 SuperViz offers a comprehensive suite of components, all synchronized with an advanced Real-time Data Engine, facilitating real-time collaboration in JavaScript-based applications. SuperViz SDK enables you to use one of our components:
 
-- [Contextual Comments](https://docs.superviz.com/components/contextual-comments/)
-  - [Contextual Comments for Autodesk](https://docs.superviz.com/components/contextual-comments/contextual-comments-for-autodesk)
-  - [Contextual Comments for Matterport](https://docs.superviz.com/components/contextual-comments/contextual-comments-for-matterport)
-  - [Contextual Comments for ThreeJS](https://docs.superviz.com/components/contextual-comments/contextual-comments-for-threejs)
+- Contextual Comments
+  - [Contextual Comments for HTML](https://docs.superviz.com/sdk/comments/html-adapter)
+  - [Contextual Comments for Canvas element](https://docs.superviz.com/sdk/comments/canvas-adapter)
+  - [Contextual Comments for Autodesk](https://docs.superviz.com/sdk/comments/autodesk-adpater)
+  - [Contextual Comments for Matterport](https://docs.superviz.com/sdk/comments/matterport-adapter)
+  - [Contextual Comments for ThreeJS](https://docs.superviz.com/sdk/comments/threejs-adapter)
 - Presence
-  - [Presence in Autodesk](https://docs.superviz.com/components/presence/presence3d/AutodeskPresence)
-  - [Presence in Matterport](https://docs.superviz.com/components/presence/presence3d/MatterportPresence)
-  - [Presence in ThreeJS](https://docs.superviz.com/components/presence/presence3d/ThreeJsPresence)
-  - [Real-time Mouse Pointers](https://docs.superviz.com/components/presence/mouse-pointers)
-  - [Real-time Data Engine](https://docs.superviz.com/components/presence/real-time-data-engine)
-  - [Who-is-Online](https://docs.superviz.com/components/presence/who-is-online)
-- [Video Conference](https://docs.superviz.com/components/video/video-conference)
+  - [Real-time Mouse Pointers](https://docs.superviz.com/sdk/presence/mouse-pointers)
+  - [Real-time Data Engine](https://docs.superviz.com/sdk/presence/real-time-data-engine)
+  - [Who-is-Online](https://docs.superviz.com/sdk/presence/who-is-online)
+  - [Presence in Autodesk](https://docs.superviz.com/sdk/presence/AutodeskPresence)
+  - [Presence in Matterport](https://docs.superviz.com/sdk/presence/MatterportPresence)
+  - [Presence in ThreeJS](https://docs.superviz.com/sdk/presence/ThreeJsPresence)
+- [Video Conference](https://docs.superviz.com/sdk/video/video-conference)
 
 You can also combine components to create a custom solution for your application.
 
@@ -80,34 +83,17 @@ async function initializeSuperVizSdk() {
 }
 ```
 
-### Documentation
+If you are implementing the SuperViz SDK in a React application, check our [React SDK package](https://docs.superviz.com/react-sdk/initialization), which provides a set of hooks and components to make it easier to integrate SuperViz SDK into your React application.
+
+## Documentation
 
 You can find the complete documentation for every component and how to initialize them on the [SuperViz SDK Documentation page](https://docs.superviz.com/).
 
+You can also find the complete changelog on the [Release Notes page](https://docs.superviz.com/releases).
+
 ## Contributing
 
-### Issues
-
-To report a new bug, request a new feature, or if you need any help, you can [file an issue on GitHub](https://github.com/SuperViz/sdk/issues/new/choose). We have a few templates to help you out.
-
-### Run locally
-
-Add file .remote-config.js with the following content:
-
-```javascript
-module.exports = {
-  remoteConfig: {
-    apiUrl: 'https://api.example.com',
-    conferenceLayerUrl: 'https://conference-url.example.com',
-  },
-};
-```
-
-And add into initialization of SDK
-
-```javascript
-environment: 'local';
-```
+If you are interested in contributing to SuperViz SDK, the best place to get involved with the community is through the [Discord server](https://discord.gg/weZ3Bfv6WZ), there you can find the latest news, ask questions, and share your experiences with SuperViz SDK.
 
 ## License
 
