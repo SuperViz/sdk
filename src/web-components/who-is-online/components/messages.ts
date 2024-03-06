@@ -2,6 +2,8 @@ import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, html
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+import { Participant } from '../../../common/types/participant.types';
+import { StoreType } from '../../../common/types/stores.types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { messagesStyle } from '../css';
@@ -18,20 +20,27 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   declare following: Following | undefined;
   declare everyoneFollowsMe: boolean;
   declare isPrivate: boolean;
-  declare participantColor: string;
   declare verticalSide: VerticalSide;
   declare horizontalSide: HorizontalSide;
 
+  private participantColor: string;
   private animationFrame: number | undefined;
 
   static properties = {
     following: { type: Object },
     everyoneFollowsMe: { type: Boolean },
     isPrivate: { type: Boolean },
-    participantColor: { type: String },
     verticalSide: { type: String },
     horizontalSide: { type: String },
   };
+
+  constructor() {
+    super();
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe((participant: Participant) => {
+      this.participantColor = participant.color;
+    });
+  }
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,

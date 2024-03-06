@@ -9,11 +9,10 @@ import { PointersHTML } from '.';
 
 const createMousePointers = (): PointersHTML => {
   const presenceMouseComponent = new PointersHTML('html');
+  presenceMouseComponent['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
 
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
-    localParticipant: MOCK_LOCAL_PARTICIPANT,
-    group: MOCK_GROUP,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
   });

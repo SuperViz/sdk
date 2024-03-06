@@ -24,27 +24,31 @@ export class Launcher extends Observable implements DefaultLauncher {
   private activeComponents: ComponentNames[] = [];
   private componentsToAttachAfterJoin: Partial<BaseComponent>[] = [];
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
-  private group: Group;
 
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
 
   private participant: PublicSubject<Participant>;
   private participants: PublicSubject<Participant[]>;
+  private group: PublicSubject<Group>;
 
-  constructor({ participant, group }: LauncherOptions) {
+  constructor({ participant, group: participantGroup }: LauncherOptions) {
     super();
-    const { localParticipant, participants } = useGlobalStore();
+    const { localParticipant, participants, group } = useGlobalStore();
 
     this.participant = localParticipant;
     this.participants = participants;
+    this.group = group;
+
+    setTimeout(() => {
+      localParticipant.value = { ...localParticipant.value, color: 'red' };
+    }, 20000);
 
     this.participant.value = {
       ...participant,
       type: ParticipantType.GUEST,
     };
-
-    this.group = group;
+    this.group.value = participantGroup;
 
     this.logger = new Logger('@superviz/sdk/launcher');
     this.realtime = new AblyRealtimeService(
@@ -76,9 +80,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     component.attach({
-      localParticipant: this.participant.value,
       realtime: this.realtime,
-      group: this.group,
       config: config.configuration,
       eventBus: this.eventBus,
     });
@@ -89,8 +91,8 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     ApiService.sendActivity(
       this.participant.value.id,
-      this.group.id,
-      this.group.name,
+      this.group.value.id,
+      this.group.value.name,
       component.name,
     );
   };
@@ -342,7 +344,6 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private onParticipantLeave = (ablyParticipant: AblyParticipant): void => {
     this.logger.log('launcher service @ onParticipantLeave');
-
     const participant = this.participants.value.find(
       (participant) => participant.id === ablyParticipant.data.id,
     );

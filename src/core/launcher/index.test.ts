@@ -3,11 +3,11 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
-import { ParticipantType } from '../../common/types/participant.types';
 import { BaseComponent } from '../../components/base';
 import { ComponentNames } from '../../components/types';
 import LimitsService from '../../services/limits';
 import { AblyParticipant } from '../../services/realtime/ably/types';
+import { useGlobalStore } from '../../services/stores';
 
 import { LauncherFacade, LauncherOptions } from './types';
 
@@ -27,9 +27,7 @@ jest.mock('../../services/api');
 
 const MOCK_COMPONENT = {
   name: ComponentNames.VIDEO_CONFERENCE,
-  attach: jest.fn(() => {
-    console.log('attach');
-  }),
+  attach: jest.fn(),
   detach: jest.fn(),
 } as unknown as BaseComponent;
 
@@ -44,10 +42,13 @@ describe('Launcher', () => {
   beforeEach(() => {
     console.warn = jest.fn();
     console.error = jest.fn();
-    console.log = jest.fn();
+    console.log = jest.spyOn(console, 'log').mockImplementation(console.log) as any;
 
     jest.clearAllMocks();
     jest.restoreAllMocks();
+
+    const { localParticipant } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
 
     LauncherInstance = new Launcher(DEFAULT_INITIALIZATION_MOCK);
   });
@@ -56,7 +57,7 @@ describe('Launcher', () => {
     expect(Launcher).toBeDefined();
   });
 
-  test('should be inicialize realtime service', () => {
+  test('should initialize realtime service', () => {
     expect(ABLY_REALTIME_MOCK.start).toHaveBeenCalled();
   });
 
@@ -86,15 +87,13 @@ describe('Launcher', () => {
       expect(spy).toHaveBeenCalledWith(MOCK_COMPONENT);
     });
 
-    test('should be add component', () => {
+    test('should add component', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
-        localParticipant: { ...MOCK_LOCAL_PARTICIPANT, type: ParticipantType.GUEST },
         realtime: ABLY_REALTIME_MOCK,
-        group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
       });
@@ -242,6 +241,7 @@ describe('Launcher', () => {
         id: 'unit-test-participant-ably-id',
         timestamp: new Date().getTime(),
         data: {
+          id: 'participant1',
           participantId: 'participant1',
         },
       };
@@ -322,8 +322,8 @@ describe('Launcher', () => {
         id: 'unit-test-participant-ably-id',
         timestamp: new Date().getTime(),
         data: {
-          id: MOCK_LOCAL_PARTICIPANT.id,
-          participantId: MOCK_LOCAL_PARTICIPANT.id,
+          id: 'participant1',
+          participantId: 'participant1',
         },
       };
 

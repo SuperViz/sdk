@@ -1,13 +1,14 @@
-import { Participant } from '../../../common/types/participant.types';
-import { Singleton } from '../common/types';
+import { Group, Participant } from '../../../common/types/participant.types';
+import { PublicSubject, Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
 
 const instance: Singleton<GlobalStore> = CreateSingleton<GlobalStore>();
 
-class GlobalStore {
-  public localParticipant = subject<Participant>(null);
+export class GlobalStore {
+  public localParticipant = subject<Participant>(null, true);
   public participants = subject<Participant[]>([]);
+  public group = subject<Group>(null);
 
   constructor() {
     if (instance.value) {
@@ -24,14 +25,19 @@ class GlobalStore {
 }
 
 const store = new GlobalStore();
-const localParticipant = store.localParticipant.expose();
-const participants = store.participants.expose();
 const destroy = store.destroy.bind(store);
+
+const group = store.group.expose();
+const participants = store.participants.expose();
+const localParticipant = store.localParticipant.expose();
 
 export function useGlobalStore() {
   return {
     localParticipant,
     participants,
     destroy,
+    group,
   };
 }
+
+export type GlobalStoreReturnType = ReturnType<typeof useGlobalStore>;

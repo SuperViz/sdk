@@ -15,6 +15,6 @@ export type Singleton<T> = {
 export type PublicSubject<T> = {
   get value(): T;
   set value(T);
-  subscribe: callback<string, callback<T>>;
-  unsubscribe: callback<string>;
+  subscribe: callback<string | unknown, callback<T>>;
+  unsubscribe: callback<string | unknown>;
 };

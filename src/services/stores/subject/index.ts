@@ -6,10 +6,12 @@ import { PublicSubject } from '../common/types';
 export class Subject<T> {
   public state: T;
   private subject: BehaviorSubject<T>;
-  private subscriptions: Map<string, Subscription> = new Map();
+  private subscriptions: Map<string | this, Subscription> = new Map();
+  private showLog: boolean;
 
-  constructor(state: T, _subject: BehaviorSubject<T>) {
+  constructor(state: T, _subject: BehaviorSubject<T>, showLog?: boolean) {
     this.state = state;
+    this.showLog = !!showLog;
     this.subject = _subject.pipe(
       distinctUntilChanged(),
       shareReplay({ bufferSize: 1, refCount: true }),
@@ -20,15 +22,22 @@ export class Subject<T> {
     return this.state;
   }
 
-  private setValue(newValue: T): void {
+  private ids: any[] = [];
+
+  private num = Math.floor(Math.random() * 100);
+  private setValue = (newValue: T): void => {
     this.state = newValue;
     this.subject.next(this.state);
-  }
+  };
 
-  public subscribe(subscriptionId: string, callback: (value: T) => void) {
+  private counter = 0;
+
+  public subscribe = (subscriptionId: string | this, callback: (value: T) => void) => {
+    this.ids.push(subscriptionId);
+    const number = Math.floor(Math.random() * 100);
     const subscription = this.subject.subscribe(callback);
     this.subscriptions.set(subscriptionId, subscription);
-  }
+  };
 
   public unsubscribe(subscriptionId: string) {
     this.subscriptions.get(subscriptionId)?.unsubscribe();
@@ -59,8 +68,8 @@ export class Subject<T> {
   }
 }
 
-export default function subject<T>(initialState: T): Subject<T> {
+export default function subject<T>(initialState: T, showLog?: boolean): Subject<T> {
   const subject = new BehaviorSubject<T>(initialState);
 
-  return new Subject<T>(initialState, subject);
+  return new Subject<T>(initialState, subject, showLog);
 }

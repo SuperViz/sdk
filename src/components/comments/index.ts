@@ -1,8 +1,10 @@
 import { CommentEvent } from '../../common/types/events.types';
-import { ParticipantByGroupApi } from '../../common/types/participant.types';
+import { Participant, ParticipantByGroupApi } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
+import subject from '../../services/stores/subject';
 import type { Comments as CommentElement } from '../../web-components';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
 import { BaseComponent } from '../base';
@@ -31,6 +33,7 @@ export class Comments extends BaseComponent {
   private coordinates: AnnotationPositionInfo;
   private hideDefaultButton: boolean;
   private pinActive: boolean;
+  private localParticipantId: string;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -47,14 +50,17 @@ export class Comments extends BaseComponent {
     this.setStyles(options?.styles);
 
     setTimeout(() => {
-      pinAdapter.setCommentsMetadata(
-        this.layoutOptions?.position ?? 'left',
-        this.localParticipant?.avatar?.imageUrl,
-        this.localParticipant?.name,
-      );
+      pinAdapter.setCommentsMetadata(this.layoutOptions?.position ?? 'left');
     });
 
     this.pinAdapter = pinAdapter;
+
+    const { group, localParticipant } = this.useStore(StoreType.GLOBAL);
+    group.subscribe();
+
+    localParticipant.subscribe((participant: Participant) => {
+      this.localParticipantId = participant.id;
+    });
   }
 
   /**
@@ -396,7 +402,7 @@ export class Comments extends BaseComponent {
           roomId: config.get<string>('roomId'),
           position: JSON.stringify(position),
           url,
-          userId: this.localParticipant.id,
+          userId: this.localParticipantId,
         },
       );
 
@@ -465,7 +471,7 @@ export class Comments extends BaseComponent {
         config.get<string>('apiKey'),
         {
           annotationId,
-          userId: this.localParticipant.id,
+          userId: this.localParticipantId,
           text,
         },
       );
@@ -723,7 +729,7 @@ export class Comments extends BaseComponent {
   private onAnnotationListUpdate = (message): void => {
     const { data, clientId } = message;
 
-    if (this.localParticipant.id === clientId) return;
+    if (this.localParticipantId === clientId) return;
 
     this.annotations = data;
     this.element.updateAnnotations(this.annotations);

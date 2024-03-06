@@ -5,13 +5,7 @@ import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
-import {
-  HorizontalSide,
-  Simple2DPoint,
-  SimpleParticipant,
-  TemporaryPinData,
-  HTMLPinOptions,
-} from './types';
+import { HorizontalSide, Simple2DPoint, TemporaryPinData, HTMLPinOptions } from './types';
 
 export class HTMLPin implements PinAdapter {
   // Public properties
@@ -21,7 +15,6 @@ export class HTMLPin implements PinAdapter {
   // Private properties
   // Comments data
   private annotations: Annotation[];
-  private localParticipant: SimpleParticipant = {};
 
   declare participants: ParticipantByGroupApi[];
 
@@ -339,10 +332,8 @@ export class HTMLPin implements PinAdapter {
    * @param {string} name the name of the local participant
    * @returns {void}
    */
-  public setCommentsMetadata = (side: HorizontalSide, avatar: string, name: string): void => {
+  public setCommentsMetadata = (side: HorizontalSide): void => {
     this.commentsSide = side;
-    this.localParticipant.avatar = avatar;
-    this.localParticipant.name = name;
   };
 
   /**
@@ -415,8 +406,6 @@ export class HTMLPin implements PinAdapter {
       temporaryPin.setAttribute('commentsSide', this.commentsSide);
       temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
-      temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
-      temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttribute('participantsList', JSON.stringify(this.participants));
 
       temporaryPin.setAttribute('keepPositionRatio', '');

@@ -2,6 +2,8 @@ import { isEqual } from 'lodash';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
+import { Participant } from '../../../common/types/participant.types';
+import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
@@ -13,6 +15,7 @@ export class PointersHTML extends BaseComponent {
 
   // Realtime data
   private presences: Map<string, ParticipantMouse> = new Map();
+  private localParticipant: Participant;
 
   // Elements
   private container: HTMLElement;
@@ -74,6 +77,8 @@ export class PointersHTML extends BaseComponent {
     }
 
     this.name = ComponentNames.PRESENCE;
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe();
 
     this.goToPresenceCallback = options?.onGoToPresence;
     this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
@@ -661,7 +666,7 @@ export class PointersHTML extends BaseComponent {
   }
 
   /**
-   * @function updateVoidElementWrapper
+   * @function updateSVGElementWrapper
    * @description - Updates the position of each wrapper for void elements
    * @returns {void}
    */

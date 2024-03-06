@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 
+import { useStore } from '../../common/utils/use-store';
 import config from '../../services/config';
 
 import { variableStyle, typography, svHr, iconButtonStyle } from './styles';
@@ -7,6 +8,9 @@ import { Constructor, WebComponentsBaseInterface } from './types';
 
 export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass: T) => {
   class WebComponentsBaseClass extends superClass {
+    private unsubscribeFrom: Array<(id: unknown) => void> = [];
+    protected useStore = useStore.bind(this) as typeof useStore;
+
     static styles = [
       variableStyle,
       typography,
@@ -31,6 +35,16 @@ export const WebComponentsBase = <T extends Constructor<LitElement>>(superClass:
       });
 
       super.connectedCallback();
+    }
+
+    /**
+     * @function disconnectedCallback
+     * @description Unsubscribes from all the subjects
+     * @returns {void}
+     */
+    public disconnectedCallback() {
+      super.disconnectedCallback();
+      this.unsubscribeFrom.forEach((unsubscribe) => unsubscribe(this));
     }
 
     /**

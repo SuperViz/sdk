@@ -10,6 +10,7 @@ import {
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { useGlobalStore } from '../../services/stores';
 
 import { WhoIsOnline } from './index';
 
@@ -22,12 +23,11 @@ describe('Who Is Online', () => {
     whoIsOnlineComponent = new WhoIsOnline();
     whoIsOnlineComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
 
+    whoIsOnlineComponent['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
     whoIsOnlineComponent['element'].updateParticipants = jest.fn();
 
     const gray = MeetingColorsHex[16];

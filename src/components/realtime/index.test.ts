@@ -29,8 +29,6 @@ describe('realtime component', () => {
     RealtimeComponentInstance = new Realtime();
     RealtimeComponentInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
@@ -76,8 +74,6 @@ describe('realtime component', () => {
 
     RealtimeComponentInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
@@ -96,8 +92,6 @@ describe('realtime component', () => {
 
     RealtimeComponentInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });
@@ -122,8 +116,6 @@ describe('realtime component', () => {
 
     RealtimeComponentInstance.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
     });

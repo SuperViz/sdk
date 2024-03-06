@@ -33,8 +33,6 @@ const createMousePointers = (): PointersCanvas => {
 
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
-    localParticipant: MOCK_LOCAL_PARTICIPANT,
-    group: MOCK_GROUP,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
   });
@@ -43,6 +41,8 @@ const createMousePointers = (): PointersCanvas => {
     ...presenceMouseComponent['canvas'],
     ...MOCK_CANVAS,
   } as unknown as HTMLCanvasElement;
+
+  presenceMouseComponent['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
 
   return presenceMouseComponent;
 };
