@@ -126,7 +126,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     ablyKey,
     apiKey,
     conferenceLayerUrl,
-    environment,
+    environment: (options.environment as EnvironmentTypes) ?? EnvironmentTypes.PROD,
     roomId,
     debug: options.debug,
     limits,
