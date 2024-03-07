@@ -1,6 +1,6 @@
 import { PublicSubject } from '../../services/stores/common/types';
 import { useGlobalStore } from '../../services/stores/global';
-import { Store, StoreType, StoresTypes } from '../types/stores.types';
+import { Store, StoreType } from '../types/stores.types';
 
 const stores = {
   [StoreType.GLOBAL]: useGlobalStore,
