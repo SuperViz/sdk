@@ -40,10 +40,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.participants = participants;
     this.group = group;
 
-    setTimeout(() => {
-      localParticipant.value = { ...localParticipant.value, color: 'red' };
-    }, 20000);
-
     this.participant.value = {
       ...participant,
       type: ParticipantType.GUEST,
