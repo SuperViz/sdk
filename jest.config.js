@@ -20,5 +20,10 @@ module.exports = {
     '/e2e/',
     '/src/web-components',
   ],
+  transformIgnorePatterns: ['node_modules/(?!@superviz/socket-client)'],
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.js$': 'ts-jest',
+  },
   setupFiles: ['<rootDir>/jest.setup.js'],
 };
