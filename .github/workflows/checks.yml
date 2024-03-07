@@ -6,11 +6,11 @@ on:
       - opened
       - synchronize
 jobs:
-  delete-comments: 
+  delete-comments:
     runs-on: ubuntu-latest
     steps:
       - uses: izhangzhihao/delete-comment@master
-        with: 
+        with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           delete_user_name: SuperViz-Dev
           issue_number: ${{ github.event.number }}
@@ -28,7 +28,7 @@ jobs:
           touch .version.js && echo "echo \"export const version = 'test'\" > .version.js" | bash -
       - name: Create a .remote-config.js file
         run: |
-          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
+          touch .remote-config.js && echo "echo \"module.exports = { remoteConfig: { apiUrl: 'https://dev.nodeapi.superviz.com', conferenceLayerUrl: 'https://video-frame.superviz.com/lab/index.html'}};\" > .remote-config.js" | bash -
       - name: Run tests
         run: yarn test:unit:ci --coverage
       - name: Code Coverage Report
