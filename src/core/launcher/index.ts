@@ -9,6 +9,7 @@ import { ComponentNames } from '../../components/types';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
+import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant } from '../../services/realtime/ably/types';
@@ -25,6 +26,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private participant: Participant;
   private group: Group;
 
+  private ioc: IOC;
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
 
@@ -44,6 +46,8 @@ export class Launcher extends Observable implements DefaultLauncher {
       config.get<string>('apiUrl'),
       config.get<string>('ablyKey'),
     );
+
+    this.ioc = new IOC(this.participant);
 
     // internal events without realtime
     this.eventBus = new EventBus();
