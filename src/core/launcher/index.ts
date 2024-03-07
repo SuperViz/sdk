@@ -1,3 +1,4 @@
+import * as Socket from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
@@ -27,6 +28,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private group: Group;
 
   private ioc: IOC;
+  private LaucherRealtimeRoom: Socket.Room;
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
 
@@ -42,19 +44,24 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.group = group;
 
     this.logger = new Logger('@superviz/sdk/launcher');
+
+    // Ably realtime service
     this.realtime = new AblyRealtimeService(
       config.get<string>('apiUrl'),
       config.get<string>('ablyKey'),
     );
 
+    // SuperViz IO Room
     this.ioc = new IOC(this.participant);
+    this.LaucherRealtimeRoom = this.ioc.createRoom('launcher');
 
     // internal events without realtime
     this.eventBus = new EventBus();
 
     this.logger.log('launcher created');
 
-    this.startRealtime();
+    this.startAbly();
+    this.startIOC();
   }
 
   /**
@@ -126,6 +133,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       return c.name !== component.name;
     });
     this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
+
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
   };
 
@@ -202,12 +210,12 @@ export class Launcher extends Observable implements DefaultLauncher {
   };
 
   /**
-   * @function startRealtime
+   * @function startAbly
    * @description start realtime service and join to room
    * @returns {void}
    */
-  private startRealtime = (): void => {
-    this.logger.log('launcher service @ startRealtime');
+  private startAbly = (): void => {
+    this.logger.log('launcher service @ startAbly');
 
     this.realtime.start({
       participant: this.participant,
@@ -218,15 +226,15 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.join();
 
     // subscribe to realtime events
-    this.subscribeToRealtimeEvents();
+    this.subscribeToAblyEvents();
   };
 
   /**
-   * @function subscribeToRealtimeEvents
+   * @function subscribeToAblyEvents
    * @description subscribe to realtime events
    * @returns {void}
    */
-  private subscribeToRealtimeEvents = (): void => {
+  private subscribeToAblyEvents = (): void => {
     this.realtime.authenticationObserver.subscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
@@ -234,7 +242,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
   };
 
-  /** Realtime Listeners */
+  /** Ably Listeners */
 
   private onAuthentication = (event: RealtimeEvent): void => {
     if (event !== RealtimeEvent.REALTIME_AUTHENTICATION_FAILED) return;
@@ -288,6 +296,8 @@ export class Launcher extends Observable implements DefaultLauncher {
 
         return this.activeComponents.includes(component.name);
       });
+
+      this.LaucherRealtimeRoom.presence.update<Participant>(localParticipant);
       this.participant = localParticipant;
       this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
@@ -352,6 +362,36 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onSameAccount = (): void => {
     this.publish(ParticipantEvent.SAME_ACCOUNT_ERROR);
     this.destroy();
+  };
+
+  /** New IO */
+
+  /**
+   * @function startIOC
+   * @description start IO service
+   * @returns {void}
+   */
+
+  private startIOC = (): void => {
+    this.logger.log('launcher service @ startIOC');
+
+    this.LaucherRealtimeRoom.presence.on<Participant>(
+      Socket.PresenceEvents.JOINED_ROOM,
+      this.onParticipantJoinedIOC,
+    );
+
+    this.LaucherRealtimeRoom.presence.on<Participant>(Socket.PresenceEvents.UPDATE, () => {});
+    this.LaucherRealtimeRoom.presence.on<Participant>(Socket.PresenceEvents.LEAVE, () => {});
+  };
+
+  private onParticipantJoinedIOC = (presence: Socket.PresenceEvent<Participant>) => {
+    if (presence.id === this.participant.id) {
+      this.onLocalParticipantJoined(presence);
+    }
+  };
+
+  private onLocalParticipantJoined = (_: Socket.PresenceEvent<Participant>) => {
+    this.LaucherRealtimeRoom.presence.update<Participant>(this.participant);
   };
 }
 
