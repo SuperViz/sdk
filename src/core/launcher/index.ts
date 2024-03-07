@@ -4,6 +4,7 @@ import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types
 import { Group, Participant, ParticipantType } from '../../common/types/participant.types';
 import { Observable } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
+import { useStore } from '../../common/utils/use-store';
 import { BaseComponent } from '../../components/base';
 import { ComponentNames } from '../../components/types';
 import ApiService from '../../services/api';
@@ -79,6 +80,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       realtime: this.realtime,
       config: config.configuration,
       eventBus: this.eventBus,
+      useStore,
     });
 
     this.activeComponents.push(component.name);

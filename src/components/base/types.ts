@@ -1,4 +1,4 @@
-import { Group, Participant } from '../../common/types/participant.types';
+import { Store, StoreType } from '../../common/types/stores.types';
 import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
@@ -8,6 +8,7 @@ export interface DefaultAttachComponentOptions {
   realtime: AblyRealtimeService;
   config: Configuration;
   eventBus: EventBus;
+  useStore: <T extends StoreType>(name: T) => Store<T>;
 }
 
 export type GlobalStore = {
