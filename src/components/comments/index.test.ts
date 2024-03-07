@@ -1,5 +1,3 @@
-import { TestScheduler } from 'rxjs/testing';
-
 import { MOCK_ANNOTATION } from '../../../__mocks__/comments.mock';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
@@ -9,6 +7,7 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { CommentEvent } from '../../common/types/events.types';
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
+import { useStore } from '../../common/utils/use-store';
 import ApiService from '../../services/api';
 import { useGlobalStore } from '../../services/stores';
 import { CommentsFloatButton } from '../../web-components';
@@ -81,6 +80,7 @@ describe('Comments', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     commentsComponent['element'].updateAnnotations = jest.fn();
@@ -333,6 +333,7 @@ describe('Comments', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     await sleep(1);
@@ -350,6 +351,7 @@ describe('Comments', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     await sleep(1);

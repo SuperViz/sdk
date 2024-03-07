@@ -1,8 +1,9 @@
 import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
-import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
+import { useStore } from '../../../common/utils/use-store';
 import { ParticipantMouse, Element } from '../types';
 
 import { PointersHTML } from '.';
@@ -15,6 +16,7 @@ const createMousePointers = (): PointersHTML => {
     realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
+    useStore,
   });
 
   return presenceMouseComponent;

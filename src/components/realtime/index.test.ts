@@ -1,7 +1,7 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
-import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { useStore } from '../../common/utils/use-store';
 
 import { Realtime } from '.';
 
@@ -31,6 +31,7 @@ describe('realtime component', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
   });
 
@@ -76,6 +77,7 @@ describe('realtime component', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     RealtimeComponentInstance.subscribe('test', callback);
@@ -94,6 +96,7 @@ describe('realtime component', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     RealtimeComponentInstance.subscribe('test', callback);
@@ -118,6 +121,7 @@ describe('realtime component', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     RealtimeComponentInstance.publish('test', 'test');

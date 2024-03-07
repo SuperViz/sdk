@@ -15,6 +15,7 @@ import {
 } from '../../common/types/events.types';
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { ParticipantType } from '../../common/types/participant.types';
+import { useStore } from '../../common/utils/use-store';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
@@ -97,6 +98,7 @@ describe('VideoConference', () => {
       realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
   });
 
@@ -120,6 +122,7 @@ describe('VideoConference', () => {
       realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     expect(VideoConferenceInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();

@@ -1,8 +1,9 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
-import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
+import { useStore } from '../../../common/utils/use-store';
 import { ParticipantMouse } from '../types';
 
 import { PointersCanvas } from './index';
@@ -35,6 +36,7 @@ const createMousePointers = (): PointersCanvas => {
     realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
+    useStore,
   });
 
   presenceMouseComponent['canvas'] = {

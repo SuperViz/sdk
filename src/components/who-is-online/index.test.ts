@@ -3,14 +3,13 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import {
   MOCK_ABLY_PARTICIPANT,
   MOCK_ABLY_PARTICIPANT_DATA_2,
-  MOCK_GROUP,
   MOCK_LOCAL_PARTICIPANT,
   MOCK_ABLY_PARTICIPANT_DATA_1,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
-import { useGlobalStore } from '../../services/stores';
+import { useStore } from '../../common/utils/use-store';
 
 import { WhoIsOnline } from './index';
 
@@ -25,6 +24,7 @@ describe('Who Is Online', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     whoIsOnlineComponent['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;

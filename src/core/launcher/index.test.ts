@@ -3,6 +3,7 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
+import { useStore } from '../../common/utils/use-store';
 import { BaseComponent } from '../../components/base';
 import { ComponentNames } from '../../components/types';
 import LimitsService from '../../services/limits';
@@ -96,6 +97,7 @@ describe('Launcher', () => {
         realtime: ABLY_REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({

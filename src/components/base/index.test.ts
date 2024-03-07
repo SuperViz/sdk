@@ -3,8 +3,8 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { Group } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
+import { useStore } from '../../common/utils/use-store';
 import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
 import { AblyRealtimeService } from '../../services/realtime';
@@ -66,6 +66,7 @@ describe('BaseComponent', () => {
         realtime: ABLY_REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance['start'] = jest.fn(DummyComponentInstance['start']);
@@ -88,6 +89,7 @@ describe('BaseComponent', () => {
         realtime: ablyMock as AblyRealtimeService,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance['start'] = jest.fn();
@@ -105,6 +107,7 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       expect(DummyComponentInstance['realtime']).toEqual(REALTIME_MOCK);
@@ -120,6 +123,7 @@ describe('BaseComponent', () => {
           realtime: null as unknown as AblyRealtimeService,
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
+          useStore: null as unknown as typeof useStore,
         });
       }).toThrowError();
     });
@@ -134,6 +138,7 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance.detach();
@@ -153,6 +158,7 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance.subscribe('test', callback);
