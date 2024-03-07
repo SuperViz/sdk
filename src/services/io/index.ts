@@ -59,6 +59,7 @@ export class IOC {
    * @returns {Room}
    */
   public createRoom(roomName: string): Socket.Room {
-    return this.client.connect(roomName);
+    const roomId = config.get<string>('roomId');
+    return this.client.connect(`${roomId}:${roomName}`);
   }
 }
