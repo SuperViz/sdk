@@ -29,15 +29,15 @@ export class SlotService {
     const slot = Math.floor(Math.random() * 16);
 
     new Promise((resolve, reject) => {
-      this.room.presence.get((event: any) => {
-        if (!event.presences || !event.presences.length) resolve(false);
+      this.room.presence.get((presences) => {
+        if (!presences || !presences.length) resolve(false);
 
-        if (event.presences.length >= 16) {
+        if (presences.length >= 16) {
           reject(new Error('[SuperViz] - No more slots available'));
           return;
         }
 
-        event.presences.forEach((presence: Socket.PresenceEvent<Participant>) => {
+        presences.forEach((presence: Socket.PresenceEvent<Participant>) => {
           if (presence.id === this.participant.id) return;
 
           if (presence.data?.slot?.index === slot) resolve(true);

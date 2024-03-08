@@ -6,9 +6,7 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback({
-            presences: [],
-          });
+          callback([]);
         }),
         update: jest.fn(),
       },
@@ -39,9 +37,7 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback({
-            presences: [],
-          });
+          callback([]);
         }),
         update: jest.fn(),
       },
@@ -74,9 +70,7 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback({
-            presences: new Array(16).fill({}),
-          });
+          callback(new Array(16).fill({}));
         }),
         update: jest.fn(),
       },
@@ -98,17 +92,15 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback({
-            presences: [
-              {
-                data: {
-                  slot: {
-                    index: 0,
-                  },
+          callback([
+            {
+              data: {
+                slot: {
+                  index: 0,
                 },
               },
-            ],
-          });
+            },
+          ]);
         }),
         update: jest.fn(),
       },
