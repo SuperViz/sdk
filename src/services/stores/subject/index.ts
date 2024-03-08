@@ -9,32 +9,25 @@ export class Subject<T> {
   private subscriptions: Map<string | this, Subscription> = new Map();
   private showLog: boolean;
 
-  constructor(state: T, _subject: BehaviorSubject<T>, showLog?: boolean) {
+  constructor(state: T, subject: BehaviorSubject<T>, showLog?: boolean) {
     this.state = state;
     this.showLog = !!showLog;
-    this.subject = _subject.pipe(
+    this.subject = subject.pipe(
       distinctUntilChanged(),
       shareReplay({ bufferSize: 1, refCount: true }),
-    ) as any;
+    ) as BehaviorSubject<T>;
   }
 
   private getValue(): T {
     return this.state;
   }
 
-  private ids: any[] = [];
-
-  private num = Math.floor(Math.random() * 100);
   private setValue = (newValue: T): void => {
     this.state = newValue;
     this.subject.next(this.state);
   };
 
-  private counter = 0;
-
   public subscribe = (subscriptionId: string | this, callback: (value: T) => void) => {
-    this.ids.push(subscriptionId);
-    const number = Math.floor(Math.random() * 100);
     const subscription = this.subject.subscribe(callback);
     this.subscriptions.set(subscriptionId, subscription);
   };

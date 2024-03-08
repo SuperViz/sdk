@@ -1,5 +1,5 @@
 import { Group, Participant } from '../../../common/types/participant.types';
-import { PublicSubject, Singleton } from '../common/types';
+import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
 

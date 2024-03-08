@@ -1,10 +1,10 @@
-type callback<T, K = undefined> = (a: T, b?: K) => void;
+type Callback<T, K = undefined> = (a: T, b?: K) => void;
 
 export type SimpleSubject<T> = {
   value: T;
-  publish: callback<T>;
-  subscribe: callback<string, callback<T>>;
-  unsubscribe: callback<string>;
+  publish: Callback<T>;
+  subscribe: Callback<string, Callback<T>>;
+  unsubscribe: Callback<string>;
 };
 
 export type Singleton<T> = {
@@ -15,6 +15,6 @@ export type Singleton<T> = {
 export type PublicSubject<T> = {
   get value(): T;
   set value(T);
-  subscribe: callback<string | unknown, callback<T>>;
-  unsubscribe: callback<string | unknown>;
+  subscribe: Callback<string | unknown, Callback<T>>;
+  unsubscribe: Callback<string | unknown>;
 };
