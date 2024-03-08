@@ -14,6 +14,8 @@ import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant } from '../../services/realtime/ably/types';
+import { ParticipantInfo } from '../../services/realtime/base/types';
+import { SlotService } from '../../services/slot';
 
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 
@@ -379,18 +381,17 @@ export class Launcher extends Observable implements DefaultLauncher {
       Socket.PresenceEvents.JOINED_ROOM,
       this.onParticipantJoinedIOC,
     );
-
-    this.LaucherRealtimeRoom.presence.on<Participant>(Socket.PresenceEvents.UPDATE, () => {});
-    this.LaucherRealtimeRoom.presence.on<Participant>(Socket.PresenceEvents.LEAVE, () => {});
   };
 
   private onParticipantJoinedIOC = (presence: Socket.PresenceEvent<Participant>) => {
-    if (presence.id === this.participant.id) {
-      this.onLocalParticipantJoined(presence);
-    }
+    if (presence.id !== this.participant.id) return;
+
+    this.onLocalParticipantJoined();
   };
 
-  private onLocalParticipantJoined = (_: Socket.PresenceEvent<Participant>) => {
+  private onLocalParticipantJoined = () => {
+    // Assign a slot to the participant
+    const _ = new SlotService(this.LaucherRealtimeRoom, this.participant);
     this.LaucherRealtimeRoom.presence.update<Participant>(this.participant);
   };
 }
