@@ -87,11 +87,10 @@ export class SlotService {
       return;
     }
 
-    const assignFisrt = event.data.slot.timestamp < this.participant?.slot?.timestamp;
+    const assignFirst = event.data.slot.timestamp < this.participant?.slot?.timestamp;
 
     // if someone else has the same slot as me, and they were assigned first, I should reassign
-    if (event.data.slot?.index === this.slotIndex && assignFisrt) {
-      console.log('Reassigning slot');
+    if (event.data.slot?.index === this.slotIndex && assignFirst) {
       this.assignSlot();
     }
   };
