@@ -1,5 +1,7 @@
 import '.';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import sleep from '../../../common/utils/sleep';
+import { useGlobalStore } from '../../../services/stores';
 
 import { HorizontalSide, VerticalSide } from './types';
 
@@ -26,6 +28,9 @@ describe('messages', () => {
 
   beforeEach(() => {
     document.body.innerHTML = '';
+    const { localParticipant } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+
     element = createEl();
   });
 

@@ -26,7 +26,6 @@ export interface Options {
 
 export interface LocalParticipantData {
   id: string;
-  color: string;
   joinedPresence: boolean;
 }
 

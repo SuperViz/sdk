@@ -1,5 +1,7 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import sleep from '../../../common/utils/sleep';
+import { useGlobalStore } from '../../../services/stores';
 
 import type { CommentsAnnotationPin } from './annotation-pin';
 import { PinMode } from './types';
@@ -40,6 +42,11 @@ function createAnnotationPin({
  */
 
 describe('annotation-pin', () => {
+  beforeEach(() => {
+    const { localParticipant } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+  });
+
   afterEach(() => {
     const element = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
 

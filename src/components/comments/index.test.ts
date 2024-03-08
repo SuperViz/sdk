@@ -7,11 +7,13 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { CommentEvent } from '../../common/types/events.types';
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
+import { useStore } from '../../common/utils/use-store';
 import ApiService from '../../services/api';
+import { useGlobalStore } from '../../services/stores';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import {  PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
+import { PinAdapter, CommentsSide, Annotation, PinCoordinates } from './types';
 
 import { Comments } from './index';
 
@@ -46,7 +48,10 @@ jest.mock('../../services/api', () => ({
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
-  fetchParticipantsByGroup: jest.fn().mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),}));
+  fetchParticipantsByGroup: jest
+    .fn()
+    .mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),
+}));
 
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
@@ -65,14 +70,17 @@ describe('Comments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    const { localParticipant, group } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+    group.value = MOCK_GROUP;
+
     commentsComponent = new Comments(DummiePinAdapter);
 
     commentsComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     commentsComponent['element'].updateAnnotations = jest.fn();
@@ -323,10 +331,9 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     await sleep(1);
@@ -342,10 +349,9 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     await sleep(1);
@@ -741,7 +747,9 @@ describe('Comments', () => {
       commentsComponent['element'].participantsListed = jest.fn();
       await commentsComponent['element'].participantsListed(MOCK_PARTICIPANTS);
 
-      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(MOCK_PARTICIPANTS);
+      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(
+        MOCK_PARTICIPANTS,
+      );
     });
   });
 
@@ -749,15 +757,17 @@ describe('Comments', () => {
     test('should create a mention', async () => {
       const response = await ApiService.createMentions({
         commentsId: 'any_comment_id',
-        participants: [{
-          id: 'any_mention_userId',
-          readed: 0,
-      }]
+        participants: [
+          {
+            id: 'any_mention_userId',
+            readed: 0,
+          },
+        ],
       });
 
       expect(response).toEqual([]);
     });
-  })
+  });
 
   describe('openThreads', () => {
     afterEach(() => {

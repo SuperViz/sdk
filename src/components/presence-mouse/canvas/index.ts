@@ -1,5 +1,8 @@
 import { RealtimeEvent } from '../../../common/types/events.types';
+import { Participant } from '../../../common/types/participant.types';
+import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
+import { useGlobalStore } from '../../../services/stores';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import { ParticipantMouse, PresenceMouseProps } from '../types';
@@ -14,6 +17,7 @@ export class PointersCanvas extends BaseComponent {
   private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
   private following: string;
   private isPrivate: boolean;
+  private localParticipant: Participant;
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -32,6 +36,9 @@ export class PointersCanvas extends BaseComponent {
     this.animateFrame = requestAnimationFrame(this.animate);
 
     this.goToMouseCallback = options?.onGoToPresence;
+
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe();
   }
 
   private get textColorValues(): number[] {
