@@ -61,10 +61,6 @@ export class Comments extends WebComponentsBaseElement {
         waterMarkElementObserver(this.shadowRoot);
       }
 
-      if (changedProperties.has('side')) {
-        this.positionThreads();
-      }
-
       if (changedProperties.has('offset')) {
         this.applyOffset();
       }
@@ -92,36 +88,33 @@ export class Comments extends WebComponentsBaseElement {
     this.annotationFilter = filter;
   }
 
-  private positionThreads() {
-    const supervizCommentsDiv = this.shadowRoot.querySelector('.superviz-comments');
-    if (!supervizCommentsDiv) return;
+  private getOffset(offset: number) {
+    if (offset === null || offset === undefined || offset < 0) {
+      return '10px';
+    }
 
-    supervizCommentsDiv.classList.remove('threads-on-left-side', 'threads-on-right-side');
-
-    const className =
-      this.side === CommentsSide.LEFT ? 'threads-on-left-side' : 'threads-on-right-side';
-
-    supervizCommentsDiv.classList.add(className);
+    return `${offset}px`;
   }
 
   private applyOffset() {
     const supervizCommentsDiv: HTMLDivElement = this.shadowRoot.querySelector('.superviz-comments');
     if (!supervizCommentsDiv) return;
 
-    const defaultDistanceFromEdge = 10;
-    const defaultWidth = 320;
+    const { left, right, top, bottom } = this.offset;
 
-    supervizCommentsDiv.style.top = `${defaultDistanceFromEdge + this.offset.top}px`;
-    supervizCommentsDiv.style.bottom = `${defaultDistanceFromEdge + this.offset.bottom}px`;
+    supervizCommentsDiv.style.setProperty('--offset-top', this.getOffset(top));
+    supervizCommentsDiv.style.setProperty('--offset-bottom', this.getOffset(bottom));
+    supervizCommentsDiv.style.setProperty('--offset-right', this.getOffset(right));
+    supervizCommentsDiv.style.setProperty('--offset-left', this.getOffset(left));
 
-    if (this.side === CommentsSide.LEFT) {
-      supervizCommentsDiv.style.left = `${defaultDistanceFromEdge + this.offset.left}px`;
-      supervizCommentsDiv.style.width = `${defaultWidth + this.offset.right}px`;
-      return;
-    }
+    // supervizCommentsDiv.style.bottom = this.getOffset(bottom);
 
-    supervizCommentsDiv.style.right = `${defaultDistanceFromEdge + this.offset.right}px`;
-    supervizCommentsDiv.style.width = `${defaultWidth + this.offset.left}px`;
+    // if (this.side === CommentsSide.LEFT) {
+    //   supervizCommentsDiv.style.left = this.getOffset(left);
+    //   return;
+    // }
+
+    // supervizCommentsDiv.style.right = this.getOffset(right);
   }
 
   private get poweredBy() {
@@ -146,7 +139,10 @@ export class Comments extends WebComponentsBaseElement {
   protected render() {
     const classes = {
       'superviz-comments': true,
-      close: !this.open,
+      'threads-on-left-side': this.side === CommentsSide.LEFT,
+      'threads-on-right-side': this.side === CommentsSide.RIGHT,
+      'hide-at-right': this.side === CommentsSide.RIGHT && !this.open,
+      'hide-at-left': this.side === CommentsSide.LEFT && !this.open,
     };
 
     return html`

@@ -24,6 +24,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare mentionList: ParticipantByGroupApi[];
   declare mentions: CommentMention[];
   declare participantsList: ParticipantByGroupApi[];
+  declare hideInput: boolean;
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
 
@@ -48,6 +49,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     mentions: { type: Array },
     mentionList: { type: Object },
     participantsList: { type: Object },
+    hideInput: { type: Boolean },
   };
 
   private addAtSymbolInCaretPosition = () => {
@@ -126,6 +128,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         const mentions = this.participantsList.map(({ id, name }) => ({ userId: id, name }));
         this.mentions = this.autoCompleteHandler.getMentions(this.text, mentions);
         this.autoCompleteHandler.setMentions(this.mentions);
+      }
+
+      if (this.editable) {
+        this.focusInput();
       }
 
       importStyle.call(this, ['comments']);
@@ -317,6 +323,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private closeEditMode = () => {
     this.emitEvent('close-edit-mode', {}, { composed: false, bubbles: false });
+    this.hideInput = true;
   };
 
   private onTextareaFocus = () => {
@@ -417,8 +424,14 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       'fixed-width': this.eventType === 'create-annotation',
     };
 
+    const commentsInputClasses = {
+      comments__input: true,
+      'comments__input--editable': this.editable,
+      'hide-input': this.hideInput,
+    };
+
     return html`
-      <div class="comments__input">
+      <div class="${classMap(commentsInputClasses)}">
         <textarea
           id="comments__input__textarea"
           class=${classMap(textAreaClasses)}

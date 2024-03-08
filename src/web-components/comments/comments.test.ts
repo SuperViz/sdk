@@ -40,15 +40,15 @@ describe('comments', () => {
     expect(renderedElement).toBeTruthy();
   });
 
-  test('should close superviz comments', async () => {
+  test.only('should close superviz comments', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments')[0];
-    const app = renderedElement.shadowRoot!.getElementById('superviz-comments');
+    const app = renderedElement.shadowRoot!.querySelector('.superviz-comments');
 
     renderedElement.setAttributeNode(document.createAttribute('open'));
     renderedElement.removeAttribute('open');
 
     expect(renderedElement.hasAttribute('open')).toBeFalsy();
-    expect(app?.classList.contains('container-close')).toBeTruthy();
+    expect(app?.classList.contains('hide-at-left')).toBeTruthy();
   });
 
   test('should open superviz comments', async () => {

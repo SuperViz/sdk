@@ -10,7 +10,7 @@ export const modalStyle = css`
     height: 100%;
     background: rgba(var(--sv-gray-400), 0.8);
 
-    z-index: 99;
+    z-index: 999;
   }
 
   .modal--container {
@@ -25,7 +25,7 @@ export const modalStyle = css`
     height: 100%;
     background: transparent;
 
-    z-index: 99;
+    z-index: 1000;
   }
 
   .modal--container > .modal {

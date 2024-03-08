@@ -2,6 +2,11 @@ import { css } from 'lit';
 
 export const commentsStyle = css`
   .superviz-comments {
+    --offset-left: 10px;
+    --offset-right: 10px;
+    --offset-top: 10px;
+    --offset-bottom: 10px;
+
     display: flex;
     flex-direction: column;
     width: 320px;
@@ -13,10 +18,7 @@ export const commentsStyle = css`
     box-shadow: -2px 0 4px 0 rgba(0, 0, 0, 0.1);
     z-index: 100;
     overflow: hidden;
-  }
-
-  .close {
-    display: none;
+    transition: right 0.3s ease-out;
   }
 
   .header {
@@ -41,16 +43,44 @@ export const commentsStyle = css`
   }
 
   .threads-on-left-side {
-    left: 10px;
-    top: 10px;
-    bottom: 10px;
+    left: var(--offset-left);
+    top: var(--offset-top);
+    bottom: var(--offset-bottom);
     border-radius: 8px;
   }
 
   .threads-on-right-side {
-    right: 10px;
-    top: 10px;
-    bottom: 10px;
+    right: var(--offset-right);
+    top: var(--offset-top);
+    bottom: var(--offset-bottom);
     border-radius: 8px;
+  }
+
+  #superviz-comments.threads-on-right-side.hide-at-right {
+    right: -330px;
+  }
+
+  #superviz-comments.threads-on-left-side.hide-at-left {
+    left: -330px;
+  }
+
+  .hide-at-right,
+  .hide-at-left {
+    animation: keep-opacity 0.3s ease-out;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  @keyframes keep-opacity {
+    0%,
+    99% {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    100% {
+      visibility: hidden;
+      opacity: 0;
+    }
   }
 `;

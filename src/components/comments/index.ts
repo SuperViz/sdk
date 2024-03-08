@@ -413,7 +413,7 @@ export class Comments extends BaseComponent {
 
       document.body.dispatchEvent(
         new CustomEvent('select-annotation', {
-          detail: { uuid: annotation.uuid, haltGoToPin: true },
+          detail: { uuid: annotation.uuid, haltGoToPin: true, newPin: true },
           composed: true,
           bubbles: true,
         }),

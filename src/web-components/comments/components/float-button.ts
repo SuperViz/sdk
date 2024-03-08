@@ -17,12 +17,14 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
   declare commentsPosition: string;
   private shouldHide: boolean;
   declare isActive: boolean;
+  declare mouseHovering: boolean;
 
   static properties = {
     positionStyles: { type: String },
     isHidden: { type: Boolean },
     commentsPosition: { type: String },
     isActive: { type: Boolean },
+    mouseHovering: { type: Boolean },
   };
 
   constructor() {
@@ -39,6 +41,19 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     super.firstUpdated(_changedProperties);
     this.updateComplete.then(() => {
       importStyle.call(this, ['comments']);
+    });
+
+    this.mouseHovering = false;
+
+    const button = this.shadowRoot.querySelector('.comments__floating-button');
+    button.addEventListener('mouseenter', () => {
+      setTimeout(() => button.classList.add('comments-floating-button-hovered'), 300);
+      this.mouseHovering = true;
+    });
+
+    button.addEventListener('mouseleave', () => {
+      button.classList.remove('comments-floating-button-hovered');
+      this.mouseHovering = false;
     });
   }
 
@@ -66,14 +81,6 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
       this.isHidden = !this.isHidden;
     });
     window.document.body.removeEventListener('toggle-pin-active', this.onTogglePinActive);
-  }
-
-  private async getTextWithDelay() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve('Comment');
-      }, 300);
-    });
   }
 
   updated(changedProperties) {
@@ -124,26 +131,40 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
       'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
       isActive: this.isActive,
+      isInactive: !this.isActive,
+    };
+
+    const textBoxClasses = {
+      'comments__floating-button-text-box': true,
+      'comments__floating-button-text-box--hovered': this.mouseHovering,
     };
 
     const textClasses = {
       text: true,
       'text-big': true,
       'text-bold': true,
+      'not-hovered': !this.mouseHovering,
       'comments__floating-button__text': true,
       textActive: this.isActive,
       textInactive: !this.isActive,
     };
 
     return html` <button @click=${this.toggle} class="${classMap(floatButtonClasses)}">
-      <superviz-icon
-        size="sm"
-        name="comment"
-        class="comments__floating-button__icon"
-        color=${this.isActive ? 'white' : 'black'}
-      ></superviz-icon>
-
-      <p class="${classMap(textClasses)}">${this.isActive ? 'Cancel' : 'Comment'}</p>
+      <div class="comments__floating-button__icon">
+        <superviz-icon
+          size="sm"
+          name="comment"
+          color=${this.mouseHovering || this.isActive ? 'white' : 'black'}
+        ></superviz-icon>
+        <svg class="cross" width="8px" height="8px" viewBox="0 0 8 8">
+          <rect class="cross-bar-1" x="0" y="3" width="8px" height="2px" />
+          <rect class="cross-bar-2" x="0" y="3" width="8px" height="2px" />
+        </svg>
+      </div>
+      <div class=${classMap(textBoxClasses)}>
+        <p class="${classMap(textClasses)} comment">Comment</p>
+        <p class="${classMap(textClasses)} cancel">Cancel</p>
+      </div>
     </button>`;
   }
 }

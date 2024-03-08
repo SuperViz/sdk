@@ -1,6 +1,10 @@
 import { css } from 'lit';
 
 export const annotationPinStyles = css`
+  .preload {
+    animation-duration: 0s !important;
+  }
+
   .comments__annotation-pin,
   .comments__annotation-pin__avatar {
     display: flex;
@@ -21,14 +25,9 @@ export const annotationPinStyles = css`
     animation: shrinking-spring 0.3s linear;
   }
 
-  .comments__annotation-pin--active:not(:hover) {
-    transform: scale(1.2);
-    animation: growing-spring 0.3s linear;
-  }
-
-  .comments__annotation-pin--active:hover {
-    transform: scale(1);
-    animation: shrinking-spring 0.3s linear;
+  .comments__annotation-pin--add {
+    transform: scale(1) !important;
+    animation: none !important;
   }
 
   .comments__annotation-pin {
@@ -102,8 +101,70 @@ export const annotationPinStyles = css`
     opacity: 1;
   }
 
-  .preload {
-    animation-duration: 0s !important;
+  .comments__annotation-pin-wrapper {
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    position: absolute;
+  }
+
+  .comments__annotation-pin-wrapper--new {
+    animation: bounce 0.5s linear !important;
+  }
+
+  .comments__annotation-pin-wrapper--new .comments__annotation-pin__avatar {
+    transform-origin: center;
+    animation: teste 0.5s linear !important;
+  }
+
+  @keyframes teste {
+    0%,
+    40% {
+      transform: scale(1);
+    }
+
+    48% {
+      transform: scale(0.8);
+    }
+
+    55%,
+    92% {
+      transform: scale(1);
+    }
+
+    96% {
+      transform: scale(0.9);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes bounce {
+    0% {
+      transform: scale(1);
+    }
+
+    20% {
+      transform: scale(1.3);
+    }
+
+    40%,
+    55% {
+      transform: scale(1);
+    }
+
+    75% {
+      transform: scale(1.15);
+    }
+
+    92%,
+    100% {
+      transform: scale(1);
+    }
   }
 
   @keyframes growing-spring {
