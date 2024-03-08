@@ -1,3 +1,4 @@
+import * as Socket from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
@@ -10,9 +11,12 @@ import { ComponentNames } from '../../components/types';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
+import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant } from '../../services/realtime/ably/types';
+import { ParticipantInfo } from '../../services/realtime/base/types';
+import { SlotService } from '../../services/slot';
 import { useGlobalStore } from '../../services/stores';
 import { PublicSubject } from '../../services/stores/common/types';
 
@@ -26,6 +30,8 @@ export class Launcher extends Observable implements DefaultLauncher {
   private componentsToAttachAfterJoin: Partial<BaseComponent>[] = [];
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
 
+  private ioc: IOC;
+  private LaucherRealtimeRoom: Socket.Room;
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
 
@@ -48,17 +54,24 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.group.value = participantGroup;
 
     this.logger = new Logger('@superviz/sdk/launcher');
+
+    // Ably realtime service
     this.realtime = new AblyRealtimeService(
       config.get<string>('apiUrl'),
       config.get<string>('ablyKey'),
     );
+
+    // SuperViz IO Room
+    this.ioc = new IOC(this.participant.value);
+    this.LaucherRealtimeRoom = this.ioc.createRoom('launcher');
 
     // internal events without realtime
     this.eventBus = new EventBus();
 
     this.logger.log('launcher created');
 
-    this.startRealtime();
+    this.startAbly();
+    this.startIOC();
   }
 
   /**
@@ -134,6 +147,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       return c.name !== component.name;
     });
     this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
+
     this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
   };
 
@@ -211,12 +225,12 @@ export class Launcher extends Observable implements DefaultLauncher {
   };
 
   /**
-   * @function startRealtime
+   * @function startAbly
    * @description start realtime service and join to room
    * @returns {void}
    */
-  private startRealtime = (): void => {
-    this.logger.log('launcher service @ startRealtime');
+  private startAbly = (): void => {
+    this.logger.log('launcher service @ startAbly');
 
     this.realtime.start({
       participant: this.participant.value,
@@ -227,15 +241,15 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.join();
 
     // subscribe to realtime events
-    this.subscribeToRealtimeEvents();
+    this.subscribeToAblyEvents();
   };
 
   /**
-   * @function subscribeToRealtimeEvents
+   * @function subscribeToAblyEvents
    * @description subscribe to realtime events
    * @returns {void}
    */
-  private subscribeToRealtimeEvents = (): void => {
+  private subscribeToAblyEvents = (): void => {
     this.realtime.authenticationObserver.subscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
@@ -243,7 +257,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
   };
 
-  /** Realtime Listeners */
+  /** Ably Listeners */
 
   private onAuthentication = (event: RealtimeEvent): void => {
     if (event !== RealtimeEvent.REALTIME_AUTHENTICATION_FAILED) return;
@@ -297,6 +311,8 @@ export class Launcher extends Observable implements DefaultLauncher {
 
         return this.activeComponents.includes(component.name);
       });
+
+      this.LaucherRealtimeRoom.presence.update<Participant>(localParticipant);
       this.participant.value = localParticipant;
       this.publish(ParticipantEvent.LOCAL_UPDATED, localParticipant);
 
@@ -360,6 +376,35 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onSameAccount = (): void => {
     this.publish(ParticipantEvent.SAME_ACCOUNT_ERROR);
     this.destroy();
+  };
+
+  /** New IO */
+
+  /**
+   * @function startIOC
+   * @description start IO service
+   * @returns {void}
+   */
+
+  private startIOC = (): void => {
+    this.logger.log('launcher service @ startIOC');
+
+    this.LaucherRealtimeRoom.presence.on<Participant>(
+      Socket.PresenceEvents.JOINED_ROOM,
+      this.onParticipantJoinedIOC,
+    );
+  };
+
+  private onParticipantJoinedIOC = (presence: Socket.PresenceEvent<Participant>) => {
+    if (presence.id !== this.participant.value.id) return;
+
+    this.onLocalParticipantJoined();
+  };
+
+  private onLocalParticipantJoined = () => {
+    // Assign a slot to the participant
+    const _ = new SlotService(this.LaucherRealtimeRoom, this.participant.value);
+    this.LaucherRealtimeRoom.presence.update<Participant>(this.participant.value);
   };
 }
 
