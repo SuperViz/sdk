@@ -771,7 +771,6 @@ export class HTMLPin implements PinAdapter {
     if (!wrapper) return;
 
     wrapper.appendChild(pin);
-    wrapper.parentElement.appendChild(wrapper);
   }
 
   // ------- helper functions -------

@@ -84,6 +84,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     importStyle.call(this, ['comments']);
 
     if (!this.showInput) return;
+
     this.originalPosition = { ...this.position };
     this.pinAnnotation = this.shadowRoot?.querySelector('.comments__annotation-pin');
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
