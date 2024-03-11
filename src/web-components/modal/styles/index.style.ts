@@ -7,7 +7,6 @@ export const modalStyle = css`
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 3;
     background: rgba(var(--sv-gray-400), 0.8);
 
     z-index: 999;
@@ -22,7 +21,6 @@ export const modalStyle = css`
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 4;
     background: transparent;
 
     z-index: 1000;
