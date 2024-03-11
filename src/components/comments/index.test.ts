@@ -249,7 +249,7 @@ describe('Comments', () => {
 
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should set the left side style if the position is "left"', () => {
@@ -258,7 +258,7 @@ describe('Comments', () => {
     comments['layoutOptions'].position = CommentsSide.LEFT;
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should set the right side style if the position is "right"', () => {
@@ -267,7 +267,7 @@ describe('Comments', () => {
     comments['layoutOptions'].position = CommentsSide.RIGHT;
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('right: 0;');
+    expect(comments['element'].side).toBe('right');
   });
 
   test('should have position "left" if no position is passed', () => {
@@ -278,7 +278,7 @@ describe('Comments', () => {
 
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should have position "left" if invalid position is passed', () => {
@@ -286,7 +286,7 @@ describe('Comments', () => {
     comments['layoutOptions'].position = 'invalid-position' as any;
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should call apiService when resolve annotation', async () => {

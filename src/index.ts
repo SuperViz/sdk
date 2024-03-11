@@ -102,6 +102,7 @@ export {
   MousePointers,
   WhoIsOnline,
   VideoConference,
+  Realtime,
 };
 
 export default init;

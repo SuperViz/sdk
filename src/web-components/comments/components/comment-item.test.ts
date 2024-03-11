@@ -19,7 +19,7 @@ let element: HTMLElement;
 
 const createElement = async (options = DEFAULT_ELEMENT_OPTIONS) => {
   const element = document.createElement('superviz-comments-comment-item');
-
+  element.setAttribute('participantsList', JSON.stringify([]));
   Object.keys(options).forEach((key) => {
     if (key === 'resolved' || key === 'resolvable') {
       element.setAttributeNode(document.createAttribute(key));
@@ -39,7 +39,7 @@ describe('CommentsCommentItem', () => {
     document.body.removeChild(element);
   });
 
-  test.only('renders the comment item with correct properties', async () => {
+  test('renders the comment item with correct properties', async () => {
     element = await createElement();
 
     const username = element.shadowRoot!.querySelector(
@@ -66,9 +66,9 @@ describe('CommentsCommentItem', () => {
     });
 
     const username = element.shadowRoot!.querySelector(
-      '.comment-item__avatar .text',
+      '.comments__comment-item__avatar-letter',
     ) as HTMLSpanElement;
-    expect(username.textContent).toEqual('J');
+    expect(username.textContent?.trim()).toEqual('J');
   });
 
   test('resolves the annotation when the comment is unresolved', async () => {
@@ -81,7 +81,7 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const resolveButton = element.shadowRoot!.querySelector(
-      '.comment-item__actions > button',
+      '.comments__comment-item__resolve-icon',
     ) as HTMLButtonElement;
 
     element.dispatchEvent = jest.fn();
@@ -217,9 +217,7 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const text = element.shadowRoot!.querySelector(
-      '.comment-item__content #comment-text',
-    ) as HTMLElement;
+    const text = element.shadowRoot!.querySelector('.annotation-content') as HTMLElement;
     text.click();
 
     await element['updateComplete'];
@@ -235,9 +233,7 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const text = element.shadowRoot!.querySelector(
-      '.comment-item__content #comment-text',
-    ) as HTMLElement;
+    const text = element.shadowRoot!.querySelector('.annotation-content') as HTMLElement;
     text.click();
 
     await element['updateComplete'];

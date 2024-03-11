@@ -146,7 +146,10 @@ describe('annotation-pin', () => {
     document.body.addEventListener('select-annotation', spy);
 
     const renderedElement = document.getElementsByTagName('superviz-comments-annotation-pin')[0];
-    renderedElement?.shadowRoot?.querySelector('div')?.click();
+    const clickablePin = renderedElement.shadowRoot!.querySelector(
+      '.comments__annotation-pin',
+    ) as HTMLDivElement;
+    clickablePin.click();
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(

@@ -29,15 +29,15 @@ export class SlotService {
     const slot = Math.floor(Math.random() * 16);
 
     new Promise((resolve, reject) => {
-      this.room.presence.get((event: any) => {
-        if (!event.presences || !event.presences.length) resolve(false);
+      this.room.presence.get((presences) => {
+        if (!presences || !presences.length) resolve(false);
 
-        if (event.presences.length >= 16) {
+        if (presences.length >= 16) {
           reject(new Error('[SuperViz] - No more slots available'));
           return;
         }
 
-        event.presences.forEach((presence: Socket.PresenceEvent<Participant>) => {
+        presences.forEach((presence: Socket.PresenceEvent<Participant>) => {
           if (presence.id === this.participant.id) return;
 
           if (presence.data?.slot?.index === slot) resolve(true);
@@ -87,10 +87,10 @@ export class SlotService {
       return;
     }
 
-    const assignFirst = event.data.slot.timestamp < this.participant?.slot?.timestamp;
+    const slotOccupied = event.data.slot.timestamp < this.participant?.slot?.timestamp;
 
     // if someone else has the same slot as me, and they were assigned first, I should reassign
-    if (event.data.slot?.index === this.slotIndex && assignFirst) {
+    if (event.data.slot?.index === this.slotIndex && slotOccupied) {
       this.assignSlot();
     }
   };

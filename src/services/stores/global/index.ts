@@ -1,5 +1,5 @@
 import { Group, Participant } from '../../../common/types/participant.types';
-import { PublicSubject, Singleton } from '../common/types';
+import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
 
@@ -7,7 +7,7 @@ const instance: Singleton<GlobalStore> = CreateSingleton<GlobalStore>();
 
 export class GlobalStore {
   public localParticipant = subject<Participant>(null, true);
-  public participants = subject<Participant[]>([]);
+  public participants = subject<Map<string, Participant>>(new Map());
   public group = subject<Group>(null);
 
   constructor() {

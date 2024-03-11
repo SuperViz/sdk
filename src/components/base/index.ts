@@ -1,6 +1,5 @@
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Group } from '../../common/types/participant.types';
-import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observable } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
 import config from '../../services/config';
