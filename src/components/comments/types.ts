@@ -68,9 +68,17 @@ export enum ButtonLocation {
   BOTTOM_RIGHT = 'bottom-right',
 }
 
+export interface Offset {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+}
+
 export interface CommentsOptions {
   position?: CommentsSide | `${CommentsSide}`;
   buttonLocation?: ButtonLocation | `${ButtonLocation}` | string;
   hideDefaultButton?: boolean;
   styles?: string;
+  offset?: Offset;
 }

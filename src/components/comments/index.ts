@@ -17,6 +17,7 @@ import {
   Comment,
   CommentsOptions,
   CommentsSide,
+  Offset,
   PinAdapter,
 } from './types';
 
@@ -34,6 +35,7 @@ export class Comments extends BaseComponent {
   private hideDefaultButton: boolean;
   private pinActive: boolean;
   private localParticipantId: string;
+  private offset: Offset;
 
   constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
     super();
@@ -48,6 +50,7 @@ export class Comments extends BaseComponent {
     this.hideDefaultButton = options?.hideDefaultButton ?? false;
 
     this.setStyles(options?.styles);
+    this.offset = options?.offset;
 
     setTimeout(() => {
       pinAdapter.setCommentsMetadata(this.layoutOptions?.position ?? 'left');
@@ -369,19 +372,17 @@ export class Comments extends BaseComponent {
   private positionComments = (): void => {
     this.element = document.createElement('superviz-comments') as CommentElement;
     this.element.setAttribute('comments', JSON.stringify([]));
-    this.element.side = 'left: 0;';
+    this.element.side = CommentsSide.LEFT;
+    this.element.offset = this.offset;
     document.body.appendChild(this.element);
 
     const position = this.layoutOptions?.position;
     if (!position) return;
 
-    const sidesOptions = Object.values(CommentsSide);
-    const parsedPosition = position.toLocaleLowerCase() as CommentsSide;
+    const parsedPosition = position.toUpperCase() as CommentsSide;
+    if (!CommentsSide[parsedPosition]) return;
 
-    if (!sidesOptions.includes(parsedPosition)) return;
-
-    const style = position === CommentsSide.LEFT ? 'left: 0;' : 'right: 0;';
-    this.element.side = style;
+    this.element.side = CommentsSide[parsedPosition];
   };
 
   /**
@@ -418,7 +419,7 @@ export class Comments extends BaseComponent {
 
       document.body.dispatchEvent(
         new CustomEvent('select-annotation', {
-          detail: { uuid: annotation.uuid, haltGoToPin: true },
+          detail: { uuid: annotation.uuid, haltGoToPin: true, newPin: true },
           composed: true,
           bubbles: true,
         }),
