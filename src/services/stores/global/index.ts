@@ -7,7 +7,7 @@ const instance: Singleton<GlobalStore> = CreateSingleton<GlobalStore>();
 
 export class GlobalStore {
   public localParticipant = subject<Participant>(null, true);
-  public participants = subject<Participant[]>([]);
+  public participants = subject<Map<string, Participant>>(new Map());
   public group = subject<Group>(null);
 
   constructor() {
