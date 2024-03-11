@@ -117,10 +117,10 @@ export const annotationPinStyles = css`
 
   .comments__annotation-pin-wrapper--new .comments__annotation-pin__avatar {
     transform-origin: center;
-    animation: teste 0.5s linear !important;
+    animation: avatar-bounce 0.5s linear !important;
   }
 
-  @keyframes teste {
+  @keyframes avatar-bounce {
     0%,
     40% {
       transform: scale(1);

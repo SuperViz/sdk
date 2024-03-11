@@ -130,8 +130,8 @@ export class CommentsFloatButton extends WebComponentsBaseElement {
     const floatButtonClasses = {
       'comments__floating-button': true,
       'hide-button': !this.isHidden && this.shouldHide,
-      isActive: this.isActive,
-      isInactive: !this.isActive,
+      'is-active': this.isActive,
+      'is-inactive': !this.isActive,
     };
 
     const textBoxClasses = {

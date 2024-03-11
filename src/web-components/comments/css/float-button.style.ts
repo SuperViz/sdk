@@ -21,7 +21,7 @@ export const floatButtonStyle = css`
   }
 
   .comments__floating-button:hover,
-  .comments__floating-button.isActive {
+  .comments__floating-button.is-active {
     background-color: rgb(var(--sv-gray-400));
     color: rgba(var(--sv-white));
   }
@@ -48,12 +48,12 @@ export const floatButtonStyle = css`
     display: none !important;
   }
 
-  .isInactive:hover {
+  .is-inactive:hover {
     width: 110px;
     border-radius: 30px;
   }
 
-  .isActive:hover {
+  .is-active:hover {
     width: 92px;
     border-radius: 30px;
     animation: decrease-width 600ms linear;
@@ -89,11 +89,11 @@ export const floatButtonStyle = css`
     width: 0;
   }
 
-  .comments__floating-button.isInactive:hover .comments__floating-button-text-box {
+  .comments__floating-button.is-inactive:hover .comments__floating-button-text-box {
     width: 61.45px;
   }
 
-  .comments__floating-button.isActive:hover .comments__floating-button-text-box {
+  .comments__floating-button.is-active:hover .comments__floating-button-text-box {
     width: 43.0833px;
   }
 
@@ -122,7 +122,7 @@ export const floatButtonStyle = css`
   }
 
   .comments__floating-button:hover rect,
-  .isActive rect {
+  .is-active rect {
     fill: rgba(var(--sv-white));
   }
 
@@ -136,7 +136,7 @@ export const floatButtonStyle = css`
     transform: rotate(90deg);
   }
 
-  .isActive .cross {
+  .is-active .cross {
     transform: translateY(-50%) rotate(45deg);
   }
 
