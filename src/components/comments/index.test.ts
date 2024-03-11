@@ -11,7 +11,7 @@ import ApiService from '../../services/api';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
-import {  PinAdapter, CommentsSide, Annotation, PinCoordinates } from "./types";
+import { PinAdapter, CommentsSide, Annotation, PinCoordinates } from './types';
 
 import { Comments } from './index';
 
@@ -46,7 +46,10 @@ jest.mock('../../services/api', () => ({
   resolveAnnotation: jest.fn().mockImplementation(() => []),
   deleteComment: jest.fn().mockImplementation(() => []),
   deleteAnnotation: jest.fn().mockImplementation(() => []),
-  fetchParticipantsByGroup: jest.fn().mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),}));
+  fetchParticipantsByGroup: jest
+    .fn()
+    .mockImplementation((): ParticipantByGroupApi[] => MOCK_PARTICIPANTS),
+}));
 
 const DummiePinAdapter: PinAdapter = {
   destroy: jest.fn(),
@@ -241,7 +244,7 @@ describe('Comments', () => {
 
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should set the left side style if the position is "left"', () => {
@@ -250,7 +253,7 @@ describe('Comments', () => {
     comments['layoutOptions'].position = CommentsSide.LEFT;
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should set the right side style if the position is "right"', () => {
@@ -259,7 +262,7 @@ describe('Comments', () => {
     comments['layoutOptions'].position = CommentsSide.RIGHT;
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('right: 0;');
+    expect(comments['element'].side).toBe('right');
   });
 
   test('should have position "left" if no position is passed', () => {
@@ -270,7 +273,7 @@ describe('Comments', () => {
 
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should have position "left" if invalid position is passed', () => {
@@ -278,7 +281,7 @@ describe('Comments', () => {
     comments['layoutOptions'].position = 'invalid-position' as any;
     comments['positionComments']();
 
-    expect(comments['element'].side).toBe('left: 0;');
+    expect(comments['element'].side).toBe('left');
   });
 
   test('should call apiService when resolve annotation', async () => {
@@ -741,7 +744,9 @@ describe('Comments', () => {
       commentsComponent['element'].participantsListed = jest.fn();
       await commentsComponent['element'].participantsListed(MOCK_PARTICIPANTS);
 
-      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(MOCK_PARTICIPANTS);
+      expect(commentsComponent['element'].participantsListed).toHaveBeenCalledWith(
+        MOCK_PARTICIPANTS,
+      );
     });
   });
 
@@ -749,15 +754,17 @@ describe('Comments', () => {
     test('should create a mention', async () => {
       const response = await ApiService.createMentions({
         commentsId: 'any_comment_id',
-        participants: [{
-          id: 'any_mention_userId',
-          readed: 0,
-      }]
+        participants: [
+          {
+            id: 'any_mention_userId',
+            readed: 0,
+          },
+        ],
       });
 
       expect(response).toEqual([]);
     });
-  })
+  });
 
   describe('openThreads', () => {
     afterEach(() => {
