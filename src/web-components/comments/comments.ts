@@ -106,15 +106,6 @@ export class Comments extends WebComponentsBaseElement {
     supervizCommentsDiv.style.setProperty('--offset-bottom', this.getOffset(bottom));
     supervizCommentsDiv.style.setProperty('--offset-right', this.getOffset(right));
     supervizCommentsDiv.style.setProperty('--offset-left', this.getOffset(left));
-
-    // supervizCommentsDiv.style.bottom = this.getOffset(bottom);
-
-    // if (this.side === CommentsSide.LEFT) {
-    //   supervizCommentsDiv.style.left = this.getOffset(left);
-    //   return;
-    // }
-
-    // supervizCommentsDiv.style.right = this.getOffset(right);
   }
 
   private get poweredBy() {

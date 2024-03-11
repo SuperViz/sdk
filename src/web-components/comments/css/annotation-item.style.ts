@@ -81,7 +81,6 @@ export const annotationItemStyle = css`
   }
 
   .hidden {
-    /* opacity: 0; */
     overflow: hidden;
   }
 
