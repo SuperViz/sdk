@@ -1,10 +1,6 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
-import {
-  MOCK_ABLY_PARTICIPANT,
-  MOCK_GROUP,
-  MOCK_LOCAL_PARTICIPANT,
-} from '../../../__mocks__/participants.mock';
+import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
@@ -145,7 +141,7 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
     });
 
-    test('should show a console message if the laucher is destroyed', () => {
+    test('should show a console message if the launcer is destroyed', () => {
       LauncherInstance.destroy();
 
       LauncherInstance.addComponent(MOCK_COMPONENT);

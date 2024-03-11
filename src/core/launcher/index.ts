@@ -15,7 +15,6 @@ import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyRealtimeService } from '../../services/realtime';
 import { AblyParticipant } from '../../services/realtime/ably/types';
-import { ParticipantInfo } from '../../services/realtime/base/types';
 import { SlotService } from '../../services/slot';
 import { useGlobalStore } from '../../services/stores';
 import { PublicSubject } from '../../services/stores/common/types';
@@ -171,6 +170,12 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     this.eventBus.destroy();
     this.eventBus = undefined;
+
+    this.LaucherRealtimeRoom.presence.off(Socket.PresenceEvents.JOINED_ROOM);
+    this.LaucherRealtimeRoom.presence.off(Socket.PresenceEvents.LEAVE);
+    this.LaucherRealtimeRoom.presence.off(Socket.PresenceEvents.UPDATE);
+
+    this.ioc.destroy();
 
     this.realtime.authenticationObserver.unsubscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.unsubscribe(this.onSameAccount);
