@@ -16,7 +16,7 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room, { updateMyProperties: jest.fn() } as any, participant);
     await instance['assignSlot']();
 
     expect(instance['slotIndex']).toBeDefined();
@@ -47,7 +47,7 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room, { updateMyProperties: jest.fn() } as any, participant);
     await instance['assignSlot']();
 
     expect(instance['slotIndex']).toBeDefined();
@@ -80,7 +80,7 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room, { updateMyProperties: jest.fn() } as any, participant);
     await instance['assignSlot']();
 
     expect(instance['slotIndex']).toBeUndefined();
@@ -114,7 +114,7 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room, { updateMyProperties: jest.fn() } as any, participant);
     await instance['assignSlot']();
 
     expect(instance['slotIndex']).toBeDefined();
