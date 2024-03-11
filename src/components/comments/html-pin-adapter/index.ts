@@ -972,7 +972,7 @@ export class HTMLPin implements PinAdapter {
       if ((!dataId && !oldValue) || dataId === oldValue) return;
 
       const oldValueSkipped = this.dataAttributeValueFilters.some((filter) =>
-        oldValue.match(filter),
+        oldValue?.match(filter),
       );
 
       const attributeRemoved = !dataId && oldValue && !oldValueSkipped;
@@ -999,6 +999,10 @@ export class HTMLPin implements PinAdapter {
 
       this.setElementReadyToPin(target as HTMLElement, dataId);
       this.renderAnnotationsPins();
+
+      if (!this.animateFrame) {
+        this.animateFrame = window.requestAnimationFrame(this.animate);
+      }
     });
   };
 

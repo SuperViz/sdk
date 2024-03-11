@@ -316,14 +316,13 @@ export class PointersHTML extends BaseComponent {
       if ((!dataId && !oldValue) || dataId === oldValue) return;
 
       const oldValueSkipped = this.dataAttributeValueFilters.some((filter) =>
-        oldValue.match(filter),
+        oldValue?.match(filter),
       );
 
       const attributeRemoved = !dataId && oldValue && !oldValueSkipped;
 
       if (attributeRemoved) {
         this.clearElement(oldValue);
-
         return;
       }
 
@@ -337,8 +336,11 @@ export class PointersHTML extends BaseComponent {
 
       this.elementsWithDataAttribute.set(dataId, target as Element);
       this.renderWrapper(target as Element, dataId);
-
       this.addWrapperListeners(dataId);
+
+      if (!this.animationFrame) {
+        this.animationFrame = window.requestAnimationFrame(this.animate);
+      }
     });
   };
 
