@@ -10,6 +10,7 @@ const createElement = async (annotation = MOCK_ANNOTATION, filter = AnnotationFi
   const element = document.createElement('superviz-comments-annotation-item');
   element.setAttribute('annotation', JSON.stringify(annotation));
   element.setAttribute('annotationFilter', filter);
+  element.setAttribute('participantsList', JSON.stringify([]));
   document.body.appendChild(element);
   await sleep();
   return element;
@@ -34,7 +35,7 @@ describe('CommentsAnnotationItem', () => {
     ) as HTMLElement;
 
     expect(annotationItem.classList.contains('.comments__thread--selected')).toBe(false);
-    expect(commentsContainer.classList.contains('hidden')).toBe(true);
+    expect(commentsContainer.classList.contains('show')).toBe(false);
     expect(commentsContainer.classList.contains('.comments__thread--expand')).toBe(false);
 
     annotationItem!.addEventListener('select-annotation', () => {

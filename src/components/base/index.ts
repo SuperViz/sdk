@@ -33,7 +33,6 @@ export abstract class BaseComponent extends Observable {
     }
 
     const { realtime, localParticipant, group, config: globalConfig, eventBus } = params;
-
     if (!realtime.isDomainWhitelisted) {
       const message = `Component ${this.name} can't be used because this website's domain is not whitelisted. Please add your domain in https://dashboard.superviz.com/developer`;
       this.logger.log(message);
