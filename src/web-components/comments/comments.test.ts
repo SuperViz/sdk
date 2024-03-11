@@ -40,7 +40,7 @@ describe('comments', () => {
     expect(renderedElement).toBeTruthy();
   });
 
-  test.only('should close superviz comments', async () => {
+  test('should close superviz comments', async () => {
     const renderedElement = document.getElementsByTagName('superviz-comments')[0];
     const app = renderedElement.shadowRoot!.querySelector('.superviz-comments');
 
@@ -60,7 +60,7 @@ describe('comments', () => {
     await sleep();
 
     expect(renderedElement.hasAttribute('open')).toBeTruthy();
-    expect(app?.classList.contains('container')).toBe(true);
+    expect(app?.classList.contains('superviz-comments')).toBe(true);
   });
 
   // FIXME: Need refactor should listen event toggle
