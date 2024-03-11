@@ -175,7 +175,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.authenticationObserver.unsubscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.unsubscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
-    this.realtime.participantLeaveObserver.unsubscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
     this.realtime.leave();
     this.realtime = undefined;
@@ -253,7 +252,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.realtime.authenticationObserver.subscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
     this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
-    this.realtime.participantLeaveObserver.subscribe(this.onParticipantLeave);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
   };
 
@@ -304,41 +302,10 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private onParticipantJoined = (ablyParticipant: AblyParticipant): void => {
-    this.logger.log('launcher service @ onParticipantJoined');
+    if (ablyParticipant.clientId !== this.participant.value.id) return;
 
-    const participant = this.participants.value.get(ablyParticipant.clientId);
-
-    if (!participant) return;
-
-    if (participant.id === this.participant.value.id) {
-      this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-      this.publish(ParticipantEvent.LOCAL_JOINED, participant);
-      this.attachComponentsAfterJoin();
-    }
-
-    this.logger.log('launcher service @ onParticipantJoined - participant joined', participant);
-    this.publish(ParticipantEvent.JOINED, participant);
-  };
-
-  /**
-   * @function onParticipantLeave
-   * @description on participant leave
-   * @param ablyParticipant - ably participant
-   * @returns {void}
-   */
-  private onParticipantLeave = (ablyParticipant: AblyParticipant): void => {
-    this.logger.log('launcher service @ onParticipantLeave');
-    const participant = this.participants.value.get(ablyParticipant.clientId);
-
-    if (!participant) return;
-
-    if (participant.id === this.participant.value.id) {
-      this.logger.log('launcher service @ onParticipantLeave - local participant left');
-      this.publish(ParticipantEvent.LOCAL_LEFT, participant);
-    }
-
-    this.logger.log('launcher service @ onParticipantLeave - participant left', participant);
-    this.publish(ParticipantEvent.LEFT, participant);
+    this.logger.log('launcher service @ onParticipantJoined - local participant joined');
+    this.attachComponentsAfterJoin();
   };
 
   private onSameAccount = (): void => {
@@ -386,7 +353,21 @@ export class Launcher extends Observable implements DefaultLauncher {
       this.LaucherRealtimeRoom.presence.update<Participant>(this.participant.value);
     }
 
-    this.participants.value.set(presence.id, presence.data);
+    // When the participant joins, it is without any data, it's updated later
+    this.participants.value.set(presence.id, {
+      id: presence.id,
+      name: presence.name,
+      ...presence.data,
+    });
+
+    if (presence.id === this.participant.value.id) {
+      this.logger.log('launcher service @ onParticipantJoined - local participant joined');
+      this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
+    }
+
+    this.logger.log('launcher service @ onParticipantJoined - participant joined', presence.data);
+
+    this.publish(ParticipantEvent.JOINED, this.participants.value.get(presence.id));
   };
 
   /**
@@ -397,6 +378,14 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private onParticipantLeaveIOC = (presence: Socket.PresenceEvent<Participant>): void => {
     this.participants.value.delete(presence.id);
+
+    if (presence.id === this.participant.value.id) {
+      this.logger.log('launcher service @ onParticipantLeave - local participant left');
+      this.publish(ParticipantEvent.LOCAL_LEFT, presence.data);
+    }
+
+    this.logger.log('launcher service @ onParticipantLeave - participant left', presence.data);
+    this.publish(ParticipantEvent.LEFT, presence.data);
   };
 
   /**
