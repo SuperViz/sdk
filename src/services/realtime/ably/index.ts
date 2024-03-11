@@ -831,97 +831,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function findSlotIndex
-   * @description Finds an available slot index for the participant and confirms it.
-   * @returns {void}
-   */
-  private findSlotIndex = async (): Promise<void> => {
-    const slot = Math.floor(Math.random() * 16);
-
-    const hasAnyOneUsingMySlot = await new Promise((resolve) => {
-      this.supervizChannel.presence.get((error, presences) => {
-        if (error) {
-          resolve(true);
-          return;
-        }
-
-        presences.forEach((presence) => {
-          if (presence.clientId === this.myParticipant.clientId) return;
-
-          if (presence.data.slotIndex === slot) resolve(true);
-        });
-
-        resolve(false);
-      });
-    });
-
-    if (hasAnyOneUsingMySlot) {
-      this.logger.log(
-        'slot already taken by someone else, trying again',
-        this.myParticipant.clientId,
-      );
-      this.findSlotIndex();
-      return;
-    }
-
-    this.updateMyProperties({ slotIndex: slot });
-  };
-
-  /**
-   * @function validateSlots
-   * @description Validates the slot index of all participants and resolves conflicts.
-   * @returns {void}
-   */
-  private async validateSlots(): Promise<void> {
-    const slots = [];
-    await new Promise((resolve) => {
-      this.supervizChannel.presence.get((_, presences) => {
-        presences.forEach((presence) => {
-          const hasValidSlot =
-            presence.data.slotIndex !== undefined && presence.data.slotIndex !== null;
-
-          if (hasValidSlot) {
-            slots.push({
-              slotIndex: presence.data.slotIndex,
-              clientId: presence.clientId,
-              timestamp: presence.timestamp,
-            });
-          }
-        });
-        resolve(true);
-      });
-    });
-
-    const duplicatesMap: Record<
-      string,
-      {
-        slotIndex: number;
-        clientId: string;
-        timestamp: number;
-      }[]
-    > = {};
-
-    slots.forEach((a) => {
-      if (!duplicatesMap[a.slotIndex]) {
-        duplicatesMap[a.slotIndex] = [];
-      }
-
-      duplicatesMap[a.slotIndex].push(a);
-    });
-
-    Object.values(duplicatesMap).forEach((arr) => {
-      const ordered = arr.sort((a, b) => a.timestamp - b.timestamp);
-      ordered.shift();
-
-      ordered.forEach((slot) => {
-        if (slot.clientId !== this.myParticipant.clientId) return;
-
-        this.findSlotIndex();
-      });
-    });
-  }
-
-  /**
    * @function onStateChange
    * @description Translates connection state and channel state into realtime state
    * @returns {void}
@@ -1011,8 +920,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.localRoomProperties = await this.fetchRoomProperties();
     this.myParticipant = myPresence;
 
-    if (this.enableSync) this.findSlotIndex();
-
     if (!this.localRoomProperties) {
       this.initializeRoomProperties();
     } else {
@@ -1037,7 +944,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.updateParticipants();
     this.participantJoinedObserver.publish(presence);
     this.updateMyProperties(); // send a sync
-    this.validateSlots();
   };
 
   /**

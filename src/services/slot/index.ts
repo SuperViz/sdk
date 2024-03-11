@@ -6,18 +6,35 @@ import {
   MeetingColorsHex,
 } from '../../common/types/meeting-colors.types';
 import { Participant } from '../../common/types/participant.types';
+import { AblyRealtimeService } from '../realtime';
 
 export class SlotService {
   private room: Socket.Room;
   private participant: Participant;
   private slotIndex: number;
+  private realtime: AblyRealtimeService;
+  private static instance: SlotService;
 
-  constructor(room: Socket.Room, participant: Participant) {
+  // @NOTE - reciving old realtime service instance until we migrate to new IO
+  constructor(room: Socket.Room, realtime: AblyRealtimeService, participant: Participant) {
     this.room = room;
     this.participant = participant;
+    this.realtime = realtime;
 
     this.assignSlot();
     this.room.presence.on(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
+  }
+
+  public static register(
+    room: Socket.Room,
+    realtime: AblyRealtimeService,
+    participant: Participant,
+  ) {
+    if (!SlotService.instance) {
+      SlotService.instance = new SlotService(room, realtime, participant);
+    }
+
+    return SlotService.instance;
   }
 
   /**
@@ -46,7 +63,7 @@ export class SlotService {
         resolve(false);
       });
     })
-      .then((isUsing) => {
+      .then(async (isUsing) => {
         if (isUsing) {
           this.assignSlot();
           return;
@@ -67,6 +84,19 @@ export class SlotService {
         };
 
         this.room.presence.update({
+          slot: slotData,
+        });
+
+        // @NOTE - this is a temporary fix for the issue where the slot is not being updated in the presence
+        // @TODO - remove this once we remove the colors from the old io
+        if (!this.realtime.isJoinedRoom) {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1500);
+          });
+        }
+
+        this.realtime.updateMyProperties({
+          slotIndex: slot,
           slot: slotData,
         });
       })
