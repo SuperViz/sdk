@@ -1,16 +1,14 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
-import {
-  MOCK_ABLY_PARTICIPANT,
-  MOCK_GROUP,
-  MOCK_LOCAL_PARTICIPANT,
-} from '../../../__mocks__/participants.mock';
+import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { useStore } from '../../common/utils/use-store';
 import { BaseComponent } from '../../components/base';
+import { DefaultAttachComponentOptions } from '../../components/base/types';
 import { ComponentNames } from '../../components/types';
+import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { useGlobalStore } from '../../services/stores';
@@ -98,12 +96,15 @@ describe('Launcher', () => {
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
-        realtime: ABLY_REALTIME_MOCK,
-        config: MOCK_CONFIG,
-        eventBus: EVENT_BUS_MOCK,
-        useStore,
-      });
+      expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ioc: expect.any(IOC),
+          realtime: ABLY_REALTIME_MOCK,
+          config: MOCK_CONFIG,
+          eventBus: EVENT_BUS_MOCK,
+          useStore,
+        } as DefaultAttachComponentOptions),
+      );
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
         activeComponents: [MOCK_COMPONENT.name],
@@ -145,7 +146,7 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
     });
 
-    test('should show a console message if the laucher is destroyed', () => {
+    test('should show a console message if the launcher is destroyed', () => {
       LauncherInstance.destroy();
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
@@ -164,7 +165,13 @@ describe('Launcher', () => {
       const callback = jest.fn();
       LauncherInstance.subscribe(ParticipantEvent.JOINED, callback);
 
-      LauncherInstance['onParticipantJoined'](MOCK_ABLY_PARTICIPANT);
+      LauncherInstance['onParticipantJoinedIOC']({
+        connectionId: 'connection1',
+        data: MOCK_LOCAL_PARTICIPANT,
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
+        timestamp: Date.now(),
+      });
 
       expect(spy).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
       expect(LauncherInstance['publish']).toHaveBeenCalledTimes(2);
@@ -178,102 +185,16 @@ describe('Launcher', () => {
       LauncherInstance['publish'] = jest.fn();
       LauncherInstance.subscribe(ParticipantEvent.LEFT, callback);
 
-      const participant = {
-        clientId: MOCK_ABLY_PARTICIPANT.clientId,
-        action: 'absent',
+      LauncherInstance['onParticipantLeaveIOC']({
         connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          participantId: 'participant1',
-        },
-      };
-
-      LauncherInstance['onParticipantLeave'](participant as AblyParticipant);
+        data: MOCK_LOCAL_PARTICIPANT,
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
+        timestamp: Date.now(),
+      });
 
       expect(spy).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
       expect(LauncherInstance['publish']).toHaveBeenCalled();
-    });
-
-    test('should skip and not publish ParticipantEvent.LEFT event', () => {
-      const callback = jest.fn();
-      const spy = jest.spyOn(LauncherInstance, 'subscribe');
-      LauncherInstance['publish'] = jest.fn();
-      LauncherInstance.subscribe(ParticipantEvent.LEFT, callback);
-
-      const participant = {
-        clientId: 'client1',
-        action: 'absent',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          id: 'participant1',
-          participantId: 'participant1',
-        },
-      };
-
-      LauncherInstance['onParticipantLeave'](participant as AblyParticipant);
-
-      expect(spy).toHaveBeenCalledWith(ParticipantEvent.LEFT, callback);
-      expect(LauncherInstance['publish']).not.toHaveBeenCalled();
-    });
-
-    test('should publish ParticipantEvent.LOCAL_LEFT event', () => {
-      LauncherInstance['participants'].value = new Map();
-      LauncherInstance['participants'].value.set(MOCK_LOCAL_PARTICIPANT.id, MOCK_LOCAL_PARTICIPANT);
-      const callback = jest.fn();
-      const spy = jest.spyOn(LauncherInstance, 'subscribe');
-      LauncherInstance['publish'] = jest.fn();
-      LauncherInstance.subscribe(ParticipantEvent.LOCAL_LEFT, callback);
-
-      const participant = {
-        clientId: MOCK_LOCAL_PARTICIPANT.id,
-        action: 'absent',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          id: MOCK_LOCAL_PARTICIPANT.id,
-          participantId: MOCK_LOCAL_PARTICIPANT.id,
-        },
-      };
-
-      LauncherInstance['onParticipantLeave'](participant as AblyParticipant);
-
-      expect(spy).toHaveBeenCalledWith(ParticipantEvent.LOCAL_LEFT, callback);
-      expect(LauncherInstance['publish']).toHaveBeenCalled();
-    });
-
-    test('should skip and publish ParticipantEvent.JOINED event', () => {
-      LauncherInstance['participants'].value = new Map();
-      LauncherInstance['participants'].value.set(MOCK_LOCAL_PARTICIPANT.id, MOCK_LOCAL_PARTICIPANT);
-
-      const callback = jest.fn();
-      const spy = jest.spyOn(LauncherInstance, 'subscribe');
-      LauncherInstance['publish'] = jest.fn();
-      LauncherInstance.subscribe(ParticipantEvent.JOINED, callback);
-
-      const participant = {
-        clientId: 'client1',
-        action: 'absent',
-        connectionId: 'connection1',
-        encoding: 'h264',
-        id: 'unit-test-participant-ably-id',
-        timestamp: new Date().getTime(),
-        data: {
-          id: 'participant1',
-          participantId: 'participant1',
-        },
-      };
-
-      LauncherInstance['onParticipantJoined'](participant as AblyParticipant);
-
-      expect(spy).toHaveBeenCalledWith(ParticipantEvent.JOINED, callback);
-      expect(LauncherInstance['publish']).not.toHaveBeenCalled();
     });
 
     test('should update activeComponentsInstances when participant list is updated', () => {

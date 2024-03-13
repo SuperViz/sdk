@@ -27,7 +27,6 @@ export class IOC {
   public destroy(): void {
     this.client.destroy();
     this.client.connection.off();
-    this.client.connection.on((state) => {});
   }
 
   /**

@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import * as Socket from '@superviz/socket-client';
 
 export const MOCK_IO = {
   Realtime: class {
@@ -19,6 +20,10 @@ export const MOCK_IO = {
         on: jest.fn(),
         off: jest.fn(),
         emit: jest.fn(),
+        presence: {
+          on: jest.fn(),
+          off: jest.fn(),
+        },
       };
     }
 

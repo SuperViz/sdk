@@ -10,6 +10,7 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { useStore } from '../../common/utils/use-store';
+import { IOC } from '../../services/io';
 
 import { WhoIsOnline } from './index';
 
@@ -21,6 +22,7 @@ describe('Who Is Online', () => {
 
     whoIsOnlineComponent = new WhoIsOnline();
     whoIsOnlineComponent.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
