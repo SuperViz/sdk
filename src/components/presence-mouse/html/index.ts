@@ -55,7 +55,7 @@ export class PointersHTML extends BaseComponent {
     }
 
     this.name = ComponentNames.PRESENCE;
-
+    this.containerTagname = this.container.tagName.toUpperCase();
     this.goToPresenceCallback = options?.onGoToPresence;
   }
 
@@ -101,6 +101,9 @@ export class PointersHTML extends BaseComponent {
     this.presences.clear();
     this.presences = undefined;
 
+    this.container = undefined;
+    this.wrapper = undefined;
+
     this.unsubscribeFromRealtimeEvents();
 
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
@@ -134,7 +137,7 @@ export class PointersHTML extends BaseComponent {
   }
 
   /**
-   * @function addWrapperListeners
+   * @function addListeners
    * @description adds the mousemove and mouseout listeners to the wrapper with the specified id
    * @param {string} id the id of the wrapper
    * @returns {void}
@@ -174,7 +177,6 @@ export class PointersHTML extends BaseComponent {
       x,
       y,
       visible: true,
-      scale: this.baselineCoordinates.scale,
     });
   };
 
@@ -215,9 +217,15 @@ export class PointersHTML extends BaseComponent {
     this.updateParticipantsMouses();
   };
 
+  /**
+   * @function goToMouse
+   * @description scrolls the screen to the mouse pointer or calls the user callback to do so
+   * @param id - the id of the mouse pointer
+   * @returns
+   */
   private goToMouse = (id: string): void => {
-    const participant = this.presences.get(id);
-    if (!participant) return;
+    const pointer = this.mouses.get(id);
+    if (!pointer) return;
 
     if (this.goToPresenceCallback) {
       const { x, y } = this.mouses.get(id).getBoundingClientRect();
@@ -225,7 +233,7 @@ export class PointersHTML extends BaseComponent {
       return;
     }
 
-    this.mouses.get(id).scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+    pointer.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
 
   /**
@@ -293,6 +301,9 @@ export class PointersHTML extends BaseComponent {
     mouseFollower.appendChild(pointerMouse);
     mouseFollower.appendChild(mouseUserName);
 
+    mouseFollower.style.left = '0px';
+    mouseFollower.style.top = '0px';
+
     this.wrapper.appendChild(mouseFollower);
     this.mouses.set(participant.id, mouseFollower);
     return mouseFollower;
@@ -343,13 +354,17 @@ export class PointersHTML extends BaseComponent {
 
     const { width, height } = this.container.getBoundingClientRect();
 
-    wrapper.style.position = 'absolute';
+    wrapper.style.position = 'fixed';
     wrapper.style.width = `${width}px`;
     wrapper.style.height = `${height}px`;
     wrapper.style.top = `${top}px`;
     wrapper.style.left = `${left}px`;
     wrapper.style.overflow = 'visible';
+    wrapper.style.pointerEvents = 'none';
+    wrapper.id = 'superviz-svg-wrapper';
+
     this.container.parentElement.appendChild(wrapper);
+    this.wrapper = wrapper;
   }
 
   /**
@@ -391,6 +406,8 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
     wrapper.style.overflow = 'visible';
+    wrapper.style.pointerEvents = 'none';
+    wrapper.id = 'superviz-rect-wrapper';
 
     // here we get the topmost svg element, in case there are nested svgs
     let externalViewport = (this.container as SVGElement).viewportElement;
@@ -399,9 +416,7 @@ export class PointersHTML extends BaseComponent {
     }
 
     externalViewport.parentElement.appendChild(wrapper);
-
     this.wrapper = wrapper;
-    this.containerTagname = SVGElements.RECT;
   }
 
   /**
@@ -448,6 +463,8 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
     wrapper.style.overflow = 'visible';
+    wrapper.style.pointerEvents = 'none';
+    wrapper.id = 'superviz-ellipse-wrapper';
 
     // here we get the topmost svg element, in case there are nested svgs
     let externalViewport = (this.container as SVGElement).viewportElement;
@@ -470,7 +487,9 @@ export class PointersHTML extends BaseComponent {
   private animate = (): void => {
     if (VoidElements[this.containerTagname]) {
       this.updateVoidElementWrapper();
-    } else if (SVGElements[this.containerTagname]) {
+    }
+
+    if (SVGElements[this.containerTagname]) {
       this.updateSVGElementWrapper();
     }
 
@@ -513,10 +532,11 @@ export class PointersHTML extends BaseComponent {
     this.wrapper.style.setProperty('height', `${elementRect.height}px`);
     this.wrapper.style.setProperty('top', `${top}px`);
     this.wrapper.style.setProperty('left', `${left}px`);
+    this.wrapper.id = 'superviz-void-wrapper';
   }
 
   /**
-   * @function updateVoidElementWrapper
+   * @function updateSVGElementWrapper
    * @description - Updates the position of each wrapper for void elements
    * @returns {void}
    */
@@ -537,7 +557,7 @@ export class PointersHTML extends BaseComponent {
 
     if (cLeft === wLeft && cTop === wTop && cWidth === wWidth && cHeight === wHeight) return;
 
-    if (this.containerTagname === SVGElements.SVG) {
+    if (this.containerTagname.toLowerCase() === SVGElements.SVG) {
       this.updateSVGPosition();
       return;
     }
@@ -558,15 +578,12 @@ export class PointersHTML extends BaseComponent {
   private renderWrapper() {
     if (this.wrapper) return;
 
-    const tagName = this.container.tagName.toUpperCase();
-    this.containerTagname = tagName;
-
-    if (VoidElements[tagName]) {
+    if (VoidElements[this.containerTagname]) {
       this.renderVoidElementWrapper();
       return;
     }
 
-    if (SVGElements[tagName]) {
+    if (SVGElements[this.containerTagname]) {
       this.renderSVGElementWrapper();
       return;
     }
@@ -600,12 +617,6 @@ export class PointersHTML extends BaseComponent {
 
     let mouseFollower = document.getElementById(`mouse-${participant.id}`);
 
-    if (mouseFollower) {
-      mouseFollower.remove();
-      this.mouses.delete(participant.id);
-      mouseFollower = null;
-    }
-
     if (!mouseFollower) {
       mouseFollower = this.createMouseElement(participant);
     }
@@ -627,12 +638,6 @@ export class PointersHTML extends BaseComponent {
 
     const { x, y } = participant;
     const { x: baseX, y: baseY, scale } = this.baselineCoordinates;
-    mouseFollower.style.left = '0px';
-    mouseFollower.style.top = '0px';
-
-    // mouseFollower.style.transform = `translate(${((baseX + x) * scale) / participant.scale}px, ${
-    //   ((baseY + y) * scale) / participant.scale
-    // }px)`;
 
     mouseFollower.style.transform = `translate(${baseX + x * scale}px, ${baseY + y * scale}px)`;
   };
@@ -646,7 +651,6 @@ export class PointersHTML extends BaseComponent {
    */
   private renderElementWrapper(): void {
     const wrapper = document.createElement('div');
-
     wrapper.style.position = 'absolute';
     wrapper.style.width = '100%';
     wrapper.style.height = '100%';
@@ -679,6 +683,8 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.top = `${top}px`;
     wrapper.style.left = `${left}px`;
     wrapper.style.overflow = 'visible';
+    wrapper.style.pointerEvents = 'none';
+
     this.container.parentElement.appendChild(wrapper);
     this.wrapper = wrapper;
   };
@@ -691,17 +697,20 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private renderSVGElementWrapper = (): void => {
-    const elementName = this.container.tagName.toLowerCase();
+    const tag = this.containerTagname.toLowerCase();
 
-    const isSvgElement = elementName === 'svg';
-    if (isSvgElement) this.createSVGWrapper();
+    if (tag === SVGElements.SVG) {
+      this.createSVGWrapper();
+      return;
+    }
 
-    const isRectElement = elementName === 'rect';
-    if (isRectElement) this.createRectWrapper();
+    if (tag === SVGElements.RECT) {
+      this.createRectWrapper();
+      return;
+    }
 
-    const isEllipseElement = elementName === 'ellipse';
-    if (isEllipseElement) this.createEllipseWrapper();
+    if (tag === SVGElements.ELLIPSE) {
+      this.createEllipseWrapper();
+    }
   };
 }
-
-// @todo aNIMATE IN CASE OF VOID OR SVG ELEMENTS
