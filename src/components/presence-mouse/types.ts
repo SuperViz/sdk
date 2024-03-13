@@ -7,10 +7,12 @@ export interface ParticipantMouse extends Participant {
   visible: boolean;
 }
 
-export interface Baseline {
-  x: number;
-  y: number;
-  scale: number;
+export interface Transform {
+  translate?: {
+    x?: number;
+    y?: number;
+  };
+  scale?: number;
 }
 
 export interface PresenceMouseProps {
