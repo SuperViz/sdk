@@ -4,6 +4,7 @@ import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock'
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { useStore } from '../../../common/utils/use-store';
+import { IOC } from '../../../services/io';
 import { ParticipantMouse, Element } from '../types';
 
 import { PointersHTML } from '.';
@@ -13,6 +14,7 @@ const createMousePointers = (): PointersHTML => {
   presenceMouseComponent['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
 
   presenceMouseComponent.attach({
+    ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
     realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,

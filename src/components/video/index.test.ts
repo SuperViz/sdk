@@ -16,6 +16,7 @@ import {
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { ParticipantType } from '../../common/types/participant.types';
 import { useStore } from '../../common/utils/use-store';
+import { IOC } from '../../services/io';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
@@ -95,6 +96,7 @@ describe('VideoConference', () => {
 
     VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
     VideoConferenceInstance.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
@@ -119,6 +121,7 @@ describe('VideoConference', () => {
     };
 
     VideoConferenceInstance.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,

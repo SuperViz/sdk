@@ -4,6 +4,7 @@ import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { useStore } from '../../../common/utils/use-store';
+import { IOC } from '../../../services/io';
 import { ParticipantMouse } from '../types';
 
 import { PointersCanvas } from './index';
@@ -33,6 +34,7 @@ const createMousePointers = (): PointersCanvas => {
   const presenceMouseComponent = new PointersCanvas('canvas');
 
   presenceMouseComponent.attach({
+    ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
     realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,

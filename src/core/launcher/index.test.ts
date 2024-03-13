@@ -6,7 +6,9 @@ import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types
 import { Participant } from '../../common/types/participant.types';
 import { useStore } from '../../common/utils/use-store';
 import { BaseComponent } from '../../components/base';
+import { DefaultAttachComponentOptions } from '../../components/base/types';
 import { ComponentNames } from '../../components/types';
+import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { useGlobalStore } from '../../services/stores';
@@ -94,12 +96,15 @@ describe('Launcher', () => {
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith({
-        realtime: ABLY_REALTIME_MOCK,
-        config: MOCK_CONFIG,
-        eventBus: EVENT_BUS_MOCK,
-        useStore,
-      });
+      expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ioc: expect.any(IOC),
+          realtime: ABLY_REALTIME_MOCK,
+          config: MOCK_CONFIG,
+          eventBus: EVENT_BUS_MOCK,
+          useStore,
+        } as DefaultAttachComponentOptions),
+      );
 
       expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
         activeComponents: [MOCK_COMPONENT.name],
@@ -141,7 +146,7 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
     });
 
-    test('should show a console message if the launcer is destroyed', () => {
+    test('should show a console message if the launcher is destroyed', () => {
       LauncherInstance.destroy();
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
