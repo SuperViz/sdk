@@ -5,7 +5,13 @@ import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types'
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-import { Element, ParticipantMouse, PresenceMouseProps, SVGElements, VoidElements } from '../types';
+import {
+  Baseline,
+  ParticipantMouse,
+  PresenceMouseProps,
+  SVGElements,
+  VoidElements,
+} from '../types';
 
 export class PointersHTML extends BaseComponent {
   public name: ComponentNames;
@@ -25,6 +31,7 @@ export class PointersHTML extends BaseComponent {
   private animationFrame: number;
   private isPrivate: boolean;
   private containerTagname: string;
+  private baselineCoordinates: Baseline = { x: 0, y: 0, scale: 1 };
 
   // callbacks
   private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
@@ -50,6 +57,10 @@ export class PointersHTML extends BaseComponent {
     this.name = ComponentNames.PRESENCE;
 
     this.goToPresenceCallback = options?.onGoToPresence;
+  }
+
+  public setBaselineCoordinates(coordinates: Baseline) {
+    this.baselineCoordinates = coordinates;
   }
 
   // ---------- SETUP ----------
@@ -129,21 +140,18 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private addListeners(): void {
-    this.container.addEventListener('mousemove', this.onMyParticipantMouseMove);
-    this.wrapper.addEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.container.addEventListener('pointermove', this.onMyParticipantMouseMove);
+    this.container.addEventListener('mouseleave', this.onMyParticipantMouseLeave);
   }
 
   /**
    * @function removeListeners
-   * @description removes the mousemove and mouseout listeners from the wrapper with the specified id
-   * @param {string} id the id of the wrapper
+   * @description removes the mousemove and mouseout listeners from the container
    * @returns {void}
    */
   private removeListeners(): void {
-    if (!this.wrapper) return;
-
-    this.wrapper.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    this.wrapper.removeEventListener('mouseout', this.onMyParticipantMouseOut);
+    this.container.removeEventListener('pointermove', this.onMyParticipantMouseMove);
+    this.container.removeEventListener('mouseleave', this.onMyParticipantMouseLeave);
   }
 
   // ---------- CALLBACKS ----------
@@ -154,32 +162,28 @@ export class PointersHTML extends BaseComponent {
    */
   private onMyParticipantMouseMove = (event: MouseEvent): void => {
     if (this.isPrivate) return;
-
     const container = event.currentTarget as HTMLDivElement;
 
-    if (!container.clientHeight || !container.clientWidth) return;
-
     const { left, top } = container.getBoundingClientRect();
-    const x = event.x - left;
-    const y = event.y - top;
+
+    const x = (event.x - left - this.baselineCoordinates.x) / this.baselineCoordinates.scale;
+    const y = (event.y - top - this.baselineCoordinates.y) / this.baselineCoordinates.scale;
 
     this.realtime.updatePresenceMouse({
       ...this.localParticipant,
       x,
       y,
       visible: true,
+      scale: this.baselineCoordinates.scale,
     });
   };
 
   /**
-   * @function onMyParticipantMouseOut
+   * @function onMyParticipantMouseLeave
    * @param {MouseEvent} event - The MouseEvent object
    * @returns {void}
    */
-  private onMyParticipantMouseOut = (e: MouseEvent): void => {
-    console.log('???', this.wrapper.contains(e.target as Node));
-    if (this.wrapper.contains(e.target as Node)) return;
-
+  private onMyParticipantMouseLeave = (): void => {
     this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant });
   };
 
@@ -208,11 +212,12 @@ export class PointersHTML extends BaseComponent {
     });
 
     this.animate();
+    this.updateParticipantsMouses();
   };
 
   private goToMouse = (id: string): void => {
     const participant = this.presences.get(id);
-    if (!participant || this.wrapper) return;
+    if (!participant) return;
 
     if (this.goToPresenceCallback) {
       const { x, y } = this.mouses.get(id).getBoundingClientRect();
@@ -453,7 +458,6 @@ export class PointersHTML extends BaseComponent {
     externalViewport.parentElement.appendChild(wrapper);
 
     this.wrapper = wrapper;
-    this.containerTagname = SVGElements.ELLIPSE;
   }
 
   // ---------- REGULAR METHODS ----------
@@ -468,13 +472,15 @@ export class PointersHTML extends BaseComponent {
       this.updateVoidElementWrapper();
     } else if (SVGElements[this.containerTagname]) {
       this.updateSVGElementWrapper();
-    } else {
-      this.updateParticipantsMouses();
     }
+
+    this.animationFrame = requestAnimationFrame(this.animate);
   };
 
   private updateParticipantsMouses = (): void => {
     this.presences.forEach((mouse) => {
+      if (mouse.id === this.localParticipant.id) return;
+
       if (!mouse?.visible) {
         this.removePresenceMouseParticipant(mouse.id);
         return;
@@ -515,20 +521,31 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private updateSVGElementWrapper(): void {
-    const elementRect = this.container.getBoundingClientRect();
-    const wrapperRect = this.wrapper.getBoundingClientRect();
+    const {
+      left: cLeft,
+      top: cTop,
+      width: cWidth,
+      height: cHeight,
+    } = this.container.getBoundingClientRect();
 
-    if (isEqual(elementRect, wrapperRect)) return;
+    const {
+      left: wLeft,
+      top: wTop,
+      width: wWidth,
+      height: wHeight,
+    } = this.wrapper.getBoundingClientRect();
+
+    if (cLeft === wLeft && cTop === wTop && cWidth === wWidth && cHeight === wHeight) return;
 
     if (this.containerTagname === SVGElements.SVG) {
       this.updateSVGPosition();
       return;
     }
 
-    this.wrapper.style.setProperty('width', `${elementRect.width}px`);
-    this.wrapper.style.setProperty('height', `${elementRect.height}px`);
-    this.wrapper.style.setProperty('top', `${elementRect.top}px`);
-    this.wrapper.style.setProperty('left', `${elementRect.left}px`);
+    this.wrapper.style.setProperty('width', `${cWidth}px`);
+    this.wrapper.style.setProperty('height', `${cHeight}px`);
+    this.wrapper.style.setProperty('top', `${cTop}px`);
+    this.wrapper.style.setProperty('left', `${cLeft}px`);
   }
 
   /**
@@ -541,7 +558,7 @@ export class PointersHTML extends BaseComponent {
   private renderWrapper() {
     if (this.wrapper) return;
 
-    const tagName = this.container.tagName.toLowerCase();
+    const tagName = this.container.tagName.toUpperCase();
     this.containerTagname = tagName;
 
     if (VoidElements[tagName]) {
@@ -579,6 +596,8 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    * */
   private renderPresenceMouses = (participant: ParticipantMouse): void => {
+    if (participant.id === this.localParticipant.id) return;
+
     let mouseFollower = document.getElementById(`mouse-${participant.id}`);
 
     if (mouseFollower) {
@@ -607,8 +626,15 @@ export class PointersHTML extends BaseComponent {
     }
 
     const { x, y } = participant;
-    mouseFollower.style.left = `${x}px`;
-    mouseFollower.style.top = `${y}px`;
+    const { x: baseX, y: baseY, scale } = this.baselineCoordinates;
+    mouseFollower.style.left = '0px';
+    mouseFollower.style.top = '0px';
+
+    // mouseFollower.style.transform = `translate(${((baseX + x) * scale) / participant.scale}px, ${
+    //   ((baseY + y) * scale) / participant.scale
+    // }px)`;
+
+    mouseFollower.style.transform = `translate(${baseX + x * scale}px, ${baseY + y * scale}px)`;
   };
 
   /**

@@ -5,6 +5,13 @@ export interface ParticipantMouse extends Participant {
   x: number;
   y: number;
   visible: boolean;
+  scale: number;
+}
+
+export interface Baseline {
+  x: number;
+  y: number;
+  scale: number;
 }
 
 export interface PresenceMouseProps {
