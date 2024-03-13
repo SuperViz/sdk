@@ -6,10 +6,10 @@ import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import {
-  Baseline,
   ParticipantMouse,
   PresenceMouseProps,
   SVGElements,
+  Transform,
   VoidElements,
 } from '../types';
 
@@ -31,7 +31,7 @@ export class PointersHTML extends BaseComponent {
   private animationFrame: number;
   private isPrivate: boolean;
   private containerTagname: string;
-  private baselineCoordinates: Baseline = { x: 0, y: 0, scale: 1 };
+  private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
 
   // callbacks
   private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
@@ -57,10 +57,6 @@ export class PointersHTML extends BaseComponent {
     this.name = ComponentNames.PRESENCE;
     this.containerTagname = this.container.tagName.toUpperCase();
     this.goToPresenceCallback = options?.onGoToPresence;
-  }
-
-  public setBaselineCoordinates(coordinates: Baseline) {
-    this.baselineCoordinates = coordinates;
   }
 
   // ---------- SETUP ----------
@@ -169,8 +165,8 @@ export class PointersHTML extends BaseComponent {
 
     const { left, top } = container.getBoundingClientRect();
 
-    const x = (event.x - left - this.baselineCoordinates.x) / this.baselineCoordinates.scale;
-    const y = (event.y - top - this.baselineCoordinates.y) / this.baselineCoordinates.scale;
+    const x = (event.x - left - this.transformation.translate.x) / this.transformation.scale;
+    const y = (event.y - top - this.transformation.translate.y) / this.transformation.scale;
 
     this.realtime.updatePresenceMouse({
       ...this.localParticipant,
@@ -478,6 +474,14 @@ export class PointersHTML extends BaseComponent {
   }
 
   // ---------- REGULAR METHODS ----------
+  /**
+   * @function transformPointer
+   * @description stores that information about which transformations should the pointers go through
+   * @param {Transform} transformation Which transformations to apply
+   */
+  public transformPointer(transformation: Transform) {
+    this.transformation = transformation;
+  }
 
   /**
    * @function animate
@@ -637,7 +641,10 @@ export class PointersHTML extends BaseComponent {
     }
 
     const { x, y } = participant;
-    const { x: baseX, y: baseY, scale } = this.baselineCoordinates;
+    const {
+      translate: { x: baseX, y: baseY },
+      scale,
+    } = this.transformation;
 
     mouseFollower.style.transform = `translate(${baseX + x * scale}px, ${baseY + y * scale}px)`;
   };
