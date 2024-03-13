@@ -1,7 +1,8 @@
 import * as Socket from '@superviz/socket-client';
 
+import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { StoreType } from '../../common/types/stores.types';
-import { Logger } from '../../common/utils';
+import { Logger, Observer } from '../../common/utils';
 import { RealtimeMessage } from '../../services/realtime/ably/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
@@ -38,10 +39,6 @@ export class Realtime extends BaseComponent {
   protected start(): void {
     this.logger.log('started');
 
-    this.callbacksToSubscribeWhenJoined.forEach(({ event, callback }) => {
-      this.room.on(event, callback);
-    });
-
     this.subscribeToRealtimeEvents();
   }
 
@@ -53,6 +50,11 @@ export class Realtime extends BaseComponent {
    * @returns {void}
    */
   public publish = (event: string, data?: unknown): void => {
+    if (Object.values(ComponentLifeCycleEvent).includes(event as ComponentLifeCycleEvent)) {
+      this.publishEventToClient(event, data);
+      return;
+    }
+
     if (this.state !== RealtimeComponentState.STARTED) {
       const message = `Realtime component is not started yet. You can't publish event ${event} before start`;
       this.logger.log(message);
@@ -74,6 +76,10 @@ export class Realtime extends BaseComponent {
     if (this.state !== RealtimeComponentState.STARTED) {
       this.callbacksToSubscribeWhenJoined.push({ event, callback });
       return;
+    }
+
+    if (!this.observers[event]) {
+      this.observers[event] = new Observer();
     }
 
     this.observers[event].subscribe(callback);
@@ -163,11 +169,20 @@ export class Realtime extends BaseComponent {
 
       this.logger.log('joined room');
       this.changeState(RealtimeComponentState.STARTED);
+
+      this.callbacksToSubscribeWhenJoined.forEach(({ event, callback }) => {
+        this.subscribe(event, callback);
+      });
     });
 
     this.room.on<RealtimeData>('message', (event) => {
       this.logger.log('message received', event);
-      this.publishEventToClient(event.data.name, event.data.payload);
+      this.publishEventToClient(event.data.name, {
+        data: event.data.payload,
+        participantId: event.presence.id,
+        name: event.data.name,
+        timestamp: event.timestamp,
+      } as RealtimeMessage);
     });
   }
 
