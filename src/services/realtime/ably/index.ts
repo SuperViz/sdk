@@ -77,16 +77,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.onAblyPresenceUpdate = this.onAblyPresenceUpdate.bind(this);
     this.onAblyPresenceLeave = this.onAblyPresenceLeave.bind(this);
     this.onAblyRoomUpdate = this.onAblyRoomUpdate.bind(this);
-    this.onClientSyncChannelUpdate = this.onClientSyncChannelUpdate.bind(this);
     this.onAblyChannelStateChange = this.onAblyChannelStateChange.bind(this);
     this.onAblyConnectionStateChange = this.onAblyConnectionStateChange.bind(this);
     this.onReceiveBroadcastSync = this.onReceiveBroadcastSync.bind(this);
     this.getParticipantSlot = this.getParticipantSlot.bind(this);
     this.auth = this.auth.bind(this);
-
-    setInterval(() => {
-      this.publishClientSyncProperties();
-    }, 1000);
   }
 
   public get roomProperties() {
@@ -200,7 +195,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     // join custom sync channel
     this.clientSyncChannel = this.client.channels.get(`${this.roomId}:client-sync`);
-    this.clientSyncChannel.subscribe(this.onClientSyncChannelUpdate);
 
     this.clientRoomStateChannel = this.client.channels.get(`${this.roomId}:client-state`);
 
@@ -415,36 +409,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   };
 
   /**
-   * @function publishClientSyncProperties
-   * @description publish client sync props
-   * @returns {void}
-   */
-  private publishClientSyncProperties = (): void => {
-    if (this.state !== RealtimeStateTypes.CONNECTED) return;
-
-    Object.keys(this.clientSyncPropertiesQueue).forEach((name) => {
-      this.clientSyncPropertiesQueue[name] = this.clientSyncPropertiesQueue[name].sort(
-        (a, b) => a.timestamp - b.timestamp,
-      );
-
-      if (!this.clientSyncPropertiesQueue[name].length) return;
-
-      const { data, lengthToBeSplitted } = this.spliceArrayBySize(
-        this.clientSyncPropertiesQueue[name],
-      );
-
-      const eventQueue = data;
-      this.clientSyncPropertiesQueue[name].splice(0, lengthToBeSplitted);
-
-      this.clientSyncChannel.publish(name, eventQueue, (error) => {
-        if (!error) return;
-
-        this.logger.log('REALTIME', 'Error in publish client sync properties', error.message);
-      });
-    });
-  };
-
-  /**
    * @function onAblyPresenceEnter
    * @description callback that receives the event that a participant has entered the room
    * @param {Ably.Types.PresenceMessage} presenceMessage
@@ -496,44 +460,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private onAblyPresenceLeave(presenceMessage: Ably.Types.PresenceMessage): void {
     this.onParticipantLeave(presenceMessage);
   }
-
-  /**
-   * @function onClientSyncChannelUpdate
-   * @description callback that receives the update event from ably's channel
-   * @param {Ably.Types.Message} message
-   * @returns {void}
-   */
-  private onClientSyncChannelUpdate(message: Ably.Types.Message): void {
-    const { name, data } = message;
-    const property = {};
-
-    property[name] = data;
-    this.syncPropertiesObserver.publish(property);
-
-    if (message.clientId === this.myParticipant.data.participantId) {
-      this.saveClientRoomState(name, data);
-    }
-  }
-
-  /**
-   * @function saveClientRoomState
-   * @description
-      Saves the latest state of the room for the client
-      and publishes it to the client room state channel.
-   * @param {string} name - The name of the room state to save.
-   * @param {RealtimeMessage[]} data - The data to save as the latest state of the room.
-   * @returns {void}
-   */
-  private saveClientRoomState = async (name: string, data: RealtimeMessage[]): Promise<void> => {
-    const previusHistory = await this.fetchSyncClientProperty();
-
-    this.clientRoomState = Object.assign({}, previusHistory, {
-      [name]: data[data.length - 1],
-    });
-    this.clientRoomStateChannel.publish('update', this.clientRoomState);
-
-    this.logger.log('REALTIME', 'setting new room state backup', this.clientRoomState);
-  };
 
   /**
    * @function onReceiveBroadcastSync
@@ -787,47 +713,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
       });
     });
-  }
-
-  /**
-   * @function fetchSyncClientProperty
-   * @description
-   * @param {string} eventName - name event to be fetched
-   * @returns {Promise<RealtimeMessage | Record<string, RealtimeMessage>}
-   */
-  public async fetchSyncClientProperty(
-    eventName?: string,
-  ): Promise<RealtimeMessage | Record<string, RealtimeMessage>> {
-    try {
-      const clientHistory: Record<string, RealtimeMessage> = await new Promise(
-        (resolve, reject) => {
-          this.clientRoomStateChannel.history((error, resultPage) => {
-            if (error) reject(error);
-
-            const lastMessage = resultPage?.items[0]?.data;
-
-            if (lastMessage) {
-              resolve(lastMessage);
-            } else {
-              resolve(null);
-            }
-          });
-        },
-      );
-
-      if (eventName && !clientHistory[eventName]) {
-        throw new Error(`Event ${eventName} not found in the history`);
-      }
-
-      if (eventName) {
-        return clientHistory[eventName];
-      }
-
-      return clientHistory;
-    } catch (error) {
-      this.logger.log('REALTIME', 'Error in fetch client realtime data', error.message);
-      this.throw(error.message);
-    }
   }
 
   /**

@@ -15,7 +15,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public roomInfoUpdatedObserver: Observer;
   public roomListUpdatedObserver: Observer;
   public realtimeStateObserver: Observer;
-  public syncPropertiesObserver: Observer;
   public kickAllParticipantsObserver: Observer;
   public kickParticipantObserver: Observer;
   public authenticationObserver: Observer;
@@ -41,7 +40,6 @@ export class RealtimeService implements DefaultRealtimeService {
     this.participantsObserver = new Observer({ logger: this.logger });
     this.participantJoinedObserver = new Observer({ logger: this.logger });
     this.participantLeaveObserver = new Observer({ logger: this.logger });
-    this.syncPropertiesObserver = new Observer({ logger: this.logger });
     this.reconnectObserver = new Observer({ logger: this.logger });
     this.sameAccountObserver = new Observer({ logger: this.logger });
 
