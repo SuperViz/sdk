@@ -125,6 +125,25 @@ export const annotationItemStyle = css`
     width: 100%;
   }
 
+  .comments__hide-complete-annotation {
+    min-height: 0;
+    opacity: 0;
+    animation: hide-annotation 10s linear;
+  }
+
+  @keyframes hide-annotation {
+    0%,
+    95% {
+      min-height: 43px;
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+      min-height: 0;
+    }
+  }
+
   .comments__resolved-annotation-message {
     position: absolute;
     width: 100%;
