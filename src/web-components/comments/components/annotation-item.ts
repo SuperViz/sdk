@@ -15,6 +15,8 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationIte
 
 @customElement('superviz-comments-annotation-item')
 export class CommentsAnnotationItem extends WebComponentsBaseElement {
+  static styles = styles;
+
   declare annotation: Annotation;
   declare expandComments: boolean;
   declare selected: string;
@@ -24,8 +26,6 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   declare annotationFilter: string;
   declare participantsList: ParticipantByGroupApi[];
   declare hideInput: boolean;
-
-  static styles = styles;
 
   static properties = {
     annotation: { type: Object },
@@ -247,8 +247,13 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   }
 
   protected render() {
+    const annotationItemClasses = {
+      'comments__complete-annotation': true,
+      'comments__hide-complete-annotation': this.shouldShowUndoResolved,
+    };
+
     return html`
-      <div class="comments__complete-annotation">
+      <div class="${classMap(annotationItemClasses)}">
         ${this.annotationResolvedTemplate()}
 
         <div class=${classMap(this.wrapperClasses)}>

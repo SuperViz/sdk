@@ -13,6 +13,7 @@ export class Icon extends WebComponentsBaseElement {
   declare name: string;
   declare size: string;
   declare color: 'white' | 'black';
+  declare suffix: string;
 
   constructor() {
     super();
@@ -25,6 +26,7 @@ export class Icon extends WebComponentsBaseElement {
     name: { type: String },
     size: { type: String },
     color: { type: String },
+    suffix: { type: String },
   };
 
   private get iconSize(): string {
@@ -60,7 +62,7 @@ export class Icon extends WebComponentsBaseElement {
 
     return html`
       <i
-        class="sv-icon sv-icon-${this.name}_${this.size} ${this.color}"
+        class="sv-icon sv-icon-${this.name}_${this.suffix ?? this.size} ${this.color}"
         style="font-size: ${this.iconSize}px"
       ></i>
     `;
