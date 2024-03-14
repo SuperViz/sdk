@@ -1,4 +1,5 @@
-import { isEqual } from 'lodash';
+import * as Socket from '@superviz/socket-client';
+import { isEqual, throttle } from 'lodash';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
@@ -74,7 +75,6 @@ export class PointersHTML extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
-    this.realtime.enterPresenceMouseChannel(this.localParticipant);
 
     this.renderWrapper();
     this.addListeners();
@@ -95,7 +95,6 @@ export class PointersHTML extends BaseComponent {
     cancelAnimationFrame(this.animationFrame);
 
     this.logger.log('presence-mouse component @ destroy');
-    this.realtime.leavePresenceMouseChannel();
 
     this.removeListeners();
     this.wrapper.remove();
@@ -121,8 +120,12 @@ export class PointersHTML extends BaseComponent {
    */
   private subscribeToRealtimeEvents(): void {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
-    this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
-    this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
+    this.room.presence.on<ParticipantMouse>(
+      Socket.PresenceEvents.JOINED_ROOM,
+      this.onPresenceJoinedRoom,
+    );
+    this.room.presence.on<ParticipantMouse>(Socket.PresenceEvents.LEAVE, this.onPresenceLeftRoom);
+    this.room.presence.on<ParticipantMouse>(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
   }
 
   /**
@@ -132,10 +135,9 @@ export class PointersHTML extends BaseComponent {
    */
   private unsubscribeFromRealtimeEvents(): void {
     this.logger.log('presence-mouse component @ unsubscribe from realtime events');
-    this.realtime.presenceMouseParticipantLeaveObserver.unsubscribe(
-      this.onParticipantLeftOnRealtime,
-    );
-    this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
+    this.room.presence.off(Socket.PresenceEvents.JOINED_ROOM);
+    this.room.presence.off(Socket.PresenceEvents.LEAVE);
+    this.room.presence.off(Socket.PresenceEvents.UPDATE);
   }
 
   /**
@@ -165,7 +167,7 @@ export class PointersHTML extends BaseComponent {
    * @description event to update my participant mouse position to others participants
    * @returns {void}
    */
-  private onMyParticipantMouseMove = (event: MouseEvent): void => {
+  private onMyParticipantMouseMove = throttle((event: MouseEvent): void => {
     if (this.isPrivate) return;
     const container = event.currentTarget as HTMLDivElement;
 
@@ -174,49 +176,20 @@ export class PointersHTML extends BaseComponent {
     const x = (event.x - left - this.transformation.translate.x) / this.transformation.scale;
     const y = (event.y - top - this.transformation.translate.y) / this.transformation.scale;
 
-    this.realtime.updatePresenceMouse({
+    this.room.presence.update({
       ...this.localParticipant,
       x,
       y,
       visible: true,
     });
-  };
+  }, 100);
 
   /**
    * @function onMyParticipantMouseLeave
-   * @param {MouseEvent} event - The MouseEvent object
    * @returns {void}
    */
   private onMyParticipantMouseLeave = (): void => {
-    this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant });
-  };
-
-  /**
-   * @function onParticipantsDidChange
-   * @description handler for participant list update event
-   * @param {Record<string, AblyParticipant>} participants - participants
-   * @returns {void}
-   */
-  private onParticipantsDidChange = (participants: Record<string, ParticipantMouse>): void => {
-    this.logger.log('presence-mouse component @ on participants did change', participants);
-    Object.values(participants).forEach((participant: ParticipantMouse) => {
-      if (participant.id === this.localParticipant.id) return;
-      const followingAnotherParticipant =
-        this.userBeingFollowedId &&
-        participant.id !== this.userBeingFollowedId &&
-        this.presences.has(participant.id);
-
-      // When the user is following a participant, every other mouse pointer is removed
-      if (followingAnotherParticipant) {
-        this.removePresenceMouseParticipant(participant.id);
-        return;
-      }
-
-      this.presences.set(participant.id, participant);
-    });
-
-    this.animate();
-    this.updateParticipantsMouses();
+    this.room.presence.update({ visible: false });
   };
 
   /**
@@ -264,7 +237,55 @@ export class PointersHTML extends BaseComponent {
    */
   private setParticipantPrivate = (isPrivate: boolean): void => {
     this.isPrivate = isPrivate;
-    this.realtime.updatePresenceMouse({ ...this.localParticipant, visible: !isPrivate });
+    this.room.presence.update({ visible: !isPrivate });
+  };
+
+  /**
+   * @function onPresenceJoinedRoom
+   * @description handler for presence joined room event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceJoinedRoom = (presence: Socket.PresenceEvent): void => {
+    if (presence.id !== this.localParticipant.id) return;
+
+    this.room.presence.update(this.localParticipant);
+  };
+
+  /**
+   * @function onPresenceLeftRoom
+   * @description handler for presence left room event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceLeftRoom = (presence: Socket.PresenceEvent<ParticipantMouse>): void => {
+    this.removePresenceMouseParticipant(presence.id);
+  };
+
+  /**
+   * @function onPresenceUpdate
+   * @description handler for presence update event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceUpdate = (presence: Socket.PresenceEvent<ParticipantMouse>): void => {
+    if (presence.id === this.localParticipant.id) return;
+    const participant = presence.data;
+
+    const followingAnotherParticipant =
+      this.userBeingFollowedId &&
+      participant.id !== this.userBeingFollowedId &&
+      this.presences.has(participant.id);
+
+    // When the user is following a participant, every other mouse pointer is removed
+    if (followingAnotherParticipant) {
+      this.removePresenceMouseParticipant(participant.id);
+      return;
+    }
+
+    this.presences.set(participant.id, participant);
+    this.animate();
+    this.updateParticipantsMouses();
   };
 
   // ---------- HELPERS ----------
@@ -310,15 +331,6 @@ export class PointersHTML extends BaseComponent {
     this.mouses.set(participant.id, mouseFollower);
     return mouseFollower;
   }
-
-  /**
-   * @function getTextColorValue
-   * @param slotIndex - slot index
-   * @returns {string} - The color of the text in hex format
-   * */
-  private getTextColorValue = (slotIndex: number): string => {
-    return INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
-  };
 
   /**
    * @function updateSVGPosition
@@ -637,12 +649,12 @@ export class PointersHTML extends BaseComponent {
     const pointerUser = mouseFollower.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${participant.slotIndex}.svg)`;
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${participant.slot.index}.svg)`;
     }
 
     if (mouseUser) {
-      mouseUser.style.color = this.getTextColorValue(participant.slotIndex);
-      mouseUser.style.backgroundColor = participant.color;
+      mouseUser.style.color = participant.slot.textColor;
+      mouseUser.style.backgroundColor = participant.slot.color;
       mouseUser.innerHTML = participant.name;
     }
 

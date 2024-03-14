@@ -2,7 +2,6 @@ import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
-import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { useStore } from '../../../common/utils/use-store';
 import { IOC } from '../../../services/io';
 import { ParticipantMouse } from '../types';
@@ -36,15 +35,22 @@ describe('MousePointers on HTML', () => {
       ...MOCK_LOCAL_PARTICIPANT,
       x: 30,
       y: 30,
-      slotIndex: 0,
+      slotIndex: 7,
+      slot: {
+        index: 7,
+        color: '#304AFF',
+        textColor: '#fff',
+        colorName: 'bluedark',
+        timestamp: 1710448079918,
+      },
       visible: true,
     };
 
     const participant1 = { ...MOCK_MOUSE };
     const participant2 = { ...MOCK_MOUSE };
     const participant3 = { ...MOCK_MOUSE };
-    participant2.id = 'unit-test-participant2-ably-id';
-    participant3.id = 'unit-test-participant3-ably-id';
+    participant2.id = 'unit-test-participant2-id';
+    participant3.id = 'unit-test-participant3-id';
 
     participants[participant1.id] = { ...participant1 };
     participants[participant2.id] = { ...participant2 };
@@ -75,16 +81,6 @@ describe('MousePointers on HTML', () => {
   describe('start', () => {
     beforeEach(() => {
       jest.resetAllMocks();
-    });
-
-    test('should call enterPresenceMouseChannel', () => {
-      const enterPresenceMouseChannelSpy = jest.spyOn(
-        ABLY_REALTIME_MOCK,
-        'enterPresenceMouseChannel',
-      );
-      presenceMouseComponent['start']();
-
-      expect(enterPresenceMouseChannelSpy).toHaveBeenCalledWith(MOCK_LOCAL_PARTICIPANT);
     });
 
     test('should call renderWrapper', () => {
@@ -138,16 +134,6 @@ describe('MousePointers on HTML', () => {
         expect(cancelAnimationFrameSpy).toHaveBeenCalledWith(
           presenceMouseComponent['animationFrame'],
         );
-      });
-
-      test('should call realtime.leavePresenceMouseChannel', () => {
-        const leavePresenceMouseChannelSpy = jest.spyOn(
-          ABLY_REALTIME_MOCK,
-          'leavePresenceMouseChannel',
-        );
-        presenceMouseComponent['destroy']();
-
-        expect(leavePresenceMouseChannelSpy).toHaveBeenCalled();
       });
 
       test('should remove wrapper from the DOM', () => {
@@ -410,10 +396,10 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent = createMousePointers();
     });
 
-    test('should call realtime.updatePresenceMouse', () => {
+    test('should call room.presence.update', () => {
       const updatePresenceMouseSpy = jest.spyOn(
-        presenceMouseComponent['realtime'],
-        'updatePresenceMouse',
+        presenceMouseComponent['room']['presence'],
+        'update',
       );
 
       presenceMouseComponent['transformPointer']({ translate: { x: 10, y: 10 }, scale: 1 });
@@ -441,10 +427,10 @@ describe('MousePointers on HTML', () => {
       });
     });
 
-    test('should not call realtime.updatePresenceMouse if isPrivate', () => {
+    test('should not call room.presence.update if isPrivate', () => {
       const updatePresenceMouseSpy = jest.spyOn(
-        presenceMouseComponent['realtime'],
-        'updatePresenceMouse',
+        presenceMouseComponent['room']['presence'],
+        'update',
       );
 
       presenceMouseComponent['isPrivate'] = true;
@@ -466,28 +452,38 @@ describe('MousePointers on HTML', () => {
   });
 
   describe('onMyParticipantMouseLeave', () => {
-    test('should call realtime.updatePresenceMouse', () => {
+    test('should call room.presence.update', () => {
       const updatePresenceMouseSpy = jest.spyOn(
-        presenceMouseComponent['realtime'],
-        'updatePresenceMouse',
+        presenceMouseComponent['room']['presence'],
+        'update',
       );
 
       presenceMouseComponent['onMyParticipantMouseLeave']();
 
-      expect(updatePresenceMouseSpy).toHaveBeenCalledWith({
-        ...MOCK_LOCAL_PARTICIPANT,
-        visible: false,
-      });
+      expect(updatePresenceMouseSpy).toHaveBeenCalledWith({ visible: false });
     });
   });
 
-  describe('onParticipantsDidChange', () => {
+  describe('on participant updated', () => {
     test('should set presences', () => {
-      presenceMouseComponent['onParticipantsDidChange'](participants);
-      const map = new Map(Object.entries(participants));
-      map.delete(MOCK_LOCAL_PARTICIPANT.id);
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant2-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant2-id',
+        },
+        id: 'unit-test-participant2-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
 
-      expect(presenceMouseComponent['presences']).toEqual(map);
+      const ex = new Map();
+      ex.set('unit-test-participant2-id', {
+        ...MOCK_MOUSE,
+        id: 'unit-test-participant2-id',
+      });
+
+      expect(presenceMouseComponent['presences']).toEqual(ex);
     });
 
     test('should call removePresenceMouseParticipant', () => {
@@ -496,9 +492,40 @@ describe('MousePointers on HTML', () => {
         'removePresenceMouseParticipant',
       );
 
-      presenceMouseComponent['onParticipantsDidChange'](participants);
-      presenceMouseComponent['userBeingFollowedId'] = 'unit-test-participant2-ably-id';
-      presenceMouseComponent['onParticipantsDidChange'](participants);
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant3-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant3-id',
+        },
+        id: 'unit-test-participant3-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
+
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant2-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant2-id',
+        },
+        id: 'unit-test-participant2-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
+
+      presenceMouseComponent['userBeingFollowedId'] = 'unit-test-participant2-id';
+
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant3-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant3-id',
+        },
+        id: 'unit-test-participant3-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
 
       expect(removePresenceMouseParticipantSpy).toHaveBeenCalledTimes(1);
     });
@@ -509,7 +536,16 @@ describe('MousePointers on HTML', () => {
         'updateParticipantsMouses',
       );
 
-      presenceMouseComponent['onParticipantsDidChange'](participants);
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant2-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant2-id',
+        },
+        id: 'unit-test-participant2-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
 
       expect(updateParticipantsMousesSpy).toHaveBeenCalled();
     });
@@ -517,25 +553,30 @@ describe('MousePointers on HTML', () => {
 
   describe('goToMouse', () => {
     beforeEach(() => {
-      presenceMouseComponent['onParticipantsDidChange'](participants);
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant2-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant2-id',
+        },
+        id: 'unit-test-participant2-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
     });
 
     test('should call scrollIntoView', () => {
       presenceMouseComponent['start']();
 
       presenceMouseComponent['createMouseElement'](
-        presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
+        presenceMouseComponent['presences'].get('unit-test-participant2-id')!,
       );
-
-      presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView =
-        jest.fn();
-
+      presenceMouseComponent['mouses'].get('unit-test-participant2-id')!.scrollIntoView = jest.fn();
       presenceMouseComponent['start']();
-
-      presenceMouseComponent['goToMouse']('unit-test-participant2-ably-id');
+      presenceMouseComponent['goToMouse']('unit-test-participant2-id');
 
       expect(
-        presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView,
+        presenceMouseComponent['mouses'].get('unit-test-participant2-id')!.scrollIntoView,
       ).toHaveBeenCalledWith({
         block: 'center',
         inline: 'center',
@@ -547,16 +588,15 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['start']();
 
       presenceMouseComponent['createMouseElement'](
-        presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
+        presenceMouseComponent['presences'].get('unit-test-participant2-id')!,
       );
 
-      presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView =
-        jest.fn();
+      presenceMouseComponent['mouses'].get('unit-test-participant2-id')!.scrollIntoView = jest.fn();
 
       presenceMouseComponent['goToMouse']('not-found');
 
       expect(
-        presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView,
+        presenceMouseComponent['mouses'].get('unit-test-participant2-id')!.scrollIntoView,
       ).not.toHaveBeenCalled();
     });
 
@@ -564,19 +604,18 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['start']();
 
       presenceMouseComponent['createMouseElement'](
-        presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
+        presenceMouseComponent['presences'].get('unit-test-participant2-id')!,
       );
 
-      presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView =
-        jest.fn();
+      presenceMouseComponent['mouses'].get('unit-test-participant2-id')!.scrollIntoView = jest.fn();
 
       const { x, y } = presenceMouseComponent['mouses']
-        .get('unit-test-participant2-ably-id')!
+        .get('unit-test-participant2-id')!
         .getBoundingClientRect();
 
       const callback = jest.fn();
       presenceMouseComponent['goToPresenceCallback'] = callback;
-      presenceMouseComponent['goToMouse']('unit-test-participant2-ably-id');
+      presenceMouseComponent['goToMouse']('unit-test-participant2-id');
 
       expect(callback).toHaveBeenCalledWith({ x, y });
     });
@@ -584,39 +623,40 @@ describe('MousePointers on HTML', () => {
 
   describe('followMouse', () => {
     test('should set userBeingFollowedId', () => {
-      presenceMouseComponent['followMouse']('unit-test-participant2-ably-id');
-      expect(presenceMouseComponent['userBeingFollowedId']).toEqual(
-        'unit-test-participant2-ably-id',
-      );
+      presenceMouseComponent['followMouse']('unit-test-participant2-id');
+      expect(presenceMouseComponent['userBeingFollowedId']).toEqual('unit-test-participant2-id');
     });
   });
 
-  describe('onParticipantLeftOnRealtime', () => {
+  describe('onPresenceLeftRoom', () => {
     test('should call removePresenceMouseParticipant', () => {
       const removePresenceMouseParticipantSpy = jest.spyOn(
         presenceMouseComponent as any,
         'removePresenceMouseParticipant',
       );
 
-      presenceMouseComponent['onParticipantLeftOnRealtime'](MOCK_MOUSE);
+      presenceMouseComponent['onPresenceLeftRoom']({
+        connectionId: 'unit-test-participant2-id',
+        data: MOCK_MOUSE,
+        id: MOCK_MOUSE.id,
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
 
       expect(removePresenceMouseParticipantSpy).toHaveBeenCalledWith(MOCK_MOUSE.id);
     });
   });
 
   describe('setParticipantPrivate', () => {
-    test('should call realtime.updatePresenceMouse', () => {
+    test('should call room.presence.update', () => {
       const updatePresenceMouseSpy = jest.spyOn(
-        presenceMouseComponent['realtime'],
-        'updatePresenceMouse',
+        presenceMouseComponent['room']['presence'],
+        'update',
       );
 
       presenceMouseComponent['setParticipantPrivate'](true);
 
-      expect(updatePresenceMouseSpy).toHaveBeenCalledWith({
-        ...MOCK_LOCAL_PARTICIPANT,
-        visible: false,
-      });
+      expect(updatePresenceMouseSpy).toHaveBeenCalledWith({ visible: false });
     });
 
     test('should set isPrivate', () => {
@@ -650,15 +690,15 @@ describe('MousePointers on HTML', () => {
 
     test('should create a mouse element and append it to the wrapper', () => {
       const mouse = presenceMouseComponent['createMouseElement'](
-        participants['unit-test-participant2-ably-id'],
+        participants['unit-test-participant2-id'],
       );
 
       expect(mouse).toBeTruthy();
-      expect(mouse.getAttribute('id')).toEqual('mouse-unit-test-participant2-ably-id');
+      expect(mouse.getAttribute('id')).toEqual('mouse-unit-test-participant2-id');
       expect(mouse.getAttribute('class')).toEqual('mouse-follower');
       expect(mouse.querySelector('.pointer-mouse')).toBeTruthy();
       expect(mouse.querySelector('.mouse-user-name')).toBeTruthy();
-      expect(presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')).toEqual(mouse);
+      expect(presenceMouseComponent['mouses'].get('unit-test-participant2-id')).toEqual(mouse);
     });
 
     test('should not create a mouse element if wrapper is not found', () => {
@@ -666,34 +706,10 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['wrapper'] = undefined;
 
       const mouse = presenceMouseComponent['createMouseElement'](
-        participants['unit-test-participant3-ably-id'],
+        participants['unit-test-participant3-id'],
       );
 
       expect(mouse).toBeFalsy();
-    });
-  });
-
-  /**
-   *  private getTextColorValue = (slotIndex: number): string => {
-    return [2, 4, 5, 7, 8, 16].includes(slotIndex) ? '#FFFFFF' : '#26242A';
-  };
- 
-   */
-  describe('getTextColorValue', () => {
-    test('should return the correct colors', () => {
-      const indexArray: number[] = [];
-      for (let i = 0; i < 17; i++) {
-        indexArray.push(i);
-      }
-
-      indexArray.forEach((index, i) => {
-        if (INDEX_IS_WHITE_TEXT.includes(i)) {
-          expect(presenceMouseComponent['getTextColorValue'](index)).toBe('#FFFFFF');
-          return;
-        }
-
-        expect(presenceMouseComponent['getTextColorValue'](index)).toBe('#26242A');
-      });
     });
   });
 
@@ -823,7 +839,16 @@ describe('MousePointers on HTML', () => {
 
   describe('updateParticipantsMouses', () => {
     beforeEach(() => {
-      presenceMouseComponent['onParticipantsDidChange'](participants);
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant2-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant2-id',
+        },
+        id: 'unit-test-participant2-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
     });
 
     test('should call removePresenceMouseParticipant if mouse is not visible', () => {
@@ -832,12 +857,10 @@ describe('MousePointers on HTML', () => {
         'removePresenceMouseParticipant',
       );
 
-      presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!.visible = false;
+      presenceMouseComponent['presences'].get('unit-test-participant2-id')!.visible = false;
       presenceMouseComponent['updateParticipantsMouses']();
 
-      expect(removePresenceMouseParticipantSpy).toHaveBeenCalledWith(
-        'unit-test-participant2-ably-id',
-      );
+      expect(removePresenceMouseParticipantSpy).toHaveBeenCalledWith('unit-test-participant2-id');
     });
 
     test('should call renderPresenceMouses', () => {
@@ -849,17 +872,17 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['updateParticipantsMouses']();
 
       expect(renderPresenceMousesSpy).toHaveBeenCalledWith(
-        presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
+        presenceMouseComponent['presences'].get('unit-test-participant2-id')!,
       );
     });
 
     test('should call goToMouse', () => {
       const goToMouseSpy = jest.spyOn(presenceMouseComponent as any, 'goToMouse');
 
-      presenceMouseComponent['userBeingFollowedId'] = 'unit-test-participant2-ably-id';
+      presenceMouseComponent['userBeingFollowedId'] = 'unit-test-participant2-id';
       presenceMouseComponent['updateParticipantsMouses']();
 
-      expect(goToMouseSpy).toHaveBeenCalledWith('unit-test-participant2-ably-id');
+      expect(goToMouseSpy).toHaveBeenCalledWith('unit-test-participant2-id');
     });
   });
 
@@ -1049,23 +1072,32 @@ describe('MousePointers on HTML', () => {
 
   describe('removePresenceMouseParticipant', () => {
     beforeEach(() => {
-      presenceMouseComponent['onParticipantsDidChange'](participants);
+      presenceMouseComponent['onPresenceUpdate']({
+        connectionId: 'unit-test-participant2-id',
+        data: {
+          ...MOCK_MOUSE,
+          id: 'unit-test-participant2-id',
+        },
+        id: 'unit-test-participant2-id',
+        name: MOCK_MOUSE.name as string,
+        timestamp: 1,
+      });
       presenceMouseComponent['updateParticipantsMouses']();
     });
 
     test('should remove the mouse element and the participant from the presences and mouses', () => {
       const mouse = document.createElement('div');
-      mouse.setAttribute('id', 'mouse-unit-test-participant2-ably-id');
+      mouse.setAttribute('id', 'mouse-unit-test-participant2-id');
       document.body.appendChild(mouse);
 
-      presenceMouseComponent['presences'].set('unit-test-participant2-ably-id', MOCK_MOUSE);
-      presenceMouseComponent['mouses'].set('unit-test-participant2-ably-id', mouse);
+      presenceMouseComponent['presences'].set('unit-test-participant2-id', MOCK_MOUSE);
+      presenceMouseComponent['mouses'].set('unit-test-participant2-id', mouse);
 
-      presenceMouseComponent['removePresenceMouseParticipant']('unit-test-participant2-ably-id');
+      presenceMouseComponent['removePresenceMouseParticipant']('unit-test-participant2-id');
 
-      expect(document.getElementById('mouse-unit-test-participant2-ably-id')).toBeFalsy();
-      expect(presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')).toBeFalsy();
-      expect(presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')).toBeFalsy();
+      expect(document.getElementById('mouse-unit-test-participant2-id')).toBeFalsy();
+      expect(presenceMouseComponent['presences'].get('unit-test-participant2-id')).toBeFalsy();
+      expect(presenceMouseComponent['mouses'].get('unit-test-participant2-id')).toBeFalsy();
     });
 
     test('should not remove the mouse element if it does not exist', () => {
@@ -1116,25 +1148,17 @@ describe('MousePointers on HTML', () => {
     test('should create the mouse element if it does not exist', () => {
       const createMouseElementSpy = jest.spyOn(presenceMouseComponent as any, 'createMouseElement');
 
-      presenceMouseComponent['renderPresenceMouses'](
-        participants['unit-test-participant2-ably-id'],
-      );
+      presenceMouseComponent['renderPresenceMouses'](participants['unit-test-participant2-id']);
 
-      expect(createMouseElementSpy).toHaveBeenCalledWith(
-        participants['unit-test-participant2-ably-id'],
-      );
+      expect(createMouseElementSpy).toHaveBeenCalledWith(participants['unit-test-participant2-id']);
     });
 
     test('should not create the mouse element if it already exists', () => {
       const createMouseElementSpy = jest.spyOn(presenceMouseComponent as any, 'createMouseElement');
 
-      presenceMouseComponent['renderPresenceMouses'](
-        participants['unit-test-participant2-ably-id'],
-      );
+      presenceMouseComponent['renderPresenceMouses'](participants['unit-test-participant2-id']);
 
-      presenceMouseComponent['renderPresenceMouses'](
-        participants['unit-test-participant2-ably-id'],
-      );
+      presenceMouseComponent['renderPresenceMouses'](participants['unit-test-participant2-id']);
 
       expect(createMouseElementSpy).toHaveBeenCalledTimes(1);
     });
