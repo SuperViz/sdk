@@ -35,7 +35,6 @@ describe('MousePointers on HTML', () => {
       ...MOCK_LOCAL_PARTICIPANT,
       x: 30,
       y: 30,
-      slotIndex: 7,
       slot: {
         index: 7,
         color: '#304AFF',
