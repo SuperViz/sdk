@@ -1,4 +1,5 @@
-import { isEqual } from 'lodash';
+import * as Socket from '@superviz/socket-client';
+import { isEqual, throttle } from 'lodash';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
@@ -7,7 +8,13 @@ import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-import { Element, ParticipantMouse, PresenceMouseProps } from '../types';
+import {
+  ParticipantMouse,
+  PresenceMouseProps,
+  SVGElements,
+  Transform,
+  VoidElements,
+} from '../types';
 
 export class PointersHTML extends BaseComponent {
   public name: ComponentNames;
@@ -18,45 +25,20 @@ export class PointersHTML extends BaseComponent {
   private localParticipant: Participant;
 
   // Elements
-  private container: HTMLElement;
-  private wrappers: Map<string, HTMLElement> = new Map();
-  private elementsWithDataAttribute: Map<string, Element> = new Map();
-  private voidElementsWrappers: Map<string, HTMLElement> = new Map();
-  private svgElementsWrappers: Map<string, HTMLElement> = new Map();
+  private container: HTMLElement | SVGElement;
+  private wrapper: HTMLElement;
 
   private mouses: Map<string, HTMLElement> = new Map();
 
   // General data about states/the application
-  private dataAttributeName: string = 'data-superviz-id';
   private userBeingFollowedId: string;
-  private dataAttributeValueFilters: RegExp[] = [];
   private animationFrame: number;
   private isPrivate: boolean;
-
-  // Observers
-  private mutationObserver: MutationObserver;
+  private containerTagname: string;
+  private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
 
   // callbacks
   private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
-
-  private readonly VOID_ELEMENTS = [
-    'area',
-    'base',
-    'br',
-    'col',
-    'embed',
-    'hr',
-    'img',
-    'input',
-    'link',
-    'meta',
-    'param',
-    'source',
-    'track',
-    'wbr',
-  ];
-
-  private readonly SVG_ELEMENTS = ['rect', 'ellipse', 'svg'];
 
   /**
    * @function constructor
@@ -80,16 +62,8 @@ export class PointersHTML extends BaseComponent {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe();
 
+    this.containerTagname = this.container.tagName.toUpperCase();
     this.goToPresenceCallback = options?.onGoToPresence;
-    this.dataAttributeName = options?.dataAttributeName || this.dataAttributeName;
-    this.dataAttributeValueFilters =
-      options?.dataAttributeValueFilters || this.dataAttributeValueFilters;
-
-    this.elementsWithDataAttribute = this.getElementsWithDataAttribute();
-    this.renderAllWrappers();
-
-    this.mutationObserver = new MutationObserver(this.handleMutationObserverChanges);
-    this.observeContainer();
   }
 
   // ---------- SETUP ----------
@@ -101,11 +75,12 @@ export class PointersHTML extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('presence-mouse component @ start');
-    this.realtime.enterPresenceMouseChannel(this.localParticipant);
-    this.addListenersToWrappers();
-    this.subscribeToRealtimeEvents();
-    this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
 
+    this.renderWrapper();
+    this.addListeners();
+    this.subscribeToRealtimeEvents();
+
+    this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     this.animationFrame = requestAnimationFrame(this.animate);
     this.eventBus.subscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
     this.eventBus.subscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
@@ -120,29 +95,15 @@ export class PointersHTML extends BaseComponent {
     cancelAnimationFrame(this.animationFrame);
 
     this.logger.log('presence-mouse component @ destroy');
-    this.realtime.leavePresenceMouseChannel();
 
-    this.removeListenersFromWrappers();
-
-    this.wrappers.forEach(this.removeFromDom);
-    this.wrappers.clear();
-    this.wrappers = undefined;
-
-    this.voidElementsWrappers.clear();
-    this.voidElementsWrappers = undefined;
+    this.removeListeners();
+    this.wrapper.remove();
 
     this.presences.clear();
     this.presences = undefined;
 
-    this.elementsWithDataAttribute.clear();
-    this.elementsWithDataAttribute = undefined;
-
-    this.mutationObserver.disconnect();
-    this.mutationObserver = undefined;
-
-    this.svgElementsWrappers.forEach(this.removeFromDom);
-    this.svgElementsWrappers.clear();
-    this.svgElementsWrappers = undefined;
+    this.container = undefined;
+    this.wrapper = undefined;
 
     this.unsubscribeFromRealtimeEvents();
 
@@ -159,8 +120,12 @@ export class PointersHTML extends BaseComponent {
    */
   private subscribeToRealtimeEvents(): void {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
-    this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
-    this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
+    this.room.presence.on<ParticipantMouse>(
+      Socket.PresenceEvents.JOINED_ROOM,
+      this.onPresenceJoinedRoom,
+    );
+    this.room.presence.on<ParticipantMouse>(Socket.PresenceEvents.LEAVE, this.onPresenceLeftRoom);
+    this.room.presence.on<ParticipantMouse>(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
   }
 
   /**
@@ -170,57 +135,30 @@ export class PointersHTML extends BaseComponent {
    */
   private unsubscribeFromRealtimeEvents(): void {
     this.logger.log('presence-mouse component @ unsubscribe from realtime events');
-    this.realtime.presenceMouseParticipantLeaveObserver.unsubscribe(
-      this.onParticipantLeftOnRealtime,
-    );
-    this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
+    this.room.presence.off(Socket.PresenceEvents.JOINED_ROOM);
+    this.room.presence.off(Socket.PresenceEvents.LEAVE);
+    this.room.presence.off(Socket.PresenceEvents.UPDATE);
   }
 
   /**
-   * @function addListenersToWrappers
-   * @description adds the mousemove and mouseout listeners to each wrapper
+   * @function addListeners
+   * @description adds the mousemove and mouseout listeners to the wrapper with the specified id
+   * @param {string} id the id of the wrapper
    * @returns {void}
    */
-  private addListenersToWrappers(): void {
-    this.wrappers.forEach((_, id) => {
-      this.addWrapperListeners(id);
-    });
+  private addListeners(): void {
+    this.container.addEventListener('pointermove', this.onMyParticipantMouseMove);
+    this.container.addEventListener('mouseleave', this.onMyParticipantMouseLeave);
   }
 
   /**
-   * @function removeListenersFromWrappers
-   * @description removes the mousemove and mouseout listeners from each wrapper
+   * @function removeListeners
+   * @description removes the mousemove and mouseout listeners from the container
    * @returns {void}
    */
-  private removeListenersFromWrappers(): void {
-    this.wrappers.forEach((_, id) => {
-      this.removeWrapperListeners(id);
-    });
-  }
-
-  /**
-   * @function observeContainer
-   * @description observes the container for changes in the specified data attribute.
-   * @returns {void}
-   */
-  private observeContainer(): void {
-    this.mutationObserver.observe(this.container, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: [this.dataAttributeName],
-      attributeOldValue: true,
-    });
-  }
-
-  /**
-   * @function renderAllWrappers
-   * @description Creates a div wrapper inside or around each valid element, in which the mouse pointers will be rendered.
-   * @returns {void}
-   * */
-  private renderAllWrappers(): void {
-    this.elementsWithDataAttribute.forEach((element, id) => {
-      this.renderWrapper(element, id);
-    });
+  private removeListeners(): void {
+    this.container.removeEventListener('pointermove', this.onMyParticipantMouseMove);
+    this.container.removeEventListener('mouseleave', this.onMyParticipantMouseLeave);
   }
 
   // ---------- CALLBACKS ----------
@@ -229,66 +167,40 @@ export class PointersHTML extends BaseComponent {
    * @description event to update my participant mouse position to others participants
    * @returns {void}
    */
-  private onMyParticipantMouseMove = (event: MouseEvent): void => {
+  private onMyParticipantMouseMove = throttle((event: MouseEvent): void => {
     if (this.isPrivate) return;
-
     const container = event.currentTarget as HTMLDivElement;
 
-    if (!container.clientHeight || !container.clientWidth) return;
+    const { left, top } = container.getBoundingClientRect();
 
-    const elementId = container.getAttribute('data-wrapper-id');
-    const x = event.offsetX / container.clientWidth;
-    const y = event.offsetY / container.clientHeight;
+    const x = (event.x - left - this.transformation.translate.x) / this.transformation.scale;
+    const y = (event.y - top - this.transformation.translate.y) / this.transformation.scale;
 
-    this.realtime.updatePresenceMouse({
+    this.room.presence.update({
       ...this.localParticipant,
       x,
       y,
-      elementId,
       visible: true,
     });
+  }, 100);
+
+  /**
+   * @function onMyParticipantMouseLeave
+   * @returns {void}
+   */
+  private onMyParticipantMouseLeave = (): void => {
+    this.room.presence.update({ visible: false });
   };
 
   /**
-   * @function onMyParticipantMouseOut
-   * @param {MouseEvent} event - The MouseEvent object
-   * @returns {void}
+   * @function goToMouse
+   * @description scrolls the screen to the mouse pointer or calls the user callback to do so
+   * @param id - the id of the mouse pointer
+   * @returns
    */
-  private onMyParticipantMouseOut = (event: MouseEvent): void => {
-    this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant, elementId: '' });
-  };
-
-  /**
-   * @function onParticipantsDidChange
-   * @description handler for participant list update event
-   * @param {Record<string, AblyParticipant>} participants - participants
-   * @returns {void}
-   */
-  private onParticipantsDidChange = (participants: Record<string, ParticipantMouse>): void => {
-    this.logger.log('presence-mouse component @ on participants did change', participants);
-    Object.values(participants).forEach((participant: ParticipantMouse) => {
-      if (participant.id === this.localParticipant.id) return;
-      const followingAnotherParticipant =
-        this.userBeingFollowedId &&
-        participant.id !== this.userBeingFollowedId &&
-        this.presences.has(participant.id);
-
-      // When the user is following a participant, every other mouse pointer is removed
-      if (followingAnotherParticipant) {
-        this.removePresenceMouseParticipant(participant.id);
-        return;
-      }
-
-      this.presences.set(participant.id, participant);
-    });
-  };
-
   private goToMouse = (id: string): void => {
-    const participant = this.presences.get(id);
-    if (!participant) return;
-
-    const wrapper = this.wrappers.get(participant.elementId);
-    if (!wrapper) return;
+    const pointer = this.mouses.get(id);
+    if (!pointer) return;
 
     if (this.goToPresenceCallback) {
       const { x, y } = this.mouses.get(id).getBoundingClientRect();
@@ -296,7 +208,7 @@ export class PointersHTML extends BaseComponent {
       return;
     }
 
-    this.mouses.get(id).scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+    pointer.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
 
   /**
@@ -306,45 +218,6 @@ export class PointersHTML extends BaseComponent {
    */
   private followMouse = (id: string) => {
     this.userBeingFollowedId = id;
-  };
-
-  /**
-   * @function handleMutationObserverChanges
-   * @description handles the changes in the value of the specified data attribute of the elements inside the container
-   * @param {MutationRecord[]} changes the changes in the value of the specified data attribute of the elements inside the container
-   * @returns {void}
-   */
-  private handleMutationObserverChanges = (changes: MutationRecord[]): void => {
-    changes.forEach((change) => {
-      const { target, oldValue } = change;
-      const dataId = (target as HTMLElement).getAttribute(this.dataAttributeName);
-      if ((!dataId && !oldValue) || dataId === oldValue) return;
-
-      const oldValueSkipped = this.dataAttributeValueFilters.some((filter) =>
-        oldValue.match(filter),
-      );
-
-      const attributeRemoved = !dataId && oldValue && !oldValueSkipped;
-
-      if (attributeRemoved) {
-        this.clearElement(oldValue);
-
-        return;
-      }
-
-      const skip = this.dataAttributeValueFilters.some((filter) => dataId.match(filter));
-
-      if ((oldValue && this.elementsWithDataAttribute.get(oldValue)) || skip) {
-        this.clearElement(oldValue);
-      }
-
-      if (skip) return;
-
-      this.elementsWithDataAttribute.set(dataId, target as Element);
-      this.renderWrapper(target as Element, dataId);
-
-      this.addWrapperListeners(dataId);
-    });
   };
 
   /**
@@ -364,48 +237,69 @@ export class PointersHTML extends BaseComponent {
    */
   private setParticipantPrivate = (isPrivate: boolean): void => {
     this.isPrivate = isPrivate;
-    this.realtime.updatePresenceMouse({ ...this.localParticipant, visible: !isPrivate });
+    this.room.presence.update({ visible: !isPrivate });
+  };
+
+  /**
+   * @function onPresenceJoinedRoom
+   * @description handler for presence joined room event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceJoinedRoom = (presence: Socket.PresenceEvent): void => {
+    if (presence.id !== this.localParticipant.id) return;
+
+    this.room.presence.update(this.localParticipant);
+  };
+
+  /**
+   * @function onPresenceLeftRoom
+   * @description handler for presence left room event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceLeftRoom = (presence: Socket.PresenceEvent<ParticipantMouse>): void => {
+    this.removePresenceMouseParticipant(presence.id);
+  };
+
+  /**
+   * @function onPresenceUpdate
+   * @description handler for presence update event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceUpdate = (presence: Socket.PresenceEvent<ParticipantMouse>): void => {
+    if (presence.id === this.localParticipant.id) return;
+    const participant = presence.data;
+
+    const followingAnotherParticipant =
+      this.userBeingFollowedId &&
+      participant.id !== this.userBeingFollowedId &&
+      this.presences.has(participant.id);
+
+    // When the user is following a participant, every other mouse pointer is removed
+    if (followingAnotherParticipant) {
+      this.removePresenceMouseParticipant(participant.id);
+      return;
+    }
+
+    this.presences.set(participant.id, participant);
+    this.animate();
+    this.updateParticipantsMouses();
   };
 
   // ---------- HELPERS ----------
-
-  /**
-   * @function getElementsWithDataAttribute
-   * @description Get all elements with the data attribute name
-   * @returns {Record<string, Element>} The elements with the data attribute
-   */
-  private getElementsWithDataAttribute(): Map<string, Element> {
-    const listOfElements = this.container.querySelectorAll(`[${this.dataAttributeName}]`);
-    const mapOfElements: Map<string, Element> = new Map();
-
-    Array.from(listOfElements.values()).forEach((element: Element) => {
-      mapOfElements.set(element.getAttribute(this.dataAttributeName), element);
-    });
-
-    return mapOfElements;
-  }
-
-  /**
-   * @function removeFromDom
-   * @description removes the element from the DOM
-   * @param {HTMLElement} element the element to be removed
-   * @returns {void}
-   */
-  private removeFromDom(element: HTMLElement): void {
-    element.remove();
-  }
-
   /**
    * @function setPositionNotStatic
    * @description sets the position of the element to relative if it is static
    * @param {HTMLElement} element the element to be checked
    * @returns {void}
    */
-  private setPositionNotStatic(element: HTMLElement): void {
-    const { position } = window.getComputedStyle(element);
+  private setPositionNotStatic(): void {
+    const { position } = window.getComputedStyle(this.container);
     if (position !== 'static') return;
 
-    element.style.setProperty('position', 'relative');
+    this.container.style.setProperty('position', 'relative');
   }
 
   /**
@@ -415,12 +309,11 @@ export class PointersHTML extends BaseComponent {
    * @returns {HTMLDivElement}
    */
   private createMouseElement(participant: ParticipantMouse): HTMLDivElement {
-    if (!this.wrappers.get(participant.elementId)) return;
+    if (!this.wrapper) return;
 
     const mouseFollower = document.createElement('div');
     mouseFollower.setAttribute('id', `mouse-${participant.id}`);
     mouseFollower.setAttribute('class', 'mouse-follower');
-    mouseFollower.setAttribute('data-element-id', participant.elementId);
     const pointerMouse = document.createElement('div');
     pointerMouse.setAttribute('class', 'pointer-mouse');
 
@@ -431,19 +324,13 @@ export class PointersHTML extends BaseComponent {
     mouseFollower.appendChild(pointerMouse);
     mouseFollower.appendChild(mouseUserName);
 
-    this.wrappers.get(participant.elementId).appendChild(mouseFollower);
+    mouseFollower.style.left = '0px';
+    mouseFollower.style.top = '0px';
+
+    this.wrapper.appendChild(mouseFollower);
     this.mouses.set(participant.id, mouseFollower);
     return mouseFollower;
   }
-
-  /**
-   * @function getTextColorValue
-   * @param slotIndex - slot index
-   * @returns {string} - The color of the text in hex format
-   * */
-  private getTextColorValue = (slotIndex: number): string => {
-    return INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
-  };
 
   /**
    * @function updateSVGPosition
@@ -451,20 +338,18 @@ export class PointersHTML extends BaseComponent {
    * @param {SVGElement} element - The svg element
    * @returns {void}
    */
-  private updateSVGPosition(element: SVGElement, wrapper: HTMLElement) {
-    const parentRect = element.parentElement.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-    const offsetLeft = elementRect.left - parentRect.left;
-    const offsetTop = elementRect.top - parentRect.top;
+  private updateSVGPosition() {
+    const parentRect = this.container.parentElement.getBoundingClientRect();
+    const elementRect = this.container.getBoundingClientRect();
+    const left = elementRect.left - parentRect.left;
+    const top = elementRect.top - parentRect.top;
 
-    const { width, height } = element.getBoundingClientRect();
-    const left = offsetLeft;
-    const top = offsetTop;
+    const { width, height } = this.container.getBoundingClientRect();
 
-    wrapper.style.setProperty('width', `${width}px`);
-    wrapper.style.setProperty('height', `${height}px`);
-    wrapper.style.setProperty('top', `${top}px`);
-    wrapper.style.setProperty('left', `${left}px`);
+    this.wrapper.style.setProperty('width', `${width}px`);
+    this.wrapper.style.setProperty('height', `${height}px`);
+    this.wrapper.style.setProperty('top', `${top}px`);
+    this.wrapper.style.setProperty('left', `${left}px`);
   }
 
   /**
@@ -473,28 +358,27 @@ export class PointersHTML extends BaseComponent {
    * @param {SVGElement} svg - The svg element
    * @param {string} id - The data attribute value of the svg element
    */
-  private createSVGWrapper(element: SVGElement, id: string): void {
+  private createSVGWrapper(): void {
     const wrapper = document.createElement('div');
 
-    const parentRect = element.parentElement.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-    const offsetLeft = elementRect.left - parentRect.left;
-    const offsetTop = elementRect.top - parentRect.top;
+    const parentRect = this.container.parentElement.getBoundingClientRect();
+    const elementRect = this.container.getBoundingClientRect();
+    const left = elementRect.left - parentRect.left;
+    const top = elementRect.top - parentRect.top;
 
-    const { width, height } = element.getBoundingClientRect();
-    const left = offsetLeft;
-    const top = offsetTop;
+    const { width, height } = this.container.getBoundingClientRect();
 
-    wrapper.setAttribute('data-wrapper-id', id);
-    wrapper.style.position = 'absolute';
+    wrapper.style.position = 'fixed';
     wrapper.style.width = `${width}px`;
     wrapper.style.height = `${height}px`;
     wrapper.style.top = `${top}px`;
     wrapper.style.left = `${left}px`;
     wrapper.style.overflow = 'visible';
-    element.parentElement.appendChild(wrapper);
-    this.wrappers.set(id, wrapper);
-    this.svgElementsWrappers.set(id, wrapper);
+    wrapper.style.pointerEvents = 'none';
+    wrapper.id = 'superviz-svg-wrapper';
+
+    this.container.parentElement.appendChild(wrapper);
+    this.wrapper = wrapper;
   }
 
   /**
@@ -503,15 +387,15 @@ export class PointersHTML extends BaseComponent {
    * @param {SVGElement} rect - The rect element
    * @param {string} id - The data attribute value of the rect element
    */
-  private createRectWrapper(rect: SVGElement, id: string): void {
+  private createRectWrapper(): void {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     const wrapper = document.createElement('div');
 
-    const width = rect.getAttribute('width');
-    const height = rect.getAttribute('height');
-    const rx = rect.getAttribute('rx');
-    const ry = rect.getAttribute('ry');
+    const width = this.container.getAttribute('width');
+    const height = this.container.getAttribute('height');
+    const rx = this.container.getAttribute('rx');
+    const ry = this.container.getAttribute('ry');
 
     svgElement.setAttribute('fill', 'transparent');
     svgElement.setAttribute('stroke', 'transparent');
@@ -528,7 +412,7 @@ export class PointersHTML extends BaseComponent {
 
     wrapper.appendChild(svg);
 
-    const viewportRect = rect.getBoundingClientRect();
+    const viewportRect = this.container.getBoundingClientRect();
 
     wrapper.style.position = 'fixed';
     wrapper.style.top = `${viewportRect.top}px`;
@@ -536,37 +420,33 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
     wrapper.style.overflow = 'visible';
-
-    wrapper.setAttribute('data-wrapper-id', id);
+    wrapper.style.pointerEvents = 'none';
+    wrapper.id = 'superviz-rect-wrapper';
 
     // here we get the topmost svg element, in case there are nested svgs
-    let externalViewport = rect.viewportElement;
+    let externalViewport = (this.container as SVGElement).viewportElement;
     while (externalViewport.viewportElement) {
       externalViewport = externalViewport.viewportElement;
     }
 
     externalViewport.parentElement.appendChild(wrapper);
-
-    this.wrappers.set(id, wrapper);
-    this.svgElementsWrappers.set(id, wrapper);
+    this.wrapper = wrapper;
   }
 
   /**
    * @function createEllipseWrapper
    * @description - Creates a wrapper for an ellipse element
-   * @param {SVGElement} ellipse - The ellipse element
-   * @param {string} id - The data attribute value of the ellipse element
    * @returns {void}
    */
-  private createEllipseWrapper(ellipse: SVGElement, id: string): void {
+  private createEllipseWrapper(): void {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
     const wrapper = document.createElement('div');
 
-    const cx = ellipse.getAttribute('cx');
-    const cy = ellipse.getAttribute('cy');
-    const rx = ellipse.getAttribute('rx');
-    const ry = ellipse.getAttribute('ry');
+    const cx = this.container.getAttribute('cx');
+    const cy = this.container.getAttribute('cy');
+    const rx = this.container.getAttribute('rx');
+    const ry = this.container.getAttribute('ry');
     const x = Number(cx) - Number(rx);
     const y = Number(cy) - Number(ry);
     const width = String(2 * Number(cx));
@@ -588,9 +468,8 @@ export class PointersHTML extends BaseComponent {
     svg.appendChild(svgElement);
 
     wrapper.appendChild(svg);
-    wrapper.setAttribute('data-wrapper-id', id);
 
-    const viewportRect = ellipse.getBoundingClientRect();
+    const viewportRect = this.container.getBoundingClientRect();
 
     wrapper.style.position = 'fixed';
     wrapper.style.top = `${viewportRect.top}px`;
@@ -598,22 +477,29 @@ export class PointersHTML extends BaseComponent {
     wrapper.style.width = `${viewportRect.width}px`;
     wrapper.style.height = `${viewportRect.height}px`;
     wrapper.style.overflow = 'visible';
-
-    wrapper.setAttribute('data-wrapper-id', id);
+    wrapper.style.pointerEvents = 'none';
+    wrapper.id = 'superviz-ellipse-wrapper';
 
     // here we get the topmost svg element, in case there are nested svgs
-    let externalViewport = ellipse.viewportElement;
+    let externalViewport = (this.container as SVGElement).viewportElement;
     while (externalViewport.viewportElement) {
       externalViewport = externalViewport.viewportElement;
     }
 
     externalViewport.parentElement.appendChild(wrapper);
 
-    this.wrappers.set(id, wrapper);
-    this.svgElementsWrappers.set(id, wrapper);
+    this.wrapper = wrapper;
   }
 
   // ---------- REGULAR METHODS ----------
+  /**
+   * @function transformPointer
+   * @description stores that information about which transformations should the pointers go through
+   * @param {Transform} transformation Which transformations to apply
+   */
+  public transformPointer(transformation: Transform) {
+    this.transformation = transformation;
+  }
 
   /**
    * @function animate
@@ -621,16 +507,22 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private animate = (): void => {
-    this.updateVoidElementWrapper();
-    this.updateSVGElementWrapper();
-    this.updateParticipantsMouses();
+    if (VoidElements[this.containerTagname]) {
+      this.updateVoidElementWrapper();
+    }
+
+    if (SVGElements[this.containerTagname]) {
+      this.updateSVGElementWrapper();
+    }
 
     this.animationFrame = requestAnimationFrame(this.animate);
   };
 
   private updateParticipantsMouses = (): void => {
     this.presences.forEach((mouse) => {
-      if (!mouse?.visible || !mouse?.elementId) {
+      if (mouse.id === this.localParticipant.id) return;
+
+      if (!mouse?.visible) {
         this.removePresenceMouseParticipant(mouse.id);
         return;
       }
@@ -650,19 +542,19 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private updateVoidElementWrapper(): void {
-    this.voidElementsWrappers.forEach((wrapper, id) => {
-      const elementRect = this.elementsWithDataAttribute.get(id).getBoundingClientRect();
-      const wrapperRect = wrapper.getBoundingClientRect();
+    const elementRect = this.container.getBoundingClientRect();
+    const wrapperRect = this.wrapper.getBoundingClientRect();
 
-      if (isEqual(elementRect, wrapperRect)) return;
-      const left = this.elementsWithDataAttribute.get(id).offsetLeft;
-      const top = this.elementsWithDataAttribute.get(id).offsetTop;
+    const container = this.container as HTMLElement;
 
-      wrapper.style.setProperty('width', `${elementRect.width}px`);
-      wrapper.style.setProperty('height', `${elementRect.height}px`);
-      wrapper.style.setProperty('top', `${top}px`);
-      wrapper.style.setProperty('left', `${left}px`);
-    });
+    if (isEqual(elementRect, wrapperRect)) return;
+    const left = container.offsetLeft;
+    const top = container.offsetTop;
+    this.wrapper.style.setProperty('width', `${elementRect.width}px`);
+    this.wrapper.style.setProperty('height', `${elementRect.height}px`);
+    this.wrapper.style.setProperty('top', `${top}px`);
+    this.wrapper.style.setProperty('left', `${left}px`);
+    this.wrapper.id = 'superviz-void-wrapper';
   }
 
   /**
@@ -671,78 +563,31 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private updateSVGElementWrapper(): void {
-    this.svgElementsWrappers.forEach((wrapper, id) => {
-      const element = this.elementsWithDataAttribute.get(id);
-      const elementRect = element.getBoundingClientRect();
-      const wrapperRect = wrapper.getBoundingClientRect();
+    const {
+      left: cLeft,
+      top: cTop,
+      width: cWidth,
+      height: cHeight,
+    } = this.container.getBoundingClientRect();
 
-      if (isEqual(elementRect, wrapperRect)) return;
+    const {
+      left: wLeft,
+      top: wTop,
+      width: wWidth,
+      height: wHeight,
+    } = this.wrapper.getBoundingClientRect();
 
-      if (this.elementsWithDataAttribute.get(id).tagName.toLowerCase() === 'svg') {
-        this.updateSVGPosition(element, wrapper);
-        return;
-      }
+    if (cLeft === wLeft && cTop === wTop && cWidth === wWidth && cHeight === wHeight) return;
 
-      wrapper.style.setProperty('width', `${elementRect.width}px`);
-      wrapper.style.setProperty('height', `${elementRect.height}px`);
-      wrapper.style.setProperty('top', `${elementRect.top}px`);
-      wrapper.style.setProperty('left', `${elementRect.left}px`);
-    });
-  }
-
-  /**
-   * @function addWrapperListeners
-   * @description adds the mousemove and mouseout listeners to the wrapper with the specified id
-   * @param {string} id the id of the wrapper
-   * @returns {void}
-   */
-  private addWrapperListeners(id: string): void {
-    const wrapper = this.wrappers.get(id);
-    if (!wrapper) return;
-
-    wrapper.addEventListener('mousemove', this.onMyParticipantMouseMove);
-    wrapper.addEventListener('mouseout', this.onMyParticipantMouseOut);
-  }
-
-  /**
-   * @function removeWrapperListeners
-   * @description removes the mousemove and mouseout listeners from the wrapper with the specified id
-   * @param {string} id the id of the wrapper
-   * @returns {void}
-   */
-  private removeWrapperListeners(id: string): void {
-    const wrapper = this.wrappers.get(id);
-    if (!wrapper) return;
-
-    wrapper.removeEventListener('mousemove', this.onMyParticipantMouseMove);
-    wrapper.removeEventListener('mouseout', this.onMyParticipantMouseOut);
-  }
-
-  /**
-   * @function clearElement
-   * @description clears an element that no longer has the specified data attribute
-   * @param {string} id the id of the element to be cleared
-   * @returns {void}
-   */
-  private clearElement(id: string): void {
-    const element = this.elementsWithDataAttribute.get(id);
-    if (!element) return;
-
-    const wrapper = this.wrappers.get(id);
-    if (wrapper) {
-      wrapper.remove();
+    if (this.containerTagname.toLowerCase() === SVGElements.SVG) {
+      this.updateSVGPosition();
+      return;
     }
 
-    this.voidElementsWrappers.delete(id);
-    this.wrappers.delete(id);
-    this.elementsWithDataAttribute.delete(id);
-
-    this.removeWrapperListeners(id);
-
-    if (!this.voidElementsWrappers.size) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = undefined;
-    }
+    this.wrapper.style.setProperty('width', `${cWidth}px`);
+    this.wrapper.style.setProperty('height', `${cHeight}px`);
+    this.wrapper.style.setProperty('top', `${cTop}px`);
+    this.wrapper.style.setProperty('left', `${cLeft}px`);
   }
 
   /**
@@ -752,21 +597,20 @@ export class PointersHTML extends BaseComponent {
    * @param {string} id the id of the element
    * @returns {void}
    */
-  private renderWrapper(element: Element, id: string) {
-    if (this.wrappers.get(id)) return;
-    const tagName = element.tagName.toLowerCase();
+  private renderWrapper() {
+    if (this.wrapper) return;
 
-    if (this.VOID_ELEMENTS.includes(tagName)) {
-      this.renderVoidElementWrapper(element, id);
+    if (VoidElements[this.containerTagname]) {
+      this.renderVoidElementWrapper();
       return;
     }
 
-    if (this.SVG_ELEMENTS.includes(tagName)) {
-      this.renderSVGElementWrapper(element, id);
+    if (SVGElements[this.containerTagname]) {
+      this.renderSVGElementWrapper();
       return;
     }
 
-    this.renderElementWrapper(element, id);
+    this.renderElementWrapper();
   }
 
   /**
@@ -791,13 +635,9 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    * */
   private renderPresenceMouses = (participant: ParticipantMouse): void => {
-    let mouseFollower = document.getElementById(`mouse-${participant.id}`);
+    if (participant.id === this.localParticipant.id) return;
 
-    if (mouseFollower && mouseFollower.getAttribute('data-element-id') !== participant.elementId) {
-      mouseFollower.remove();
-      this.mouses.delete(participant.id);
-      mouseFollower = null;
-    }
+    let mouseFollower = document.getElementById(`mouse-${participant.id}`);
 
     if (!mouseFollower) {
       mouseFollower = this.createMouseElement(participant);
@@ -809,23 +649,22 @@ export class PointersHTML extends BaseComponent {
     const pointerUser = mouseFollower.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${participant.slotIndex}.svg)`;
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${participant.slot.index}.svg)`;
     }
 
     if (mouseUser) {
-      mouseUser.style.color = this.getTextColorValue(participant.slotIndex);
-      mouseUser.style.backgroundColor = participant.color;
+      mouseUser.style.color = participant.slot.textColor;
+      mouseUser.style.backgroundColor = participant.slot.color;
       mouseUser.innerHTML = participant.name;
     }
 
-    const currentWrapper = this.wrappers.get(participant.elementId);
-    const scale = currentWrapper.getBoundingClientRect().width / currentWrapper.offsetWidth || 1;
-
     const { x, y } = participant;
-    const { width, height } = this.wrappers.get(participant.elementId).getBoundingClientRect();
+    const {
+      translate: { x: baseX, y: baseY },
+      scale,
+    } = this.transformation;
 
-    mouseFollower.style.left = `${(x * width) / scale}px`;
-    mouseFollower.style.top = `${(y * height) / scale}px`;
+    mouseFollower.style.transform = `translate(${baseX + x * scale}px, ${baseY + y * scale}px)`;
   };
 
   /**
@@ -835,18 +674,18 @@ export class PointersHTML extends BaseComponent {
    * @param {string} id - The id of the element
    * @returns {void}
    */
-  private renderElementWrapper(element: HTMLElement, id: string): void {
+  private renderElementWrapper(): void {
     const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-wrapper-id', id);
     wrapper.style.position = 'absolute';
     wrapper.style.width = '100%';
     wrapper.style.height = '100%';
     wrapper.style.top = '0';
     wrapper.style.left = '0';
     wrapper.style.overflow = 'visible';
-    this.setPositionNotStatic(element);
-    element.appendChild(wrapper);
-    this.wrappers.set(id, wrapper);
+    wrapper.style.pointerEvents = 'none';
+    this.setPositionNotStatic();
+    this.container.appendChild(wrapper);
+    this.wrapper = wrapper;
   }
 
   /**
@@ -856,22 +695,23 @@ export class PointersHTML extends BaseComponent {
    * @param {string} id - The id of the element
    * @returns {void}
    */
-  private renderVoidElementWrapper = (element: HTMLElement, id: string): void => {
+  private renderVoidElementWrapper = (): void => {
     const wrapper = document.createElement('div');
-    const { width, height } = element.getBoundingClientRect();
-    const left = element.offsetLeft;
-    const top = element.offsetTop;
+    const container = this.container as HTMLElement;
+    const { width, height, left, top } = this.container.getBoundingClientRect();
+    const x = container.offsetLeft - left;
+    const y = container.offsetTop - top;
 
-    wrapper.setAttribute('data-wrapper-id', id);
     wrapper.style.position = 'absolute';
     wrapper.style.width = `${width}px`;
     wrapper.style.height = `${height}px`;
     wrapper.style.top = `${top}px`;
     wrapper.style.left = `${left}px`;
     wrapper.style.overflow = 'visible';
-    element.parentElement.appendChild(wrapper);
-    this.wrappers.set(id, wrapper);
-    this.voidElementsWrappers.set(id, wrapper);
+    wrapper.style.pointerEvents = 'none';
+
+    this.container.parentElement.appendChild(wrapper);
+    this.wrapper = wrapper;
   };
 
   /**
@@ -881,16 +721,21 @@ export class PointersHTML extends BaseComponent {
    * @param {string} id - The data attribute value of the svg element
    * @returns {void}
    */
-  private renderSVGElementWrapper = (element: SVGElement, id: string): void => {
-    const elementName = element.tagName.toLowerCase();
+  private renderSVGElementWrapper = (): void => {
+    const tag = this.containerTagname.toLowerCase();
 
-    const isSvgElement = elementName === 'svg';
-    if (isSvgElement) this.createSVGWrapper(element, id);
+    if (tag === SVGElements.SVG) {
+      this.createSVGWrapper();
+      return;
+    }
 
-    const isRectElement = elementName === 'rect';
-    if (isRectElement) this.createRectWrapper(element, id);
+    if (tag === SVGElements.RECT) {
+      this.createRectWrapper();
+      return;
+    }
 
-    const isEllipseElement = elementName === 'ellipse';
-    if (isEllipseElement) this.createEllipseWrapper(element, id);
+    if (tag === SVGElements.ELLIPSE) {
+      this.createEllipseWrapper();
+    }
   };
 }

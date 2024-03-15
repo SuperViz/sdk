@@ -1,11 +1,13 @@
+import * as Socket from '@superviz/socket-client';
+import { throttle } from 'lodash';
+
 import { RealtimeEvent } from '../../../common/types/events.types';
 import { Participant } from '../../../common/types/participant.types';
 import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
-import { useGlobalStore } from '../../../services/stores';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-import { ParticipantMouse, PresenceMouseProps } from '../types';
+import { ParticipantMouse, PresenceMouseProps, Transform } from '../types';
 
 export class PointersCanvas extends BaseComponent {
   public name: ComponentNames;
@@ -18,6 +20,7 @@ export class PointersCanvas extends BaseComponent {
   private following: string;
   private isPrivate: boolean;
   private localParticipant: Participant;
+  private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -41,10 +44,6 @@ export class PointersCanvas extends BaseComponent {
     localParticipant.subscribe();
   }
 
-  private get textColorValues(): number[] {
-    return [2, 4, 5, 7, 8, 16];
-  }
-
   /**
    * @function start
    * @description start presence-mouse component
@@ -59,7 +58,6 @@ export class PointersCanvas extends BaseComponent {
     this.eventBus.subscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
     this.eventBus.subscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
     this.subscribeToRealtimeEvents();
-    this.realtime.enterPresenceMouseChannel(this.localParticipant);
   }
 
   /**
@@ -72,7 +70,6 @@ export class PointersCanvas extends BaseComponent {
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, this.goToMouse);
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, this.followMouse);
     this.eventBus.unsubscribe(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setParticipantPrivate);
-    this.realtime.leavePresenceMouseChannel();
     this.unsubscribeFromRealtimeEvents();
 
     cancelAnimationFrame(this.animateFrame);
@@ -88,8 +85,12 @@ export class PointersCanvas extends BaseComponent {
    */
   private subscribeToRealtimeEvents = (): void => {
     this.logger.log('presence-mouse component @ subscribe to realtime events');
-    this.realtime.presenceMouseParticipantLeaveObserver.subscribe(this.onParticipantLeftOnRealtime);
-    this.realtime.presenceMouseObserver.subscribe(this.onParticipantsDidChange);
+    this.room.presence.on<ParticipantMouse>(
+      Socket.PresenceEvents.JOINED_ROOM,
+      this.onPresenceJoinedRoom,
+    );
+    this.room.presence.on<ParticipantMouse>(Socket.PresenceEvents.LEAVE, this.onPresenceLeftRoom);
+    this.room.presence.on<ParticipantMouse>(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
   };
 
   /**
@@ -99,10 +100,9 @@ export class PointersCanvas extends BaseComponent {
    */
   private unsubscribeFromRealtimeEvents = (): void => {
     this.logger.log('presence-mouse component @ unsubscribe from realtime events');
-    this.realtime.presenceMouseParticipantLeaveObserver.unsubscribe(
-      this.onParticipantLeftOnRealtime,
-    );
-    this.realtime.presenceMouseObserver.unsubscribe(this.onParticipantsDidChange);
+    this.room.presence.off(Socket.PresenceEvents.JOINED_ROOM);
+    this.room.presence.off(Socket.PresenceEvents.LEAVE);
+    this.room.presence.off(Socket.PresenceEvents.UPDATE);
   };
 
   /**
@@ -112,7 +112,51 @@ export class PointersCanvas extends BaseComponent {
    */
   private setParticipantPrivate = (isPrivate: boolean): void => {
     this.isPrivate = isPrivate;
-    this.realtime.updatePresenceMouse({ ...this.localParticipant, visible: !isPrivate });
+    this.room.presence.update({ visible: !isPrivate });
+  };
+
+  /**
+   * @function onPresenceJoinedRoom
+   * @description handler for presence joined room event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceJoinedRoom = (presence: Socket.PresenceEvent): void => {
+    if (presence.id !== this.localParticipant.id) return;
+
+    this.room.presence.update(this.localParticipant);
+  };
+
+  /**
+   * @function onPresenceLeftRoom
+   * @description handler for presence left room event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceLeftRoom = (presence: Socket.PresenceEvent<ParticipantMouse>): void => {
+    this.removePresenceMouseParticipant(presence.id);
+  };
+
+  /**
+   * @function onPresenceUpdate
+   * @description handler for presence update event
+   * @param {PresenceEvent} presence
+   * @returns {void}
+   */
+  private onPresenceUpdate = (presence: Socket.PresenceEvent<ParticipantMouse>): void => {
+    if (this.following && this.presences.get(this.following)) {
+      this.goToMouse(this.following);
+    }
+
+    if (presence.id === this.localParticipant.id) return;
+    const participant = presence.data;
+
+    if (this.following && participant.id !== this.following && this.presences.has(participant.id)) {
+      this.removePresenceMouseParticipant(participant.id);
+      return;
+    }
+
+    this.presences.set(participant.id, participant);
   };
 
   /**
@@ -158,7 +202,7 @@ export class PointersCanvas extends BaseComponent {
    * @description event to update my participant mouse position to others participants
    * @returns {void}
    */
-  private onMyParticipantMouseMove = (event: MouseEvent): void => {
+  private onMyParticipantMouseMove = throttle((event: MouseEvent): void => {
     const context = this.canvas.getContext('2d');
     const rect = this.canvas.getBoundingClientRect();
     const x = event.x - rect.left;
@@ -168,60 +212,24 @@ export class PointersCanvas extends BaseComponent {
     const invertedMatrix = transform.inverse();
     const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
 
-    this.realtime.updatePresenceMouse({
+    const coordinates = {
+      x: (transformedPoint.x - this.transformation.translate.x) / this.transformation.scale,
+      y: (transformedPoint.y - this.transformation.translate.y) / this.transformation.scale,
+    };
+
+    this.room.presence.update({
       ...this.localParticipant,
-      x: transformedPoint.x,
-      y: transformedPoint.y,
+      ...coordinates,
       visible: !this.isPrivate,
     });
-  };
-
-  /**
-   * @function onParticipantsDidChange
-   * @description handler for participant list update event
-   * @param {Record<string, AblyParticipant>} participants - participants
-   * @returns {void}
-   */
-  private onParticipantsDidChange = (participants: Record<string, ParticipantMouse>): void => {
-    this.logger.log('presence-mouse component @ on participants did change', participants);
-
-    Object.values(participants).forEach((participant: ParticipantMouse) => {
-      if (participant.id === this.localParticipant.id) return;
-      if (
-        this.following &&
-        participant.id !== this.following &&
-        this.presences.has(participant.id)
-      ) {
-        this.removePresenceMouseParticipant(participant.id);
-        return;
-      }
-
-      this.presences.set(participant.id, participant);
-    });
-
-    if (this.following) {
-      const mouse = this.presences.get(this.following);
-      if (mouse) {
-        this.goToMouse(this.following);
-      }
-    }
-  };
+  }, 100);
 
   private onMyParticipantMouseOut = (event: MouseEvent): void => {
     const { x, y, width, height } = this.canvas.getBoundingClientRect();
+
     if (event.x > 0 && event.y > 0 && event.x < x + width && event.y < y + height) return;
 
-    this.realtime.updatePresenceMouse({ visible: false, ...this.localParticipant });
-  };
-
-  /**
-   * @function onParticipantLeftOnRealtime
-   * @description handler for participant left event
-   * @param {AblyParticipant} participant
-   * @returns {void}
-   */
-  private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
-    this.removePresenceMouseParticipant(participant.id);
+    this.room.presence.update({ visible: false });
   };
 
   /**
@@ -285,14 +293,12 @@ export class PointersCanvas extends BaseComponent {
     const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${mouse.slotIndex}.svg)`;
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers-v2/${mouse.slot.index}.svg)`;
     }
 
     if (mouseUser) {
-      mouseUser.style.color = this.textColorValues.includes(mouse.slotIndex)
-        ? '#FFFFFF'
-        : '#26242A';
-      mouseUser.style.backgroundColor = mouse.color;
+      mouseUser.style.color = mouse.slot.textColor;
+      mouseUser.style.backgroundColor = mouse.slot.color;
       mouseUser.innerHTML = mouse.name;
     }
 
@@ -303,8 +309,10 @@ export class PointersCanvas extends BaseComponent {
     const currentTranslateX = transform?.e;
     const currentTranslateY = transform?.f;
 
-    const x = savedX + currentTranslateX;
-    const y = savedY + currentTranslateY;
+    const x =
+      this.transformation.translate.x + (savedX + currentTranslateX) * this.transformation.scale;
+    const y =
+      this.transformation.translate.y + (savedY + currentTranslateY) * this.transformation.scale;
 
     const isVisible =
       this.divWrapper.clientWidth > x && this.divWrapper.clientHeight > y && mouse.visible;
@@ -322,6 +330,7 @@ export class PointersCanvas extends BaseComponent {
    * */
   private removePresenceMouseParticipant(participantId: string): void {
     const userMouseIdExist = document.getElementById(`mouse-${participantId}`);
+
     if (userMouseIdExist) {
       userMouseIdExist.remove();
       this.presences.delete(participantId);
@@ -347,6 +356,10 @@ export class PointersCanvas extends BaseComponent {
 
     mouseFollower.appendChild(pointerMouse);
     mouseFollower.appendChild(mouseUserName);
+
+    mouseFollower.style.left = '0px';
+    mouseFollower.style.top = '0px';
+
     this.divWrapper.appendChild(mouseFollower);
 
     return mouseFollower;
@@ -355,4 +368,13 @@ export class PointersCanvas extends BaseComponent {
   private followMouse = (id: string) => {
     this.following = id;
   };
+
+  /**
+   * @function transformPointer
+   * @description stores that information about which transformations should the pointers go through
+   * @param {Transform} transformation Which transformations to apply
+   */
+  public transformPointer(transformation: Transform) {
+    this.transformation = transformation;
+  }
 }

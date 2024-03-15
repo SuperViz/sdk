@@ -23,9 +23,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public privateModeWIOObserver: Observer;
   public followWIOObserver: Observer;
   public gatherWIOObserver: Observer;
-  public presenceMouseParticipantLeaveObserver: Observer;
-  public presenceMouseParticipantJoinedObserver: Observer;
-  public presenceSlotsInfosObserver: Observer;
   public presence3dObserver: Observer;
   public presence3dLeaveObserver: Observer;
   public presence3dJoinedObserver: Observer;
@@ -61,10 +58,6 @@ export class RealtimeService implements DefaultRealtimeService {
     this.privateModeWIOObserver = new Observer({ logger: this.logger });
     this.followWIOObserver = new Observer({ logger: this.logger });
     this.gatherWIOObserver = new Observer({ logger: this.logger });
-
-    this.presenceMouseParticipantLeaveObserver = new Observer({ logger: this.logger });
-    this.presenceMouseParticipantJoinedObserver = new Observer({ logger: this.logger });
-    this.presenceSlotsInfosObserver = new Observer({ logger: this.logger });
 
     // presence 3d
 
