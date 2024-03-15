@@ -1,8 +1,8 @@
 import * as Socket from '@superviz/socket-client';
-import { isEqual, throttle } from 'lodash';
+import { isEqual } from 'lodash';
+import { Subscription, fromEvent, throttleTime } from 'rxjs';
 
 import { RealtimeEvent } from '../../../common/types/events.types';
-import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { Participant } from '../../../common/types/participant.types';
 import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
@@ -36,6 +36,7 @@ export class PointersHTML extends BaseComponent {
   private isPrivate: boolean;
   private containerTagname: string;
   private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
+  private pointerMoveObserver: Subscription;
 
   // callbacks
   private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
@@ -143,11 +144,12 @@ export class PointersHTML extends BaseComponent {
   /**
    * @function addListeners
    * @description adds the mousemove and mouseout listeners to the wrapper with the specified id
-   * @param {string} id the id of the wrapper
    * @returns {void}
    */
   private addListeners(): void {
-    this.container.addEventListener('pointermove', this.onMyParticipantMouseMove);
+    this.pointerMoveObserver = fromEvent(this.container, 'pointermove')
+      .pipe(throttleTime(10))
+      .subscribe(this.onMyParticipantMouseMove);
     this.container.addEventListener('mouseleave', this.onMyParticipantMouseLeave);
   }
 
@@ -157,7 +159,7 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private removeListeners(): void {
-    this.container.removeEventListener('pointermove', this.onMyParticipantMouseMove);
+    this.pointerMoveObserver?.unsubscribe();
     this.container.removeEventListener('mouseleave', this.onMyParticipantMouseLeave);
   }
 
@@ -167,7 +169,7 @@ export class PointersHTML extends BaseComponent {
    * @description event to update my participant mouse position to others participants
    * @returns {void}
    */
-  private onMyParticipantMouseMove = throttle((event: MouseEvent): void => {
+  private onMyParticipantMouseMove = (event: MouseEvent): void => {
     if (this.isPrivate) return;
     const container = event.currentTarget as HTMLDivElement;
 
@@ -182,7 +184,7 @@ export class PointersHTML extends BaseComponent {
       y,
       visible: true,
     });
-  }, 100);
+  };
 
   /**
    * @function onMyParticipantMouseLeave
@@ -218,16 +220,6 @@ export class PointersHTML extends BaseComponent {
    */
   private followMouse = (id: string) => {
     this.userBeingFollowedId = id;
-  };
-
-  /**
-   * @function onParticipantLeftOnRealtime
-   * @description handler for participant left event
-   * @param {AblyParticipant} participant
-   * @returns {void}
-   */
-  private onParticipantLeftOnRealtime = (participant: ParticipantMouse): void => {
-    this.removePresenceMouseParticipant(participant.id);
   };
 
   /**
