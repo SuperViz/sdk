@@ -34,7 +34,7 @@ export class PointersHTML extends BaseComponent {
   private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
 
   // callbacks
-  private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
+  private goToPresenceCallback: PresenceMouseProps['callbacks']['onGoToPresence'];
 
   /**
    * @function constructor
@@ -56,7 +56,7 @@ export class PointersHTML extends BaseComponent {
 
     this.name = ComponentNames.PRESENCE;
     this.containerTagname = this.container.tagName.toUpperCase();
-    this.goToPresenceCallback = options?.onGoToPresence;
+    this.goToPresenceCallback = options?.callbacks?.onGoToPresence;
   }
 
   // ---------- SETUP ----------
@@ -475,11 +475,11 @@ export class PointersHTML extends BaseComponent {
 
   // ---------- REGULAR METHODS ----------
   /**
-   * @function transformPointer
+   * @function transform
    * @description stores that information about which transformations should the pointers go through
    * @param {Transform} transformation Which transformations to apply
    */
-  public transformPointer(transformation: Transform) {
+  public transform(transformation: Transform) {
     this.transformation = transformation;
   }
 

@@ -16,7 +16,9 @@ export interface Transform {
 }
 
 export interface PresenceMouseProps {
-  onGoToPresence?: (position: { x: number; y: number }) => void;
+  callbacks: {
+    onGoToPresence?: (position: { x: number; y: number }) => void;
+  };
 }
 
 export type Element = HTMLElement & SVGElement;
