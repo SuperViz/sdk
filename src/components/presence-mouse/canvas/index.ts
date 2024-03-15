@@ -11,7 +11,7 @@ export class PointersCanvas extends BaseComponent {
   private divWrapper: HTMLElement;
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
-  private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
+  private goToMouseCallback: PresenceMouseProps['callbacks']['onGoToPresence'];
   private following: string;
   private isPrivate: boolean;
   private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
@@ -32,7 +32,7 @@ export class PointersCanvas extends BaseComponent {
     this.divWrapper = this.renderDivWrapper();
     this.animateFrame = requestAnimationFrame(this.animate);
 
-    this.goToMouseCallback = options?.onGoToPresence;
+    this.goToMouseCallback = options?.callbacks?.onGoToPresence;
   }
 
   private get textColorValues(): number[] {
@@ -361,11 +361,11 @@ export class PointersCanvas extends BaseComponent {
   };
 
   /**
-   * @function transformPointer
+   * @function transform
    * @description stores that information about which transformations should the pointers go through
    * @param {Transform} transformation Which transformations to apply
    */
-  public transformPointer(transformation: Transform) {
+  public transform(transformation: Transform) {
     this.transformation = transformation;
   }
 }

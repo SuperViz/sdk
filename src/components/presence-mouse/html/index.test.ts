@@ -413,7 +413,7 @@ describe('MousePointers on HTML', () => {
         'updatePresenceMouse',
       );
 
-      presenceMouseComponent['transformPointer']({ translate: { x: 10, y: 10 }, scale: 1 });
+      presenceMouseComponent['transform']({ translate: { x: 10, y: 10 }, scale: 1 });
 
       const event = {
         currentTarget: {
