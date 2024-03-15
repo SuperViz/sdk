@@ -401,8 +401,6 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private onParticipantUpdatedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
-    console.log('onParticipantUpdatedIOC', presence);
-
     if (
       presence.id === this.participant.value.id &&
       !isEqual(this.participant.value, presence.data)
