@@ -5,3 +5,4 @@ export { VideoConference } from './video';
 export { MousePointers } from './presence-mouse';
 export { Realtime } from './realtime';
 export { WhoIsOnline } from './who-is-online';
+export { PresenceInput } from './presence-input';
