@@ -1,8 +1,12 @@
+import * as Socket from '@superviz/socket-client';
+
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
-import { Group, Participant } from '../../common/types/participant.types';
+import { Group } from '../../common/types/participant.types';
 import { Logger, Observable } from '../../common/utils';
+import { useStore } from '../../common/utils/use-store';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
+import { IOC } from '../../services/io';
 import { AblyRealtimeService } from '../../services/realtime';
 import { ComponentNames } from '../types';
 
@@ -11,12 +15,14 @@ import { DefaultAttachComponentOptions } from './types';
 export abstract class BaseComponent extends Observable {
   public abstract name: ComponentNames;
   protected abstract logger: Logger;
-  protected localParticipant: Participant;
   protected group: Group;
+  protected ioc: IOC;
   protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
-
   protected isAttached = false;
+  protected unsubscribeFrom: Array<(id: unknown) => void> = [];
+  protected useStore = useStore.bind(this) as typeof useStore;
+  protected room: Socket.Room;
 
   /**
    * @function attach
@@ -32,7 +38,8 @@ export abstract class BaseComponent extends Observable {
       throw new Error(message);
     }
 
-    const { realtime, localParticipant, group, config: globalConfig, eventBus } = params;
+    const { realtime, config: globalConfig, eventBus, ioc } = params;
+
     if (!realtime.isDomainWhitelisted) {
       const message = `Component ${this.name} can't be used because this website's domain is not whitelisted. Please add your domain in https://dashboard.superviz.com/developer`;
       this.logger.log(message);
@@ -42,10 +49,10 @@ export abstract class BaseComponent extends Observable {
 
     config.setConfig(globalConfig);
     this.realtime = realtime;
-    this.localParticipant = localParticipant;
-    this.group = group;
     this.eventBus = eventBus;
     this.isAttached = true;
+    this.ioc = ioc;
+    this.room = ioc.createRoom(this.name);
 
     if (!this.realtime.isJoinedRoom) {
       this.logger.log(`${this.name} @ attach - not joined yet`);
@@ -78,6 +85,7 @@ export abstract class BaseComponent extends Observable {
     this.logger.log('detached');
     this.publish(ComponentLifeCycleEvent.UNMOUNT);
     this.destroy();
+    this.unsubscribeFrom.forEach((unsubscribe) => unsubscribe(this));
 
     Object.values(this.observers).forEach((observer) => {
       observer.reset();
@@ -86,7 +94,6 @@ export abstract class BaseComponent extends Observable {
 
     this.observers = undefined;
     this.realtime = undefined;
-    this.localParticipant = undefined;
     this.isAttached = false;
   };
 

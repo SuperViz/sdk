@@ -3,7 +3,7 @@ import { Logger, Observer } from '../../../common/utils';
 import { PinMode } from '../../../web-components/comments/components/types';
 import { Annotation, PinAdapter, PinCoordinates } from '../types';
 
-import { CanvasSides, SimpleParticipant } from './types';
+import { CanvasSides } from './types';
 
 export class CanvasPin implements PinAdapter {
   private logger: Logger;
@@ -22,7 +22,6 @@ export class CanvasPin implements PinAdapter {
   private temporaryPinCoordinates: { x: number; y: number } | null = null;
   private commentsSide: 'left' | 'right' = 'left';
   private movedTemporaryPin: boolean;
-  private localParticipant: SimpleParticipant = {};
   private originalCanvasCursor: string;
   declare participants: ParticipantByGroupApi[];
 
@@ -164,9 +163,7 @@ export class CanvasPin implements PinAdapter {
       temporaryPin.setAttribute('commentsSide', this.commentsSide);
       temporaryPin.setAttribute('position', JSON.stringify(this.temporaryPinCoordinates));
       temporaryPin.setAttribute('annotation', JSON.stringify({}));
-      temporaryPin.setAttribute('localAvatar', this.localParticipant.avatar ?? '');
       temporaryPin.setAttribute('participantsList', JSON.stringify(this.participants));
-      temporaryPin.setAttribute('localName', this.localParticipant.name ?? '');
       temporaryPin.setAttributeNode(document.createAttribute('active'));
       this.divWrapper.appendChild(temporaryPin);
     }
@@ -201,10 +198,8 @@ export class CanvasPin implements PinAdapter {
     document.body.addEventListener('click', this.hideTemporaryPin);
   }
 
-  public setCommentsMetadata = (side: 'left' | 'right', avatar: string, name: string): void => {
+  public setCommentsMetadata = (side: 'left' | 'right'): void => {
     this.commentsSide = side;
-    this.localParticipant.avatar = avatar;
-    this.localParticipant.name = name;
   };
 
   /**

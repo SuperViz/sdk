@@ -1,22 +1,16 @@
+import type * as Socket from '@superviz/socket-client';
+
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
-import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
+import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { useStore } from '../../common/utils/use-store';
+import { IOC } from '../../services/io';
+
+import { RealtimeComponentState } from './types';
 
 import { Realtime } from '.';
-
-const PUB_SUB_MOCK = {
-  destroy: jest.fn(),
-  subscribe: jest.fn(),
-  unsubscribe: jest.fn(),
-  publish: jest.fn(),
-  fetchHistory: jest.fn(),
-  publishEventToClient: jest.fn(),
-};
-
-jest.mock('../../services/pubsub', () => ({
-  PubSub: jest.fn().mockImplementation(() => PUB_SUB_MOCK),
-}));
 
 jest.useFakeTimers();
 
@@ -26,113 +20,217 @@ describe('realtime component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    console.error = jest.fn();
+    console.debug = jest.fn();
+
     RealtimeComponentInstance = new Realtime();
     RealtimeComponentInstance.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
+
+    RealtimeComponentInstance['state'] = RealtimeComponentState.STARTED;
   });
 
-  test('should be subscribe to event', () => {
-    const callback = jest.fn();
-
-    RealtimeComponentInstance.subscribe('test', callback);
-
-    expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith('test', callback);
-  });
-
-  test('should be unsubscribe from event', () => {
-    const callback = jest.fn();
-
-    RealtimeComponentInstance.unsubscribe('test', callback);
-
-    expect(PUB_SUB_MOCK.unsubscribe).toHaveBeenCalledWith('test', callback);
-  });
-
-  test('should be publish event to realtime', () => {
-    RealtimeComponentInstance.publish('test', 'test');
-
-    expect(PUB_SUB_MOCK.publish).toHaveBeenCalledWith('test', 'test');
-  });
-
-  test('should be fetch history', async () => {
-    RealtimeComponentInstance.fetchHistory('test');
-
-    expect(PUB_SUB_MOCK.fetchHistory).toHaveBeenCalledWith('test');
-  });
-
-  test('should destroy pubsub when destroy realtime component', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
     RealtimeComponentInstance.detach();
-
-    expect(PUB_SUB_MOCK.destroy).toHaveBeenCalled();
   });
 
-  test('when realtime is not joined room should store callback to subscribe', () => {
-    const callback = jest.fn();
-    const RealtimeComponentInstance = new Realtime();
-
-    RealtimeComponentInstance.attach({
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
-      config: MOCK_CONFIG,
-      eventBus: EVENT_BUS_MOCK,
-    });
-
-    RealtimeComponentInstance.subscribe('test', callback);
-
-    expect(PUB_SUB_MOCK.subscribe).not.toHaveBeenCalled();
-    expect(RealtimeComponentInstance['callbacksToSubscribeWhenJoined']).toEqual([
-      { event: 'test', callback },
-    ]);
+  test('should create a new instance of Realtime', () => {
+    expect(RealtimeComponentInstance).toBeInstanceOf(Realtime);
   });
 
-  test('should subscribe to events when joined room', async () => {
-    const callback = jest.fn();
-    const RealtimeComponentInstance = new Realtime();
+  describe('start', () => {
+    test('should subscribe to realtiem events', () => {
+      const spy = jest.spyOn(RealtimeComponentInstance, 'subscribeToRealtimeEvents' as any);
+      RealtimeComponentInstance['start']();
 
-    RealtimeComponentInstance.attach({
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
-      config: MOCK_CONFIG,
-      eventBus: EVENT_BUS_MOCK,
+      expect(spy).toHaveBeenCalled();
     });
 
-    RealtimeComponentInstance.subscribe('test', callback);
+    test('should subscribe to callbacks when joined', () => {
+      const spy = jest.spyOn(RealtimeComponentInstance['room'], 'on' as any);
+      RealtimeComponentInstance['start']();
 
-    expect(PUB_SUB_MOCK.subscribe).not.toHaveBeenCalled();
-
-    RealtimeComponentInstance['realtime'] = Object.assign({}, ABLY_REALTIME_MOCK, {
-      isJoinedRoom: true,
+      expect(spy).toHaveBeenCalled();
     });
-
-    // mock start call
-    RealtimeComponentInstance['start']();
-
-    expect(PUB_SUB_MOCK.subscribe).toHaveBeenCalledWith('test', callback);
   });
 
-  test('should not publish event when realtime is not started', () => {
-    console.error = jest.fn();
-    const RealtimeComponentInstance = new Realtime();
+  describe('destroy', () => {
+    test('should disconnect from the room', () => {
+      const spy = jest.spyOn(RealtimeComponentInstance['room'], 'disconnect' as any);
+      RealtimeComponentInstance['destroy']();
 
-    RealtimeComponentInstance.attach({
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: false }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
-      config: MOCK_CONFIG,
-      eventBus: EVENT_BUS_MOCK,
+      expect(spy).toHaveBeenCalled();
     });
 
-    RealtimeComponentInstance.publish('test', 'test');
+    test('should change state to stopped', () => {
+      RealtimeComponentInstance['destroy']();
 
-    expect(console.error).toHaveBeenCalledWith(
-      "Realtime component is not started yet. You can't publish event test before start",
-    );
-    expect(PUB_SUB_MOCK.publish).not.toHaveBeenCalledWith('test', 'test');
+      expect(RealtimeComponentInstance['state']).toBe('STOPPED');
+    });
+  });
+
+  describe('publish', () => {
+    test('should log an error when trying to publish an event before start', () => {
+      RealtimeComponentInstance['state'] = RealtimeComponentState.STOPPED;
+
+      const spy = jest.spyOn(RealtimeComponentInstance['logger'], 'log' as any);
+      RealtimeComponentInstance.publish('test');
+
+      expect(spy).toHaveBeenCalled();
+    });
+
+    test('should publish an event', () => {
+      const spy = jest.spyOn(RealtimeComponentInstance['room'], 'emit' as any);
+      RealtimeComponentInstance['start']();
+      RealtimeComponentInstance.publish('test');
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('subscribe', () => {
+    test('should subscribe to an event', () => {
+      RealtimeComponentInstance['observers']['test'] = MOCK_OBSERVER_HELPER;
+      const spy = jest.spyOn(RealtimeComponentInstance['observers']['test'], 'subscribe' as any);
+      RealtimeComponentInstance['start']();
+      RealtimeComponentInstance.subscribe('test', () => {});
+
+      expect(spy).toHaveBeenCalled();
+    });
+
+    test('should subscribe to an event when joined', () => {
+      RealtimeComponentInstance['state'] = RealtimeComponentState.STOPPED;
+      RealtimeComponentInstance.subscribe('test', () => {});
+
+      expect(RealtimeComponentInstance['callbacksToSubscribeWhenJoined']).toHaveLength(1);
+    });
+  });
+
+  describe('unsubscribe', () => {
+    test('should unsubscribe from an event', () => {
+      RealtimeComponentInstance['observers']['test'] = MOCK_OBSERVER_HELPER;
+      const spy = jest.spyOn(RealtimeComponentInstance['observers']['test'], 'unsubscribe' as any);
+      RealtimeComponentInstance['start']();
+      RealtimeComponentInstance.unsubscribe('test', () => {});
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('subscribeToRealtimeEvents', () => {
+    test('should subscribe to all realtime events', () => {
+      const spy = jest.spyOn(RealtimeComponentInstance['room'], 'on' as any);
+      RealtimeComponentInstance['start']();
+      RealtimeComponentInstance['subscribeToRealtimeEvents']();
+
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('fetchHistory', () => {
+    test('should return null when the history is empty', async () => {
+      const spy = jest
+        .spyOn(RealtimeComponentInstance['room'], 'history' as any)
+        .mockImplementationOnce((...args: unknown[]) => {
+          const next = args[0] as (data: any) => void;
+          next({ events: [] });
+        });
+
+      RealtimeComponentInstance['start']();
+      const h = await RealtimeComponentInstance.fetchHistory();
+
+      expect(spy).toHaveBeenCalled();
+      expect(h).toEqual(null);
+    });
+
+    test('should return the history', async () => {
+      const spy = jest
+        .spyOn(RealtimeComponentInstance['room'], 'history' as any)
+        .mockImplementationOnce((...args: unknown[]) => {
+          const next = args[0] as (data: any) => void;
+          next({
+            events: [
+              {
+                timestamp: 1710336284652,
+                presence: { id: 'unit-test-presence-id', name: 'unit-test-presence-name' },
+                data: { name: 'unit-test-event-name', payload: 'unit-test-event-payload' },
+              },
+            ],
+          });
+        });
+
+      RealtimeComponentInstance['start']();
+      const h = await RealtimeComponentInstance.fetchHistory();
+
+      expect(spy).toHaveBeenCalled();
+      expect(h).toEqual({
+        'unit-test-event-name': [
+          {
+            data: 'unit-test-event-payload',
+            name: 'unit-test-event-name',
+            participantId: 'unit-test-presence-id',
+            timestamp: 1710336284652,
+          },
+        ],
+      });
+    });
+
+    test('should return the history for a specific event', async () => {
+      const spy = jest
+        .spyOn(RealtimeComponentInstance['room'], 'history' as any)
+        .mockImplementationOnce((...args: unknown[]) => {
+          const next = args[0] as (data: any) => void;
+          next({
+            events: [
+              {
+                timestamp: 1710336284652,
+                presence: { id: 'unit-test-presence-id', name: 'unit-test-presence-name' },
+                data: { name: 'unit-test-event-name', payload: 'unit-test-event-payload' },
+              },
+            ],
+          });
+        });
+
+      RealtimeComponentInstance['start']();
+      const h = await RealtimeComponentInstance.fetchHistory('unit-test-event-name');
+
+      expect(spy).toHaveBeenCalled();
+      expect(h).toEqual([
+        {
+          data: 'unit-test-event-payload',
+          name: 'unit-test-event-name',
+          participantId: 'unit-test-presence-id',
+          timestamp: 1710336284652,
+        },
+      ]);
+    });
+
+    test('should reject when the event is not found', async () => {
+      const spy = jest
+        .spyOn(RealtimeComponentInstance['room'], 'history' as any)
+        .mockImplementationOnce((...args: unknown[]) => {
+          const next = args[0] as (data: any) => void;
+          next({
+            events: [
+              {
+                timestamp: 1710336284652,
+                presence: { id: 'unit-test-presence-id', name: 'unit-test-presence-name' },
+                data: { name: 'unit-test-event-name', payload: 'unit-test-event-payload' },
+              },
+            ],
+          });
+        });
+
+      RealtimeComponentInstance['start']();
+      const h = RealtimeComponentInstance.fetchHistory('unit-test-event-wrong-name');
+
+      await expect(h).rejects.toThrow('Event unit-test-event-wrong-name not found in the history');
+    });
   });
 });

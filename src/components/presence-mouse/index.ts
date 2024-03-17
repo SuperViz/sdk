@@ -6,6 +6,11 @@ import { PresenceMouseProps } from './types';
 export class MousePointers {
   constructor(containerId: string, options?: PresenceMouseProps) {
     const container = document.getElementById(containerId);
+
+    if (!container) {
+      throw new Error(`[Superviz] Container with id ${containerId} not found`);
+    }
+
     const tagName = container.tagName.toLowerCase();
 
     if (tagName === 'canvas') {

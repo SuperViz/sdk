@@ -38,7 +38,6 @@ export { Participant, Group, Avatar } from './common/types/participant.types';
 export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
 export { BrowserService } from './services/browser';
 export { BrowserStats } from './services/browser/types';
-
 export { RealtimeMessage } from './services/realtime/ably/types';
 export { LauncherFacade } from './core/launcher/types';
 export { Observer } from './common/utils/observer';
@@ -100,6 +99,13 @@ export {
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
   PresenceInput,
+  Comments,
+  CanvasPin,
+  HTMLPin,
+  MousePointers,
+  WhoIsOnline,
+  VideoConference,
+  Realtime,
 };
 
 export default init;

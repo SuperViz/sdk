@@ -19,7 +19,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create a .remote-config.js file
         run: |
-          touch .remote-config.js && echo "echo \"export default { apiUrl: 'https://localhost:3000', conferenceLayerUrl: 'https://localhost:8080' }\" > .remote-config.js" | bash -
+          touch .remote-config.js && echo "echo \"module.exports = { remoteConfig: { apiUrl: 'https://dev.nodeapi.superviz.com', conferenceLayerUrl: 'https://video-frame.superviz.com/lab/index.html'}};\" > .remote-config.js" | bash -
       - run: git config --global user.name SuperViz
       - run: git config --global user.email ci@superviz.com
       - name: Publish npm package

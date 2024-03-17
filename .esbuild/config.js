@@ -5,12 +5,7 @@ const entries = Object.entries(process.env).filter((key) => key[0].startsWith('S
 const env = Object.fromEntries(entries);
 
 module.exports = {
-  entryPoints: [
-    './src/index.ts',
-    './src/core/index.ts',
-    './src/components/index.ts',
-    './src/web-components/index.ts',
-  ],
+  entryPoints: ['./src/index.ts'],
   loader: {
     '.png': 'file',
     '.svg': 'file',

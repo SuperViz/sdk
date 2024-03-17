@@ -487,18 +487,6 @@ describe('HTMLPinAdapter', () => {
     });
   });
 
-  describe('setCommentsMetadata', () => {
-    test('should store updated data about comments and local participant', () => {
-      instance.setCommentsMetadata('right', 'user-avatar', 'user name');
-
-      expect(instance['commentsSide']).toEqual('right');
-      expect(instance['localParticipant']).toEqual({
-        avatar: 'user-avatar',
-        name: 'user name',
-      });
-    });
-  });
-
   describe('resetPins', () => {
     test('should remove active on Escape key', () => {
       instance.updateAnnotations([MOCK_ANNOTATION_HTML]);

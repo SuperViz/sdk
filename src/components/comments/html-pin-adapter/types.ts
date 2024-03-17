@@ -1,8 +1,3 @@
-export interface SimpleParticipant {
-  name?: string;
-  avatar?: string;
-}
-
 export interface Simple2DPoint {
   x: number;
   y: number;
