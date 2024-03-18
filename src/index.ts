@@ -47,7 +47,10 @@ export {
   PinAdapter,
   PinCoordinates,
   AnnotationPositionInfo,
+  Offset,
 } from './components/comments/types';
+
+export { Transform } from './components/presence-mouse/types';
 
 if (window) {
   window.SuperVizRoom = {
