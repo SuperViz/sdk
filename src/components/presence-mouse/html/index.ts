@@ -39,7 +39,7 @@ export class PointersHTML extends BaseComponent {
   private pointerMoveObserver: Subscription;
 
   // callbacks
-  private goToPresenceCallback: PresenceMouseProps['onGoToPresence'];
+  private goToPresenceCallback: PresenceMouseProps['callbacks']['onGoToPresence'];
 
   /**
    * @function constructor
@@ -64,7 +64,7 @@ export class PointersHTML extends BaseComponent {
     localParticipant.subscribe();
 
     this.containerTagname = this.container.tagName.toUpperCase();
-    this.goToPresenceCallback = options?.onGoToPresence;
+    this.goToPresenceCallback = options?.callbacks?.onGoToPresence;
   }
 
   // ---------- SETUP ----------
@@ -485,11 +485,11 @@ export class PointersHTML extends BaseComponent {
 
   // ---------- REGULAR METHODS ----------
   /**
-   * @function transformPointer
+   * @function transform
    * @description stores that information about which transformations should the pointers go through
    * @param {Transform} transformation Which transformations to apply
    */
-  public transformPointer(transformation: Transform) {
+  public transform(transformation: Transform) {
     this.transformation = transformation;
   }
 

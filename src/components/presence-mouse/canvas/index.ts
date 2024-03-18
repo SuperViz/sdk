@@ -16,7 +16,7 @@ export class PointersCanvas extends BaseComponent {
   private divWrapper: HTMLElement;
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
-  private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
+  private goToMouseCallback: PresenceMouseProps['callbacks']['onGoToPresence'];
   private following: string;
   private isPrivate: boolean;
   private localParticipant: Participant;
@@ -38,7 +38,7 @@ export class PointersCanvas extends BaseComponent {
     this.divWrapper = this.renderDivWrapper();
     this.animateFrame = requestAnimationFrame(this.animate);
 
-    this.goToMouseCallback = options?.onGoToPresence;
+    this.goToMouseCallback = options?.callbacks?.onGoToPresence;
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe();
@@ -370,11 +370,11 @@ export class PointersCanvas extends BaseComponent {
   };
 
   /**
-   * @function transformPointer
+   * @function transform
    * @description stores that information about which transformations should the pointers go through
    * @param {Transform} transformation Which transformations to apply
    */
-  public transformPointer(transformation: Transform) {
+  public transform(transformation: Transform) {
     this.transformation = transformation;
   }
 }
