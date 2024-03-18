@@ -12,6 +12,7 @@ import { RealtimeComponentState } from './types';
 
 import { Realtime } from '.';
 
+jest.mock('lodash/throttle', () => jest.fn((fn) => fn));
 jest.useFakeTimers();
 
 describe('realtime component', () => {
