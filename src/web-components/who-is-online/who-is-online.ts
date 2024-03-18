@@ -5,6 +5,7 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import { RealtimeEvent } from '../../common/types/events.types';
 import { INDEX_IS_WHITE_TEXT } from '../../common/types/meeting-colors.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Participant } from '../../components/who-is-online/types';
 import { WebComponentsBase } from '../base';
 import importStyle from '../base/utils/importStyle';
@@ -27,7 +28,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare localParticipantData: LocalParticipantData;
   declare isPrivate: boolean;
   declare everyoneFollowsMe: boolean;
-
   declare showTooltip: boolean;
 
   static properties = {
@@ -47,6 +47,14 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.position = 'top: 20px; right: 40px;';
     this.showTooltip = true;
     this.open = false;
+
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe((value: Participant) => {
+      this.localParticipantData = {
+        id: value.id,
+        joinedPresence: false,
+      };
+    });
   }
 
   protected firstUpdated(
@@ -368,7 +376,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         following=${JSON.stringify(this.following)}
         ?everyoneFollowsMe=${this.everyoneFollowsMe}
         ?isPrivate=${this.isPrivate}
-        participantColor=${this.localParticipantData?.color}
         @stop-following=${this.stopFollowing}
         @cancel-private=${this.cancelPrivate}
         @stop-everyone-follows-me=${this.stopEveryoneFollowsMe}

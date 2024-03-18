@@ -3,11 +3,13 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { Group, Participant } from '../../common/types/participant.types';
 import { Logger } from '../../common/utils';
+import { useStore } from '../../common/utils/use-store';
 import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
+import { IOC } from '../../services/io';
 import { AblyRealtimeService } from '../../services/realtime';
+import { useGlobalStore } from '../../services/stores';
 import { ComponentNames } from '../types';
 
 import { BaseComponent } from '.';
@@ -48,6 +50,10 @@ describe('BaseComponent', () => {
     console.error = jest.fn();
 
     jest.clearAllMocks();
+    const { localParticipant, group } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+    group.value = MOCK_GROUP;
+
     DummyComponentInstance = new DummyComponent();
   });
 
@@ -58,11 +64,11 @@ describe('BaseComponent', () => {
   describe('attach', () => {
     test('should not call start if realtime is not joined room', () => {
       DummyComponentInstance.attach({
+        ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: ABLY_REALTIME_MOCK,
-        localParticipant: MOCK_LOCAL_PARTICIPANT,
-        group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance['start'] = jest.fn(DummyComponentInstance['start']);
@@ -82,11 +88,11 @@ describe('BaseComponent', () => {
       ablyMock['isDomainWhitelisted'] = false;
 
       DummyComponentInstance.attach({
+        ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: ablyMock as AblyRealtimeService,
-        localParticipant: MOCK_LOCAL_PARTICIPANT,
-        group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance['start'] = jest.fn();
@@ -101,29 +107,28 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance.attach).toBeDefined();
 
       DummyComponentInstance.attach({
-        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: REALTIME_MOCK,
-        group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
-      expect(DummyComponentInstance['localParticipant']).toEqual(MOCK_LOCAL_PARTICIPANT);
       expect(DummyComponentInstance['realtime']).toEqual(REALTIME_MOCK);
       expect(DummyComponentInstance['isAttached']).toBeTruthy();
       expect(DummyComponentInstance['start']).toBeCalled();
     });
 
-    test('should throw error if realtime or localParticipant are not provided', () => {
+    test('should throw error if realtime is not provided', () => {
       expect(DummyComponentInstance.attach).toBeDefined();
 
       expect(() => {
         DummyComponentInstance.attach({
-          localParticipant: null as unknown as Participant,
+          ioc: null as unknown as IOC,
           realtime: null as unknown as AblyRealtimeService,
-          group: null as unknown as Group,
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
+          useStore: null as unknown as typeof useStore,
         });
       }).toThrowError();
     });
@@ -135,11 +140,11 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance.detach).toBeDefined();
 
       DummyComponentInstance.attach({
-        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: REALTIME_MOCK,
-        group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance.detach();
@@ -156,11 +161,11 @@ describe('BaseComponent', () => {
       DummyComponentInstance['destroy'] = jest.fn();
 
       DummyComponentInstance.attach({
-        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: REALTIME_MOCK,
-        group: MOCK_GROUP,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        useStore,
       });
 
       DummyComponentInstance.subscribe('test', callback);

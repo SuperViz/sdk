@@ -1,11 +1,7 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
-import {
-  MOCK_AVATAR,
-  MOCK_GROUP,
-  MOCK_LOCAL_PARTICIPANT,
-} from '../../../__mocks__/participants.mock';
+import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import {
   DeviceEvent,
@@ -19,6 +15,8 @@ import {
 } from '../../common/types/events.types';
 import { MeetingColors } from '../../common/types/meeting-colors.types';
 import { ParticipantType } from '../../common/types/participant.types';
+import { useStore } from '../../common/utils/use-store';
+import { IOC } from '../../services/io';
 import { AblyParticipant, AblyRealtimeData } from '../../services/realtime/ably/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
@@ -96,12 +94,13 @@ describe('VideoConference', () => {
       allowGuests: false,
     });
 
+    VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
     VideoConferenceInstance.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: MOCK_REALTIME,
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
   });
 
@@ -116,15 +115,17 @@ describe('VideoConference', () => {
       defaultAvatars: true,
     });
 
+    VideoConferenceInstance['localParticipant'] = {
+      ...MOCK_LOCAL_PARTICIPANT,
+      avatar: MOCK_AVATAR,
+    };
+
     VideoConferenceInstance.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: MOCK_REALTIME,
-      localParticipant: {
-        ...MOCK_LOCAL_PARTICIPANT,
-        avatar: MOCK_AVATAR,
-      },
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     expect(VideoConferenceInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();

@@ -6,11 +6,20 @@ export enum ParticipantType {
   AUDIENCE = 'audience',
 }
 
+export type Slot = {
+  index: number;
+  color: string;
+  textColor: string;
+  colorName: string;
+  timestamp: number;
+};
+
 export interface Participant {
   id: string;
   name?: string;
   type?: ParticipantType;
   color?: string;
+  slot?: Slot;
   avatar?: Avatar;
   isHost?: boolean;
   // @NOTE - this is a hack to make the participant info work with the 3D avatar

@@ -59,7 +59,7 @@ export class Observer {
           'superviz-sdk:observer-helper:publish:error',
           `
             Failed to execute callback on publish value.
-            Callback: ${callback}
+            Callback: ${callback.name}
             Event: ${JSON.stringify(event)}
             Error: ${error}
           `,
