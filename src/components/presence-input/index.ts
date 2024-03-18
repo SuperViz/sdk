@@ -1,18 +1,25 @@
+import { SocketEvent } from '@superviz/socket-client';
+
+import { Participant } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { Field, PresenceInputProps } from './types';
+import { Field, Focus, IOFieldEvents, Payload, FormElementsProps } from './types';
 
-export class PresenceInput extends BaseComponent {
+// PresenceInput --> Change to FormElements
+export class FormElements extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
+  private localParticipant: Participant;
 
   // HTML Elements
   private fields: Record<string, Field> = {};
 
   // Allowed tags and types
   private readonly allowedTagNames = ['input', 'textarea'];
+  // text, search, URL, tel, and password
   private readonly allowedInputTypes = ['text'];
 
   private readonly throwError = {
@@ -47,7 +54,9 @@ export class PresenceInput extends BaseComponent {
     },
   };
 
-  constructor(props: PresenceInputProps = {}) {
+  private focusList: Record<string, Focus> = {};
+
+  constructor(props: FormElementsProps = {}) {
     super();
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger('@superviz/sdk/presence-input-component');
@@ -55,10 +64,20 @@ export class PresenceInput extends BaseComponent {
     const { fields } = props;
 
     if (typeof fields === 'string') {
-      this.registerField(fields);
-    } else if (Array.isArray(fields)) {
-      this.registerArrayOfFields(fields);
-    } else {
+      this.validateFieldId(fields);
+      this.fields[fields] = null;
+      return;
+    }
+
+    if (Array.isArray(fields)) {
+      fields.forEach((fieldId) => {
+        this.validateFieldId(fieldId);
+        this.fields[fieldId] = null;
+      });
+      return;
+    }
+
+    if (fields !== undefined) {
       this.throwError.onInvalidFieldsProp(typeof fields);
     }
   }
@@ -69,7 +88,16 @@ export class PresenceInput extends BaseComponent {
    * @description starts the component
    * @returns {void}
    * */
-  protected start(): void {}
+  protected start(): void {
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe();
+
+    Object.entries(this.fields).forEach(([fieldId]) => {
+      this.registerField(fieldId);
+    });
+
+    this.subscribeToRealtimeEvents();
+  }
 
   /**
    * @function destroy
@@ -80,6 +108,71 @@ export class PresenceInput extends BaseComponent {
     this.deregisterAllFields();
   }
 
+  private subscribeToRealtimeEvents() {
+    Object.entries(this.fields).forEach(([fieldId]) => {
+      this.addRealtimeListenersToField(fieldId);
+    });
+  }
+
+  private removeFieldColor = (fieldId: string) => {
+    return ({ presence }: SocketEvent<Focus>) => {
+      if (this.focusList[fieldId]?.id !== presence.id || !this.fields[fieldId]) return;
+
+      this.fields[fieldId].style.border = '';
+      delete this.focusList[fieldId];
+    };
+  };
+
+  private updateFieldColor = (fieldId: string) => {
+    return ({ presence, data: { color }, timestamp }: SocketEvent<Focus>) => {
+      const participantInFocus = this.focusList[fieldId] ?? ({} as Focus);
+
+      const thereIsNoFocus = !participantInFocus.id;
+      const localParticipantEmittedEvent = presence.id === this.localParticipant.id;
+
+      if (thereIsNoFocus && localParticipantEmittedEvent) {
+        this.focusList[fieldId] = {
+          id: presence.id,
+          color,
+          firstInteraction: timestamp,
+          lastInteraction: timestamp,
+        };
+
+        return;
+      }
+
+      const alreadyHasFocus = participantInFocus.id === presence.id;
+
+      if (alreadyHasFocus) {
+        this.focusList[fieldId].lastInteraction = timestamp;
+        return;
+      }
+
+      const stoppedInteracting = timestamp - participantInFocus.lastInteraction >= 10000; // ms;
+      const gainedFocusLongAgo = timestamp - participantInFocus.firstInteraction >= 100000; // ms;
+      const changeInputBorderColor = stoppedInteracting || gainedFocusLongAgo || thereIsNoFocus;
+
+      if (!changeInputBorderColor) return;
+
+      this.focusList[fieldId] = {
+        id: presence.id,
+        color,
+        firstInteraction: timestamp,
+        lastInteraction: timestamp,
+      };
+
+      const border = localParticipantEmittedEvent ? '' : `2px solid ${color}`;
+      this.fields[fieldId].style.border = border;
+    };
+  };
+
+  private updateFieldContent = (fieldId: string) => {
+    return ({ presence, data: { content } }: SocketEvent<Payload>) => {
+      if (presence.id === this.localParticipant.id) return;
+      this.fields[fieldId].value = content;
+    };
+  };
+
   // ------- listeners -------
   /**
    * @function addListenersToField
@@ -88,9 +181,17 @@ export class PresenceInput extends BaseComponent {
    * @returns {void}
    */
   private addListenersToField(field: Field): void {
-    field.addEventListener('input', this.handleInput);
+    field.addEventListener('input', this.handleInputEvent);
     field.addEventListener('focus', this.handleFocus);
     field.addEventListener('blur', this.handleBlur);
+  }
+
+  private addRealtimeListenersToField(fieldId: string) {
+    if (!this.room) return;
+    this.room.on<Payload>(IOFieldEvents.INPUT + fieldId, this.updateFieldContent(fieldId));
+    this.room.on<Focus>(IOFieldEvents.INPUT + fieldId, this.updateFieldColor(fieldId));
+    this.room.on<Focus>(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor(fieldId));
+    this.room.on<Focus>(IOFieldEvents.BLUR + fieldId, this.removeFieldColor(fieldId));
   }
 
   /**
@@ -111,24 +212,18 @@ export class PresenceInput extends BaseComponent {
    * @param field
    */
   private removeListenersFromField(field: Field): void {
-    field.removeEventListener('input', this.handleInput);
     field.removeEventListener('focus', this.handleFocus);
     field.removeEventListener('blur', this.handleBlur);
   }
 
-  // ------- register & deregister -------
-  /**
-   * @function registerArrayOfFields
-   * @description Registers multiple fields at once
-   * @param {string[]} fieldsIds The ids of the fields that will be registered
-   * @returns {void}
-   */
-  private registerArrayOfFields(fieldsIds: string[]): void {
-    fieldsIds.forEach((id) => {
-      this.registerField(id);
-    });
+  private removeRealtimeListenersFromField(fieldId: string) {
+    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldContent(fieldId));
+    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldColor(fieldId));
+    this.room.off(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor(fieldId));
+    this.room.off(IOFieldEvents.BLUR + fieldId, this.removeFieldColor(fieldId));
   }
 
+  // ------- register & deregister -------
   /**
    * @function registerField
    * @description Registers an element; usually, something that serves a text field. 
@@ -140,15 +235,13 @@ export class PresenceInput extends BaseComponent {
    * @returns {void}
    */
   public registerField(fieldId: string) {
+    this.validateField(fieldId);
+
     const field = document.getElementById(fieldId) as Field;
-
-    if (!field) {
-      this.throwError.onFieldNotFound(fieldId);
-    }
-
-    this.validateField(field);
     this.fields[fieldId] = field;
+
     this.addListenersToField(field);
+    this.addRealtimeListenersToField(fieldId);
   }
 
   /**
@@ -174,20 +267,34 @@ export class PresenceInput extends BaseComponent {
 
     console.log('deregistering field', fieldId);
     this.removeListenersFromField(this.fields[fieldId]);
+    this.removeRealtimeListenersFromField(fieldId);
     this.fields[fieldId] = undefined;
   }
 
   // ------- callbacks -------
-  private handleInput = (event: Event) => {
-    console.log(event);
+  private handleInputEvent = (event: any) => {
+    console.log('on input');
+    const target = event.target as HTMLInputElement;
+    const payload: Payload = {
+      content: target.value,
+      color: this.localParticipant.slot.color,
+    };
+
+    this.room?.emit(IOFieldEvents.INPUT + target.id, payload);
   };
 
   private handleFocus = (event: Event) => {
-    console.log(event);
+    const target = event.target as HTMLInputElement;
+    const payload: Payload = {
+      color: this.localParticipant.slot.color,
+    };
+
+    this.room?.emit(IOFieldEvents.FOCUS + target.id, payload);
   };
 
   private handleBlur = (event: Event) => {
-    console.log(event);
+    const target = event.target as HTMLInputElement;
+    this.room?.emit(IOFieldEvents.BLUR + target.id, {});
   };
 
   // ------- validations -------
@@ -197,7 +304,10 @@ export class PresenceInput extends BaseComponent {
    * @param {Field} field The element
    * @returns {void}
    */
-  private validateField(field: Field): void {
+  private validateField(fieldId: string): void {
+    this.validateFieldId(fieldId);
+
+    const field = document.getElementById(fieldId) as Field;
     this.validateFieldTagName(field);
     this.validateFieldType(field);
   }
@@ -233,6 +343,14 @@ export class PresenceInput extends BaseComponent {
     if (inputType && !hasValidInputType) {
       this.logger.log('invalid input type');
       this.throwError.onInvalidInputType(inputType);
+    }
+  }
+
+  private validateFieldId(fieldId: string): void {
+    const field = document.getElementById(fieldId);
+
+    if (!field) {
+      this.throwError.onFieldNotFound(fieldId);
     }
   }
 }

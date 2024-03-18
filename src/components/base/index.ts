@@ -85,6 +85,8 @@ export abstract class BaseComponent extends Observable {
     this.logger.log('detached');
     this.publish(ComponentLifeCycleEvent.UNMOUNT);
     this.destroy();
+    this.room.disconnect();
+
     this.unsubscribeFrom.forEach((unsubscribe) => unsubscribe(this));
 
     Object.values(this.observers).forEach((observer) => {
