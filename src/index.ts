@@ -21,6 +21,7 @@ import {
   HTMLPin,
   WhoIsOnline,
 } from './components';
+import { Transform } from './components/presence-mouse/types';
 import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import init from './core';
 import './web-components';
@@ -46,6 +47,7 @@ export {
   PinAdapter,
   PinCoordinates,
   AnnotationPositionInfo,
+  Offset,
 } from './components/comments/types';
 
 if (window) {
@@ -96,6 +98,7 @@ export {
   CommentEvent,
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
+  Transform,
   Comments,
   CanvasPin,
   HTMLPin,
