@@ -1,4 +1,5 @@
 import * as Socket from '@superviz/socket-client';
+import throttle from 'lodash/throttle';
 
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { StoreType } from '../../common/types/stores.types';
@@ -49,7 +50,7 @@ export class Realtime extends BaseComponent {
    * @param data - event data
    * @returns {void}
    */
-  public publish = (event: string, data?: unknown): void => {
+  public publish = throttle((event: string, data?: unknown): void => {
     if (Object.values(ComponentLifeCycleEvent).includes(event as ComponentLifeCycleEvent)) {
       this.publishEventToClient(event, data);
       return;
@@ -63,7 +64,7 @@ export class Realtime extends BaseComponent {
     }
 
     this.room.emit('message', { name: event, payload: data });
-  };
+  }, 100);
 
   /**
    * @function subscribe

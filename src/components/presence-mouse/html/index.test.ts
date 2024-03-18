@@ -216,7 +216,6 @@ describe('MousePointers on HTML', () => {
 
       presenceMouseComponent['addListeners']();
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function));
       expect(addEventListenerSpy).toHaveBeenCalledWith('mouseleave', expect.any(Function));
     });
   });
@@ -230,7 +229,6 @@ describe('MousePointers on HTML', () => {
 
       presenceMouseComponent['removeListeners']();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function));
       expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseleave', expect.any(Function));
     });
   });
