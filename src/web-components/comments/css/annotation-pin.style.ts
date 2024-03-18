@@ -1,6 +1,10 @@
 import { css } from 'lit';
 
 export const annotationPinStyles = css`
+  .preload {
+    animation-duration: 0s !important;
+  }
+
   .comments__annotation-pin,
   .comments__annotation-pin__avatar {
     display: flex;
@@ -9,6 +13,21 @@ export const annotationPinStyles = css`
     position: relative;
     pointer-events: auto;
     z-index: 10;
+    transform-origin: bottom left;
+  }
+
+  .comments__annotation-pin:hover {
+    transform: scale(1.2);
+    animation: growing-spring 0.3s linear;
+  }
+
+  .comments__annotation-pin:not(:hover) {
+    animation: shrinking-spring 0.3s linear;
+  }
+
+  .comments__annotation-pin--add {
+    transform: scale(1) !important;
+    animation: none !important;
   }
 
   .comments__annotation-pin {
@@ -35,6 +54,11 @@ export const annotationPinStyles = css`
     border-color: rgb(var(--sv-primary));
   }
 
+  .comments__cursor-pointer,
+  .comments__cursor-pointer .comments__annotation-pin__avatar {
+    pointer-events: none;
+  }
+
   .comments__annotation-pin__avatar {
     width: 100%;
     height: 100%;
@@ -49,7 +73,6 @@ export const annotationPinStyles = css`
     width: 100%;
     height: 100%;
     border-radius: 50%;
-
     object-fit: contain;
   }
 
@@ -76,5 +99,111 @@ export const annotationPinStyles = css`
     right: 0;
     transform: translateX(calc(100% + 7px));
     opacity: 1;
+  }
+
+  .comments__annotation-pin-wrapper {
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    position: absolute;
+  }
+
+  .comments__annotation-pin-wrapper--new {
+    animation: bounce 0.5s linear !important;
+  }
+
+  .comments__annotation-pin-wrapper--new .comments__annotation-pin__avatar {
+    transform-origin: center;
+    animation: avatar-bounce 0.5s linear !important;
+  }
+
+  @keyframes avatar-bounce {
+    0%,
+    40% {
+      transform: scale(1);
+    }
+
+    48% {
+      transform: scale(0.8);
+    }
+
+    55%,
+    92% {
+      transform: scale(1);
+    }
+
+    96% {
+      transform: scale(0.9);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes bounce {
+    0% {
+      transform: scale(1);
+    }
+
+    20% {
+      transform: scale(1.3);
+    }
+
+    40%,
+    55% {
+      transform: scale(1);
+    }
+
+    75% {
+      transform: scale(1.15);
+    }
+
+    92%,
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes growing-spring {
+    0% {
+      transform: scale(1);
+    }
+
+    25% {
+      transform: scale(1.3);
+    }
+
+    50% {
+      transform: scale(1.2);
+    }
+
+    75% {
+      transform: scale(1.25);
+    }
+
+    100% {
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes shrinking-spring {
+    0% {
+      transform: scale(1.2);
+    }
+
+    33% {
+      transform: scale(1);
+    }
+
+    66% {
+      transform: scale(1.1);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
 `;

@@ -1,5 +1,6 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { AnnotationPositionInfo, CommentMention } from '../../../components/comments/types';
@@ -23,6 +24,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare mentionList: ParticipantByGroupApi[];
   declare mentions: CommentMention[];
   declare participantsList: ParticipantByGroupApi[];
+  declare hideInput: boolean;
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
 
@@ -47,6 +49,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     mentions: { type: Array },
     mentionList: { type: Object },
     participantsList: { type: Object },
+    hideInput: { type: Boolean },
   };
 
   private addAtSymbolInCaretPosition = () => {
@@ -125,6 +128,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         const mentions = this.participantsList.map(({ id, name }) => ({ userId: id, name }));
         this.mentions = this.autoCompleteHandler.getMentions(this.text, mentions);
         this.autoCompleteHandler.setMentions(this.mentions);
+      }
+
+      if (this.editable) {
+        this.focusInput();
       }
 
       importStyle.call(this, ['comments']);
@@ -242,7 +249,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
     commentsInput.style.height = '40px';
 
-    let textareaHeight = commentsInput.scrollHeight + 16;
+    let textareaHeight = commentsInput.scrollHeight + 14;
 
     if (textareaHeight === 47) {
       textareaHeight = 40;
@@ -316,6 +323,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   private closeEditMode = () => {
     this.emitEvent('close-edit-mode', {}, { composed: false, bubbles: false });
+    this.hideInput = true;
   };
 
   private onTextareaFocus = () => {
@@ -367,20 +375,20 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       <button
         id="close"
         @click=${this.closeEditMode}
-        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__cancel-edit-button"
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__close-button"
       >
         <superviz-icon name="close" size="sm"></superviz-icon>
       </button>
       <button
         id="confirm"
-        class="comments__input__button comments__input__send-button"
+        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__send-button"
         disabled
         @click=${this.send}
       >
         <superviz-icon
           color=${this.sendBtn?.disabled || !this.sendBtn ? 'black' : 'white'}
           name="check"
-          size="md"
+          size="sm"
         ></superviz-icon>
       </button>
     `;
@@ -411,11 +419,22 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   };
 
   protected render() {
+    const textAreaClasses = {
+      comments__input__textarea: true,
+      'fixed-width': this.eventType === 'create-annotation',
+    };
+
+    const commentsInputClasses = {
+      comments__input: true,
+      'comments__input--editable': this.editable,
+      'hide-input': this.hideInput,
+    };
+
     return html`
-      <div class="comments__input">
+      <div class="${classMap(commentsInputClasses)}">
         <textarea
           id="comments__input__textarea"
-          class="comments__input__textarea"
+          class=${classMap(textAreaClasses)}
           placeholder=${this.placeholder ?? 'Add comment...'}
           @input=${this.updateHeight}
           @focus=${this.onTextareaFocus}

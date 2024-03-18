@@ -723,8 +723,13 @@ export class HTMLPin implements PinAdapter {
    * @param {CustomEvent} event the emitted event object with the uuid of the selected annotation
    * @returns {void}
    */
-  private annotationSelected = ({ detail: { uuid } }: CustomEvent): void => {
+  private annotationSelected = ({ detail: { uuid, newPin } }: CustomEvent): void => {
     if (!uuid) return;
+
+    if (newPin) {
+      const pin = this.pins.get(uuid);
+      pin.setAttribute('newPin', '');
+    }
 
     const annotation = this.annotations.find(
       (annotation) => annotation.uuid === this.selectedPin?.id,
@@ -766,7 +771,6 @@ export class HTMLPin implements PinAdapter {
     if (!wrapper) return;
 
     wrapper.appendChild(pin);
-    wrapper.parentElement.appendChild(wrapper);
   }
 
   // ------- helper functions -------

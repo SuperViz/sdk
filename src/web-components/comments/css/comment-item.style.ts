@@ -77,6 +77,13 @@ export const commentItemStyle = css`
 
   .comments__comment-item__content__body {
     color: rgb(var(--sv-gray-700));
+    position: relative;
+    display: grid;
+    grid-template-rows: 0px auto;
+  }
+
+  .comments__comment-item__content__body.editing-annotation {
+    grid-template-rows: auto 0px;
   }
 
   .hidden {
@@ -85,5 +92,31 @@ export const commentItemStyle = css`
 
   .mentioned {
     display: inline-block;
+  }
+
+  .annotation-content {
+    transition: opacity 0ms;
+    opacity: 1;
+    overflow: hidden;
+  }
+
+  .editing {
+    transition: opacity 400ms;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .comments__input--editable {
+    transform: translateY(0);
+    opacity: 1;
+    overflow: hidden;
+  }
+
+  .hide-edit-input {
+    transition: opacity 500ms, transform 0 linear 300ms;
+    opacity: 0;
+    pointer-events: none;
+    width: 100%;
   }
 `;
