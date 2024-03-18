@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
@@ -16,6 +17,7 @@ export class WhoIsOnline extends BaseComponent {
   private position: WhoIsOnlinePosition;
   private participants: Participant[] = [];
   private following: string;
+  private localParticipantId: string;
 
   constructor(options?: WhoIsOnlinePosition | WhoIsOnlineOptions) {
     super();
@@ -38,10 +40,16 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   protected start(): void {
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe((value: Participant) => {
+      this.localParticipantId = value.id;
+    });
+
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
     this.addListeners();
-    this.realtime.enterWIOChannel(this.localParticipant);
+
+    this.realtime.enterWIOChannel(localParticipant.subject.value as Participant);
   }
 
   /**
@@ -133,14 +141,14 @@ export class WhoIsOnline extends BaseComponent {
 
     const participants = updatedParticipants
       .filter(({ data: { isPrivate, id } }) => {
-        return !isPrivate || (isPrivate && id === this.localParticipant.id);
+        return !isPrivate || (isPrivate && id === this.localParticipantId);
       })
       .map(({ data }) => {
         const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
         const { color } = this.realtime.getSlotColor(slotIndex);
-        const isLocal = this.localParticipant.id === id;
+        const isLocal = this.localParticipantId === id;
         const joinedPresence = activeComponents.some((component) => component.includes('presence'));
-        this.setLocalData(isLocal, !joinedPresence, color, joinedPresence);
+        this.setLocalData(isLocal, !joinedPresence, joinedPresence);
 
         return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
       });
@@ -156,16 +164,14 @@ export class WhoIsOnline extends BaseComponent {
     this.element.updateParticipants(this.participants);
   };
 
-  private setLocalData = (
-    local: boolean,
-    disable: boolean,
-    color: string,
-    joinedPresence: boolean,
-  ) => {
+  private setLocalData = (local: boolean, disable: boolean, joinedPresence: boolean) => {
     if (!local) return;
 
     this.element.disableDropdown = disable;
-    this.element.localParticipantData = { color, id: this.localParticipant.id, joinedPresence };
+    this.element.localParticipantData = {
+      ...this.element.localParticipantData,
+      joinedPresence,
+    };
   };
 
   /**
@@ -220,7 +226,7 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private goToMousePointer = ({ detail: { id } }: CustomEvent) => {
-    if (id === this.localParticipant.id) return;
+    if (id === this.localParticipantId) return;
 
     this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, id);
     this.publish(WhoIsOnlineEvent.GO_TO_PARTICIPANT, id);
@@ -263,7 +269,7 @@ export class WhoIsOnline extends BaseComponent {
   };
 
   private setFollow = (following) => {
-    if (following.clientId === this.localParticipant.id) return;
+    if (following.clientId === this.localParticipantId) return;
 
     this.followMousePointer({ detail: { id: following?.data?.id } } as CustomEvent);
 

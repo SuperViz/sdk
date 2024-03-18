@@ -1,11 +1,15 @@
 import { html } from 'lit';
 
 import '.';
-import { MOCK_ABLY_PARTICIPANT_DATA_1 } from '../../../__mocks__/participants.mock';
+import {
+  MOCK_ABLY_PARTICIPANT_DATA_1,
+  MOCK_LOCAL_PARTICIPANT,
+} from '../../../__mocks__/participants.mock';
 import { RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import sleep from '../../common/utils/sleep';
 import { Participant } from '../../components/who-is-online/types';
+import { useGlobalStore } from '../../services/stores';
 import { Dropdown } from '../dropdown/index';
 
 import { WIODropdownOptions } from './components/types';
@@ -49,6 +53,9 @@ const MOCK_PARTICIPANTS: Participant[] = [
 
 describe('Who Is Online', () => {
   beforeEach(async () => {
+    const { localParticipant } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+
     element = document.createElement('superviz-who-is-online');
     element['localParticipantData'] = {
       color: '#fff',
@@ -141,7 +148,7 @@ describe('Who Is Online', () => {
     await sleep();
 
     const letter = element?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
-    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex];
+    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex as number];
 
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #26242A`,

@@ -3,13 +3,14 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import {
   MOCK_ABLY_PARTICIPANT,
   MOCK_ABLY_PARTICIPANT_DATA_2,
-  MOCK_GROUP,
   MOCK_LOCAL_PARTICIPANT,
   MOCK_ABLY_PARTICIPANT_DATA_1,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { useStore } from '../../common/utils/use-store';
+import { IOC } from '../../services/io';
 
 import { WhoIsOnline } from './index';
 
@@ -21,13 +22,14 @@ describe('Who Is Online', () => {
 
     whoIsOnlineComponent = new WhoIsOnline();
     whoIsOnlineComponent.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
+    whoIsOnlineComponent['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
     whoIsOnlineComponent['element'].updateParticipants = jest.fn();
 
     const gray = MeetingColorsHex[16];

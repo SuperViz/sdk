@@ -15,7 +15,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public roomInfoUpdatedObserver: Observer;
   public roomListUpdatedObserver: Observer;
   public realtimeStateObserver: Observer;
-  public syncPropertiesObserver: Observer;
   public kickAllParticipantsObserver: Observer;
   public kickParticipantObserver: Observer;
   public authenticationObserver: Observer;
@@ -24,9 +23,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public privateModeWIOObserver: Observer;
   public followWIOObserver: Observer;
   public gatherWIOObserver: Observer;
-  public presenceMouseParticipantLeaveObserver: Observer;
-  public presenceMouseParticipantJoinedObserver: Observer;
-  public presenceSlotsInfosObserver: Observer;
   public presence3dObserver: Observer;
   public presence3dLeaveObserver: Observer;
   public presence3dJoinedObserver: Observer;
@@ -41,7 +37,6 @@ export class RealtimeService implements DefaultRealtimeService {
     this.participantsObserver = new Observer({ logger: this.logger });
     this.participantJoinedObserver = new Observer({ logger: this.logger });
     this.participantLeaveObserver = new Observer({ logger: this.logger });
-    this.syncPropertiesObserver = new Observer({ logger: this.logger });
     this.reconnectObserver = new Observer({ logger: this.logger });
     this.sameAccountObserver = new Observer({ logger: this.logger });
 
@@ -63,10 +58,6 @@ export class RealtimeService implements DefaultRealtimeService {
     this.privateModeWIOObserver = new Observer({ logger: this.logger });
     this.followWIOObserver = new Observer({ logger: this.logger });
     this.gatherWIOObserver = new Observer({ logger: this.logger });
-
-    this.presenceMouseParticipantLeaveObserver = new Observer({ logger: this.logger });
-    this.presenceMouseParticipantJoinedObserver = new Observer({ logger: this.logger });
-    this.presenceSlotsInfosObserver = new Observer({ logger: this.logger });
 
     // presence 3d
 
