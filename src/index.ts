@@ -21,6 +21,7 @@ import {
   HTMLPin,
   WhoIsOnline,
 } from './components';
+import { Transform } from './components/presence-mouse/types';
 import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import init from './core';
 import './web-components';
@@ -49,8 +50,6 @@ export {
   AnnotationPositionInfo,
   Offset,
 } from './components/comments/types';
-
-export { Transform } from './components/presence-mouse/types';
 
 if (window) {
   window.SuperVizRoom = {
@@ -100,6 +99,7 @@ export {
   CommentEvent,
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
+  Transform,
 };
 
 export default init;
