@@ -498,15 +498,30 @@ export class VideoConference extends BaseComponent {
   private onParticipantListUpdate = (participants: Partial<Participant>[]): void => {
     this.logger.log('video conference @ on participant list update', participants);
 
-    if (isEqual(this.participantsOnMeeting, participants)) return;
+    const list = participants.map((participant) => {
+      const participantOnRealtime = this.realtime.getParticipants[participant.id];
 
-    this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, participants);
+      return {
+        id: participant.id,
+        color:
+          participant.color ??
+          this.realtime.getSlotColor(participantOnRealtime.data.slotIndex).color,
+        avatar: participant.avatar,
+        name: participant.name,
+        type: participant.type,
+        isHost: participant.isHost,
+      };
+    });
 
-    if (this.participantsOnMeeting.length !== participants.length) {
-      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, participants.length);
+    if (isEqual(this.participantsOnMeeting, list)) return;
+
+    this.publish(MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE, list);
+
+    if (this.participantsOnMeeting.length !== list.length) {
+      this.publish(MeetingEvent.MEETING_PARTICIPANT_AMOUNT_UPDATE, list.length);
     }
 
-    this.participantsOnMeeting = participants;
+    this.participantsOnMeeting = list;
   };
 
   /** Realtime Events */

@@ -3,12 +3,12 @@ import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
-import { ParticipantMouse, Element } from '../types';
+import { ParticipantMouse } from '../types';
 
 import { PointersHTML } from '.';
 
-const createMousePointers = (): PointersHTML => {
-  const presenceMouseComponent = new PointersHTML('html');
+const createMousePointers = (id: string = 'html'): PointersHTML => {
+  const presenceMouseComponent = new PointersHTML(id);
 
   presenceMouseComponent.attach({
     realtime: ABLY_REALTIME_MOCK,
@@ -27,7 +27,7 @@ describe('MousePointers on HTML', () => {
   let MOCK_MOUSE: ParticipantMouse;
 
   beforeEach(() => {
-    document.body.innerHTML = `<div><div id="html"><span data-superviz-id="1"></span><span data-superviz-id="2"></span></div></div>`;
+    document.body.innerHTML = `<div><div id="html"></div></div>`;
 
     MOCK_MOUSE = {
       ...MOCK_LOCAL_PARTICIPANT,
@@ -56,49 +56,24 @@ describe('MousePointers on HTML', () => {
 
   describe('constructor', () => {
     test('should throw an error if no container is found', () => {
-      expect(() => new PointersHTML('not-found-container')).toThrowError(
+      expect(() => createMousePointers('not-found-container')).toThrowError(
         'Element with id not-found-container not found',
       );
     });
 
     test('should set different properties', () => {
-      const presenceMouseComponent = new PointersHTML('html');
-      const elementsWithDataAttribute = new Map();
-
-      elementsWithDataAttribute.set('1', document.querySelector('[data-superviz-id="1"]'));
-      elementsWithDataAttribute.set('2', document.querySelector('[data-superviz-id="2"]'));
+      createMousePointers();
 
       expect(presenceMouseComponent['container']).toEqual(document.getElementById('html'));
       expect(presenceMouseComponent['name']).toEqual('presence');
-      expect(presenceMouseComponent['dataAttributeName']).toEqual('data-superviz-id');
-      expect(presenceMouseComponent['elementsWithDataAttribute']).toEqual(
-        elementsWithDataAttribute,
-      );
-      expect(presenceMouseComponent['mutationObserver']).toBeInstanceOf(MutationObserver);
-    });
-
-    test('should call observeContainer', () => {
-      const observeContainerSpy = jest.spyOn(PointersHTML.prototype as any, 'observeContainer');
-      const mouse = new PointersHTML('html');
-
-      expect(observeContainerSpy).toHaveBeenCalled();
-    });
-
-    test('should call renderAllWrappers', () => {
-      const renderAllWrappersSpy = jest.spyOn(PointersHTML.prototype as any, 'renderAllWrappers');
-      const mouse = new PointersHTML('html');
-
-      expect(renderAllWrappersSpy).toHaveBeenCalled();
-    });
-
-    test('should set dataAttributeName from options', () => {
-      const presenceMouseComponent = new PointersHTML('html', { dataAttributeName: 'data-test' });
-
-      expect(presenceMouseComponent['dataAttributeName']).toEqual('data-test');
     });
   });
 
   describe('start', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+    });
+
     test('should call enterPresenceMouseChannel', () => {
       const enterPresenceMouseChannelSpy = jest.spyOn(
         ABLY_REALTIME_MOCK,
@@ -109,19 +84,24 @@ describe('MousePointers on HTML', () => {
       expect(enterPresenceMouseChannelSpy).toHaveBeenCalledWith(MOCK_LOCAL_PARTICIPANT);
     });
 
-    test('should call addListenersToWrappers', () => {
-      const addListenersToWrappersSpy = jest.spyOn(
-        PointersHTML.prototype as any,
-        'addListenersToWrappers',
-      );
+    test('should call renderWrapper', () => {
+      const renderWrapperSpy = jest.spyOn(presenceMouseComponent as any, 'renderWrapper');
+
       presenceMouseComponent['start']();
 
-      expect(addListenersToWrappersSpy).toHaveBeenCalled();
+      expect(renderWrapperSpy).toHaveBeenCalled();
+    });
+
+    test('should call addListeners', () => {
+      const addListenersSpy = jest.spyOn(presenceMouseComponent as any, 'addListeners');
+      presenceMouseComponent['start']();
+
+      expect(addListenersSpy).toHaveBeenCalled();
     });
 
     test('should call subscribeToRealtimeEvents', () => {
       const subscribeToRealtimeEventsSpy = jest.spyOn(
-        PointersHTML.prototype as any,
+        presenceMouseComponent as any,
         'subscribeToRealtimeEvents',
       );
       presenceMouseComponent['start']();
@@ -144,6 +124,10 @@ describe('MousePointers on HTML', () => {
     });
 
     describe('destroy', () => {
+      beforeEach(() => {
+        presenceMouseComponent['start']();
+      });
+
       test('should call cancelAnimationFrame', () => {
         const cancelAnimationFrameSpy = jest.spyOn(window, 'cancelAnimationFrame');
         presenceMouseComponent['destroy']();
@@ -163,39 +147,25 @@ describe('MousePointers on HTML', () => {
         expect(leavePresenceMouseChannelSpy).toHaveBeenCalled();
       });
 
-      test('should remove each wrapper from the DOM', () => {
-        expect(document.querySelectorAll('[data-wrapper-id]').length).toBe(2);
-        const wrappersSpy = jest.spyOn(presenceMouseComponent['wrappers'], 'clear');
-        const voidWrappersSpy = jest.spyOn(presenceMouseComponent['voidElementsWrappers'], 'clear');
-        const svgWrappersSpy = jest.spyOn(presenceMouseComponent['svgElementsWrappers'], 'clear');
+      test('should remove wrapper from the DOM', () => {
+        const wrapperSpy = jest.spyOn(presenceMouseComponent['wrapper'] as any, 'remove');
+
         presenceMouseComponent['destroy']();
 
-        expect(document.querySelectorAll('[data-wrapper-id]').length).toBe(0);
-        expect(wrappersSpy).toHaveBeenCalled();
-        expect(voidWrappersSpy).toHaveBeenCalled();
-        expect(svgWrappersSpy).toHaveBeenCalled();
+        expect(wrapperSpy).toHaveBeenCalled();
       });
 
-      test('should call removeListenersFromWrappers', () => {
-        const removeListenersFromWrappersSpy = jest.spyOn(
-          PointersHTML.prototype as any,
-          'removeListenersFromWrappers',
-        );
+      test('should call removeListeners', () => {
+        const removeListeners = jest.spyOn(presenceMouseComponent as any, 'removeListeners');
+
         presenceMouseComponent['destroy']();
 
-        expect(removeListenersFromWrappersSpy).toHaveBeenCalled();
-      });
-
-      test('should call mutationObserver.disconnect', () => {
-        const disconnectSpy = jest.spyOn(presenceMouseComponent['mutationObserver'], 'disconnect');
-        presenceMouseComponent['destroy']();
-
-        expect(disconnectSpy).toHaveBeenCalled();
+        expect(removeListeners).toHaveBeenCalled();
       });
 
       test('should call unsubscribeFromRealtimeEvents', () => {
         const unsubscribeFromRealtimeEventsSpy = jest.spyOn(
-          PointersHTML.prototype as any,
+          presenceMouseComponent as any,
           'unsubscribeFromRealtimeEvents',
         );
         presenceMouseComponent['destroy']();
@@ -210,79 +180,27 @@ describe('MousePointers on HTML', () => {
         expect(unsubscribeSpy).toHaveBeenCalledTimes(3);
       });
 
-      test('should clear elementsWithDataAttribute', () => {
-        const elementsSpy = jest.spyOn(
-          presenceMouseComponent['elementsWithDataAttribute'],
-          'clear',
-        );
-
-        presenceMouseComponent['destroy']();
-
-        expect(elementsSpy).toHaveBeenCalled();
-      });
-
       test('should avoid memory leaks', () => {
         presenceMouseComponent['destroy']();
 
         expect(presenceMouseComponent['logger']).toBeUndefined();
-        expect(presenceMouseComponent['voidElementsWrappers']).toBeUndefined();
-        expect(presenceMouseComponent['svgElementsWrappers']).toBeUndefined();
         expect(presenceMouseComponent['presences']).toBeUndefined();
-        expect(presenceMouseComponent['elementsWithDataAttribute']).toBeUndefined();
-        expect(presenceMouseComponent['mutationObserver']).toBeUndefined();
-        expect(presenceMouseComponent['wrappers']).toBeUndefined();
+        expect(presenceMouseComponent['wrapper']).toBeUndefined();
+        expect(presenceMouseComponent['container']).toBeUndefined();
       });
     });
   });
 
   describe('renderWrapper', () => {
-    beforeEach(() => {
-      presenceMouseComponent['wrappers'].clear();
-      presenceMouseComponent['voidElementsWrappers'].clear();
-    });
-
     test('should call renderElementWrapper', () => {
       const renderElementWrapperSpy = jest.spyOn(
         presenceMouseComponent as any,
         'renderElementWrapper',
       );
-      const element = document.querySelector('[data-superviz-id="1"]') as Element;
-      presenceMouseComponent['renderWrapper'](element, '1');
 
-      expect(renderElementWrapperSpy).toHaveBeenCalledWith(element, '1');
-    });
+      presenceMouseComponent['renderWrapper']();
 
-    test('should call renderSVGElementWrapper', () => {
-      const renderSVGElementWrapperSpy = jest.spyOn(
-        presenceMouseComponent as any,
-        'renderSVGElementWrapper',
-      );
-
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const element = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'rect',
-      ) as unknown as Element;
-      svg.appendChild(element);
-      document.body.appendChild(svg);
-
-      presenceMouseComponent['renderWrapper'](element, '1');
-
-      expect(renderSVGElementWrapperSpy).toHaveBeenCalledWith(element, '1');
-    });
-
-    test('should call renderVoidElementWrapper', () => {
-      const renderVoidElementWrapperSpy = jest.spyOn(
-        presenceMouseComponent as any,
-        'renderVoidElementWrapper',
-      );
-
-      const div = document.createElement('div') as HTMLDivElement;
-      const element = document.createElement('img') as unknown as Element;
-      div.appendChild(element);
-
-      presenceMouseComponent['renderWrapper'](element, '1');
-      expect(renderVoidElementWrapperSpy).toHaveBeenCalledWith(element, '1');
+      expect(renderElementWrapperSpy).toHaveBeenCalled();
     });
 
     test('should do nothing if wrapper already exists', () => {
@@ -290,173 +208,202 @@ describe('MousePointers on HTML', () => {
         presenceMouseComponent as any,
         'renderElementWrapper',
       );
-      const renderVoidElementWrapperSpy = jest.spyOn(
-        presenceMouseComponent as any,
-        'renderVoidElementWrapper',
-      );
-      const renderSVGElementWrapperSpy = jest.spyOn(
-        presenceMouseComponent as any,
-        'renderSVGElementWrapper',
-      );
 
-      const element = document.querySelector('[data-superviz-id="1"]') as Element;
-      presenceMouseComponent['wrappers'].set('1', element);
-      presenceMouseComponent['renderWrapper'](element, '1');
+      const element = document.createElement('div');
+
+      presenceMouseComponent['wrapper'] = element;
+
+      presenceMouseComponent['renderWrapper']();
 
       expect(renderElementWrapperSpy).not.toHaveBeenCalled();
-      expect(renderVoidElementWrapperSpy).not.toHaveBeenCalled();
-      expect(renderSVGElementWrapperSpy).not.toHaveBeenCalled();
     });
   });
 
   describe('addWrapperListeners', () => {
-    test('should add event listeners to the wrapper', () => {
-      const wrapper = document.createElement('div');
-      const addEventListenerSpy = jest.spyOn(wrapper, 'addEventListener');
-      presenceMouseComponent['wrappers'].set('1', wrapper);
-      presenceMouseComponent['addWrapperListeners']('1');
+    test('should add event listeners to the container', () => {
+      const addEventListenerSpy = jest.spyOn(
+        presenceMouseComponent['container'],
+        'addEventListener',
+      );
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
-      expect(addEventListenerSpy).toHaveBeenCalledWith('mouseout', expect.any(Function));
-    });
+      presenceMouseComponent['addListeners']();
 
-    test('should not add event listeners if wrapper is not found', () => {
-      const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
-      presenceMouseComponent['addWrapperListeners']('not-found');
-
-      expect(addEventListenerSpy).not.toHaveBeenCalled();
+      expect(addEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function));
+      expect(addEventListenerSpy).toHaveBeenCalledWith('mouseleave', expect.any(Function));
     });
   });
 
   describe('removeWrapperListeners', () => {
-    test('should remove event listeners from the wrapper', () => {
-      const wrapper = document.createElement('div');
-      const removeEventListenerSpy = jest.spyOn(wrapper, 'removeEventListener');
-      presenceMouseComponent['wrappers'].set('1', wrapper);
-      presenceMouseComponent['removeWrapperListeners']('1');
+    test('should remove event listeners from the container', () => {
+      const removeEventListenerSpy = jest.spyOn(
+        presenceMouseComponent['container'],
+        'removeEventListener',
+      );
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseout', expect.any(Function));
-    });
+      presenceMouseComponent['removeListeners']();
 
-    test('should not remove event listeners if wrapper is not found', () => {
-      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
-      presenceMouseComponent['removeWrapperListeners']('not-found');
-
-      expect(removeEventListenerSpy).not.toHaveBeenCalled();
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseleave', expect.any(Function));
     });
   });
 
   describe('renderVoidElementWrapper', () => {
     test('should create a wrapper and append it to the parent', () => {
-      const element = document.createElement('img') as unknown as Element;
-      const parent = document.createElement('div');
-      parent.appendChild(element);
+      document.body.innerHTML = `<div><img id="void-element" style="height: 100px; width: 100px;"></div>`;
+      presenceMouseComponent = createMousePointers('void-element');
 
-      presenceMouseComponent['renderVoidElementWrapper'](element, '1');
+      presenceMouseComponent['container'].getBoundingClientRect = () =>
+        ({
+          left: 20,
+          top: 30,
+          width: 100,
+          height: 100,
+        } as any);
 
-      const wrapper = parent.querySelector('[data-wrapper-id="1"]') as HTMLElement;
+      presenceMouseComponent['start']();
 
-      expect(wrapper).toBeTruthy();
-      expect(wrapper.getAttribute('data-wrapper-id')).toEqual('1');
-      expect(presenceMouseComponent['voidElementsWrappers'].get('1')).toEqual(wrapper);
+      const elementWrapper = presenceMouseComponent['wrapper'];
 
-      expect(wrapper.style.position).toEqual('absolute');
-      expect(wrapper.style.width).toEqual('0px');
-      expect(wrapper.style.height).toEqual('0px');
-      expect(wrapper.style.top).toEqual('0px');
-      expect(wrapper.style.left).toEqual('0px');
-      expect(wrapper.style.overflow).toEqual('visible');
+      expect(elementWrapper).toBeTruthy();
+      expect(elementWrapper.style.position).toEqual('absolute');
+      expect(elementWrapper.style.width).toEqual('100px');
+      expect(elementWrapper.style.height).toEqual('100px');
+      expect(elementWrapper.style.top).toEqual('30px');
+      expect(elementWrapper.style.left).toEqual('20px');
+      expect(elementWrapper.style.overflow).toEqual('visible');
+      expect(elementWrapper.style.pointerEvents).toEqual('none');
     });
   });
 
   describe('renderSVGElementWrapper', () => {
     beforeEach(() => {
-      document.body.innerHTML = `<div><div id="html"><svg data-superviz-id="0"><ellipse data-superviz-id="1"></ellipse><rect data-superviz-id="2"></rect></svg></div></div>`;
       presenceMouseComponent = createMousePointers();
+      presenceMouseComponent['start']();
     });
 
     test('should create a wrapper for a rect element and append it to the parent', () => {
-      const rect = document.body.getElementsByTagName('rect')[0];
+      document.body.innerHTML = '<svg id="svg"><rect id="rect"></rect></svg>';
 
-      presenceMouseComponent['renderSVGElementWrapper'](rect, '2');
+      presenceMouseComponent = createMousePointers('rect');
+      presenceMouseComponent['container'].getBoundingClientRect = () =>
+        ({
+          left: 20,
+          top: 30,
+          width: 100,
+          height: 100,
+        } as unknown as DOMRect);
 
-      const wrapper = document.body.querySelector('[data-wrapper-id="2"]') as HTMLElement;
+      presenceMouseComponent['start']();
+
+      const wrapper = document.body.querySelector('#superviz-rect-wrapper') as SVGRectElement;
 
       expect(wrapper).toBeTruthy();
-      expect(wrapper.getAttribute('data-wrapper-id')).toEqual('2');
-      expect(presenceMouseComponent['wrappers'].get('2')).toEqual(wrapper);
+      expect(presenceMouseComponent['wrapper']).toEqual(wrapper);
 
       expect(wrapper.style.position).toEqual('fixed');
-      expect(wrapper.style.width).toEqual('0px');
-      expect(wrapper.style.height).toEqual('0px');
-      expect(wrapper.style.top).toEqual('0px');
-      expect(wrapper.style.left).toEqual('0px');
+      expect(wrapper.style.width).toEqual('100px');
+      expect(wrapper.style.height).toEqual('100px');
+      expect(wrapper.style.top).toEqual('30px');
+      expect(wrapper.style.left).toEqual('20px');
       expect(wrapper.style.overflow).toEqual('visible');
+      expect(wrapper.style.pointerEvents).toEqual('none');
+
+      expect(wrapper.querySelector('svg')).toBeDefined();
     });
 
     test('should create a wrapper for a ellipse element and append it to the parent', () => {
-      const ellipse = document.body.getElementsByTagName('ellipse')[0];
+      document.body.innerHTML = `<svg id="svg"><ellipse id="ellipse"></ellipse></svg>`;
 
-      presenceMouseComponent['renderSVGElementWrapper'](ellipse, '1');
+      presenceMouseComponent = createMousePointers('ellipse');
+      presenceMouseComponent['container'].getBoundingClientRect = () =>
+        ({
+          left: 20,
+          top: 30,
+          width: 100,
+          height: 100,
+        } as unknown as DOMRect);
 
-      const wrapper = document.body.querySelector('[data-wrapper-id="1"]') as HTMLElement;
+      presenceMouseComponent['start']();
+
+      const wrapper = document.body.querySelector('#superviz-ellipse-wrapper') as SVGRectElement;
 
       expect(wrapper).toBeTruthy();
-      expect(wrapper.getAttribute('data-wrapper-id')).toEqual('1');
-      const wrapper2 = presenceMouseComponent['wrappers'].get('1');
-      expect(wrapper2).toEqual(wrapper);
+      expect(presenceMouseComponent['wrapper']).toEqual(wrapper);
 
       expect(wrapper.style.position).toEqual('fixed');
-      expect(wrapper.style.width).toEqual('0px');
-      expect(wrapper.style.height).toEqual('0px');
-      expect(wrapper.style.top).toEqual('0px');
-      expect(wrapper.style.left).toEqual('0px');
+      expect(wrapper.style.width).toEqual('100px');
+      expect(wrapper.style.height).toEqual('100px');
+      expect(wrapper.style.top).toEqual('30px');
+      expect(wrapper.style.left).toEqual('20px');
       expect(wrapper.style.overflow).toEqual('visible');
+      expect(wrapper.style.pointerEvents).toEqual('none');
+
+      expect(wrapper.querySelector('svg')).toBeDefined();
     });
 
     test('should create a wrapper for a svg element and append it to the parent', () => {
-      const svg = document.body.getElementsByTagName('svg')[0];
+      document.body.innerHTML = `<svg id="svg"></svg>`;
+      presenceMouseComponent = createMousePointers('svg');
+      presenceMouseComponent['container'].getBoundingClientRect = () =>
+        ({
+          left: 20,
+          top: 30,
+          width: 100,
+          height: 100,
+        } as unknown as DOMRect);
 
-      presenceMouseComponent['renderSVGElementWrapper'](svg, '0');
+      presenceMouseComponent['start']();
 
-      const wrapper = document.body.querySelector('[data-wrapper-id="0"]') as HTMLElement;
+      const wrapper = document.body.querySelector('#superviz-svg-wrapper') as SVGRectElement;
 
       expect(wrapper).toBeTruthy();
-      expect(wrapper.getAttribute('data-wrapper-id')).toEqual('0');
-      expect(presenceMouseComponent['wrappers'].get('0')).toEqual(wrapper);
-      expect(wrapper.style.position).toEqual('absolute');
-      expect(wrapper.style.width).toEqual('0px');
-      expect(wrapper.style.height).toEqual('0px');
-      expect(wrapper.style.top).toEqual('0px');
-      expect(wrapper.style.left).toEqual('0px');
+      expect(presenceMouseComponent['wrapper']).toEqual(wrapper);
+
+      expect(wrapper.style.position).toEqual('fixed');
+      expect(wrapper.style.width).toEqual('100px');
+      expect(wrapper.style.height).toEqual('100px');
+      expect(wrapper.style.top).toEqual('30px');
+      expect(wrapper.style.left).toEqual('20px');
       expect(wrapper.style.overflow).toEqual('visible');
+      expect(wrapper.style.pointerEvents).toEqual('none');
+
+      expect(wrapper.querySelector('svg')).toBeDefined();
     });
   });
 
   describe('renderElementWrapper', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `<div><div id="regular-element"></div></div>`;
+    });
+
     test('should create a wrapper and append it to the parent', () => {
-      const element = document.querySelector('[data-superviz-id="1"]') as Element;
-      presenceMouseComponent['renderElementWrapper'](element, '1');
+      createMousePointers('regular-element');
 
-      const wrapper = document.querySelector('[data-wrapper-id="1"]') as HTMLElement;
+      presenceMouseComponent.attach({
+        realtime: ABLY_REALTIME_MOCK,
+        localParticipant: MOCK_LOCAL_PARTICIPANT,
+        group: MOCK_GROUP,
+        config: MOCK_CONFIG,
+        eventBus: EVENT_BUS_MOCK,
+      });
 
-      expect(wrapper).toBeTruthy();
-      expect(wrapper.getAttribute('data-wrapper-id')).toEqual('1');
-      expect(presenceMouseComponent['wrappers'].get('1')).toEqual(wrapper);
+      presenceMouseComponent['start']();
 
-      expect(wrapper.style.position).toEqual('absolute');
-      expect(wrapper.style.width).toEqual('100%');
-      expect(wrapper.style.height).toEqual('100%');
-      expect(wrapper.style.top).toEqual('0px');
-      expect(wrapper.style.left).toEqual('0px');
-      expect(wrapper.style.overflow).toEqual('visible');
+      const elementWrapper = presenceMouseComponent['wrapper'];
+
+      expect(elementWrapper).toBeTruthy();
+      expect(elementWrapper.style.position).toEqual('absolute');
+      expect(elementWrapper.style.width).toEqual('100%');
+      expect(elementWrapper.style.height).toEqual('100%');
+      expect(elementWrapper.style.top).toEqual('0px');
+      expect(elementWrapper.style.left).toEqual('0px');
+      expect(elementWrapper.style.overflow).toEqual('visible');
     });
   });
 
   describe('onMyParticipantMouseMove', () => {
     beforeEach(() => {
-      document.body.innerHTML = `<div><div id="html"><div data-superviz-id="1" style="width: 100px; height: 100px;"></div></div></div>`;
+      document.body.innerHTML = `<div><div id="html"><div style="width: 100px; height: 100px;"></div></div></div>`;
       presenceMouseComponent = createMousePointers();
     });
 
@@ -466,23 +413,27 @@ describe('MousePointers on HTML', () => {
         'updatePresenceMouse',
       );
 
+      presenceMouseComponent['transform']({ translate: { x: 10, y: 10 }, scale: 1 });
+
       const event = {
         currentTarget: {
-          clientWidth: 100,
-          clientHeight: 100,
-          getAttribute: () => '1',
+          getBoundingClientRect() {
+            return {
+              left: 10,
+              top: 10,
+            };
+          },
         },
-        offsetX: 50,
-        offsetY: 50,
+        x: 50,
+        y: 50,
       } as unknown as MouseEvent;
 
       presenceMouseComponent['onMyParticipantMouseMove'](event);
 
       expect(updatePresenceMouseSpy).toHaveBeenCalledWith({
         ...MOCK_LOCAL_PARTICIPANT,
-        x: 0.5,
-        y: 0.5,
-        elementId: '1',
+        x: 30,
+        y: 30,
         visible: true,
       });
     });
@@ -509,68 +460,19 @@ describe('MousePointers on HTML', () => {
 
       expect(updatePresenceMouseSpy).not.toHaveBeenCalled();
     });
-
-    test('should not call realtime.updatePresenceMouse if container has no width', () => {
-      const updatePresenceMouseSpy = jest.spyOn(
-        presenceMouseComponent['realtime'],
-        'updatePresenceMouse',
-      );
-
-      const event = {
-        currentTarget: {
-          clientWidth: 0,
-          clientHeigh: 100,
-          getAttribute: () => '1',
-        },
-        offsetX: 50,
-        offsetY: 50,
-      } as unknown as MouseEvent;
-
-      presenceMouseComponent['onMyParticipantMouseMove'](event);
-
-      expect(updatePresenceMouseSpy).not.toHaveBeenCalled();
-    });
-
-    test('should not call realtime.updatePresenceMouse if container has no height', () => {
-      const updatePresenceMouseSpy = jest.spyOn(
-        presenceMouseComponent['realtime'],
-        'updatePresenceMouse',
-      );
-
-      const event = {
-        currentTarget: {
-          clientWidth: 100,
-          clientHeight: 0,
-          getAttribute: () => '1',
-        },
-        offsetX: 50,
-        offsetY: 50,
-      } as unknown as MouseEvent;
-
-      presenceMouseComponent['onMyParticipantMouseMove'](event);
-
-      expect(updatePresenceMouseSpy).not.toHaveBeenCalled();
-    });
   });
 
-  describe('onMyParticipantMouseOut', () => {
+  describe('onMyParticipantMouseLeave', () => {
     test('should call realtime.updatePresenceMouse', () => {
       const updatePresenceMouseSpy = jest.spyOn(
         presenceMouseComponent['realtime'],
         'updatePresenceMouse',
       );
 
-      const event = {
-        currentTarget: {
-          getAttribute: () => '1',
-        },
-      } as unknown as MouseEvent;
-
-      presenceMouseComponent['onMyParticipantMouseOut'](event);
+      presenceMouseComponent['onMyParticipantMouseLeave']();
 
       expect(updatePresenceMouseSpy).toHaveBeenCalledWith({
         ...MOCK_LOCAL_PARTICIPANT,
-        elementId: '',
         visible: false,
       });
     });
@@ -591,23 +493,33 @@ describe('MousePointers on HTML', () => {
         'removePresenceMouseParticipant',
       );
 
-      const map = new Map(Object.entries(participants));
-
       presenceMouseComponent['onParticipantsDidChange'](participants);
       presenceMouseComponent['userBeingFollowedId'] = 'unit-test-participant2-ably-id';
       presenceMouseComponent['onParticipantsDidChange'](participants);
 
       expect(removePresenceMouseParticipantSpy).toHaveBeenCalledTimes(1);
     });
+
+    test('should call updateParticipantsMouses', () => {
+      const updateParticipantsMousesSpy = jest.spyOn(
+        presenceMouseComponent as any,
+        'updateParticipantsMouses',
+      );
+
+      presenceMouseComponent['onParticipantsDidChange'](participants);
+
+      expect(updateParticipantsMousesSpy).toHaveBeenCalled();
+    });
   });
 
   describe('goToMouse', () => {
     beforeEach(() => {
-      participants['unit-test-participant2-ably-id'].elementId = '1';
       presenceMouseComponent['onParticipantsDidChange'](participants);
     });
 
     test('should call scrollIntoView', () => {
+      presenceMouseComponent['start']();
+
       presenceMouseComponent['createMouseElement'](
         presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
       );
@@ -615,7 +527,7 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView =
         jest.fn();
 
-      presenceMouseComponent['wrappers'].set('1', document.createElement('div'));
+      presenceMouseComponent['start']();
 
       presenceMouseComponent['goToMouse']('unit-test-participant2-ably-id');
 
@@ -628,24 +540,9 @@ describe('MousePointers on HTML', () => {
       });
     });
 
-    test('should not call scrollIntoView if wrapper is not found', () => {
-      presenceMouseComponent['createMouseElement'](
-        presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
-      );
-
-      presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView =
-        jest.fn();
-
-      presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!.elementId =
-        'not-found';
-      presenceMouseComponent['goToMouse']('unit-test-participant2-ably-id');
-
-      expect(
-        presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')!.scrollIntoView,
-      ).not.toHaveBeenCalled();
-    });
-
     test('should not call scrollIntoView if participant is not found', () => {
+      presenceMouseComponent['start']();
+
       presenceMouseComponent['createMouseElement'](
         presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
       );
@@ -661,6 +558,8 @@ describe('MousePointers on HTML', () => {
     });
 
     test('should call callback and not scrollIntoView if there is a callback', () => {
+      presenceMouseComponent['start']();
+
       presenceMouseComponent['createMouseElement'](
         presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!,
       );
@@ -686,117 +585,6 @@ describe('MousePointers on HTML', () => {
       expect(presenceMouseComponent['userBeingFollowedId']).toEqual(
         'unit-test-participant2-ably-id',
       );
-    });
-  });
-
-  describe('handleMutationObserverChanges', () => {
-    let setElementsSpy: jest.SpyInstance;
-    let clearElementSpy: jest.SpyInstance;
-    let renderWrapperSpy: jest.SpyInstance;
-
-    beforeEach(() => {
-      setElementsSpy = jest.spyOn(
-        presenceMouseComponent['elementsWithDataAttribute'] as any,
-        'set',
-      );
-      clearElementSpy = jest.spyOn(presenceMouseComponent as any, 'clearElement');
-      renderWrapperSpy = jest.spyOn(presenceMouseComponent as any, 'renderWrapper');
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    test('should set elements and update pins when a new element with the specified attribute appears', () => {
-      const change = {
-        target: document.body.querySelector('[data-superviz-id="1"]') as HTMLElement,
-        oldValue: null,
-      } as unknown as MutationRecord;
-
-      presenceMouseComponent['handleMutationObserverChanges']([change]);
-
-      expect(setElementsSpy).toHaveBeenCalled();
-      expect(renderWrapperSpy).toHaveBeenCalled();
-      expect(clearElementSpy).not.toHaveBeenCalled();
-    });
-
-    test('should clear elements and remove the wrappers if the attribute is removed from the element', () => {
-      const change = {
-        target: document.createElement('div') as HTMLElement,
-        oldValue: '1',
-      } as unknown as MutationRecord;
-
-      presenceMouseComponent['handleMutationObserverChanges']([change]);
-
-      expect(clearElementSpy).toHaveBeenCalled();
-      expect(renderWrapperSpy).not.toHaveBeenCalled();
-      expect(setElementsSpy).not.toHaveBeenCalled();
-    });
-
-    test('should clear element if the attribute changes, but still exists', () => {
-      const change = {
-        target: document.body.querySelector('[data-superviz-id="1"]') as HTMLElement,
-        oldValue: '2',
-      } as unknown as MutationRecord;
-
-      presenceMouseComponent['handleMutationObserverChanges']([change]);
-
-      expect(clearElementSpy).toHaveBeenCalled();
-      expect(renderWrapperSpy).toHaveBeenCalled();
-      expect(setElementsSpy).toHaveBeenCalled();
-    });
-
-    test('should do nothing if there is not new nor old value to the attribute', () => {
-      const target = document.createElement('div') as HTMLElement;
-      target.setAttribute('data-superviz-id', '');
-      const change = {
-        target,
-        oldValue: null,
-      } as unknown as MutationRecord;
-
-      presenceMouseComponent['handleMutationObserverChanges']([change]);
-
-      expect(clearElementSpy).not.toHaveBeenCalled();
-      expect(renderWrapperSpy).not.toHaveBeenCalled();
-      expect(setElementsSpy).not.toHaveBeenCalled();
-    });
-
-    test('should do nothing if the new value is the same as the old attribute value', () => {
-      const change = {
-        target: document.body.querySelector('[data-superviz-id="1"]') as HTMLElement,
-        oldValue: '1',
-      } as unknown as MutationRecord;
-
-      presenceMouseComponent['handleMutationObserverChanges']([change]);
-
-      expect(clearElementSpy).not.toHaveBeenCalled();
-      expect(renderWrapperSpy).not.toHaveBeenCalled();
-      expect(setElementsSpy).not.toHaveBeenCalled();
-    });
-
-    test('should clear element then do nothing if new value is filtered', () => {
-      document.body.innerHTML =
-        '<div id="container"><div data-superviz-id="1-matches";"><div><div data-superviz-id="does-not-match"></div></div>';
-      presenceMouseComponent = new PointersHTML('container', {
-        dataAttributeValueFilters: [/.*-matches$/],
-      });
-      const change = {
-        target: document.body.querySelector('[data-superviz-id="1-matches"]') as HTMLElement,
-        oldValue: '2',
-      } as unknown as MutationRecord;
-
-      setElementsSpy = jest.spyOn(
-        presenceMouseComponent['elementsWithDataAttribute'] as any,
-        'set',
-      );
-      renderWrapperSpy = jest.spyOn(presenceMouseComponent as any, 'renderWrapper');
-      clearElementSpy = jest.spyOn(presenceMouseComponent as any, 'clearElement');
-
-      presenceMouseComponent['handleMutationObserverChanges']([change]);
-
-      expect(clearElementSpy).toHaveBeenCalled();
-      expect(renderWrapperSpy).not.toHaveBeenCalled();
-      expect(setElementsSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -836,27 +624,25 @@ describe('MousePointers on HTML', () => {
 
   describe('setPositionNotStatic', () => {
     test('should set position relative if position is static', () => {
-      const element = document.createElement('div');
-      element.style.position = 'static';
+      presenceMouseComponent['container'].style.position = 'static';
 
-      presenceMouseComponent['setPositionNotStatic'](element);
+      presenceMouseComponent['setPositionNotStatic']();
 
-      expect(element.style.position).toEqual('relative');
+      expect(presenceMouseComponent['container'].style.position).toEqual('relative');
     });
 
     test('should not set position relative if position is not static', () => {
-      const element = document.createElement('div');
-      element.style.position = 'relative';
+      presenceMouseComponent['container'].style.position = 'relative';
 
-      presenceMouseComponent['setPositionNotStatic'](element);
+      presenceMouseComponent['setPositionNotStatic']();
 
-      expect(element.style.position).toEqual('relative');
+      expect(presenceMouseComponent['container'].style.position).toEqual('relative');
     });
   });
 
   describe('createMouseElement', () => {
     beforeEach(() => {
-      participants['unit-test-participant2-ably-id'].elementId = '1';
+      presenceMouseComponent['start']();
     });
 
     test('should create a mouse element and append it to the wrapper', () => {
@@ -867,13 +653,15 @@ describe('MousePointers on HTML', () => {
       expect(mouse).toBeTruthy();
       expect(mouse.getAttribute('id')).toEqual('mouse-unit-test-participant2-ably-id');
       expect(mouse.getAttribute('class')).toEqual('mouse-follower');
-      expect(mouse.getAttribute('data-element-id')).toEqual('1');
       expect(mouse.querySelector('.pointer-mouse')).toBeTruthy();
       expect(mouse.querySelector('.mouse-user-name')).toBeTruthy();
       expect(presenceMouseComponent['mouses'].get('unit-test-participant2-ably-id')).toEqual(mouse);
     });
 
     test('should not create a mouse element if wrapper is not found', () => {
+      // @ts-ignore
+      presenceMouseComponent['wrapper'] = undefined;
+
       const mouse = presenceMouseComponent['createMouseElement'](
         participants['unit-test-participant3-ably-id'],
       );
@@ -907,11 +695,15 @@ describe('MousePointers on HTML', () => {
   });
 
   describe('updateSVGPosition', () => {
-    test('should update the wrapper position', () => {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    beforeEach(() => {
+      presenceMouseComponent['start']();
+    });
 
-      rect.getBoundingClientRect = () =>
+    test('should update the wrapper position', () => {
+      document.body.innerHTML = `<div><svg id="svg"></svg></div>`;
+      presenceMouseComponent = createMousePointers('svg');
+
+      presenceMouseComponent['container'].getBoundingClientRect = () =>
         ({
           left: 100,
           top: 100,
@@ -919,13 +711,10 @@ describe('MousePointers on HTML', () => {
           height: 100,
         } as unknown as DOMRect);
 
-      svg.appendChild(rect);
-      document.body.appendChild(svg);
+      presenceMouseComponent['start']();
+      presenceMouseComponent['updateSVGElementWrapper']();
 
-      const wrapper = document.createElement('div');
-      document.body.appendChild(wrapper);
-
-      presenceMouseComponent['updateSVGPosition'](rect, wrapper);
+      const wrapper = presenceMouseComponent['wrapper'] as HTMLElement;
 
       expect(wrapper.style.width).toEqual('100px');
       expect(wrapper.style.height).toEqual('100px');
@@ -946,14 +735,15 @@ describe('MousePointers on HTML', () => {
         </div>
         `;
 
-      const mouse = createMousePointers();
+      presenceMouseComponent = createMousePointers('rect');
       const svg1 = document.getElementById('svg1');
       const svg2 = document.getElementById('svg2');
 
       const spyOne = jest.spyOn(svg1!.parentElement as any, 'appendChild');
       const spyTwo = jest.spyOn(svg2!.parentElement as any, 'appendChild');
 
-      mouse['createRectWrapper'](document.getElementById('rect') as Element, '1');
+      presenceMouseComponent['start']();
+      presenceMouseComponent['createRectWrapper']();
 
       expect(spyOne).toHaveBeenCalled();
       expect(spyTwo).not.toHaveBeenCalled();
@@ -972,14 +762,15 @@ describe('MousePointers on HTML', () => {
         </div>
         `;
 
-      const mouse = createMousePointers();
+      presenceMouseComponent = createMousePointers('ellipse');
       const svg1 = document.getElementById('svg1');
       const svg2 = document.getElementById('svg2');
 
       const spyOne = jest.spyOn(svg1!.parentElement as any, 'appendChild');
       const spyTwo = jest.spyOn(svg2!.parentElement as any, 'appendChild');
 
-      mouse['createEllipseWrapper'](document.getElementById('ellipse') as Element, '1');
+      presenceMouseComponent['start']();
+      presenceMouseComponent['createEllipseWrapper']();
 
       expect(spyOne).toHaveBeenCalled();
       expect(spyTwo).not.toHaveBeenCalled();
@@ -989,39 +780,41 @@ describe('MousePointers on HTML', () => {
   describe('animate', () => {
     test('should call requestAnimationFrame', () => {
       const requestAnimationFrameSpy = jest.spyOn(window, 'requestAnimationFrame');
+
+      presenceMouseComponent['start']();
       presenceMouseComponent['animate']();
 
       expect(requestAnimationFrameSpy).toHaveBeenCalledWith(expect.any(Function));
     });
 
     test('should call updateVoidElementWrapper', () => {
+      document.body.innerHTML = '<div><img id="void-element"></div>';
+      presenceMouseComponent = createMousePointers('void-element');
+
       const updateVoidElementWrapperSpy = jest.spyOn(
         presenceMouseComponent as any,
         'updateVoidElementWrapper',
       );
+
+      presenceMouseComponent['start']();
       presenceMouseComponent['animate']();
 
       expect(updateVoidElementWrapperSpy).toHaveBeenCalled();
     });
 
     test('should call updateSVGElementWrapper', () => {
+      document.body.innerHTML = '<div><svg id="void-element"></svg></div>';
+      presenceMouseComponent = createMousePointers('void-element');
+
       const updateSVGElementWrapperSpy = jest.spyOn(
         presenceMouseComponent as any,
         'updateSVGElementWrapper',
       );
+
+      presenceMouseComponent['start']();
       presenceMouseComponent['animate']();
 
       expect(updateSVGElementWrapperSpy).toHaveBeenCalled();
-    });
-
-    test('should call updateParticipantsMouses', () => {
-      const updateParticipantsMousesSpy = jest.spyOn(
-        presenceMouseComponent as any,
-        'updateParticipantsMouses',
-      );
-      presenceMouseComponent['animate']();
-
-      expect(updateParticipantsMousesSpy).toHaveBeenCalled();
     });
   });
 
@@ -1044,27 +837,12 @@ describe('MousePointers on HTML', () => {
       );
     });
 
-    test('should call removePresenceMouseParticipant if mouse has no elementId', () => {
-      const removePresenceMouseParticipantSpy = jest.spyOn(
-        presenceMouseComponent as any,
-        'removePresenceMouseParticipant',
-      );
-
-      presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!.elementId = '';
-      presenceMouseComponent['updateParticipantsMouses']();
-
-      expect(removePresenceMouseParticipantSpy).toHaveBeenCalledWith(
-        'unit-test-participant2-ably-id',
-      );
-    });
-
     test('should call renderPresenceMouses', () => {
       const renderPresenceMousesSpy = jest.spyOn(
         presenceMouseComponent as any,
         'renderPresenceMouses',
       );
 
-      presenceMouseComponent['presences'].get('unit-test-participant2-ably-id')!.elementId = '1';
       presenceMouseComponent['updateParticipantsMouses']();
 
       expect(renderPresenceMousesSpy).toHaveBeenCalledWith(
@@ -1084,51 +862,37 @@ describe('MousePointers on HTML', () => {
 
   describe('updateVoidElementWrapper', () => {
     test('should update the wrapper position', () => {
-      presenceMouseComponent['elementsWithDataAttribute'].set('1', {
-        getBoundingClientRect() {
-          return {
-            width: 100,
-            height: 100,
-          };
-        },
-        offsetLeft: 100,
-        offsetTop: 100,
-      } as any);
+      presenceMouseComponent['container'].getBoundingClientRect = () =>
+        ({
+          width: 200,
+          height: 200,
+        } as any);
 
-      presenceMouseComponent['voidElementsWrappers'].set('1', {
-        getBoundingClientRect() {
-          return {
-            width: 200,
-            height: 200,
-          };
-        },
+      presenceMouseComponent['start']();
+
+      presenceMouseComponent['container'] = {
+        ...presenceMouseComponent['container'],
         offsetLeft: 200,
         offsetTop: 200,
-        style: {
-          // eslint-disable-next-line func-names
-          setProperty: jest.fn().mockImplementation(function (key, value) {
-            this[key] = value;
-          }),
-          width: '0',
-          height: '0',
-          top: '0',
-          left: '0',
-        },
-      } as any);
+      };
 
+      const setPropertySpy = jest.spyOn(
+        presenceMouseComponent['wrapper'].style as any,
+        'setProperty',
+      );
       presenceMouseComponent['updateVoidElementWrapper']();
 
-      const wrapper = presenceMouseComponent['voidElementsWrappers'].get('1') as HTMLElement;
+      const wrapper = presenceMouseComponent['wrapper'] as HTMLElement;
 
-      expect(wrapper.style.setProperty).toBeCalled();
-      expect(wrapper.style.width).toEqual('100px');
-      expect(wrapper.style.height).toEqual('100px');
-      expect(wrapper.style.top).toEqual('100px');
-      expect(wrapper.style.left).toEqual('100px');
+      expect(setPropertySpy).toBeCalled();
+      expect(wrapper.style.width).toEqual('200px');
+      expect(wrapper.style.height).toEqual('200px');
+      expect(wrapper.style.top).toEqual('200px');
+      expect(wrapper.style.left).toEqual('200px');
     });
 
     test('should not update the wrapper position if it is already updated', () => {
-      presenceMouseComponent['elementsWithDataAttribute'].set('1', {
+      presenceMouseComponent['container'] = {
         getBoundingClientRect() {
           return {
             width: 100,
@@ -1137,9 +901,9 @@ describe('MousePointers on HTML', () => {
         },
         offsetLeft: 100,
         offsetTop: 100,
-      } as any);
+      } as any;
 
-      presenceMouseComponent['voidElementsWrappers'].set('1', {
+      presenceMouseComponent['wrapper'] = {
         getBoundingClientRect() {
           return {
             width: 100,
@@ -1151,11 +915,11 @@ describe('MousePointers on HTML', () => {
         style: {
           setProperty: jest.fn(),
         },
-      } as any);
+      } as any;
 
       presenceMouseComponent['updateVoidElementWrapper']();
 
-      const wrapper = presenceMouseComponent['voidElementsWrappers'].get('1') as HTMLElement;
+      const wrapper = presenceMouseComponent['wrapper'] as HTMLElement;
 
       expect(wrapper.style.setProperty).not.toBeCalled();
     });
@@ -1163,7 +927,7 @@ describe('MousePointers on HTML', () => {
 
   describe('updateSVGElementWrapper', () => {
     test('should update the wrapper position', () => {
-      presenceMouseComponent['elementsWithDataAttribute'].set('1', {
+      presenceMouseComponent['container'] = {
         getBoundingClientRect() {
           return {
             width: 100,
@@ -1172,12 +936,9 @@ describe('MousePointers on HTML', () => {
             top: 100,
           };
         },
-        tagName: {
-          toLowerCase: () => 'rect',
-        },
-      } as any);
+      } as any;
 
-      presenceMouseComponent['svgElementsWrappers'].set('1', {
+      presenceMouseComponent['wrapper'] = {
         getBoundingClientRect() {
           return {
             width: 200,
@@ -1196,11 +957,11 @@ describe('MousePointers on HTML', () => {
           top: '0',
           left: '0',
         },
-      } as any);
+      } as any;
 
       presenceMouseComponent['updateSVGElementWrapper']();
 
-      const wrapper = presenceMouseComponent['svgElementsWrappers'].get('1') as HTMLElement;
+      const wrapper = presenceMouseComponent['wrapper'] as HTMLElement;
 
       expect(wrapper.style.setProperty).toBeCalled();
       expect(wrapper.style.width).toEqual('100px');
@@ -1210,7 +971,9 @@ describe('MousePointers on HTML', () => {
     });
 
     test('should not update the wrapper position if it is already updated', () => {
-      presenceMouseComponent['elementsWithDataAttribute'].set('1', {
+      presenceMouseComponent['start']();
+
+      presenceMouseComponent['container'] = {
         getBoundingClientRect() {
           return {
             width: 100,
@@ -1219,9 +982,9 @@ describe('MousePointers on HTML', () => {
             top: 100,
           };
         },
-      } as any);
+      } as any;
 
-      presenceMouseComponent['svgElementsWrappers'].set('1', {
+      presenceMouseComponent['wrapper'] = {
         getBoundingClientRect() {
           return {
             width: 100,
@@ -1233,19 +996,23 @@ describe('MousePointers on HTML', () => {
         style: {
           setProperty: jest.fn(),
         },
-      } as any);
+      } as any;
 
       presenceMouseComponent['updateSVGElementWrapper']();
 
-      const wrapper = presenceMouseComponent['svgElementsWrappers'].get('1') as HTMLElement;
+      const wrapper = presenceMouseComponent['wrapper'] as HTMLElement;
 
       expect(wrapper.style.setProperty).not.toBeCalled();
     });
 
     test('should call updateSVGPosition if element is an svg', () => {
+      document.body.innerHTML = '<svg id="svg"></svg>';
+      presenceMouseComponent = createMousePointers('svg');
+      presenceMouseComponent['start']();
       presenceMouseComponent['updateSVGPosition'] = jest.fn();
 
-      presenceMouseComponent['elementsWithDataAttribute'].set('1', {
+      presenceMouseComponent['container'] = {
+        ...presenceMouseComponent['container'],
         getBoundingClientRect() {
           return {
             width: 100,
@@ -1254,12 +1021,9 @@ describe('MousePointers on HTML', () => {
             top: 100,
           };
         },
-        tagName: {
-          toLowerCase: () => 'svg',
-        },
-      } as any);
+      } as any;
 
-      presenceMouseComponent['svgElementsWrappers'].set('1', {
+      presenceMouseComponent['wrapper'] = {
         getBoundingClientRect() {
           return {
             width: 200,
@@ -1271,14 +1035,12 @@ describe('MousePointers on HTML', () => {
         style: {
           setProperty: jest.fn(),
         },
-      } as any);
+      } as any;
 
       presenceMouseComponent['updateSVGElementWrapper']();
 
       expect(presenceMouseComponent['updateSVGPosition']).toHaveBeenCalled();
-      expect(
-        presenceMouseComponent['svgElementsWrappers'].get('1')?.style.setProperty,
-      ).not.toBeCalled();
+      expect(presenceMouseComponent['wrapper'].style.setProperty).not.toBeCalled();
     });
   });
 
@@ -1314,47 +1076,6 @@ describe('MousePointers on HTML', () => {
     });
   });
 
-  /**
-   * private renderPresenceMouses = (participant: ParticipantMouse): void => {
-    const userMouseIdExist = document.getElementById(`mouse-${participant.id}`);
-    let mouseFollower = userMouseIdExist;
- 
-    Iif (mouseFollower && mouseFollower.getAttribute('data-element-id') !== participant.elementId) {
-      mouseFollower.remove();
-      this.mouses.delete(participant.id);
-      mouseFollower = null;
-    }
- 
-    if (!mouseFollower) {
-      mouseFollower = this.createMouseElement(participant);
-    }
- 
-    const divMouseUser = document.getElementById(`mouse-${participant.id}`);
-    const divPointer = document.getElementById(`mouse-${participant.id}`);
- 
-    Iif (!divMouseUser || !divPointer) return;
- 
-    const mouseUser = divMouseUser.getElementsByClassName('mouse-user-name')[0] as HTMLDivElement;
-    const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
- 
-    if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/pointers/${participant.slotIndex}.svg)`;
-    }
- 
-    if (mouseUser) {
-      mouseUser.style.color = this.getTextColorValue(participant.slotIndex);
-      mouseUser.style.backgroundColor = participant.color;
-      mouseUser.innerHTML = participant.name;
-    }
- 
-    const { x, y } = participant;
-    const { width, height } = this.wrappers.get(participant.elementId).getBoundingClientRect();
- 
-    mouseFollower.style.left = `${x * width}px`;
-    mouseFollower.style.top = `${y * height}px`;
-  };
-   */
-
   describe('renderPresenceMouses', () => {
     let participant: ParticipantMouse;
     let mouseFollower: HTMLElement;
@@ -1364,10 +1085,7 @@ describe('MousePointers on HTML', () => {
     let pointerUser: HTMLDivElement;
 
     beforeEach(() => {
-      participant = {
-        ...MOCK_MOUSE,
-        elementId: '1',
-      };
+      participant = MOCK_MOUSE;
 
       mouseFollower = document.createElement('div');
       mouseFollower.setAttribute('id', `mouse-${participant.id}`);
@@ -1389,34 +1107,33 @@ describe('MousePointers on HTML', () => {
       pointerUser.setAttribute('class', 'pointer-mouse');
       divPointer.appendChild(pointerUser);
 
-      presenceMouseComponent['wrappers'].set('1', document.createElement('div'));
-    });
-
-    test('should remove the mouse element if it exists and has a different elementId', () => {
-      const removeSpy = jest.spyOn(mouseFollower, 'remove');
-
-      participant.elementId = '2';
-      presenceMouseComponent['renderPresenceMouses'](participant);
-
-      expect(removeSpy).toHaveBeenCalled();
+      presenceMouseComponent['start']();
     });
 
     test('should create the mouse element if it does not exist', () => {
       const createMouseElementSpy = jest.spyOn(presenceMouseComponent as any, 'createMouseElement');
 
-      presenceMouseComponent['renderPresenceMouses'](participant);
+      presenceMouseComponent['renderPresenceMouses'](
+        participants['unit-test-participant2-ably-id'],
+      );
 
-      expect(createMouseElementSpy).toHaveBeenCalledWith(participant);
+      expect(createMouseElementSpy).toHaveBeenCalledWith(
+        participants['unit-test-participant2-ably-id'],
+      );
     });
 
     test('should not create the mouse element if it already exists', () => {
       const createMouseElementSpy = jest.spyOn(presenceMouseComponent as any, 'createMouseElement');
 
-      mouseFollower.setAttribute('data-element-id', participant.elementId as string);
+      presenceMouseComponent['renderPresenceMouses'](
+        participants['unit-test-participant2-ably-id'],
+      );
 
-      presenceMouseComponent['renderPresenceMouses'](participant);
+      presenceMouseComponent['renderPresenceMouses'](
+        participants['unit-test-participant2-ably-id'],
+      );
 
-      expect(createMouseElementSpy).toHaveBeenCalledTimes(0);
+      expect(createMouseElementSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

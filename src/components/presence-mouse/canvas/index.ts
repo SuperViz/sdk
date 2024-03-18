@@ -2,7 +2,7 @@ import { RealtimeEvent } from '../../../common/types/events.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-import { ParticipantMouse, PresenceMouseProps } from '../types';
+import { ParticipantMouse, PresenceMouseProps, Transform } from '../types';
 
 export class PointersCanvas extends BaseComponent {
   public name: ComponentNames;
@@ -11,9 +11,10 @@ export class PointersCanvas extends BaseComponent {
   private divWrapper: HTMLElement;
   private presences: Map<string, ParticipantMouse>;
   private animateFrame: number;
-  private goToMouseCallback: PresenceMouseProps['onGoToPresence'];
+  private goToMouseCallback: PresenceMouseProps['callbacks']['onGoToPresence'];
   private following: string;
   private isPrivate: boolean;
+  private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -31,7 +32,7 @@ export class PointersCanvas extends BaseComponent {
     this.divWrapper = this.renderDivWrapper();
     this.animateFrame = requestAnimationFrame(this.animate);
 
-    this.goToMouseCallback = options?.onGoToPresence;
+    this.goToMouseCallback = options?.callbacks?.onGoToPresence;
   }
 
   private get textColorValues(): number[] {
@@ -161,10 +162,14 @@ export class PointersCanvas extends BaseComponent {
     const invertedMatrix = transform.inverse();
     const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
 
+    const coordinates = {
+      x: (transformedPoint.x - this.transformation.translate.x) / this.transformation.scale,
+      y: (transformedPoint.y - this.transformation.translate.y) / this.transformation.scale,
+    };
+
     this.realtime.updatePresenceMouse({
       ...this.localParticipant,
-      x: transformedPoint.x,
-      y: transformedPoint.y,
+      ...coordinates,
       visible: !this.isPrivate,
     });
   };
@@ -296,8 +301,10 @@ export class PointersCanvas extends BaseComponent {
     const currentTranslateX = transform?.e;
     const currentTranslateY = transform?.f;
 
-    const x = savedX + currentTranslateX;
-    const y = savedY + currentTranslateY;
+    const x =
+      this.transformation.translate.x + (savedX + currentTranslateX) * this.transformation.scale;
+    const y =
+      this.transformation.translate.y + (savedY + currentTranslateY) * this.transformation.scale;
 
     const isVisible =
       this.divWrapper.clientWidth > x && this.divWrapper.clientHeight > y && mouse.visible;
@@ -340,6 +347,10 @@ export class PointersCanvas extends BaseComponent {
 
     mouseFollower.appendChild(pointerMouse);
     mouseFollower.appendChild(mouseUserName);
+
+    mouseFollower.style.left = '0px';
+    mouseFollower.style.top = '0px';
+
     this.divWrapper.appendChild(mouseFollower);
 
     return mouseFollower;
@@ -348,4 +359,13 @@ export class PointersCanvas extends BaseComponent {
   private followMouse = (id: string) => {
     this.following = id;
   };
+
+  /**
+   * @function transform
+   * @description stores that information about which transformations should the pointers go through
+   * @param {Transform} transformation Which transformations to apply
+   */
+  public transform(transformation: Transform) {
+    this.transformation = transformation;
+  }
 }

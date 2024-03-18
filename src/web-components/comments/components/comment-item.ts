@@ -109,6 +109,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
   private closeEditMode = () => {
     this.mode = CommentMode.READONLY;
+    this.emitEvent('edit-comment', { editing: false });
   };
 
   private getAvatar() {
@@ -150,6 +151,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     const dropdownOptionsHandler = ({ detail }: CustomEvent) => {
       if (detail === CommentDropdownOptions.EDIT) {
         this.mode = CommentMode.EDITABLE;
+        this.emitEvent('edit-comment', { editing: true });
       }
 
       if (detail === CommentDropdownOptions.DELETE) {
@@ -164,11 +166,14 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     };
 
     const textareaHtml = () => {
-      if (this.mode !== CommentMode.EDITABLE) return;
+      const classes = {
+        'comments__comment-item--editable': true,
+        'hide-edit-input': this.mode !== CommentMode.EDITABLE,
+      };
 
       return html`
         <superviz-comments-comment-input
-          class="comments__comment-item--editable"
+          class="${classMap(classes)}"
           editable
           @click=${(event: Event) => event.stopPropagation()}
           text=${this.text}
@@ -182,13 +187,18 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     };
 
     const commentText = () => {
-      if (this.mode === CommentMode.EDITABLE) return;
+      const textClasses = {
+        editing: this.mode === CommentMode.EDITABLE,
+        'annotation-content': true,
+        text: true,
+        'text-big': true,
+        'sv-gray-700': true,
+        [this.getClasses('content')]: true,
+        'line-clamp': !this.expandElipsis && this.text.length > 120,
+      };
 
       return html`
-        <span
-          id="comment-text"
-          @click=${expandElipsis}
-          class="text text-big sv-gray-700 ${shouldUseElipsis} ${this.getClasses('content')}"
+        <span id="comment-text" @click=${expandElipsis} class="${classMap(textClasses)}"
           >${this.text}</span
         >
       `;
@@ -204,7 +214,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       reply: !this.primaryComment,
     };
 
-    const shouldUseElipsis = !this.expandElipsis && this.text.length > 120 ? 'line-clamp' : '';
+    const contentBodyClasses = {
+      'comments__comment-item__content__body': true,
+      'editing-annotation': this.mode === CommentMode.EDITABLE,
+    };
 
     return html`
       <div class=${classMap(commentItemClass)}>
@@ -225,7 +238,11 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
                 'resolve-icon',
               )} icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
             >
-              <superviz-icon name=${resolveIcon} size="sm"></superviz-icon>
+              <superviz-icon
+                name=${resolveIcon}
+                size="sm"
+                suffix=${resolveIcon === 'undo' ? 'md' : undefined}
+              ></superviz-icon>
             </button>
             <superviz-dropdown
               options=${JSON.stringify(options)}
@@ -250,9 +267,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         </div>
 
         <div class="comments__comment-item__content">
-          <div class="comments__comment-item__content__body">
-            ${textareaHtml()} ${commentText()}
-          </div>
+          <div class="${classMap(contentBodyClasses)}">${textareaHtml()} ${commentText()}</div>
         </div>
       </div>
       <superviz-comments-delete-comments-modal

@@ -30,6 +30,8 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   declare localName: string;
   declare keepPositionRatio: boolean;
   declare participantsList: ParticipantByGroupApi[];
+  declare firstLoad: boolean;
+  declare newPin: boolean;
 
   private originalPosition: Partial<PinCoordinates>;
   private annotationSides: Sides;
@@ -52,11 +54,16 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     localName: { type: String },
     keepPositionRatio: { type: Boolean },
     participantsList: { type: Object },
+    firstLoad: { type: Boolean },
+    newPin: { type: Boolean },
   };
 
   constructor() {
     super();
     this.position = { x: 0, y: 0 };
+    setTimeout(() => {
+      this.firstLoad = false;
+    }, 800);
   }
 
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -75,7 +82,9 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   ): void {
     super.firstUpdated(_changedProperties);
     importStyle.call(this, ['comments']);
+
     if (!this.showInput) return;
+
     this.originalPosition = { ...this.position };
     this.pinAnnotation = this.shadowRoot?.querySelector('.comments__annotation-pin');
     this.annotationSides = this.pinAnnotation.getBoundingClientRect();
@@ -226,16 +235,20 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
   protected render() {
     const classes = {
       'comments__annotation-pin': true,
+      preload: this.firstLoad === undefined,
       'comments__annotation-pin--active': this.active,
+      'comments__cursor-pointer': this.type === PinMode.ADD && !this.showInput,
+      'comments__annotation-pin--add': this.type === PinMode.ADD && this.showInput,
+      [this.horizontalSide]: true,
     };
-    classes[this.horizontalSide] = true;
 
-    let style = '';
-    if (this.keepPositionRatio) {
-      style = `top: ${this.position.y}%; left: ${this.position.x}%;`;
-    } else {
-      style = `top: ${this.position.y}px; left: ${this.position.x}px;`;
-    }
+    const wrapperClasses = {
+      'comments__annotation-pin-wrapper': true,
+      'comments__annotation-pin-wrapper--new': this.newPin,
+    };
+
+    const unit = this.keepPositionRatio ? '%' : 'px';
+    const style = `top: ${this.position.y}${unit}; left: ${this.position.x}${unit};`;
 
     if (this.type === PinMode.ADD) {
       return html`
@@ -243,8 +256,8 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
       `;
     }
 
-    return html`
-      <div @click=${this.emitClick} class=${classMap(classes)} style=${style}>${this.avatar()}</div>
-    `;
+    return html`<div class=${classMap(wrapperClasses)} style=${style}>
+      <div @click=${this.emitClick} class=${classMap(classes)}>${this.avatar()}</div>
+    </div> `;
   }
 }
