@@ -13,7 +13,7 @@
     "postbuild": "./node_modules/typescript/bin/tsc --emitDeclarationOnly --declaration",
     "watch": "concurrently -n code,types \"yarn watch:code\" \"yarn watch:types\"",
     "watch:code": "node ./.esbuild/watch.js",
-    "watch:types": "./node_modules/typescript/bin/tsc --watch --outDir dist",
+    "watch:types": "./node_modules/typescript/bin/tsc --watch --out ./dist/index.d.ts",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "test:unit:coverage": "jest --coverage",
