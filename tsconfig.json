@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "rootDirs": ["./src", "."],
     "target": "ES2020",
     "module": "ES2020",
-    "outFile": "./lib/index.d.ts",
+    "outDir": "./lib",
     "lib": ["ES2020", "DOM"],
     "preserveWatchOutput": true,
     "emitDeclarationOnly": true,
@@ -14,7 +15,7 @@
     "allowJs": true,
   },
   "include": [
-    "./src/**/*.ts"
+    "./src"
   ],
   "exclude": [
     "./src/**/*.test.ts",
