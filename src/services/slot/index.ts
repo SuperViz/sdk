@@ -80,19 +80,6 @@ export class SlotService {
         this.room.presence.update({
           slot: slotData,
         });
-
-        // @NOTE - this is a temporary fix for the issue where the slot is not being updated in the presence
-        // @TODO - remove this once we remove the colors from the old io
-        // if (!this.realtime.isJoinedRoom) {
-        //   await new Promise((resolve) => {
-        //     setTimeout(resolve, 1500);
-        //   });
-        // }
-
-        // this.realtime.updateMyProperties({
-        //   slotIndex: slot,
-        //   slot: slotData,
-        // });
       })
       .catch((error) => {
         this.room.presence.update({
