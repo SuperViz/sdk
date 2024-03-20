@@ -75,4 +75,5 @@ html, body {
   position: absolute;
   display: block;
   z-index: 2;
+  transition: all 150ms linear, opacity 100s ease-in;
 }
