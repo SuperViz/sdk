@@ -146,10 +146,6 @@ export class VideoConference extends BaseComponent {
   protected start(): void {
     this.logger.log('video conference @ start');
 
-    if (this.params.userType !== ParticipantType.GUEST) {
-      this.localParticipant.type = this.params.userType as ParticipantType;
-    }
-
     this.suscribeToRealtimeEvents();
     this.startVideo();
   }
@@ -414,6 +410,16 @@ export class VideoConference extends BaseComponent {
     this.logger.log('video conference @ on frame state change', state);
 
     if (state !== VideoFrameState.INITIALIZED) return;
+
+    if (this.params.userType !== ParticipantType.GUEST) {
+      this.localParticipant = Object.assign(this.localParticipant, {
+        type: this.params.userType,
+      });
+
+      this.realtime.updateMyProperties({
+        ...this.localParticipant,
+      });
+    }
 
     this.videoManager.start({
       group: this.group,
