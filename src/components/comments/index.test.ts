@@ -7,7 +7,10 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { CommentEvent } from '../../common/types/events.types';
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
+import { useStore } from '../../common/utils/use-store';
 import ApiService from '../../services/api';
+import { IOC } from '../../services/io';
+import { useGlobalStore } from '../../services/stores';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
 
@@ -68,14 +71,18 @@ describe('Comments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    const { localParticipant, group } = useGlobalStore();
+    localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+    group.value = MOCK_GROUP;
+
     commentsComponent = new Comments(DummiePinAdapter);
 
     commentsComponent.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     commentsComponent['element'].updateAnnotations = jest.fn();
@@ -325,11 +332,11 @@ describe('Comments', () => {
     const spy = jest.spyOn(commentsComponent['logger'], 'log');
 
     commentsComponent.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     await sleep(1);
@@ -344,11 +351,11 @@ describe('Comments', () => {
     (ApiService.fetchAnnotation as jest.Mock).mockReturnValueOnce([MOCK_ANNOTATION]);
 
     commentsComponent.attach({
+      ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
-      localParticipant: MOCK_LOCAL_PARTICIPANT,
-      group: MOCK_GROUP,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      useStore,
     });
 
     await sleep(1);

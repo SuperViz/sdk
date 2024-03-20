@@ -13,6 +13,7 @@ import {
   TranscriptState,
 } from '../../common/types/events.types';
 import { Participant, ParticipantType } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
@@ -40,6 +41,7 @@ export class VideoConference extends BaseComponent {
   protected logger: Logger;
   private participantToFrameList: ParticipandToFrame[] = [];
   private participantsOnMeeting: Partial<Participant>[] = [];
+  private localParticipant: Participant;
 
   private videoManager: VideoConfereceManager;
   private connectionService: ConnectionService;
@@ -59,6 +61,10 @@ export class VideoConference extends BaseComponent {
     };
 
     this.name = ComponentNames.VIDEO_CONFERENCE;
+    const { localParticipant, group } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe();
+    group.subscribe();
+
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.VIDEO_CONFERENCE}`);
 
     this.browserService = new BrowserService();
@@ -139,10 +145,6 @@ export class VideoConference extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('video conference @ start');
-
-    if (this.params.userType !== ParticipantType.GUEST) {
-      this.localParticipant.type = this.params.userType as ParticipantType;
-    }
 
     this.suscribeToRealtimeEvents();
     this.startVideo();
@@ -408,6 +410,16 @@ export class VideoConference extends BaseComponent {
     this.logger.log('video conference @ on frame state change', state);
 
     if (state !== VideoFrameState.INITIALIZED) return;
+
+    if (this.params.userType !== ParticipantType.GUEST) {
+      this.localParticipant = Object.assign(this.localParticipant, {
+        type: this.params.userType,
+      });
+
+      this.realtime.updateMyProperties({
+        ...this.localParticipant,
+      });
+    }
 
     this.videoManager.start({
       group: this.group,

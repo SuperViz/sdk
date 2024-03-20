@@ -2,7 +2,8 @@ import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { Participant, ParticipantByGroupApi } from '../../../common/types/participant.types';
+import { StoreType } from '../../../common/types/stores.types';
 import { Annotation, PinCoordinates } from '../../../components/comments/types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
@@ -149,6 +150,12 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     super.connectedCallback();
 
     if (this.type !== PinMode.ADD) return;
+
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe((participant: Participant) => {
+      this.localAvatar = participant?.avatar?.imageUrl;
+      this.localName = participant?.name;
+    });
 
     window.document.body.addEventListener(
       'close-temporary-annotation',
