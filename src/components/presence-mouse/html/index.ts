@@ -148,7 +148,7 @@ export class PointersHTML extends BaseComponent {
    */
   private addListeners(): void {
     this.pointerMoveObserver = fromEvent(this.container, 'pointermove')
-      .pipe(throttleTime(200))
+      .pipe(throttleTime(30))
       .subscribe(this.onMyParticipantMouseMove);
     this.container.addEventListener('pointerleave', this.onMyParticipantMouseLeave);
   }
