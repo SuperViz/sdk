@@ -104,9 +104,9 @@ export class Realtime extends BaseComponent {
    * @description get realtime client data history
    * @returns {RealtimeMessage | Record<string, RealtimeMessage>}
    */
-  public async fetchHistory(
+  public fetchHistory = async (
     eventName?: string,
-  ): Promise<RealtimeMessage[] | Record<string, RealtimeMessage[]> | null> {
+  ): Promise<RealtimeMessage[] | Record<string, RealtimeMessage[]> | null> => {
     const history: RealtimeMessage[] | Record<string, RealtimeMessage[]> = await new Promise(
       (resolve, reject) => {
         const next = (data: Socket.RoomHistory) => {
@@ -149,7 +149,7 @@ export class Realtime extends BaseComponent {
     );
 
     return history;
-  }
+  };
 
   /**
    * @function changeState
