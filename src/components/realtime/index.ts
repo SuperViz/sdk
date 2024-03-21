@@ -64,7 +64,7 @@ export class Realtime extends BaseComponent {
     }
 
     this.room.emit('message', { name: event, payload: data });
-  }, 200);
+  }, 30);
 
   /**
    * @function subscribe

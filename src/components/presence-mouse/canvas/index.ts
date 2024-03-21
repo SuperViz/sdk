@@ -222,7 +222,7 @@ export class PointersCanvas extends BaseComponent {
       ...coordinates,
       visible: !this.isPrivate,
     });
-  }, 100);
+  }, 30);
 
   private onMyParticipantMouseOut = (event: MouseEvent): void => {
     const { x, y, width, height } = this.canvas.getBoundingClientRect();
