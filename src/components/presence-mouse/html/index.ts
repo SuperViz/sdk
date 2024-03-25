@@ -148,9 +148,9 @@ export class PointersHTML extends BaseComponent {
    */
   private addListeners(): void {
     this.pointerMoveObserver = fromEvent(this.container, 'pointermove')
-      .pipe(throttleTime(10))
+      .pipe(throttleTime(30))
       .subscribe(this.onMyParticipantMouseMove);
-    this.container.addEventListener('mouseleave', this.onMyParticipantMouseLeave);
+    this.container.addEventListener('pointerleave', this.onMyParticipantMouseLeave);
   }
 
   /**
@@ -160,7 +160,7 @@ export class PointersHTML extends BaseComponent {
    */
   private removeListeners(): void {
     this.pointerMoveObserver?.unsubscribe();
-    this.container.removeEventListener('mouseleave', this.onMyParticipantMouseLeave);
+    this.container.removeEventListener('pointerleave', this.onMyParticipantMouseLeave);
   }
 
   // ---------- CALLBACKS ----------

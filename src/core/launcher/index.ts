@@ -355,7 +355,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onParticipantJoinedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
     if (presence.id === this.participant.value.id) {
       // Assign a slot to the participant
-      SlotService.register(this.LauncherRealtimeRoom, this.realtime, this.participant.value);
+      SlotService.register(this.LauncherRealtimeRoom, this.participant.value);
       this.LauncherRealtimeRoom.presence.update<Participant>(this.participant.value);
     }
 
@@ -420,6 +420,13 @@ export class Launcher extends Observable implements DefaultLauncher {
       this.publish(ParticipantEvent.LOCAL_UPDATED, presence.data);
 
       this.logger.log('Publishing ParticipantEvent.UPDATED', presence.data);
+
+      if (
+        presence.data?.slot?.index !== undefined &&
+        presence.data?.slot?.index !== this.realtime.participant.data.slotIndex
+      ) {
+        this.realtime.updateMyProperties({ slotIndex: presence.data.slot.index });
+      }
     }
 
     this.participants.value.set(presence.id, presence.data);

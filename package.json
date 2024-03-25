@@ -3,6 +3,7 @@
   "version": "0.0.0-development",
   "description": "SuperViz SDK",
   "main": "./lib/index.js",
+  "module": "./lib/index.esm.js",
   "types": "./lib/index.d.ts",
   "files": [
     "lib"
@@ -10,10 +11,10 @@
   "scripts": {
     "prepare": "husky install",
     "build": "node ./.esbuild/build.js",
-    "postbuild": "./node_modules/typescript/bin/tsc --emitDeclarationOnly --declaration",
+    "postbuild": "./node_modules/typescript/bin/tsc",
     "watch": "concurrently -n code,types \"yarn watch:code\" \"yarn watch:types\"",
     "watch:code": "node ./.esbuild/watch.js",
-    "watch:types": "./node_modules/typescript/bin/tsc --watch --outDir dist",
+    "watch:types": "./node_modules/typescript/bin/tsc --watch --outDir ./dist",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
     "test:unit:coverage": "jest --coverage",
@@ -77,7 +78,7 @@
     "yargs": "^17.7.2"
   },
   "dependencies": {
-    "@superviz/socket-client": "^1.2.1",
+    "@superviz/socket-client": "1.2.2",
     "ably": "^1.2.45",
     "bowser": "^2.11.0",
     "bowser-jr": "^1.0.6",
