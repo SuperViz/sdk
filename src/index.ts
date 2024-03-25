@@ -20,7 +20,7 @@ import {
   CanvasPin,
   HTMLPin,
   WhoIsOnline,
-  PresenceInput,
+  FormElements,
 } from './components';
 import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import init from './core';
@@ -69,7 +69,7 @@ if (window) {
     CanvasPin,
     HTMLPin,
     WhoIsOnline,
-    PresenceInput,
+    FormElements,
     ParticipantType,
     LayoutPosition,
     CamerasPosition,
@@ -98,7 +98,7 @@ export {
   CommentEvent,
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
-  PresenceInput,
+  FormElements,
   Comments,
   CanvasPin,
   HTMLPin,

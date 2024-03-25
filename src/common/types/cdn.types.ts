@@ -6,7 +6,7 @@ import {
   Realtime,
   VideoConference,
   WhoIsOnline,
-  PresenceInput,
+  FormElements,
 } from '../../components';
 import { RealtimeComponentEvent, RealtimeComponentState } from '../../components/realtime/types';
 import { LauncherFacade } from '../../core/launcher/types';
@@ -56,7 +56,7 @@ export interface SuperVizCdn {
   CanvasPin: typeof CanvasPin;
   HTMLPin: typeof HTMLPin;
   WhoIsOnline: typeof WhoIsOnline;
-  PresenceInput: typeof PresenceInput;
+  FormElements: typeof FormElements;
   RealtimeComponentState: typeof RealtimeComponentState;
   RealtimeComponentEvent: typeof RealtimeComponentEvent;
 }
