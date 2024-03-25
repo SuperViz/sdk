@@ -12,23 +12,25 @@ export enum IOFieldEvents {
   FOCUS = 'field.focus',
 }
 
-// https://w3c.github.io/input-events/#interface-InputEvent-Attributes
-export enum InputEvent {
-  INSERT_TEXT = 'insertText',
-  DELETE_CONTENT_BACKWARD = 'deleteContentBackward',
-  DELETE_CONTENT_FORWARD = 'deleteContentForward',
+export interface InputPayload {
+  content: string | null;
+  fieldId: string;
 }
 
-export interface Payload {
-  content?: string | null;
+export interface FocusPayload {
   color: string;
+  fieldId: string;
 }
 
-export interface Focus {
+export type Focus = {
   firstInteraction: number;
   lastInteraction: number;
-  color: string;
   id: string;
-}
+  color: string;
+};
 
 export type RealtimeCallback<T> = (data: SocketEvent<T>) => void;
+
+export type BlurPayload = {
+  fieldId: string;
+};

@@ -6,7 +6,15 @@ import { Logger } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { Field, Focus, IOFieldEvents, Payload, FormElementsProps, RealtimeCallback } from './types';
+import {
+  Field,
+  Focus,
+  IOFieldEvents,
+  InputPayload,
+  FormElementsProps,
+  FocusPayload,
+  BlurPayload,
+} from './types';
 
 export class FormElements extends BaseComponent {
   public name: ComponentNames;
@@ -96,8 +104,6 @@ export class FormElements extends BaseComponent {
     Object.entries(this.fields).forEach(([fieldId]) => {
       this.registerField(fieldId);
     });
-
-    this.subscribeToRealtimeEvents();
   }
 
   /**
@@ -144,17 +150,18 @@ export class FormElements extends BaseComponent {
    */
   private addRealtimeListenersToField(fieldId: string) {
     if (!this.room) return;
-    this.room.on<Payload>(IOFieldEvents.INPUT + fieldId, this.updateFieldContent(fieldId));
-    this.room.on<Focus>(IOFieldEvents.INPUT + fieldId, this.updateFieldColor(fieldId));
-    this.room.on<Focus>(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor(fieldId));
-    this.room.on<Focus>(IOFieldEvents.BLUR + fieldId, this.removeFieldColor(fieldId));
+
+    this.room.on<InputPayload>(IOFieldEvents.INPUT + fieldId, this.updateFieldContent);
+    this.room.on<FocusPayload>(IOFieldEvents.INPUT + fieldId, this.updateFieldColor);
+    this.room.on<FocusPayload>(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.on<BlurPayload>(IOFieldEvents.BLUR + fieldId, this.removeFieldColor);
   }
 
   /**
    * @function removeListenersFromField
    * @description Removes listeners from a field
    * @param {Field} field The field that will have the listeners removed
-   * @param field
+   * @returns {void}
    */
   private removeListenersFromField(field: Field): void {
     field.removeEventListener('input', this.handleInput);
@@ -171,10 +178,10 @@ export class FormElements extends BaseComponent {
   private removeRealtimeListenersFromField(fieldId: string) {
     if (!this.room) return;
 
-    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldContent(fieldId));
-    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldColor(fieldId));
-    this.room.off(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor(fieldId));
-    this.room.off(IOFieldEvents.BLUR + fieldId, this.removeFieldColor(fieldId));
+    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldContent);
+    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldColor);
+    this.room.off(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.off(IOFieldEvents.BLUR + fieldId, this.removeFieldColor);
   }
 
   // ------- register & deregister -------
@@ -236,11 +243,12 @@ export class FormElements extends BaseComponent {
    * @param {Event} event The event that triggered the function
    * @returns {void}
    */
-  private handleInput = (event: any) => {
+  private handleInput = (event: InputEvent) => {
     const target = event.target as HTMLInputElement;
-    const payload: Payload = {
+    const payload: InputPayload & FocusPayload = {
       content: target.value,
       color: this.localParticipant.slot.color,
+      fieldId: target.id,
     };
 
     this.room?.emit(IOFieldEvents.INPUT + target.id, payload);
@@ -252,10 +260,11 @@ export class FormElements extends BaseComponent {
    * @param {Event} event The event that triggered the function
    * @returns {void}
    */
-  private handleFocus = (event: Event): void => {
+  private handleFocus = (event: InputEvent): void => {
     const target = event.target as HTMLInputElement;
-    const payload: Payload = {
+    const payload: FocusPayload = {
       color: this.localParticipant.slot.color,
+      fieldId: target.id,
     };
 
     this.room?.emit(IOFieldEvents.FOCUS + target.id, payload);
@@ -267,9 +276,13 @@ export class FormElements extends BaseComponent {
    * @param {Event} event The event that triggered the function
    * @returns {void}
    */
-  private handleBlur = (event: Event) => {
+  private handleBlur = (event: InputEvent) => {
     const target = event.target as HTMLInputElement;
-    this.room?.emit(IOFieldEvents.BLUR + target.id, {});
+    const payload: BlurPayload = {
+      fieldId: target.id,
+    };
+
+    this.room?.emit(IOFieldEvents.BLUR + target.id, payload);
   };
 
   // ------- validations -------
@@ -333,56 +346,34 @@ export class FormElements extends BaseComponent {
   /**
    * @function removeFieldColor
    * @description Resets the outline of a field to its original value
-   * @param {string} fieldId The id of the field that will have its outline reseted
-   * @returns {RealtimeCallback<Focus>} A function that will be called when the event is triggered
+   * @param {SocketEvent<BlurPayload>} event The payload from the event
+   * @returns {void} A function that will be called when the event is triggered
    */
-  private removeFieldColor = (fieldId: string): RealtimeCallback<Focus> => {
-    return ({ presence }: SocketEvent<Focus>) => {
-      if (this.focusList[fieldId]?.id !== presence.id || !this.fields[fieldId]) return;
+  private removeFieldColor = ({ presence, data: { fieldId } }: SocketEvent<BlurPayload>) => {
+    if (this.focusList[fieldId]?.id !== presence.id || !this.fields[fieldId]) return;
 
-      this.fields[fieldId].style.outline = this.fieldsOriginalOutline[fieldId];
-      delete this.fieldsOriginalOutline[fieldId];
-      delete this.focusList[fieldId];
-    };
+    this.fields[fieldId].style.outline = this.fieldsOriginalOutline[fieldId] ?? '';
+    delete this.fieldsOriginalOutline[fieldId];
+    delete this.focusList[fieldId];
   };
 
   /**
    * @function updateFieldColor
    * @description Changes the outline of a field to the color of the participant that is interacting with it, following the rules defined in the function
-   * @param {string} fieldId The id of the field that will have its outline changed
-   * @returns {RealtimeCallback<Focus>} A function that will be called when the event is triggered
+   * @param {SocketEvent<FocusPayload>} event The payload from the event
+   * @returns {void} A function that will be called when the event is triggered
    */
-  private updateFieldColor = (fieldId: string): RealtimeCallback<Focus> => {
-    return ({ presence, data: { color }, timestamp }: SocketEvent<Focus>) => {
-      const participantInFocus = this.focusList[fieldId] ?? ({} as Focus);
+  private updateFieldColor = ({
+    presence,
+    data: { color, fieldId },
+    timestamp,
+  }: SocketEvent<FocusPayload>) => {
+    const participantInFocus = this.focusList[fieldId] ?? ({} as Focus);
 
-      const thereIsNoFocus = !participantInFocus.id;
-      const localParticipantEmittedEvent = presence.id === this.localParticipant.id;
+    const thereIsNoFocus = !participantInFocus.id;
+    const localParticipantEmittedEvent = presence.id === this.localParticipant.id;
 
-      if (thereIsNoFocus && localParticipantEmittedEvent) {
-        this.focusList[fieldId] = {
-          id: presence.id,
-          color,
-          firstInteraction: timestamp,
-          lastInteraction: timestamp,
-        };
-
-        return;
-      }
-
-      const alreadyHasFocus = participantInFocus.id === presence.id;
-
-      if (alreadyHasFocus) {
-        this.focusList[fieldId].lastInteraction = timestamp;
-        return;
-      }
-
-      const stoppedInteracting = timestamp - participantInFocus.lastInteraction >= 3000; // ms;
-      const gainedFocusLongAgo = timestamp - participantInFocus.firstInteraction >= 10000; // ms;
-      const changeInputBorderColor = stoppedInteracting || gainedFocusLongAgo || thereIsNoFocus;
-
-      if (!changeInputBorderColor) return;
-
+    if (thereIsNoFocus && localParticipantEmittedEvent) {
       this.focusList[fieldId] = {
         id: presence.id,
         color,
@@ -390,11 +381,33 @@ export class FormElements extends BaseComponent {
         lastInteraction: timestamp,
       };
 
-      const outline = localParticipantEmittedEvent
-        ? this.fieldsOriginalOutline[fieldId]
-        : `1px solid ${color}`;
-      this.fields[fieldId].style.outline = outline;
+      return;
+    }
+
+    const alreadyHasFocus = participantInFocus.id === presence.id;
+
+    if (alreadyHasFocus) {
+      this.focusList[fieldId].lastInteraction = timestamp;
+      return;
+    }
+
+    const stoppedInteracting = timestamp - participantInFocus.lastInteraction >= 3000; // ms;
+    const gainedFocusLongAgo = timestamp - participantInFocus.firstInteraction >= 10000; // ms;
+    const changeInputBorderColor = stoppedInteracting || gainedFocusLongAgo || thereIsNoFocus;
+
+    if (!changeInputBorderColor) return;
+
+    this.focusList[fieldId] = {
+      id: presence.id,
+      color,
+      firstInteraction: timestamp,
+      lastInteraction: timestamp,
     };
+
+    const outline = localParticipantEmittedEvent
+      ? this.fieldsOriginalOutline[fieldId]
+      : `1px solid ${color}`;
+    this.fields[fieldId].style.outline = outline;
   };
 
   /**
@@ -403,11 +416,12 @@ export class FormElements extends BaseComponent {
    * @param {string} fieldId The id of the field that will have its content updated
    * @returns {RealtimeCallback<Payload>} A function that will be called when the event is triggered
    */
-  private updateFieldContent = (fieldId: string): RealtimeCallback<Payload> => {
-    return ({ presence, data: { content } }: SocketEvent<Payload>) => {
-      if (presence.id === this.localParticipant.id) return;
-      this.fields[fieldId].value = content;
-    };
+  private updateFieldContent = ({
+    presence,
+    data: { content, fieldId },
+  }: SocketEvent<InputPayload>) => {
+    if (presence.id === this.localParticipant.id) return;
+    this.fields[fieldId].value = content;
   };
 
   // ------- utils -------

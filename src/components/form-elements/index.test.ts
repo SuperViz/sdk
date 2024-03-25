@@ -97,12 +97,6 @@ describe('form elements', () => {
       instance['start']();
       expect(spy).toHaveBeenCalledTimes(2);
     });
-
-    test('should call subscribeToRealtimeEvents', () => {
-      const spy = jest.spyOn(instance, 'subscribeToRealtimeEvents');
-      instance['start']();
-      expect(spy).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe('destroy', () => {
@@ -152,21 +146,29 @@ describe('form elements', () => {
         on: jest.fn(),
       } as any;
 
-      const updateContentSpy = jest.fn();
-      const updateColorSpy = jest.fn();
-      const removeColorSpy = jest.fn();
-
-      instance['updateFieldContent'] = jest.fn().mockReturnValue(updateContentSpy);
-      instance['updateFieldColor'] = jest.fn().mockReturnValue(updateColorSpy);
-      instance['removeFieldColor'] = jest.fn().mockReturnValue(removeColorSpy);
+      instance['updateFieldContent'] = jest.fn();
+      instance['updateFieldColor'] = jest.fn();
+      instance['removeFieldColor'] = jest.fn();
 
       instance['addRealtimeListenersToField']('field-1');
 
       expect(instance['room'].on).toHaveBeenCalledTimes(4);
-      expect(instance['room'].on).toHaveBeenCalledWith('field.inputfield-1', updateContentSpy);
-      expect(instance['room'].on).toHaveBeenCalledWith('field.inputfield-1', updateColorSpy);
-      expect(instance['room'].on).toHaveBeenCalledWith('field.focusfield-1', updateColorSpy);
-      expect(instance['room'].on).toHaveBeenCalledWith('field.blurfield-1', removeColorSpy);
+      expect(instance['room'].on).toHaveBeenCalledWith(
+        'field.inputfield-1',
+        instance['updateFieldContent'],
+      );
+      expect(instance['room'].on).toHaveBeenCalledWith(
+        'field.inputfield-1',
+        instance['updateFieldColor'],
+      );
+      expect(instance['room'].on).toHaveBeenCalledWith(
+        'field.focusfield-1',
+        instance['updateFieldColor'],
+      );
+      expect(instance['room'].on).toHaveBeenCalledWith(
+        'field.blurfield-1',
+        instance['removeFieldColor'],
+      );
     });
 
     test('should not add realtime listeners if room is not defined', () => {
@@ -201,24 +203,32 @@ describe('form elements', () => {
         off: jest.fn(),
       } as any;
 
-      const updateContentSpy = jest.fn();
-      const updateColorSpy = jest.fn();
-      const removeColorSpy = jest.fn();
-
-      instance['updateFieldContent'] = jest.fn().mockReturnValue(updateContentSpy);
-      instance['updateFieldColor'] = jest.fn().mockReturnValue(updateColorSpy);
-      instance['removeFieldColor'] = jest.fn().mockReturnValue(removeColorSpy);
+      instance['updateFieldContent'] = jest.fn();
+      instance['updateFieldColor'] = jest.fn();
+      instance['removeFieldColor'] = jest.fn();
 
       instance['removeRealtimeListenersFromField']('field-1');
       expect(instance['room'].off).toHaveBeenCalledTimes(4);
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         1,
         'field.inputfield-1',
-        updateContentSpy,
+        instance['updateFieldContent'],
       );
-      expect(instance['room'].off).toHaveBeenNthCalledWith(2, 'field.inputfield-1', updateColorSpy);
-      expect(instance['room'].off).toHaveBeenNthCalledWith(3, 'field.focusfield-1', updateColorSpy);
-      expect(instance['room'].off).toHaveBeenNthCalledWith(4, 'field.blurfield-1', removeColorSpy);
+      expect(instance['room'].off).toHaveBeenNthCalledWith(
+        2,
+        'field.inputfield-1',
+        instance['updateFieldColor'],
+      );
+      expect(instance['room'].off).toHaveBeenNthCalledWith(
+        3,
+        'field.focusfield-1',
+        instance['updateFieldColor'],
+      );
+      expect(instance['room'].off).toHaveBeenNthCalledWith(
+        4,
+        'field.blurfield-1',
+        instance['removeFieldColor'],
+      );
     });
 
     test('should not remove realtime listeners if room is not defined', () => {
@@ -292,16 +302,6 @@ describe('form elements', () => {
     });
   });
 
-  /**  private handleInput = (event: any) => {
-    const target = event.target as HTMLInputElement;
-    const payload: Payload = {
-      content: target.value,
-      color: this.localParticipant.slot.color,
-    };
-
-    this.room?.emit(IOFieldEvents.INPUT + target.id, payload);
-  };
- */
   describe('handleInput', () => {
     test('should emit an event with the field content and local participant color', () => {
       instance['room'] = {
@@ -321,15 +321,11 @@ describe('form elements', () => {
       expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
         content: 'some value',
         color: 'red',
+        fieldId: 'field-1',
       });
     });
   });
 
-  /**  private handleFocus = (event: any) => {
-    const target = event.target as HTMLInputElement;
-    this.room?.emit(IOFieldEvents.FOCUS + target.id, this.localParticipant.slot.color);
-  };
- */
   describe('handleFocus', () => {
     test('should emit an event with the local participant color', () => {
       instance['room'] = {
@@ -346,15 +342,13 @@ describe('form elements', () => {
       instance['handleFocus'](event);
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.focusfield-1', { color: 'red' });
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.focusfield-1', {
+        color: 'red',
+        fieldId: 'field-1',
+      });
     });
   });
 
-  /**  private handleBlur = (event: any) => {
-    const target = event.target as HTMLInputElement;
-    this.room?.emit(IOFieldEvents.BLUR + target.id);
-  };
-  */
   describe('handleBlur', () => {
     test('should emit an event', () => {
       instance['room'] = {
@@ -368,7 +362,9 @@ describe('form elements', () => {
       instance['handleBlur'](event);
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.blurfield-1', {});
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.blurfield-1', {
+        fieldId: 'field-1',
+      });
     });
   });
 
@@ -432,15 +428,6 @@ describe('form elements', () => {
     });
   });
 
-  /**  private removeFieldColor = (fieldId: string): RealtimeCallback<Focus> => {
-    return ({ presence }: SocketEvent<Focus>) => {
-      if (this.focusList[fieldId]?.id !== presence.id || !this.fields[fieldId]) return;
-
-      this.fields[fieldId].style.border = this.fieldsOriginalOutline[fieldId];
-      delete this.focusList[fieldId];
-    };
-  }; */
-
   describe('removeFieldColor', () => {
     test('should remove field color', () => {
       const field = document.getElementById('field-1') as HTMLInputElement;
@@ -449,9 +436,7 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['focusList'] = { 'field-1': { id: '123' } };
 
-      const callback = instance['removeFieldColor']('field-1');
-
-      callback({ presence: { id: '123' } });
+      instance['removeFieldColor']({ presence: { id: '123' }, data: { fieldId: 'field-1' } });
 
       expect(field.style.outline).toBe('some value');
       expect(instance['fields']['field-1']).toBe(field);
@@ -466,9 +451,7 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['focusList'] = { 'field-1': { id: '321' } };
 
-      const callback = instance['removeFieldColor']('field-1');
-
-      callback({ presence: { id: '123' } });
+      instance['removeFieldColor']({ presence: { id: '123' }, data: { fieldId: 'field-1' } });
 
       expect(field.style.outline).toBe('1px solid red');
       expect(instance['fieldsOriginalOutline']['field-1']).toBe('some value');
@@ -477,9 +460,8 @@ describe('form elements', () => {
     });
 
     test('should not remove field color if field is not registered', () => {
-      const callback = instance['removeFieldColor']('field-1');
       instance['fieldsOriginalOutline']['field-1'] = 'some value';
-      callback({ presence: { id: '123' } });
+      instance['removeFieldColor']({ presence: { id: '123' }, data: { fieldId: 'field-1' } });
 
       expect(instance['fieldsOriginalOutline']['field-1']).toBe('some value');
     });
@@ -495,9 +477,11 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['focusList'] = {};
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({ presence: { id: '123' }, data: { color: 'red' }, timestamp: 1000 });
+      instance['updateFieldColor']({
+        presence: { id: '123' },
+        data: { color: 'red', fieldId: 'field-1' },
+        timestamp: 1000,
+      });
 
       expect(field.style.outline).toBe('1px solid red');
       expect(instance['focusList']['field-1']).toEqual({
@@ -513,9 +497,11 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['focusList'] = { 'field-1': { id: '123', lastInteraction: 0 } };
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({ presence: { id: '321' }, data: { color: 'red' }, timestamp: 5000 });
+      instance['updateFieldColor']({
+        presence: { id: '321' },
+        data: { color: 'red', fieldId: 'field-1' },
+        timestamp: 5000,
+      });
 
       expect(field.style.outline).toBe('1px solid red');
       expect(instance['focusList']['field-1']).toEqual({
@@ -531,9 +517,11 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['focusList'] = { 'field-1': { id: '123', firstInteraction: 0 } };
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({ presence: { id: '321' }, data: { color: 'red' }, timestamp: 15000 });
+      instance['updateFieldColor']({
+        presence: { id: '321' },
+        data: { color: 'red', fieldId: 'field-1' },
+        timestamp: 15000,
+      });
 
       expect(field.style.outline).toBe('1px solid red');
       expect(instance['focusList']['field-1']).toEqual({
@@ -551,9 +539,11 @@ describe('form elements', () => {
         'field-1': { color: 'red', id: '123', firstInteraction: 0, lastInteraction: 0 },
       };
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({ presence: { id: '123' }, data: { color: 'red' }, timestamp: 5000 });
+      instance['updateFieldColor']({
+        presence: { id: '123' },
+        data: { color: 'red', fieldId: 'field-1' },
+        timestamp: 5000,
+      });
 
       expect(instance['focusList']['field-1']).toEqual({
         id: '123',
@@ -570,11 +560,9 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['focusList'] = {};
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({
+      instance['updateFieldColor']({
         presence: { id: MOCK_LOCAL_PARTICIPANT.id },
-        data: { color: 'red' },
+        data: { color: 'red', fieldId: 'field-1' },
         timestamp: 5000,
       });
 
@@ -597,9 +585,11 @@ describe('form elements', () => {
         'field-1': { id: '123', color: 'blue', firstInteraction: 0, lastInteraction: 0 },
       };
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({ presence: { id: '321' }, data: { color: 'red' }, timestamp: 500 });
+      instance['updateFieldColor']({
+        presence: { id: '321' },
+        data: { color: 'red', fieldId: 'field-1' },
+        timestamp: 500,
+      });
 
       expect(field.style.outline).toBe('1px solid red');
     });
@@ -614,11 +604,9 @@ describe('form elements', () => {
         'field-1': { id: '123', color: 'blue', firstInteraction: 0, lastInteraction: 0 },
       };
 
-      const callback = instance['updateFieldColor']('field-1');
-
-      callback({
+      instance['updateFieldColor']({
         presence: { id: MOCK_LOCAL_PARTICIPANT.id },
-        data: { color: 'red' },
+        data: { color: 'red', fieldId: 'field-1' },
         timestamp: 5000,
       });
 
@@ -633,9 +621,10 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['localParticipant'] = { id: '123' } as any;
 
-      const callback = instance['updateFieldContent']('field-1');
-
-      callback({ presence: { id: '321' }, data: { content: 'new content' } });
+      instance['updateFieldContent']({
+        presence: { id: '321' },
+        data: { content: 'new content', fieldId: 'field-1' },
+      });
 
       expect(field.value).toBe('new content');
     });
@@ -647,9 +636,10 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['localParticipant'] = { id: '123' } as any;
 
-      const callback = instance['updateFieldContent']('field-1');
-
-      callback({ presence: { id: '123' }, data: { content: 'new content' } });
+      instance['updateFieldContent']({
+        presence: { id: '123' },
+        data: { content: 'new content', fieldId: 'field-1' },
+      });
 
       expect(field.value).toBe('old content');
     });
