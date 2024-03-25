@@ -1,3 +1,5 @@
+import { SocketEvent } from '@superviz/socket-client';
+
 export interface FormElementsProps {
   fields?: string[] | string;
 }
@@ -28,3 +30,5 @@ export interface Focus {
   color: string;
   id: string;
 }
+
+export type RealtimeCallback<T> = (data: SocketEvent<T>) => void;
