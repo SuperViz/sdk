@@ -165,7 +165,7 @@ describe('Launcher', () => {
       const callback = jest.fn();
       LauncherInstance.subscribe(ParticipantEvent.JOINED, callback);
 
-      LauncherInstance['onParticipantJoinedIOC']({
+      LauncherInstance['onParticipantUpdatedIOC']({
         connectionId: 'connection1',
         data: MOCK_LOCAL_PARTICIPANT,
         id: MOCK_LOCAL_PARTICIPANT.id,
