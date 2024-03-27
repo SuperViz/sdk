@@ -9,12 +9,16 @@ import { ComponentNames } from '../types';
 import {
   Field,
   Focus,
-  IOFieldEvents,
+  FieldEvents,
   InputPayload,
   FormElementsProps,
   FocusPayload,
   BlurPayload,
+  Flags,
 } from './types';
+
+// não synchar (flag pra desativar de todos no começo, métodos pra desativar ou ativar de 1, métodos pra ativar ou desativar de todos)
+// emitir evento quando pessoa escrever
 
 export class FormElements extends BaseComponent {
   public name: ComponentNames;
@@ -23,13 +27,35 @@ export class FormElements extends BaseComponent {
 
   // HTML Elements
   private fields: Record<string, Field> = {};
-
   private fieldsOriginalOutline: Record<string, string> = {};
+  private focusList: Record<string, Focus> = {};
+  private enabledOutlineFields: Record<string, boolean> = {};
+  private enabledRealtimeSynchFields: Record<string, boolean> = {};
+
+  // Flags
+  private flags: Flags = {};
 
   // Allowed tags and types
   private readonly allowedTagNames = ['input', 'textarea'];
   // text, search, URL, tel, and password
-  private readonly allowedInputTypes = ['text', 'email'];
+  private readonly allowedInputTypes = [
+    'text',
+    'email',
+    'date',
+    'color',
+    'datetime-local',
+    'month',
+    'number',
+    'password',
+    'range',
+    'search',
+    'tel',
+    'time',
+    'url',
+    'week',
+    'checkbox',
+    'radio',
+  ];
 
   private readonly throwError = {
     onInvalidFieldsProp: (propType: string) => {
@@ -63,14 +89,14 @@ export class FormElements extends BaseComponent {
     },
   };
 
-  private focusList: Record<string, Focus> = {};
-
   constructor(props: FormElementsProps = {}) {
     super();
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger('@superviz/sdk/presence-input-component');
 
-    const { fields } = props;
+    const { fields, flags } = props;
+
+    this.flags = flags ?? {};
 
     if (typeof fields === 'string') {
       this.validateField(fields);
@@ -116,17 +142,7 @@ export class FormElements extends BaseComponent {
     this.deregisterAllFields();
 
     this.fieldsOriginalOutline = undefined;
-  }
-
-  /**
-   * @function subscribeToRealtimeEvents
-   * @description Subscribes all fields to realtime events
-   * @returns {void}
-   */
-  private subscribeToRealtimeEvents(): void {
-    Object.entries(this.fields).forEach(([fieldId]) => {
-      this.addRealtimeListenersToField(fieldId);
-    });
+    this.focusList = undefined;
   }
 
   // ------- listeners -------
@@ -137,7 +153,16 @@ export class FormElements extends BaseComponent {
    * @returns {void}
    */
   private addListenersToField(field: Field): void {
-    field.addEventListener('input', this.handleInput);
+    const { type } = field;
+
+    if (this.hasCheckedProperty(field)) {
+      field.addEventListener('change', this.handleChange);
+    } else {
+      field.addEventListener('input', this.handleInput);
+    }
+
+    if (this.flags.disableOutline) return;
+
     field.addEventListener('focus', this.handleFocus);
     field.addEventListener('blur', this.handleBlur);
   }
@@ -151,10 +176,16 @@ export class FormElements extends BaseComponent {
   private addRealtimeListenersToField(fieldId: string) {
     if (!this.room) return;
 
-    this.room.on<InputPayload>(IOFieldEvents.INPUT + fieldId, this.updateFieldContent);
-    this.room.on<FocusPayload>(IOFieldEvents.INPUT + fieldId, this.updateFieldColor);
-    this.room.on<FocusPayload>(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor);
-    this.room.on<BlurPayload>(IOFieldEvents.BLUR + fieldId, this.removeFieldColor);
+    this.room.on<InputPayload>(FieldEvents.INPUT + fieldId, this.updateFieldContent);
+    this.room.on<FocusPayload>(
+      FieldEvents.KEYBOARD_INTERACTION + fieldId,
+      this.publishKeyboardInteraction,
+    );
+
+    if (this.flags.disableOutline) return;
+
+    this.room.on<FocusPayload>(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.on<BlurPayload>(FieldEvents.BLUR + fieldId, this.removeFieldColor);
   }
 
   /**
@@ -164,7 +195,14 @@ export class FormElements extends BaseComponent {
    * @returns {void}
    */
   private removeListenersFromField(field: Field): void {
-    field.removeEventListener('input', this.handleInput);
+    if (this.hasCheckedProperty(field)) {
+      field.removeEventListener('change', this.handleChange);
+    } else {
+      field.removeEventListener('input', this.handleInput);
+    }
+
+    if (this.flags.disableOutline) return;
+
     field.removeEventListener('focus', this.handleFocus);
     field.removeEventListener('blur', this.handleBlur);
   }
@@ -178,10 +216,16 @@ export class FormElements extends BaseComponent {
   private removeRealtimeListenersFromField(fieldId: string) {
     if (!this.room) return;
 
-    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldContent);
-    this.room.off(IOFieldEvents.INPUT + fieldId, this.updateFieldColor);
-    this.room.off(IOFieldEvents.FOCUS + fieldId, this.updateFieldColor);
-    this.room.off(IOFieldEvents.BLUR + fieldId, this.removeFieldColor);
+    this.room.off(FieldEvents.INPUT + fieldId, this.updateFieldContent);
+    this.room.off<FocusPayload>(
+      FieldEvents.KEYBOARD_INTERACTION + fieldId,
+      this.publishKeyboardInteraction,
+    );
+
+    if (this.flags.disableOutline) return;
+
+    this.room.off(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.off(FieldEvents.BLUR + fieldId, this.removeFieldColor);
   }
 
   // ------- register & deregister -------
@@ -234,6 +278,15 @@ export class FormElements extends BaseComponent {
     this.removeRealtimeListenersFromField(fieldId);
     this.fields[fieldId].style.outline = this.fieldsOriginalOutline[fieldId];
     this.fields[fieldId] = undefined;
+
+    if (this.enabledOutlineFields[fieldId] === undefined) return;
+
+    delete this.enabledOutlineFields[fieldId];
+    delete this.enabledRealtimeSynchFields[fieldId];
+    delete this.fieldsOriginalOutline[fieldId];
+    delete this.focusList[fieldId];
+
+    this.room?.emit(FieldEvents.BLUR + fieldId, { fieldId });
   }
 
   // ------- callbacks -------
@@ -245,13 +298,49 @@ export class FormElements extends BaseComponent {
    */
   private handleInput = (event: InputEvent) => {
     const target = event.target as HTMLInputElement;
+
+    this.room?.emit(FieldEvents.KEYBOARD_INTERACTION + target.id, {
+      fieldId: target.id,
+      color: this.localParticipant.slot.color,
+    });
+
+    const canSynch = this.canSynchContent(target.id);
+    if (!canSynch) return;
+
     const payload: InputPayload & FocusPayload = {
-      content: target.value,
+      value: target.value,
       color: this.localParticipant.slot.color,
       fieldId: target.id,
+      showOutline: this.canUpdateColor(target.id),
+      synchContent: canSynch,
+      attribute: 'value',
     };
 
-    this.room?.emit(IOFieldEvents.INPUT + target.id, payload);
+    this.room?.emit(FieldEvents.INPUT + target.id, payload);
+  };
+
+  /**
+   * @function handleChange
+   * @description Handles the change event on an input element
+   * @param {Event} event The event that triggered the function
+   * @returns {void}
+   */
+  private handleChange = (event: Event): void => {
+    const target = event.target as HTMLInputElement;
+
+    const canSynch = this.canSynchContent(target.id);
+    if (!canSynch) return;
+
+    const payload: InputPayload & FocusPayload = {
+      fieldId: target.id,
+      value: target.checked,
+      color: this.localParticipant.slot.color,
+      showOutline: this.canUpdateColor(target.id),
+      synchContent: this.canSynchContent(target.id),
+      attribute: 'checked',
+    };
+
+    this.room?.emit(FieldEvents.INPUT + target.id, payload);
   };
 
   /**
@@ -267,7 +356,7 @@ export class FormElements extends BaseComponent {
       fieldId: target.id,
     };
 
-    this.room?.emit(IOFieldEvents.FOCUS + target.id, payload);
+    this.room?.emit(FieldEvents.FOCUS + target.id, payload);
   };
 
   /**
@@ -282,7 +371,7 @@ export class FormElements extends BaseComponent {
       fieldId: target.id,
     };
 
-    this.room?.emit(IOFieldEvents.BLUR + target.id, payload);
+    this.room?.emit(FieldEvents.BLUR + target.id, payload);
   };
 
   // ------- validations -------
@@ -361,7 +450,7 @@ export class FormElements extends BaseComponent {
    * @function updateFieldColor
    * @description Changes the outline of a field to the color of the participant that is interacting with it, following the rules defined in the function
    * @param {SocketEvent<FocusPayload>} event The payload from the event
-   * @returns {void} A function that will be called when the event is triggered
+   * @returns {void}
    */
   private updateFieldColor = ({
     presence,
@@ -414,14 +503,44 @@ export class FormElements extends BaseComponent {
    * @function updateFieldContent
    * @description Updates the content of a field
    * @param {string} fieldId The id of the field that will have its content updated
-   * @returns {RealtimeCallback<Payload>} A function that will be called when the event is triggered
+   * @returns {void}
    */
   private updateFieldContent = ({
     presence,
-    data: { content, fieldId },
+    data: { value, fieldId, color, showOutline, synchContent, attribute },
+    timestamp,
+    ...params
   }: SocketEvent<InputPayload>) => {
     if (presence.id === this.localParticipant.id) return;
-    this.fields[fieldId].value = content;
+
+    this.publish(`${FieldEvents.INPUT}-${fieldId}`, {
+      value,
+      fieldId,
+      attribute,
+      userId: presence.id,
+      userName: presence.name,
+      timestamp,
+    });
+
+    if (synchContent && this.canSynchContent(fieldId)) this.fields[fieldId][attribute] = value;
+
+    if (showOutline && this.canUpdateColor(fieldId)) {
+      this.updateFieldColor({ presence, data: { color, fieldId }, timestamp, ...params });
+    }
+  };
+
+  private publishKeyboardInteraction = ({
+    presence,
+    data: { fieldId, color },
+  }: SocketEvent<FocusPayload>) => {
+    if (presence.id === this.localParticipant.id) return;
+
+    this.publish(`${FieldEvents.KEYBOARD_INTERACTION}-${fieldId}`, {
+      fieldId,
+      userId: presence.id,
+      userName: presence.name,
+      color,
+    });
   };
 
   // ------- utils -------
@@ -435,4 +554,84 @@ export class FormElements extends BaseComponent {
       this.fields[fieldId].style.outline = this.fieldsOriginalOutline[fieldId];
     });
   }
+
+  private hasCheckedProperty(field: Field): boolean {
+    const tag = field.tagName.toLowerCase();
+    const type = field.getAttribute('type');
+
+    return tag === 'input' && (type === 'radio' || type === 'checkbox');
+  }
+
+  private canUpdateColor(fieldId: string): boolean {
+    return (
+      (!this.flags.disableOutline && this.enabledOutlineFields[fieldId] !== false) ||
+      this.enabledOutlineFields[fieldId]
+    );
+  }
+
+  private canSynchContent(fieldId: string): boolean {
+    return (
+      (!this.flags.disableRealtimeSynch && this.enabledRealtimeSynchFields[fieldId] !== false) ||
+      this.enabledRealtimeSynchFields[fieldId]
+    );
+  }
+
+  // ----------------------------
+  public enableOutline(fieldId: string): void {
+    const field = this.fields[fieldId];
+
+    if (!field) return;
+
+    this.enabledOutlineFields[fieldId] = true;
+    this.fieldsOriginalOutline[fieldId] = field.style.outline;
+
+    field.addEventListener('focus', this.handleFocus);
+    field.addEventListener('blur', this.handleBlur);
+
+    this.room.on<FocusPayload>(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.on<BlurPayload>(FieldEvents.BLUR + fieldId, this.removeFieldColor);
+  }
+
+  public disableOutline(fieldId: string): void {
+    const field = this.fields[fieldId];
+    if (!field) return;
+
+    this.enabledOutlineFields[fieldId] = false;
+    field.style.outline = this.fieldsOriginalOutline[fieldId] ?? '';
+
+    field.removeEventListener('focus', this.handleFocus);
+    field.removeEventListener('blur', this.handleBlur);
+
+    this.room.off(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.off(FieldEvents.BLUR + fieldId, this.removeFieldColor);
+
+    this.room?.emit(FieldEvents.BLUR + fieldId, { fieldId });
+  }
+
+  public enableRealtimeSynch(fieldId: string): void {
+    this.enabledRealtimeSynchFields[fieldId] = true;
+  }
+
+  public disableRealtimeSynch(fieldId: string): void {
+    this.enabledRealtimeSynchFields[fieldId] = false;
+  }
+
+  public synch = (fieldId: string): void => {
+    const field = this.fields[fieldId];
+
+    const value = this.hasCheckedProperty(field)
+      ? (field as HTMLInputElement).checked
+      : field.value;
+
+    const payload: InputPayload & FocusPayload = {
+      value,
+      color: this.localParticipant.slot.color,
+      fieldId,
+      showOutline: this.canUpdateColor(fieldId),
+      synchContent: this.canSynchContent(fieldId),
+      attribute: 'value',
+    };
+
+    this.room?.emit(FieldEvents.INPUT + fieldId, payload);
+  };
 }
