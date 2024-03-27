@@ -1,7 +1,11 @@
 import { SlotService } from '.';
 
 describe('slot service', () => {
-  it('should assign a slot to the participant', async () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test('should assign a slot to the participant', async () => {
     const room = {
       presence: {
         on: jest.fn(),
@@ -17,53 +21,20 @@ describe('slot service', () => {
     } as any;
 
     const instance = new SlotService(room, participant);
-    await instance['assignSlot']();
+    const result = await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeDefined();
     expect(instance['participant'].slot).toBeDefined();
-    expect(room.presence.update).toHaveBeenCalledWith({
-      slot: expect.objectContaining({
-        index: expect.any(Number),
-        color: expect.any(String),
-        textColor: expect.any(String),
-        colorName: expect.any(String),
-        timestamp: expect.any(Number),
-      }),
+    expect(result).toEqual({
+      index: expect.any(Number),
+      color: expect.any(String),
+      textColor: expect.any(String),
+      colorName: expect.any(String),
+      timestamp: expect.any(Number),
     });
   });
 
-  it('should assign a slot to the participant', async () => {
-    const room = {
-      presence: {
-        on: jest.fn(),
-        get: jest.fn((callback) => {
-          callback([]);
-        }),
-        update: jest.fn(),
-      },
-    } as any;
-
-    const participant = {
-      id: '123',
-    } as any;
-
-    const instance = new SlotService(room, participant);
-    await instance['assignSlot']();
-
-    expect(instance['slotIndex']).toBeDefined();
-    expect(instance['participant'].slot).toBeDefined();
-    expect(room.presence.update).toHaveBeenCalledWith({
-      slot: expect.objectContaining({
-        index: expect.any(Number),
-        color: expect.any(String),
-        textColor: expect.any(String),
-        colorName: expect.any(String),
-        timestamp: expect.any(Number),
-      }),
-    });
-  });
-
-  it('if there are no more slots available, it should throw an error', async () => {
+  test('if there are no more slots available, it should throw an error', async () => {
     console.error = jest.fn();
 
     const room = {
@@ -81,13 +52,13 @@ describe('slot service', () => {
     } as any;
 
     const instance = new SlotService(room, participant);
-    await instance['assignSlot']();
+    const result = await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeUndefined();
     expect(instance['participant'].slot).toBeUndefined();
   });
 
-  it('if the slot is already in use, it should assign a new slot', async () => {
+  test('if the slot is already in use, it should assign a new slot', async () => {
     const room = {
       presence: {
         on: jest.fn(),
@@ -115,18 +86,16 @@ describe('slot service', () => {
     } as any;
 
     const instance = new SlotService(room, participant);
-    await instance['assignSlot']();
+    const result = await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeDefined();
     expect(instance['participant'].slot).toBeDefined();
-    expect(room.presence.update).toHaveBeenCalledWith({
-      slot: expect.objectContaining({
-        index: expect.any(Number),
-        color: expect.any(String),
-        textColor: expect.any(String),
-        colorName: expect.any(String),
-        timestamp: expect.any(Number),
-      }),
+    expect(result).toEqual({
+      index: expect.any(Number),
+      color: expect.any(String),
+      textColor: expect.any(String),
+      colorName: expect.any(String),
+      timestamp: expect.any(Number),
     });
   });
 });

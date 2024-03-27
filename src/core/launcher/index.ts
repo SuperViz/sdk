@@ -352,28 +352,25 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param presence - participant presence
    * @returns {void}
    */
-  private onParticipantJoinedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
-    if (presence.id === this.participant.value.id) {
-      // Assign a slot to the participant
-      SlotService.register(this.LauncherRealtimeRoom, this.participant.value);
-      this.LauncherRealtimeRoom.presence.update<Participant>(this.participant.value);
-    }
+  private onParticipantJoinedIOC = async (
+    presence: Socket.PresenceEvent<Participant>,
+  ): Promise<void> => {
+    if (presence.id !== this.participant.value.id) return;
 
-    // When the participant joins, it is without any data, it's updated later
-    this.participants.value.set(presence.id, {
-      id: presence.id,
-      name: presence.name,
-      ...presence.data,
-    });
+    // Assign a slot to the participant
+    const slot = new SlotService(this.LauncherRealtimeRoom, this.participant.value);
+    const slotData = await slot.assignSlot();
 
-    if (presence.id === this.participant.value.id) {
-      this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-      this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
-    }
+    this.participant.value = {
+      ...this.participant.value,
+      slot: slotData,
+    };
 
-    this.logger.log('launcher service @ onParticipantJoined - participant joined', presence.data);
+    this.LauncherRealtimeRoom.presence.update<Participant>(this.participant.value);
 
-    this.publish(ParticipantEvent.JOINED, this.participants.value.get(presence.id));
+    this.logger.log('launcher service @ onParticipantJoined - local participant joined');
+
+    this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
   };
 
   /**
@@ -427,6 +424,10 @@ export class Launcher extends Observable implements DefaultLauncher {
       ) {
         this.realtime.updateMyProperties({ slotIndex: presence.data.slot.index });
       }
+    }
+
+    if (!this.participants.value.has(presence.id)) {
+      this.publish(ParticipantEvent.JOINED, presence.data);
     }
 
     this.participants.value.set(presence.id, presence.data);
