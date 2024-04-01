@@ -17,9 +17,6 @@ import {
   Flags,
 } from './types';
 
-// não synchar (flag pra desativar de todos no começo, métodos pra desativar ou ativar de 1, métodos pra ativar ou desativar de todos)
-// emitir evento quando pessoa escrever
-
 export class FormElements extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
@@ -30,7 +27,7 @@ export class FormElements extends BaseComponent {
   private fieldsOriginalOutline: Record<string, string> = {};
   private focusList: Record<string, Focus> = {};
   private enabledOutlineFields: Record<string, boolean> = {};
-  private enabledRealtimeSynchFields: Record<string, boolean> = {};
+  private enabledRealtimeSyncFields: Record<string, boolean> = {};
 
   // Flags
   private flags: Flags = {};
@@ -117,6 +114,154 @@ export class FormElements extends BaseComponent {
     }
   }
 
+  // ------- public methods -------
+  /**
+   * @function enableOutline
+   * @description Enables changes in the color of the outline of a field. Color changes are triggered when, in general, another participant interacts with the field on their side AND they also have color changes enabled.
+   *
+   *    Enabling this feature through this method overrides the global flag "disableOutline" set in the constructor for this particular input.
+   * @param fieldId The id of the input field or textarea that will have its outline color changed
+   * @returns {void}
+   */
+  public enableOutline(fieldId: string): void {
+    const field = this.fields[fieldId];
+
+    if (!field) return;
+
+    this.enabledOutlineFields[fieldId] = true;
+    this.fieldsOriginalOutline[fieldId] = field.style.outline;
+
+    field.addEventListener('focus', this.handleFocus);
+    field.addEventListener('blur', this.handleBlur);
+
+    this.room.on<FocusPayload>(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.on<BlurPayload>(FieldEvents.BLUR + fieldId, this.removeFieldColor);
+  }
+
+  /**
+   * @function disableOutline
+   * @description Disables changes in the color of the outline of a field.
+   *
+   *    Disabling this feature through this method overrides the global flag "disableOutline" set in the constructor for this particular input.
+   * @param fieldId The id of the input field or textarea that will have its outline color changed
+   * @returns {void}
+   */
+  public disableOutline(fieldId: string): void {
+    const field = this.fields[fieldId];
+    if (!field) return;
+
+    this.enabledOutlineFields[fieldId] = false;
+    field.style.outline = this.fieldsOriginalOutline[fieldId] ?? '';
+
+    field.removeEventListener('focus', this.handleFocus);
+    field.removeEventListener('blur', this.handleBlur);
+
+    this.room.off(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
+    this.room.off(FieldEvents.BLUR + fieldId, this.removeFieldColor);
+
+    this.room?.emit(FieldEvents.BLUR + fieldId, { fieldId });
+  }
+
+  /**
+   * @function enableRealtimeSync
+   * @description Enables the synchronization of the content of a field in real time. The content of the field will be updated in real time when another participant interacts with the field on their side AND they also have content synchronization enabled.
+   *
+   *    "Content" may refer to the value the user has typed or selected, or the status of the field (checked or not), depending on the type of field.
+   *
+   *    Enabling this feature through this method overrides the global flag "disableRealtimeSync" set in the constructor for this particular input.
+   * @param fieldId The id of the input field or textarea that will have its content synchronized
+   * @returns {void}
+   */
+  public enableRealtimeSync(fieldId: string): void {
+    this.enabledRealtimeSyncFields[fieldId] = true;
+  }
+
+  /**
+   * @function disableRealtimeSync
+   * @description Disables the synchronization of the content of a field in real time.
+   *
+   *   Disabling this feature through this method overrides the global flag "disableRealtimeSync" set in the constructor for this particular input.
+   *
+   * @param fieldId The id of the input field or textarea that will have its content synchronized
+   * @returns {void}
+   */
+  public disableRealtimeSync(fieldId: string): void {
+    this.enabledRealtimeSyncFields[fieldId] = false;
+  }
+
+  /**
+   * @function sync
+   * @description Sends the value of the field to every other participant with the realtime sync enabled for this field.
+   *
+   *   This method is useful when you want to update the content of a field without waiting for the user to interact with it.
+   *
+   *   If realtime sync is disabled for the field, even though the content won't be updated, every other participant receives an event with details about the sync attempt.
+   * @param fieldId
+   */
+  public sync = (fieldId: string): void => {
+    const field = this.fields[fieldId];
+
+    const hasCheckedProperty = this.hasCheckedProperty(field);
+
+    const value = hasCheckedProperty ? (field as HTMLInputElement).checked : field.value;
+
+    const payload: InputPayload & FocusPayload = {
+      value,
+      color: this.localParticipant.slot.color,
+      fieldId,
+      showOutline: this.canUpdateColor(fieldId),
+      syncContent: this.canSyncContent(fieldId),
+      attribute: hasCheckedProperty ? 'checked' : 'value',
+    };
+
+    this.room?.emit(FieldEvents.INPUT + fieldId, payload);
+  };
+
+  /**
+   * @function registerField
+   * @description Registers a field element. 
+    
+      A registered field will be monitored and most interactions with it will be shared with every other user in the room that is tracking the same field.
+
+      Examples of common interactions that will be monitored include typing, focusing, and blurring, but more may apply.
+   * @param {string} fieldId The id of the field that will be registered
+   * @returns {void}
+   */
+  public registerField(fieldId: string) {
+    this.validateField(fieldId);
+
+    const field = document.getElementById(fieldId) as Field;
+    this.fields[fieldId] = field;
+
+    this.addListenersToField(field);
+    this.addRealtimeListenersToField(fieldId);
+    this.fieldsOriginalOutline[fieldId] = field.style.outline;
+  }
+
+  /**
+   * @function deregisterField
+   * @description Deregisters a single field
+   * @param {string} fieldId The id of the field that will be deregistered
+   * @returns {void}
+   */
+  public deregisterField(fieldId: string) {
+    if (!this.fields[fieldId]) {
+      this.throwError.onDeregisterInvalidField(fieldId);
+    }
+
+    this.removeListenersFromField(this.fields[fieldId]);
+    this.removeRealtimeListenersFromField(fieldId);
+    this.fields[fieldId].style.outline = this.fieldsOriginalOutline[fieldId];
+    this.fields[fieldId] = undefined;
+
+    delete this.enabledOutlineFields[fieldId];
+    delete this.enabledRealtimeSyncFields[fieldId];
+    delete this.fieldsOriginalOutline[fieldId];
+    delete this.focusList[fieldId];
+
+    this.room?.emit(FieldEvents.BLUR + fieldId, { fieldId });
+  }
+
   // ------- setup -------
   /**
    * @function start
@@ -177,10 +322,7 @@ export class FormElements extends BaseComponent {
     if (!this.room) return;
 
     this.room.on<InputPayload>(FieldEvents.INPUT + fieldId, this.updateFieldContent);
-    this.room.on<FocusPayload>(
-      FieldEvents.KEYBOARD_INTERACTION + fieldId,
-      this.publishKeyboardInteraction,
-    );
+    this.room.on<FocusPayload>(FieldEvents.KEYBOARD_INTERACTION + fieldId, this.publishTypedEvent);
 
     if (this.flags.disableOutline) return;
 
@@ -217,10 +359,7 @@ export class FormElements extends BaseComponent {
     if (!this.room) return;
 
     this.room.off(FieldEvents.INPUT + fieldId, this.updateFieldContent);
-    this.room.off<FocusPayload>(
-      FieldEvents.KEYBOARD_INTERACTION + fieldId,
-      this.publishKeyboardInteraction,
-    );
+    this.room.off<FocusPayload>(FieldEvents.KEYBOARD_INTERACTION + fieldId, this.publishTypedEvent);
 
     if (this.flags.disableOutline) return;
 
@@ -229,27 +368,6 @@ export class FormElements extends BaseComponent {
   }
 
   // ------- register & deregister -------
-  /**
-   * @function registerField
-   * @description Registers an element; usually, something that serves a text field. 
-    
-      A registered field will be monitored and most interactions with it will be shared with every other user in the room that is tracking the same field (or, at the very least, a field with the same id).
-
-      Examples of common interactions that will be monitored include typing, focusing, and blurring, but more may apply.
-   * @param {string} fieldId The id of the field that will be registered
-   * @returns {void}
-   */
-  public registerField(fieldId: string) {
-    this.validateField(fieldId);
-
-    const field = document.getElementById(fieldId) as Field;
-    this.fields[fieldId] = field;
-
-    this.addListenersToField(field);
-    this.addRealtimeListenersToField(fieldId);
-    this.fieldsOriginalOutline[fieldId] = field.style.outline;
-  }
-
   /**
    * @function deregisterAllFields
    * @description Deregisters an element. No interactions with the field will be shared after this.
@@ -261,32 +379,6 @@ export class FormElements extends BaseComponent {
     });
 
     this.fields = undefined;
-  }
-
-  /**
-   * @function deregisterField
-   * @description Deregisters a single field
-   * @param {string} fieldId The id of the field that will be deregistered
-   * @returns {void}
-   */
-  public deregisterField(fieldId: string) {
-    if (!this.fields[fieldId]) {
-      this.throwError.onDeregisterInvalidField(fieldId);
-    }
-
-    this.removeListenersFromField(this.fields[fieldId]);
-    this.removeRealtimeListenersFromField(fieldId);
-    this.fields[fieldId].style.outline = this.fieldsOriginalOutline[fieldId];
-    this.fields[fieldId] = undefined;
-
-    if (this.enabledOutlineFields[fieldId] === undefined) return;
-
-    delete this.enabledOutlineFields[fieldId];
-    delete this.enabledRealtimeSynchFields[fieldId];
-    delete this.fieldsOriginalOutline[fieldId];
-    delete this.focusList[fieldId];
-
-    this.room?.emit(FieldEvents.BLUR + fieldId, { fieldId });
   }
 
   // ------- callbacks -------
@@ -304,15 +396,15 @@ export class FormElements extends BaseComponent {
       color: this.localParticipant.slot.color,
     });
 
-    const canSynch = this.canSynchContent(target.id);
-    if (!canSynch) return;
+    const canSync = this.canSyncContent(target.id);
+    if (!canSync) return;
 
     const payload: InputPayload & FocusPayload = {
       value: target.value,
       color: this.localParticipant.slot.color,
       fieldId: target.id,
       showOutline: this.canUpdateColor(target.id),
-      synchContent: canSynch,
+      syncContent: canSync,
       attribute: 'value',
     };
 
@@ -328,15 +420,15 @@ export class FormElements extends BaseComponent {
   private handleChange = (event: Event): void => {
     const target = event.target as HTMLInputElement;
 
-    const canSynch = this.canSynchContent(target.id);
-    if (!canSynch) return;
+    const canSync = this.canSyncContent(target.id);
+    if (!canSync) return;
 
     const payload: InputPayload & FocusPayload = {
       fieldId: target.id,
       value: target.checked,
       color: this.localParticipant.slot.color,
       showOutline: this.canUpdateColor(target.id),
-      synchContent: this.canSynchContent(target.id),
+      syncContent: this.canSyncContent(target.id),
       attribute: 'checked',
     };
 
@@ -507,7 +599,7 @@ export class FormElements extends BaseComponent {
    */
   private updateFieldContent = ({
     presence,
-    data: { value, fieldId, color, showOutline, synchContent, attribute },
+    data: { value, fieldId, color, showOutline, syncContent, attribute },
     timestamp,
     ...params
   }: SocketEvent<InputPayload>) => {
@@ -522,14 +614,14 @@ export class FormElements extends BaseComponent {
       timestamp,
     });
 
-    if (synchContent && this.canSynchContent(fieldId)) this.fields[fieldId][attribute] = value;
+    if (syncContent && this.canSyncContent(fieldId)) this.fields[fieldId][attribute] = value;
 
     if (showOutline && this.canUpdateColor(fieldId)) {
       this.updateFieldColor({ presence, data: { color, fieldId }, timestamp, ...params });
     }
   };
 
-  private publishKeyboardInteraction = ({
+  private publishTypedEvent = ({
     presence,
     data: { fieldId, color },
   }: SocketEvent<FocusPayload>) => {
@@ -569,69 +661,10 @@ export class FormElements extends BaseComponent {
     );
   }
 
-  private canSynchContent(fieldId: string): boolean {
+  private canSyncContent(fieldId: string): boolean {
     return (
-      (!this.flags.disableRealtimeSynch && this.enabledRealtimeSynchFields[fieldId] !== false) ||
-      this.enabledRealtimeSynchFields[fieldId]
+      (!this.flags.disableRealtimeSync && this.enabledRealtimeSyncFields[fieldId] !== false) ||
+      this.enabledRealtimeSyncFields[fieldId]
     );
   }
-
-  // ----------------------------
-  public enableOutline(fieldId: string): void {
-    const field = this.fields[fieldId];
-
-    if (!field) return;
-
-    this.enabledOutlineFields[fieldId] = true;
-    this.fieldsOriginalOutline[fieldId] = field.style.outline;
-
-    field.addEventListener('focus', this.handleFocus);
-    field.addEventListener('blur', this.handleBlur);
-
-    this.room.on<FocusPayload>(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
-    this.room.on<BlurPayload>(FieldEvents.BLUR + fieldId, this.removeFieldColor);
-  }
-
-  public disableOutline(fieldId: string): void {
-    const field = this.fields[fieldId];
-    if (!field) return;
-
-    this.enabledOutlineFields[fieldId] = false;
-    field.style.outline = this.fieldsOriginalOutline[fieldId] ?? '';
-
-    field.removeEventListener('focus', this.handleFocus);
-    field.removeEventListener('blur', this.handleBlur);
-
-    this.room.off(FieldEvents.FOCUS + fieldId, this.updateFieldColor);
-    this.room.off(FieldEvents.BLUR + fieldId, this.removeFieldColor);
-
-    this.room?.emit(FieldEvents.BLUR + fieldId, { fieldId });
-  }
-
-  public enableRealtimeSynch(fieldId: string): void {
-    this.enabledRealtimeSynchFields[fieldId] = true;
-  }
-
-  public disableRealtimeSynch(fieldId: string): void {
-    this.enabledRealtimeSynchFields[fieldId] = false;
-  }
-
-  public synch = (fieldId: string): void => {
-    const field = this.fields[fieldId];
-
-    const value = this.hasCheckedProperty(field)
-      ? (field as HTMLInputElement).checked
-      : field.value;
-
-    const payload: InputPayload & FocusPayload = {
-      value,
-      color: this.localParticipant.slot.color,
-      fieldId,
-      showOutline: this.canUpdateColor(fieldId),
-      synchContent: this.canSynchContent(fieldId),
-      attribute: 'value',
-    };
-
-    this.room?.emit(FieldEvents.INPUT + fieldId, payload);
-  };
 }

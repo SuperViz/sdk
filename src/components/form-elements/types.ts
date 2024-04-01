@@ -7,7 +7,7 @@ export interface FormElementsProps {
 
 export type Flags = {
   disableOutline?: boolean;
-  disableRealtimeSynch?: boolean;
+  disableRealtimeSync?: boolean;
 };
 
 export type Field = HTMLInputElement | HTMLTextAreaElement;
@@ -28,7 +28,7 @@ export interface FocusPayload {
 export type InputPayload = {
   value: string | boolean;
   showOutline: boolean;
-  synchContent: boolean;
+  syncContent: boolean;
   attribute: 'value' | 'checked';
 } & FocusPayload;
 

@@ -6,6 +6,8 @@ import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { ComponentNames } from '../types';
 
+import { FieldEvents } from './types';
+
 import { FormElements } from '.';
 
 describe('form elements', () => {
@@ -16,7 +18,7 @@ describe('form elements', () => {
       <input id="field-1" />
       <input id="field-2" type="email" />
       <textarea id="field-3"></textarea>
-      <input id="date" type="date" />
+      <input id="hidden" type="hidden" />
       <button id="button"></button>
     `;
 
@@ -80,7 +82,7 @@ describe('form elements', () => {
     });
 
     test('should throw error if trying to register input with invalid type', () => {
-      const fields = () => new FormElements({ fields: ['date'] });
+      const fields = () => new FormElements({ fields: ['hidden'] });
       expect(fields).toThrowError();
     });
   });
@@ -119,15 +121,6 @@ describe('form elements', () => {
     });
   });
 
-  describe('subscribeToRealtimeEvents', () => {
-    test('should call addRealtimeListenersToField for each field in fields', () => {
-      instance = new FormElements({ fields: ['field-1', 'field-2', 'field-3'] });
-      const spy = jest.spyOn(instance, 'addRealtimeListenersToField');
-      instance['subscribeToRealtimeEvents']();
-      expect(spy).toHaveBeenCalledTimes(3);
-    });
-  });
-
   describe('addListenersToField', () => {
     test('should add event listeners to the field', () => {
       const field = document.getElementById('field-1') as HTMLInputElement;
@@ -137,6 +130,32 @@ describe('form elements', () => {
       expect(field.addEventListener).toHaveBeenCalledWith('input', instance['handleInput']);
       expect(field.addEventListener).toHaveBeenCalledWith('focus', instance['handleFocus']);
       expect(field.addEventListener).toHaveBeenCalledWith('blur', instance['handleBlur']);
+    });
+
+    test('should add proper listener to checkbox and radio input types', () => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'checkbox';
+      document.body.appendChild(checkbox);
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.id = 'radio';
+      document.body.appendChild(radio);
+
+      const radioSpy = jest.spyOn(checkbox, 'addEventListener');
+      const checkboxSpy = jest.spyOn(radio, 'addEventListener');
+
+      instance['flags'].disableOutline = true;
+
+      instance['addListenersToField'](checkbox);
+      instance['addListenersToField'](radio);
+
+      expect(radioSpy).toHaveBeenCalledTimes(1);
+      expect(checkboxSpy).toHaveBeenCalledTimes(1);
+
+      expect(radioSpy).toHaveBeenCalledWith('change', instance['handleChange']);
+      expect(checkboxSpy).toHaveBeenCalledWith('change', instance['handleChange']);
     });
   });
 
@@ -149,6 +168,7 @@ describe('form elements', () => {
       instance['updateFieldContent'] = jest.fn();
       instance['updateFieldColor'] = jest.fn();
       instance['removeFieldColor'] = jest.fn();
+      instance['flags'].disableOutline = false;
 
       instance['addRealtimeListenersToField']('field-1');
 
@@ -158,8 +178,8 @@ describe('form elements', () => {
         instance['updateFieldContent'],
       );
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.inputfield-1',
-        instance['updateFieldColor'],
+        'field.keyboard-interactionfield-1',
+        instance['publishTypedEvent'],
       );
       expect(instance['room'].on).toHaveBeenCalledWith(
         'field.focusfield-1',
@@ -168,6 +188,29 @@ describe('form elements', () => {
       expect(instance['room'].on).toHaveBeenCalledWith(
         'field.blurfield-1',
         instance['removeFieldColor'],
+      );
+    });
+
+    test('should not add listeners to focus and blur if flag disableOutline is true', () => {
+      instance['room'] = {
+        on: jest.fn(),
+      } as any;
+
+      instance['updateFieldContent'] = jest.fn();
+      instance['updateFieldColor'] = jest.fn();
+      instance['removeFieldColor'] = jest.fn();
+      instance['flags'].disableOutline = true;
+
+      instance['addRealtimeListenersToField']('field-1');
+
+      expect(instance['room'].on).toHaveBeenCalledTimes(2);
+      expect(instance['room'].on).toHaveBeenCalledWith(
+        'field.inputfield-1',
+        instance['updateFieldContent'],
+      );
+      expect(instance['room'].on).toHaveBeenCalledWith(
+        'field.keyboard-interactionfield-1',
+        instance['publishTypedEvent'],
       );
     });
 
@@ -195,6 +238,32 @@ describe('form elements', () => {
       expect(field.removeEventListener).toHaveBeenCalledWith('focus', instance['handleFocus']);
       expect(field.removeEventListener).toHaveBeenCalledWith('blur', instance['handleBlur']);
     });
+
+    test('should remove proper listener to checkbox and radio input types', () => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = 'checkbox';
+      document.body.appendChild(checkbox);
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.id = 'radio';
+      document.body.appendChild(radio);
+
+      const radioSpy = jest.spyOn(checkbox, 'removeEventListener');
+      const checkboxSpy = jest.spyOn(radio, 'removeEventListener');
+
+      instance['flags'].disableOutline = true;
+
+      instance['removeListenersFromField'](checkbox);
+      instance['removeListenersFromField'](radio);
+
+      expect(radioSpy).toHaveBeenCalledTimes(1);
+      expect(checkboxSpy).toHaveBeenCalledTimes(1);
+
+      expect(radioSpy).toHaveBeenCalledWith('change', instance['handleChange']);
+      expect(checkboxSpy).toHaveBeenCalledWith('change', instance['handleChange']);
+    });
   });
 
   describe('removeRealtimeListenersFromField', () => {
@@ -207,6 +276,8 @@ describe('form elements', () => {
       instance['updateFieldColor'] = jest.fn();
       instance['removeFieldColor'] = jest.fn();
 
+      instance['flags'].disableShowOutline = false;
+
       instance['removeRealtimeListenersFromField']('field-1');
       expect(instance['room'].off).toHaveBeenCalledTimes(4);
       expect(instance['room'].off).toHaveBeenNthCalledWith(
@@ -216,8 +287,8 @@ describe('form elements', () => {
       );
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         2,
-        'field.inputfield-1',
-        instance['updateFieldColor'],
+        'field.keyboard-interactionfield-1',
+        instance['publishTypedEvent'],
       );
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         3,
@@ -242,6 +313,31 @@ describe('form elements', () => {
       expect(instance['updateFieldContent']).not.toHaveBeenCalled();
       expect(instance['updateFieldColor']).not.toHaveBeenCalled();
       expect(instance['removeFieldColor']).not.toHaveBeenCalled();
+    });
+
+    test('should not remove listeners to focus and blur if flag disableOutline is true', () => {
+      instance['room'] = {
+        off: jest.fn(),
+      } as any;
+
+      instance['updateFieldContent'] = jest.fn();
+      instance['updateFieldColor'] = jest.fn();
+      instance['removeFieldColor'] = jest.fn();
+
+      instance['flags'].disableOutline = true;
+
+      instance['removeRealtimeListenersFromField']('field-1');
+      expect(instance['room'].off).toHaveBeenCalledTimes(2);
+      expect(instance['room'].off).toHaveBeenNthCalledWith(
+        1,
+        'field.inputfield-1',
+        instance['updateFieldContent'],
+      );
+      expect(instance['room'].off).toHaveBeenNthCalledWith(
+        2,
+        'field.keyboard-interactionfield-1',
+        instance['publishTypedEvent'],
+      );
     });
   });
 
@@ -300,6 +396,23 @@ describe('form elements', () => {
       const deregister = () => instance['deregisterField']('non-existent-field-id');
       expect(deregister).toThrowError();
     });
+
+    test('should emit blur event', () => {
+      const field = document.getElementById('field-1') as HTMLInputElement;
+      instance['fields']['field-1'] = field;
+
+      instance['room'] = {
+        emit: jest.fn(),
+        off: jest.fn(),
+      } as any;
+
+      instance['deregisterField']('field-1');
+
+      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.blurfield-1', {
+        fieldId: 'field-1',
+      });
+    });
   });
 
   describe('handleInput', () => {
@@ -317,12 +430,92 @@ describe('form elements', () => {
 
       instance['handleInput'](event);
 
-      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+      expect(instance['room'].emit).toHaveBeenCalledTimes(2);
+
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.keyboard-interactionfield-1', {
+        fieldId: 'field-1',
+        color: 'red',
+      });
+
       expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
-        content: 'some value',
+        value: 'some value',
         color: 'red',
         fieldId: 'field-1',
+        showOutline: true,
+        syncContent: true,
+        attribute: 'value',
       });
+    });
+
+    test('should not emit input event if can not sync', () => {
+      instance['room'] = {
+        emit: jest.fn(),
+      } as any;
+      instance['localParticipant'] = {
+        slot: { color: 'red' },
+      } as any;
+
+      const event = {
+        target: { value: 'some value', id: 'field-1' },
+      } as any;
+
+      instance['flags'].disableRealtimeSync = true;
+
+      instance['handleInput'](event);
+
+      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.keyboard-interactionfield-1', {
+        fieldId: 'field-1',
+        color: 'red',
+      });
+    });
+  });
+
+  describe('handleChange', () => {
+    test('should emit an event with the field content and local participant color', () => {
+      instance['room'] = {
+        emit: jest.fn(),
+      } as any;
+      instance['localParticipant'] = {
+        slot: { color: 'red' },
+      } as any;
+
+      const event = {
+        target: { checked: true, id: 'field-1' },
+      } as any;
+
+      instance['handleChange'](event);
+
+      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
+        value: true,
+        color: 'red',
+        fieldId: 'field-1',
+        showOutline: true,
+        syncContent: true,
+        attribute: 'checked',
+      });
+    });
+
+    test('should not emit input event if can not sync', () => {
+      instance['room'] = {
+        emit: jest.fn(),
+      } as any;
+      instance['localParticipant'] = {
+        slot: { color: 'red' },
+      } as any;
+
+      const event = {
+        target: { checked: true, id: 'field-1' },
+      } as any;
+
+      instance['flags'].disableRealtimeSync = true;
+
+      instance['handleChange'](event);
+
+      expect(instance['room'].emit).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -398,7 +591,7 @@ describe('form elements', () => {
 
   describe('validateFieldType', () => {
     test('should throw error if input type is not allowed', () => {
-      const field = document.getElementById('date') as HTMLInputElement;
+      const field = document.getElementById('hidden') as HTMLInputElement;
       const validate = () => instance['validateFieldType'](field);
       expect(validate).toThrowError();
     });
@@ -464,6 +657,17 @@ describe('form elements', () => {
       instance['removeFieldColor']({ presence: { id: '123' }, data: { fieldId: 'field-1' } });
 
       expect(instance['fieldsOriginalOutline']['field-1']).toBe('some value');
+    });
+
+    test('should set outline to empty string if there is no saved original outline', () => {
+      const field = document.getElementById('field-1') as HTMLInputElement;
+      field.style.outline = '1px solid red';
+      instance['fields'] = { 'field-1': field };
+      instance['focusList'] = { 'field-1': { id: '123' } };
+
+      instance['removeFieldColor']({ presence: { id: '123' }, data: { fieldId: 'field-1' } });
+
+      expect(field.style.outline).toBe('');
     });
   });
 
@@ -621,9 +825,16 @@ describe('form elements', () => {
       instance['fields'] = { 'field-1': field };
       instance['localParticipant'] = { id: '123' } as any;
 
+      instance['flags'].disableRealtimeSync = false;
+
       instance['updateFieldContent']({
         presence: { id: '321' },
-        data: { content: 'new content', fieldId: 'field-1' },
+        data: {
+          value: 'new content',
+          fieldId: 'field-1',
+          syncContent: true,
+          attribute: 'value',
+        },
       });
 
       expect(field.value).toBe('new content');
@@ -644,21 +855,249 @@ describe('form elements', () => {
       expect(field.value).toBe('old content');
     });
 
-    describe('restoreOutlines', () => {
-      test('should restore outlines of all fields', () => {
-        const field1 = document.getElementById('field-1') as HTMLInputElement;
-        const field2 = document.getElementById('field-2') as HTMLInputElement;
-        field1.style.outline = '1px solid red';
-        field2.style.outline = '1px solid blue';
+    test('should update outline color if flag is active and can update color', () => {
+      const field = document.getElementById('field-1') as HTMLInputElement;
+      field.style.outline = '1px solid red';
+      instance['fields'] = { 'field-1': field };
+      instance['localParticipant'] = { id: '123' } as any;
 
-        instance['fields'] = { 'field-1': field1, 'field-2': field2 };
-        instance['fieldsOriginalOutline'] = { 'field-1': 'old-outline', 'field-2': 'old-outline' };
-
-        instance['restoreOutlines']();
-
-        expect(field1.style.outline).toBe('old-outline');
-        expect(field2.style.outline).toBe('old-outline');
+      instance['flags'].disableOutline = false;
+      instance['updateFieldColor'] = jest.fn();
+      instance['updateFieldContent']({
+        presence: { id: '321' },
+        data: {
+          value: 'new content',
+          fieldId: 'field-1',
+          syncContent: true,
+          attribute: 'value',
+          showOutline: true,
+        },
       });
+
+      expect(instance['updateFieldColor']).toHaveBeenCalled();
+    });
+  });
+
+  describe('restoreOutlines', () => {
+    test('should restore outlines of all fields', () => {
+      const field1 = document.getElementById('field-1') as HTMLInputElement;
+      const field2 = document.getElementById('field-2') as HTMLInputElement;
+      field1.style.outline = '1px solid red';
+      field2.style.outline = '1px solid blue';
+
+      instance['fields'] = { 'field-1': field1, 'field-2': field2 };
+      instance['fieldsOriginalOutline'] = { 'field-1': 'old-outline', 'field-2': 'old-outline' };
+
+      instance['restoreOutlines']();
+
+      expect(field1.style.outline).toBe('old-outline');
+      expect(field2.style.outline).toBe('old-outline');
+    });
+  });
+
+  describe('publishTypedEvent', () => {
+    test('should publish event', () => {
+      const fieldId = 'field-1';
+      const color = 'red';
+      const presence = { id: '123' };
+      const data = { fieldId, color };
+      instance['localParticipant'] = { id: '321' } as any;
+      instance['publish'] = jest.fn();
+
+      instance['publishTypedEvent']({ presence, data });
+
+      expect(instance['publish']).toHaveBeenCalledWith(
+        `${FieldEvents.KEYBOARD_INTERACTION}-${fieldId}`,
+        {
+          fieldId,
+          userId: '123',
+          userName: undefined,
+          color,
+        },
+      );
+    });
+
+    test('should not publish event if presence id is local participant id', () => {
+      const fieldId = 'field-1';
+      const color = 'red';
+      const presence = { id: '123' };
+      const data = { fieldId, color };
+      instance['localParticipant'] = { id: '123' } as any;
+      instance['publish'] = jest.fn();
+
+      instance['publishTypedEvent']({ presence, data });
+
+      expect(instance['publish']).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('canUpdateColor', () => {
+    test('should return false if disableOutline flag is true', () => {
+      instance['flags'].disableOutline = true;
+      expect(instance['canUpdateColor']('field-1')).toBeFalsy();
+    });
+
+    test('should return false if field is disabled', () => {
+      instance['enabledOutlineFields'] = { 'field-1': false };
+      expect(instance['canUpdateColor']('field-1')).toBeFalsy();
+    });
+
+    test('should return true if field is not disabled', () => {
+      instance['enabledOutlineFields'] = { 'field-1': true };
+      expect(instance['canUpdateColor']('field-1')).toBeTruthy();
+    });
+  });
+
+  describe('enableOutline', () => {
+    test('should enable outline color changes for a field', () => {
+      instance['fields'] = { 'field-1': document.getElementById('field-1') as HTMLInputElement };
+      instance['fields']['field-1'].style.outline = '1px solid black';
+      instance['enabledOutlineFields'] = {};
+      instance['fieldsOriginalOutline'] = {};
+
+      const addEventListenerSpy = jest.spyOn(instance['fields']['field-1'], 'addEventListener');
+      const onSpy = jest.spyOn(instance['room'], 'on');
+
+      instance['enableOutline']('field-1');
+
+      expect(instance['enabledOutlineFields']['field-1']).toBeTruthy();
+      expect(instance['fieldsOriginalOutline']['field-1']).toBe('1px solid black');
+      expect(addEventListenerSpy).toHaveBeenCalledTimes(2);
+      expect(onSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('should not enable outline color changes if field is not found', () => {
+      instance['fields'] = {};
+      instance['enabledOutlineFields'] = {};
+      instance['fieldsOriginalOutline'] = {};
+
+      const onSpy = jest.spyOn(instance['room'], 'on');
+
+      instance['enableOutline']('field-1');
+
+      expect(instance['enabledOutlineFields']['field-1']).toBeUndefined();
+      expect(instance['fieldsOriginalOutline']['field-1']).toBeUndefined();
+      expect(onSpy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('disableOutline', () => {
+    test('should disable outline color changes for a field', () => {
+      instance['fields'] = { 'field-1': document.getElementById('field-1') as HTMLInputElement };
+      instance['fields']['field-1'].style.outline = '2px green';
+      instance['enabledOutlineFields'] = {};
+      instance['fieldsOriginalOutline'] = {
+        'field-1': '1px solid black',
+      };
+
+      const removeEventListenerSpy = jest.spyOn(
+        instance['fields']['field-1'],
+        'removeEventListener',
+      );
+      const offSpy = jest.spyOn(instance['room'], 'off');
+
+      instance['disableOutline']('field-1');
+
+      expect(instance['enabledOutlineFields']['field-1']).toBe(false);
+      expect(instance['fieldsOriginalOutline']['field-1']).toBe('1px solid black');
+      expect(removeEventListenerSpy).toHaveBeenCalledTimes(2);
+      expect(offSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('should not disable outline color changes if field is not found', () => {
+      instance['fields'] = {};
+      instance['enabledOutlineFields'] = {};
+      instance['fieldsOriginalOutline'] = {};
+
+      const offSpy = jest.spyOn(instance['room'], 'off');
+
+      instance['disableOutline']('field-1');
+
+      expect(instance['enabledOutlineFields']['field-1']).toBe(undefined);
+      expect(offSpy).toHaveBeenCalledTimes(0);
+    });
+
+    test('should set outlien to empty string if there is no saved original outline', () => {
+      instance['fields'] = { 'field-1': document.getElementById('field-1') as HTMLInputElement };
+      instance['fields']['field-1'].style.outline = '2px green';
+      instance['enabledOutlineFields'] = {};
+      instance['fieldsOriginalOutline'] = {};
+
+      instance['disableOutline']('field-1');
+
+      expect(instance['fields']['field-1'].style.outline).toBe('');
+    });
+  });
+
+  describe('sync', () => {
+    test('should emit an event with the field content and local participant color', () => {
+      instance['room'] = {
+        emit: jest.fn(),
+      } as any;
+      instance['localParticipant'] = {
+        slot: { color: 'red' },
+      } as any;
+
+      const field = document.getElementById('field-1') as HTMLInputElement;
+      field.value = 'some value';
+
+      instance['fields'] = { 'field-1': field };
+      instance['hasCheckedProperty'] = jest.fn().mockReturnValue(false);
+      instance['sync']('field-1');
+
+      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
+        value: 'some value',
+        color: 'red',
+        fieldId: 'field-1',
+        showOutline: true,
+        syncContent: true,
+        attribute: 'value',
+      });
+    });
+
+    test('should emit an event with the field checked value and local participant color', () => {
+      instance['room'] = {
+        emit: jest.fn(),
+      } as any;
+      instance['localParticipant'] = {
+        slot: { color: 'red' },
+      } as any;
+
+      const field = document.createElement('checkbox') as HTMLInputElement;
+      field.checked = true;
+
+      instance['fields'] = { checkbox: field };
+      instance['hasCheckedProperty'] = jest.fn().mockReturnValue(true);
+      instance['sync']('checkbox');
+
+      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+
+      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputcheckbox', {
+        value: true,
+        color: 'red',
+        fieldId: 'checkbox',
+        showOutline: true,
+        syncContent: true,
+        attribute: 'checked',
+      });
+    });
+  });
+
+  describe('enableRealtimeSync', () => {
+    test('should add field to enabled realtime sync list', () => {
+      instance['enabledRealtimeSyncFields'] = {};
+      instance['enableRealtimeSync']('field-1');
+      expect(instance['enabledRealtimeSyncFields']['field-1']).toBe(true);
+    });
+  });
+
+  describe('disableRealtimeSync', () => {
+    test('should remove field from enabled realtime sync list', () => {
+      instance['enabledRealtimeSyncFields'] = { 'field-1': true };
+      instance['disableRealtimeSync']('field-1');
+      expect(instance['enabledRealtimeSyncFields']['field-1']).toBe(false);
     });
   });
 });
