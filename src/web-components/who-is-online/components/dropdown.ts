@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
+import { StoreType } from '../../../common/types/stores.types';
 import { Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
@@ -31,6 +32,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare dropdownList: HTMLElement;
 
   private animationFrame: number;
+  private disablePresenceControls: boolean;
 
   static properties = {
     open: { type: Boolean },
@@ -48,9 +50,11 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
 
   constructor() {
     super();
-    // should match presence-mouse textColorValues
     this.selected = '';
     this.showParticipantTooltip = true;
+
+    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+    disablePresenceControls.subscribe();
   }
 
   protected firstUpdated(
@@ -104,8 +108,10 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     });
   };
 
-  private selectParticipant = (participantId: string) => {
+  private selectParticipant = (participantId: string, disableDropdown: boolean) => {
     return () => {
+      if (disableDropdown) return;
+
       this.selected = participantId;
     };
   };
@@ -148,8 +154,8 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       (participant) => participant.id,
       (participant, index) => {
         const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
-
-        const disableDropdown = !joinedPresence || isLocal || this.disableDropdown;
+        const disableDropdown =
+          !joinedPresence || isLocal || this.disableDropdown || this.disablePresenceControls;
 
         const contentClasses = {
           'who-is-online__extra-participant': true,
@@ -179,7 +185,11 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           name,
         };
 
-        if (this.localParticipantJoinedPresence && joinedPresence) {
+        if (
+          this.localParticipantJoinedPresence &&
+          joinedPresence &&
+          !this.disablePresenceControls
+        ) {
           tooltipData.action = 'Click to Follow';
         }
 
@@ -204,7 +214,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         >
         <div 
           class=${classMap(contentClasses)} 
-          @click=${this.selectParticipant(id)} slot="dropdown">
+          @click=${this.selectParticipant(id, disableDropdown)} slot="dropdown">
             <div class="who-is-online__participant" style="border-color: 
             ${color}">
               ${this.getAvatar(participant)}

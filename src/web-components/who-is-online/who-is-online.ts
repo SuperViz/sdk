@@ -23,18 +23,20 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   declare position: string;
   declare participants: Participant[];
   declare open: boolean;
-  declare disableDropdown: boolean;
   declare following: Following | undefined;
-  declare localParticipantData: LocalParticipantData;
   declare isPrivate: boolean;
   declare everyoneFollowsMe: boolean;
   declare showTooltip: boolean;
+
+  private localParticipantData: LocalParticipantData;
+  private disablePresenceControls: boolean;
+
+  private disableDropdown: boolean;
 
   static properties = {
     position: { type: String },
     participants: { type: Object },
     open: { type: Boolean },
-    disableDropdown: { type: Boolean },
     following: { type: Object },
     localParticipantColor: { type: String },
     isPrivate: { type: Boolean },
@@ -49,12 +51,24 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.open = false;
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
+
     localParticipant.subscribe((value: Participant) => {
+      const joinedPresence = value.activeComponents?.some((component) =>
+        component.toLowerCase().includes('presence'),
+      );
+
       this.localParticipantData = {
         id: value.id,
-        joinedPresence: false,
+        joinedPresence: value.activeComponents?.some((component) =>
+          component.toLowerCase().includes('presence'),
+        ),
       };
+
+      this.disableDropdown = !joinedPresence;
     });
+
+    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+    disablePresenceControls.subscribe();
   }
 
   protected firstUpdated(
@@ -226,6 +240,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private getOptions(participant: Participant, isBeingFollowed: boolean, isLocal: boolean) {
+    if (this.disablePresenceControls) return [];
+
     const { id, slotIndex, name, color } = participant;
     const baseOption = { id, name, color, slotIndex };
     const { isPrivate } = this;
@@ -247,13 +263,15 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   }
 
   private getIcons(isLocal: boolean, isBeingFollowed: boolean) {
+    if (this.disablePresenceControls) return [];
+
     return isLocal
       ? ['gather', this.everyoneFollowsMe ? 'send-off' : 'send', 'eye_inative']
       : ['place', isBeingFollowed ? 'send-off' : 'send'];
   }
 
   private putLocalParticipationFirst() {
-    if (this.participants[0].isLocal) return;
+    if (!this.participants[0] || this.participants[0].isLocal) return;
 
     const localParticipant = this.participants?.find(({ isLocal }) => isLocal);
     if (!localParticipant) return;
@@ -300,12 +318,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         (participant) => participant.id,
         (participant, index) => {
           const { joinedPresence, isLocal, id, name, color } = participant;
-
           const participantIsFollowed = this.following?.id === id;
           const options = this.getOptions(participant, participantIsFollowed, isLocal);
           const icons = this.getIcons(isLocal, participantIsFollowed);
           const position = this.dropdownPosition(index);
-          const disableDropdown = !joinedPresence || this.disableDropdown;
+          const disableDropdown =
+            !joinedPresence || this.disableDropdown || this.disablePresenceControls;
 
           const classList = {
             'who-is-online__participant': true,
@@ -321,7 +339,14 @@ export class WhoIsOnline extends WebComponentsBaseElement {
             name,
           };
 
-          if (this.localParticipantData?.joinedPresence && joinedPresence && !isLocal) {
+          const showAction = !this.disablePresenceControls;
+
+          if (
+            showAction &&
+            this.localParticipantData?.joinedPresence &&
+            joinedPresence &&
+            !isLocal
+          ) {
             tooltipData.action = 'Click to Follow';
           }
 

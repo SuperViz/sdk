@@ -177,7 +177,7 @@ describe('who-is-online-dropdown', () => {
 
     const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
-    const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex];
+    const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex as number];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #26242A`,
     );
@@ -218,7 +218,22 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should change selected participant when click on it', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({
+      position: 'bottom',
+      participants: [
+        {
+          avatar: {
+            imageUrl: '',
+            model3DUrl: '',
+          },
+          color: MeetingColorsHex[0],
+          id: '1',
+          name: 'John Zero',
+          slotIndex: 0,
+          joinedPresence: true,
+        },
+      ],
+    });
 
     await sleep();
 
@@ -231,6 +246,22 @@ describe('who-is-online-dropdown', () => {
     await sleep();
 
     expect(element()?.['selected']).toBe(mockParticipants[0].id);
+  });
+
+  test('should not change selected participant when click on it if not in presence', async () => {
+    createEl({ position: 'bottom', participants: mockParticipants });
+
+    await sleep();
+
+    const participant = element()?.shadowRoot?.querySelector(
+      '.who-is-online__extra-participant',
+    ) as HTMLElement;
+
+    participant.click();
+
+    await sleep();
+
+    expect(element()?.['selected']).not.toBe(mockParticipants[0].id);
   });
 
   describe('repositionDropdown', () => {
