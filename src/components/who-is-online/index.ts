@@ -32,6 +32,9 @@ export class WhoIsOnline extends BaseComponent {
 
     this.position = options.position ?? Position.TOP_RIGHT;
     this.setStyles(options.styles);
+
+    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+    disablePresenceControls.publish(options.flags?.disablePresenceControls);
   }
 
   /**
@@ -136,7 +139,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
     const updatedParticipants = Object.values(data).filter(({ data }) => {
-      return data.activeComponents?.includes('whoIsOnline');
+      return data.activeComponents?.includes('whoIsOnline') || data.id === this.localParticipantId;
     });
 
     const participants = updatedParticipants
@@ -148,7 +151,6 @@ export class WhoIsOnline extends BaseComponent {
         const { color } = this.realtime.getSlotColor(slotIndex);
         const isLocal = this.localParticipantId === id;
         const joinedPresence = activeComponents.some((component) => component.includes('presence'));
-        this.setLocalData(isLocal, !joinedPresence, joinedPresence);
 
         return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
       });
@@ -162,16 +164,6 @@ export class WhoIsOnline extends BaseComponent {
 
     this.participants = participants;
     this.element.updateParticipants(this.participants);
-  };
-
-  private setLocalData = (local: boolean, disable: boolean, joinedPresence: boolean) => {
-    if (!local) return;
-
-    this.element.disableDropdown = disable;
-    this.element.localParticipantData = {
-      ...this.element.localParticipantData,
-      joinedPresence,
-    };
   };
 
   /**
