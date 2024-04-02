@@ -205,7 +205,10 @@ export class PointersHTML extends BaseComponent {
     if (!pointer) return;
 
     if (this.goToPresenceCallback) {
-      const { x, y } = this.mouses.get(id).getBoundingClientRect();
+      const mouse = this.mouses.get(id);
+      const x = Number(mouse.style.left.replace('px', ''));
+      const y = Number(mouse.style.top.replace('px', ''));
+
       this.goToPresenceCallback({ x, y });
       return;
     }
@@ -491,6 +494,7 @@ export class PointersHTML extends BaseComponent {
    */
   public transform(transformation: Transform) {
     this.transformation = transformation;
+    this.updateParticipantsMouses(true);
   }
 
   /**
@@ -510,7 +514,7 @@ export class PointersHTML extends BaseComponent {
     this.animationFrame = requestAnimationFrame(this.animate);
   };
 
-  private updateParticipantsMouses = (): void => {
+  private updateParticipantsMouses = (haltFollow?: boolean): void => {
     this.presences.forEach((mouse) => {
       if (mouse.id === this.localParticipant.id) return;
 
@@ -521,6 +525,8 @@ export class PointersHTML extends BaseComponent {
 
       this.renderPresenceMouses(mouse);
     });
+
+    if (haltFollow) return;
 
     const isFollowingSomeone = this.presences.has(this.userBeingFollowedId);
     if (isFollowingSomeone) {
@@ -656,7 +662,8 @@ export class PointersHTML extends BaseComponent {
       scale,
     } = this.transformation;
 
-    mouseFollower.style.transform = `translate(${baseX + x * scale}px, ${baseY + y * scale}px)`;
+    mouseFollower.style.left = `${baseX + x * scale}px`;
+    mouseFollower.style.top = `${baseY + y * scale}px`;
   };
 
   /**
