@@ -84,6 +84,11 @@ export const dropdownStyle = css`
     overflow: auto;
   }
 
+  .who-is-online__extras-dropdown superviz-dropdown:hover {
+    z-index: 999;
+    position: relative;
+  }
+
   .who-is-online__extras__arrow-icon {
     display: flex;
     align-items: center;
