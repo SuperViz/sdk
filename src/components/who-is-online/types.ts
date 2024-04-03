@@ -19,4 +19,7 @@ export type WhoIsOnlinePosition = Position | `${Position}` | string | '';
 export interface WhoIsOnlineOptions {
   position?: WhoIsOnlinePosition;
   styles?: string;
+  flags?: {
+    disablePresenceControls?: boolean;
+  }
 }
