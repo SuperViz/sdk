@@ -59,7 +59,7 @@ export class Realtime extends BaseComponent {
     if (this.state !== RealtimeComponentState.STARTED) {
       const message = `Realtime component is not started yet. You can't publish event ${event} before start`;
       this.logger.log(message);
-      console.error(message);
+      console.warn(`[SuperViz] ${message}`);
       return;
     }
 
@@ -107,6 +107,14 @@ export class Realtime extends BaseComponent {
   public fetchHistory = async (
     eventName?: string,
   ): Promise<RealtimeMessage[] | Record<string, RealtimeMessage[]> | null> => {
+    if (this.state !== RealtimeComponentState.STARTED) {
+      const message = `Realtime component is not started yet. You can't retrieve history before start`;
+
+      this.logger.log(message);
+      console.warn(`[SuperViz] ${message}`);
+      return null;
+    }
+
     const history: RealtimeMessage[] | Record<string, RealtimeMessage[]> = await new Promise(
       (resolve, reject) => {
         const next = (data: Socket.RoomHistory) => {

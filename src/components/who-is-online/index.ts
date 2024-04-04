@@ -139,7 +139,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
     const updatedParticipants = Object.values(data).filter(({ data }) => {
-      return data.activeComponents?.includes('whoIsOnline') || data.id === this.localParticipantId;
+      return data.activeComponents?.includes('whoIsOnline');
     });
 
     const participants = updatedParticipants
