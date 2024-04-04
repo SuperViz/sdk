@@ -329,6 +329,12 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private startIOC = (): void => {
     this.logger.log('launcher service @ startIOC');
+    // retrieve the current participants in the room
+    this.LauncherRealtimeRoom.presence.get((presences) => {
+      presences.forEach((presence) => {
+        this.participants.value.set(presence.id, presence.data as Participant);
+      });
+    });
 
     this.LauncherRealtimeRoom.presence.on<Participant>(
       Socket.PresenceEvents.JOINED_ROOM,
@@ -371,6 +377,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
 
     this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
+    this.publish(ParticipantEvent.JOINED, this.participant.value);
   };
 
   /**
