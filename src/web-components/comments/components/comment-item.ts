@@ -239,9 +239,10 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
                 'resolve-icon',
               )} icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
             >
+            <!-- TODO: Add undo icon in sm format -->
               <superviz-icon
                 name=${resolveIcon}
-                size="sm"
+                size="md"
               ></superviz-icon>
             </button>
             <superviz-dropdown
