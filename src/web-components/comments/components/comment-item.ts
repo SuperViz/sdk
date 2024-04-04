@@ -242,7 +242,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
               <superviz-icon
                 name=${resolveIcon}
                 size="sm"
-                suffix=${resolveIcon === 'undo' ? 'md' : undefined}
               ></superviz-icon>
             </button>
             <superviz-dropdown
