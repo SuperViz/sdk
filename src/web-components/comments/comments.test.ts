@@ -63,11 +63,6 @@ describe('comments', () => {
     expect(app?.classList.contains('superviz-comments')).toBe(true);
   });
 
-  // FIXME: Need refactor should listen event toggle
-  test('should toggle superviz comments', async () => {
-    // ! WIP !
-  });
-
   test('should update annotations', async () => {
     const annotations = [{ id: '1', x: 0, y: 0, width: 0, height: 0, text: 'test' }];
 
