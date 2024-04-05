@@ -131,7 +131,7 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     }
   }
 
-  private selectAnnotation = () => {
+  private selectAnnotation = (event: PointerEvent): void => {
     const { uuid } = this.annotation;
     document.body.dispatchEvent(new CustomEvent('select-annotation', { detail: { uuid } }));
   };

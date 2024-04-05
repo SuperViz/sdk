@@ -32,7 +32,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
   declare mode: CommentMode;
   declare deleteCommentModalOpen: boolean;
   declare primaryComment: boolean;
-  declare expandElipsis: boolean;
+  declare isSelected: boolean;
   declare annotationFilter: string;
   declare participantsList: ParticipantByGroupApi[];
   declare mentions: ParticipantByGroupApi[];
@@ -51,7 +51,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     mode: { type: String },
     deleteCommentModalOpen: { type: Boolean },
     primaryComment: { type: Boolean },
-    expandElipsis: { type: Boolean },
+    isSelected: { type: Boolean },
     annotationFilter: { type: String },
     participantsList: { type: Object },
     mentions: { type: Array },
@@ -65,7 +65,46 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
     this.updateComplete.then(() => {
       importStyle.call(this, ['comments']);
     });
+
+    document.body.addEventListener('select-annotation', this.selectAnnotation);
   }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    window.document.body.addEventListener('select-annotation', this.selectAnnotation);
+    window.document.body.addEventListener('keyup', this.unselectAnnotationEsc);
+    window.document.body.addEventListener('unselect-annotation', this.unselectAnnotation);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    window.document.body.removeEventListener('select-annotation', this.selectAnnotation);
+    window.document.body.removeEventListener('keyup', this.unselectAnnotationEsc);
+    window.document.body.removeEventListener('unselect-annotation', this.unselectAnnotation);
+  }
+
+  private unselectAnnotationEsc = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      this.isSelected = false;
+    }
+  };
+
+  private unselectAnnotation = () => {
+    this.isSelected = false;
+  };
+
+  private selectAnnotation = ({ detail }: CustomEvent) => {
+    const { uuid } = detail;
+
+    if (this.isSelected) {
+      this.isSelected = false;
+      return;
+    }
+
+    this.isSelected = uuid === this.annotationId;
+  };
 
   private updateComment = ({ detail }: CustomEvent) => {
     const { text, mentions } = detail;
@@ -159,12 +198,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       }
     };
 
-    const expandElipsis = () => {
-      if (this.text.length < 120) return;
-
-      this.expandElipsis = true;
-    };
-
     const textareaHtml = () => {
       const classes = {
         'comments__comment-item--editable': true,
@@ -189,20 +222,16 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
 
     const commentText = () => {
       const textClasses = {
-        editing: this.mode === CommentMode.EDITABLE,
-        'annotation-content': true,
         text: true,
         'text-big': true,
         'sv-gray-700': true,
+        'annotation-content': true,
         [this.getClasses('content')]: true,
-        'line-clamp': !this.expandElipsis && this.text.length > 120,
+        editing: this.mode === CommentMode.EDITABLE,
+        'line-clamp': !this.isSelected && this.text.length > 120,
       };
 
-      return html`
-        <span id="comment-text" @click=${expandElipsis} class="${classMap(textClasses)}"
-          >${this.text}</span
-        >
-      `;
+      return html` <p id="comment-text" class="${classMap(textClasses)}">${this.text}</p> `;
     };
 
     const closeModal = () => {
@@ -225,12 +254,12 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         <div class=${this.getClasses('header')}>
           <div class=${this.getClasses('metadata')}>
             ${this.getAvatar()}
-            <span class="text text-big text-bold sv-gray-700 ${this.getClasses('username')}"
-              >${this.username}</span
-            >
-            <span class="text text-small sv-gray-500 ${this.getClasses('date')}"
-              >${humanizeDate(this.createdAt)}</span
-            >
+            <span class="text text-big text-bold sv-gray-700 ${this.getClasses('username')}">
+              ${this.username}
+            </span>
+            <span class="text text-small sv-gray-500 ${this.getClasses('date')}">
+              ${humanizeDate(this.createdAt)}
+            </span>
           </div>
           <div class=${this.getClasses('actions')}>
             <button
@@ -239,11 +268,8 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
                 'resolve-icon',
               )} icon-button icon-button--clickable icon-button--xsmall ${isResolvable}"
             >
-              <superviz-icon
-                name=${resolveIcon}
-                size="sm"
-                suffix=${resolveIcon === 'undo' ? 'md' : undefined}
-              ></superviz-icon>
+              <!-- TODO: Add undo icon in sm format -->
+              <superviz-icon name=${resolveIcon} size="sm"></superviz-icon>
             </button>
             <superviz-dropdown
               options=${JSON.stringify(options)}
@@ -251,7 +277,9 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
               returnTo="label"
               position="bottom-left"
               @selected=${dropdownOptionsHandler}
-              @click=${(event: Event) => event.stopPropagation()}
+              @click=${(event: Event) => {
+                event.stopPropagation();
+              }}
               classesPrefix="comments__dropdown"
               parentComponent="comments"
             >

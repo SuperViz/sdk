@@ -50,11 +50,11 @@ describe('CommentsCommentItem', () => {
     const createdAt = element.shadowRoot!.querySelector(
       '.comments__comment-item__date',
     ) as HTMLSpanElement;
-    expect(createdAt.textContent).toEqual(DateTime.now().toFormat('yyyy-dd-MM'));
+    expect(createdAt.innerText).toEqual(DateTime.now().toFormat('yyyy-dd-MM'));
 
     const text = element.shadowRoot!.querySelector(
       '.comments__comment-item__content',
-    ) as HTMLSpanElement;
+    ) as HTMLParagraphElement;
 
     expect(text.innerText).toEqual('This is a comment');
   });
@@ -209,7 +209,7 @@ describe('CommentsCommentItem', () => {
     expect(element.dispatchEvent).toHaveBeenCalledWith(new CustomEvent('delete-annotation'));
   });
 
-  test('when click in text should expand elipis when text is bigger than 120', async () => {
+  test('when text is bigger than 120 and annotation is not selected should add line-clamp class to text', async () => {
     element = await createElement({
       ...DEFAULT_ELEMENT_OPTIONS,
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam lacinia, nisl nisl aliquet nisl, eget aliquam nisl nisl eget.',
@@ -217,15 +217,29 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const text = element.shadowRoot!.querySelector('.annotation-content') as HTMLElement;
-    text.click();
+    const paragraph = element.shadowRoot!.getElementById('comment-text') as HTMLParagraphElement;
+
+    expect(paragraph.classList.contains('line-clamp')).toBeTruthy();
+  });
+
+  test('when text is bigger than 120 and annotation is selected should not have line-clamp to text', async () => {
+    element = await createElement({
+      ...DEFAULT_ELEMENT_OPTIONS,
+      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam lacinia, nisl nisl aliquet nisl, eget aliquam nisl nisl eget.',
+    });
 
     await element['updateComplete'];
 
-    expect(element['expandElipsis']).toBeTruthy();
+    const paragraph = element.shadowRoot!.getElementById('comment-text') as HTMLParagraphElement;
+    paragraph.click();
+
+    element['isSelected'] = true;
+    await element['updateComplete'];
+
+    expect(paragraph.classList.contains('line-clamp')).toBeFalsy();
   });
 
-  test('when click in text should not expand elipis when text is smaller than 120', async () => {
+  test('should not add line-clamp class when text is smaller than 120', async () => {
     element = await createElement({
       ...DEFAULT_ELEMENT_OPTIONS,
       text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -233,11 +247,6 @@ describe('CommentsCommentItem', () => {
 
     await element['updateComplete'];
 
-    const text = element.shadowRoot!.querySelector('.annotation-content') as HTMLElement;
-    text.click();
-
-    await element['updateComplete'];
-
-    expect(element['expandElipsis']).toBeFalsy();
+    expect(element['line-clamp']).toBeFalsy();
   });
 });
