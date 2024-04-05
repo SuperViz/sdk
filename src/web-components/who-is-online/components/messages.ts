@@ -151,7 +151,6 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   // new messages/interactions be added
   // The exception is 1 class unique to each message, so the user can target this message in particular
   private followingMessage() {
-    console.log('uh', this.following);
     if (!this.following) return '';
 
     const { name, color } = this.following;

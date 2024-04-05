@@ -118,8 +118,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       'excess_participants--open': this.open,
     };
 
-    console.log('hm?');
-
     return html`
       <superviz-who-is-online-dropdown
         @selected=${this.dropdownOptionsHandler}
