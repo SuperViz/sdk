@@ -242,7 +242,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             <!-- TODO: Add undo icon in sm format -->
               <superviz-icon
                 name=${resolveIcon}
-                size="md"
+                size="sm"
               ></superviz-icon>
             </button>
             <superviz-dropdown
