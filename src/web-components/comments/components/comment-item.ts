@@ -175,6 +175,7 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
         <superviz-comments-comment-input
           class="${classMap(classes)}"
           editable
+          mode=${this.mode}
           @click=${(event: Event) => event.stopPropagation()}
           text=${this.text}
           eventType="update-comment"

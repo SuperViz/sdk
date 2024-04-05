@@ -298,6 +298,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public setTranscript(state: TranscriptState): void {
     const roomProperties = this.localRoomProperties;
+
     this.updateRoomProperties(Object.assign({}, roomProperties, { transcript: state }));
   }
 
@@ -624,6 +625,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       followParticipantId: null,
       gather: false,
       drawing: null,
+      transcript: TranscriptState.TRANSCRIPT_STOP,
+      kickParticipant: null,
     };
 
     this.updateParticipants();
@@ -696,14 +699,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @function fetchRoomProperties
    * @returns {AblyRealtimeData | null}
    */
-  private fetchRoomProperties(): Promise<AblyRealtimeData | null> {
-    return new Promise((resolve, reject) => {
+  private async fetchRoomProperties(): Promise<AblyRealtimeData | null> {
+    const lastMessage: Ably.Types.Message | null = await new Promise((resolve, reject) => {
       this.supervizChannel.history((error, resultPage) => {
         if (error) {
           reject(error);
         }
 
-        const lastMessage = resultPage.items[0]?.data;
+        const lastMessage = resultPage.items[0];
 
         if (lastMessage) {
           resolve(lastMessage);
@@ -712,6 +715,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
       });
     });
+
+    if (lastMessage?.timestamp < Date.now() - 1000 * 60 * 60) return null;
+
+    return lastMessage?.data || null;
   }
 
   /**
@@ -802,6 +809,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   ): Promise<void> {
     this.isJoinedRoom = true;
     this.localRoomProperties = await this.fetchRoomProperties();
+    this.updateParticipants();
     this.myParticipant = myPresence;
 
     if (!this.localRoomProperties) {
