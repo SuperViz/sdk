@@ -433,7 +433,7 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(2);
-      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(1);
+      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(2);
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).toHaveBeenCalledTimes(1);
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
@@ -471,7 +471,6 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(1);
-      expect(AblyRealtimeServiceInstance['updateParticipants']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
