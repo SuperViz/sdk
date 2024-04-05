@@ -46,11 +46,11 @@ export const createEl = ({
   }
 
   if (showTooltip) {
-    const onHoverData = {
+    const tooltipData = {
       name: 'onHover',
       action: 'Click to see more',
     };
-    element.setAttribute('onHoverData', JSON.stringify(onHoverData));
+    element.setAttribute('tooltipData', JSON.stringify(tooltipData));
     element.setAttribute('canShowTooltip', 'true');
   }
 

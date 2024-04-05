@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -5,12 +6,12 @@ import { repeat } from 'lit/directives/repeat.js';
 
 import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { StoreType } from '../../../common/types/stores.types';
-import { Participant } from '../../../components/who-is-online/types';
+import { Avatar, Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { dropdownStyle } from '../css';
 
-import { Following, WIODropdownOptions, TooltipData, VerticalSide, HorizontalSide } from './types';
+import { Following, VerticalSide, HorizontalSide } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -22,26 +23,22 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   declare open: boolean;
   declare align: HorizontalSide;
   declare position: VerticalSide;
-  declare participants: Participant[];
   declare selected: string;
   declare disableDropdown: boolean;
   declare showSeeMoreTooltip: boolean;
   declare showParticipantTooltip: boolean;
-  declare following: Following;
   declare localParticipantJoinedPresence: boolean;
   declare dropdownList: HTMLElement;
 
+  private participants: Participant[];
   private animationFrame: number;
-  private disablePresenceControls: boolean;
 
   static properties = {
     open: { type: Boolean },
     align: { type: String },
     position: { type: String },
-    participants: { type: Array },
     selected: { type: String },
     disableDropdown: { type: Boolean },
-    following: { type: Object },
     showSeeMoreTooltip: { type: Boolean },
     showParticipantTooltip: { type: Boolean },
     localParticipantJoinedPresence: { type: Boolean },
@@ -53,8 +50,10 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     this.selected = '';
     this.showParticipantTooltip = true;
 
-    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
-    disablePresenceControls.subscribe();
+    const { extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+    extras.subscribe((participants) => {
+      this.participants = participants;
+    });
   }
 
   protected firstUpdated(
@@ -116,22 +115,23 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   };
 
-  private getAvatar(participant: Participant) {
-    if (participant.avatar?.imageUrl) {
+  private getAvatar({ color, imageUrl, firstLetter }: Avatar) {
+    if (imageUrl) {
       return html` <img
         class="who-is-online__participant__avatar"
-        style="background-color: ${participant.color}"
-        src=${participant.avatar.imageUrl}
+        style="background-color: ${color}"
+        src=${imageUrl}
       />`;
     }
 
-    const letterColor = INDEX_IS_WHITE_TEXT.includes(participant.slotIndex) ? '#FFFFFF' : '#26242A';
+    const letterColor =
+      /* INDEX_IS_WHITE_TEXT.includes(participant.slotIndex) ? '#FFFFFF' : */ '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"
-      style="background-color: ${participant.color}; color: ${letterColor}"
+      style="background-color: ${color}; color: ${letterColor}"
     >
-      ${participant.name?.at(0).toUpperCase()}
+      ${firstLetter}
     </div>`;
   }
 
@@ -146,22 +146,18 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   private renderParticipants() {
     if (!this.participants) return;
 
-    const icons = ['place', 'send'];
     const numberOfParticipants = this.participants.length - 1;
 
     return repeat(
       this.participants,
       (participant) => participant.id,
       (participant, index) => {
-        const { id, slotIndex, joinedPresence, isLocal, color, name } = participant;
-        const disableDropdown =
-          !joinedPresence || isLocal || this.disableDropdown || this.disablePresenceControls;
+        const { disableDropdown, id, avatar, controls, tooltip, name } = participant;
 
         const contentClasses = {
           'who-is-online__extra-participant': true,
           'who-is-online__extra-participant--selected': this.selected === id,
           'disable-dropdown': disableDropdown,
-          followed: this.following?.id === id,
         };
 
         const iconClasses = {
@@ -169,55 +165,30 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
           'hide-icon': disableDropdown,
         };
 
-        const participantIsFollowed = this.following?.id === id;
-
-        const options = Object.values(WIODropdownOptions)
-          .map((label, index) => ({
-            label: participantIsFollowed && index ? 'UNFOLLOW' : label,
-            id,
-            name,
-            color,
-            slotIndex,
-          }))
-          .slice(0, 2);
-
-        const tooltipData: TooltipData = {
-          name,
-        };
-
-        if (
-          this.localParticipantJoinedPresence &&
-          joinedPresence &&
-          !this.disablePresenceControls
-        ) {
-          tooltipData.action = 'Click to Follow';
-        }
-
         const isLastParticipant = index === numberOfParticipants;
 
         return html`
         <superviz-dropdown
-        options=${JSON.stringify(options)}
-        label="label"
-        position="bottom-right"
-        @selected=${this.close}
-        icons="${JSON.stringify(icons)}"
-        ?disabled=${disableDropdown}
-        onHoverData=${JSON.stringify(tooltipData)}
-        ?canShowTooltip=${this.showParticipantTooltip}
-        ?shiftTooltipLeft=${true}
-        ?lastParticipant=${isLastParticipant}
-        @toggle-dropdown-state=${this.toggleShowTooltip}
-        classesPrefix="who-is-online__controls"
-        parentComponent="who-is-online"
-        tooltipPrefix="who-is-online"
+          options=${JSON.stringify(controls)}
+          returnData=${JSON.stringify({ participantId: id, source: 'extras' })}
+          tooltipData=${JSON.stringify(tooltip)}
+          position="bottom-right"
+          classesPrefix="who-is-online__controls"
+          parentComponent="who-is-online"
+          tooltipPrefix="who-is-online"
+          ?disabled=${disableDropdown}
+          ?canShowTooltip=${this.showParticipantTooltip}
+          ?shiftTooltipLeft=${true}
+          ?lastParticipant=${isLastParticipant}
+          @toggle-dropdown-state=${this.toggleShowTooltip}
+          @selected=${this.close}
         >
         <div 
           class=${classMap(contentClasses)} 
           @click=${this.selectParticipant(id, disableDropdown)} slot="dropdown">
             <div class="who-is-online__participant" style="border-color: 
-            ${color}">
-              ${this.getAvatar(participant)}
+            ${avatar.color}">
+              ${this.getAvatar(avatar)}
             </div>
             <span class="who-is-online__extras__username">${name}</span>
             <superviz-icon 

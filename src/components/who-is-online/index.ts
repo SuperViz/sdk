@@ -1,22 +1,32 @@
+import { PresenceEvents } from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
+import { Avatar } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { AblyParticipant } from '../../services/realtime/ably/types';
+import { Following } from '../../services/stores/who-is-online/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
+import { DropdownOption } from '../../web-components/dropdown/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { WhoIsOnlinePosition, Position, Participant, WhoIsOnlineOptions } from './types';
+import {
+  WhoIsOnlinePosition,
+  Position,
+  Participant,
+  WhoIsOnlineOptions,
+  TooltipData,
+  WIODropdownOptions,
+} from './types';
 
 export class WhoIsOnline extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
   private element: WhoIsOnlineElement;
   private position: WhoIsOnlinePosition;
-  private participants: Participant[] = [];
-  private following: string;
+  private following: Following;
   private localParticipantId: string;
 
   constructor(options?: WhoIsOnlinePosition | WhoIsOnlineOptions) {
@@ -33,8 +43,22 @@ export class WhoIsOnline extends BaseComponent {
     this.position = options.position ?? Position.TOP_RIGHT;
     this.setStyles(options.styles);
 
-    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+    const {
+      disablePresenceControls,
+      disableGoToParticipant,
+      disableFollowParticipant,
+      disablePrivateMode,
+      disableGatherAll,
+      disableFollowMe,
+      extras,
+    } = this.useStore(StoreType.WHO_IS_ONLINE);
+
     disablePresenceControls.publish(options.flags?.disablePresenceControls);
+    disableGoToParticipant.publish(options.flags?.disableGoToParticipant);
+    disableFollowParticipant.publish(options.flags?.disableFollowParticipant);
+    disablePrivateMode.publish(options.flags?.disablePrivateMode);
+    disableGatherAll.publish(options.flags?.disableGatherAll);
+    disableFollowMe.publish(options.flags?.disableFollowMe);
   }
 
   /**
@@ -44,7 +68,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected start(): void {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe((value: Participant) => {
+    localParticipant.subscribe((value: { id: string }) => {
       this.localParticipantId = value.id;
     });
 
@@ -52,7 +76,7 @@ export class WhoIsOnline extends BaseComponent {
     this.positionWhoIsOnline();
     this.addListeners();
 
-    this.realtime.enterWIOChannel(localParticipant.subject.value as Participant);
+    this.realtime.enterWIOChannel(localParticipant.value);
   }
 
   /**
@@ -66,7 +90,6 @@ export class WhoIsOnline extends BaseComponent {
     this.removeListeners();
     this.element.remove();
     this.element = null;
-    this.participants = null;
   }
 
   /**
@@ -102,6 +125,7 @@ export class WhoIsOnline extends BaseComponent {
     this.element.removeEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
     this.element.removeEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.follow);
     this.element.removeEventListener(RealtimeEvent.REALTIME_GATHER, this.gather);
+    this.room.presence.off(PresenceEvents.UPDATE);
   }
 
   /**
@@ -138,32 +162,14 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
-    const updatedParticipants = Object.values(data).filter(({ data }) => {
-      return data.activeComponents?.includes('whoIsOnline') || data.id === this.localParticipantId;
-    });
+    const updatedParticipants = this.filterParticipants(Object.values(data));
 
-    const participants = updatedParticipants
-      .filter(({ data: { isPrivate, id } }) => {
-        return !isPrivate || (isPrivate && id === this.localParticipantId);
-      })
-      .map(({ data }) => {
-        const { slotIndex, id, name, avatar, activeComponents } = data as Participant;
-        const { color } = this.realtime.getSlotColor(slotIndex);
-        const isLocal = this.localParticipantId === id;
-        const joinedPresence = activeComponents.some((component) => component.includes('presence'));
+    const mappedParticipants = updatedParticipants.map((participant) =>
+      this.getParticipant(participant),
+    );
 
-        return { name, id, slotIndex, color, isLocal, joinedPresence, avatar };
-      });
-
-    if (isEqual(participants, this.participants)) return;
-
-    if (this.following) {
-      const participantBeingFollowed = participants.find(({ id }) => id === this.following);
-      if (!participantBeingFollowed) this.stopFollowing({ clientId: this.following });
-    }
-
-    this.participants = participants;
-    this.element.updateParticipants(this.participants);
+    const remainingParticipants = this.setParticipants(mappedParticipants);
+    this.setExtras(remainingParticipants);
   };
 
   /**
@@ -232,14 +238,32 @@ export class WhoIsOnline extends BaseComponent {
    */
   private followMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, detail.id);
-    this.following = detail.id;
+
+    const { participants, following } = this.useStore(StoreType.WHO_IS_ONLINE);
 
     if (this.following) {
       this.publish(WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT, this.following);
-      return;
     }
 
-    this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
+    if (!this.following) {
+      this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
+    }
+
+    participants.publish(
+      participants.value.map((participant: Participant) => {
+        const participantId = participant.id;
+        const disableDropdown = this.shouldDisableDropdown({
+          activeComponents: participant.activeComponents,
+        });
+        const presenceEnabled = !disableDropdown;
+        const controls = this.getControls({ participantId, presenceEnabled }) ?? [];
+
+        return {
+          ...participant,
+          controls,
+        };
+      }),
+    );
   };
 
   /**
@@ -249,48 +273,68 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private setPrivate = ({ detail: { isPrivate, id } }: CustomEvent) => {
+    const { privateMode } = this.useStore(StoreType.WHO_IS_ONLINE);
+    privateMode.publish(isPrivate);
+
     this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, isPrivate);
     this.realtime.setPrivateWIOParticipant(id, isPrivate);
 
     if (isPrivate) {
       this.publish(WhoIsOnlineEvent.ENTER_PRIVATE_MODE);
-      return;
     }
 
-    this.publish(WhoIsOnlineEvent.LEAVE_PRIVATE_MODE);
+    if (!isPrivate) {
+      this.publish(WhoIsOnlineEvent.LEAVE_PRIVATE_MODE);
+    }
   };
 
-  private setFollow = (following) => {
-    if (following.clientId === this.localParticipantId) return;
+  private setFollow = (followingData) => {
+    if (followingData.clientId === this.localParticipantId) return;
 
-    this.followMousePointer({ detail: { id: following?.data?.id } } as CustomEvent);
+    this.followMousePointer({ detail: { id: followingData?.data?.id } } as CustomEvent);
+    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
 
-    if (!following.data.id) {
-      this.element.following = undefined;
+    if (!followingData.data.id) {
+      following.publish(undefined);
       return;
     }
 
-    this.following = following.data.id;
-    this.element.following = following.data;
+    following.publish(followingData.data);
   };
 
   private follow = (data: CustomEvent) => {
+    const { everyoneFollowsMe, participants } = this.useStore(StoreType.WHO_IS_ONLINE);
+    everyoneFollowsMe.publish(!!data.detail?.id);
+
     this.realtime.setFollowWIOParticipant({ ...data.detail });
-    this.following = data.detail?.id;
 
     if (this.following) {
       this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);
-      return;
     }
 
-    this.publish(WhoIsOnlineEvent.STOP_FOLLOW_ME);
+    if (!this.following) {
+      this.publish(WhoIsOnlineEvent.STOP_FOLLOW_ME);
+    }
+
+    participants.publish(
+      participants.value.map((participant) => {
+        if (participant.id !== this.localParticipantId) return participant;
+
+        const controls = this.getLocalParticipantControls();
+        return {
+          ...participant,
+          controls,
+        };
+      }),
+    );
   };
 
   private stopFollowing = (participant: { clientId: string }) => {
-    if (participant.clientId !== this.element.following?.id) return;
+    if (participant.clientId !== this.following?.id) return;
 
-    this.element.following = undefined;
-    this.following = undefined;
+    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
+    following.publish(undefined);
+
     this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
     this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
   };
@@ -298,5 +342,178 @@ export class WhoIsOnline extends BaseComponent {
   private gather = (data: CustomEvent) => {
     this.realtime.setGatherWIOParticipant({ ...data.detail });
     this.publish(WhoIsOnlineEvent.GATHER_ALL, data.detail.id);
+  };
+
+  private filterParticipants(participants: AblyParticipant[]) {
+    return participants.filter(({ data: { activeComponents, id, isPrivate } }) => {
+      if (isPrivate && this.localParticipantId !== id) return false;
+
+      const isLocal = id === this.localParticipantId;
+
+      if (isLocal) {
+        const hasPresenceComponent = activeComponents?.some((component) =>
+          component.includes('presence'),
+        );
+        const { joinedPresence } = this.useStore(StoreType.WHO_IS_ONLINE);
+        joinedPresence.publish(hasPresenceComponent);
+      }
+
+      return activeComponents?.includes('whoIsOnline') || isLocal;
+    });
+  }
+
+  private getParticipant(participant: AblyParticipant): Participant {
+    const { avatar: avatarLinks, activeComponents, participantId, name } = participant.data;
+    const isLocalParticipant = participant.clientId === this.localParticipantId;
+
+    const { color } = this.realtime.getSlotColor(participant.data.slotIndex);
+    const disableDropdown = this.shouldDisableDropdown({ activeComponents });
+    const presenceEnabled = !disableDropdown;
+
+    const tooltip = this.getTooltipData({ isLocalParticipant, name, presenceEnabled });
+    const avatar = this.getAvatar({ avatar: avatarLinks, color, name });
+    const controls = this.getControls({ participantId, presenceEnabled }) ?? [];
+
+    return {
+      id: participantId,
+      name,
+      avatar,
+      disableDropdown,
+      tooltip,
+      controls,
+      activeComponents,
+      isLocalParticipant,
+    };
+  }
+
+  private shouldDisableDropdown({ activeComponents }: { activeComponents: string[] | undefined }) {
+    const { joinedPresence, disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+    if (joinedPresence.value === false || disablePresenceControls.value === true) return true;
+
+    return !activeComponents?.some((component) => component.toLowerCase().includes('presence'));
+  }
+
+  private getTooltipData({
+    isLocalParticipant,
+    name,
+    presenceEnabled,
+  }: {
+    isLocalParticipant: boolean;
+    name: string;
+    presenceEnabled: boolean;
+  }): TooltipData {
+    const data: TooltipData = { name };
+
+    if (isLocalParticipant) {
+      data.name += ' (You)';
+    }
+
+    if (presenceEnabled && !isLocalParticipant) {
+      data.info = 'Click to follow';
+    }
+
+    return data;
+  }
+
+  private getAvatar({ avatar, color, name }: { avatar: Avatar; name: string; color: string }) {
+    const imageUrl = avatar?.imageUrl;
+    const firstLetter = name?.at(0).toUpperCase() ?? 'A';
+
+    return { imageUrl, firstLetter, color };
+  }
+
+  private getControls({
+    participantId,
+    presenceEnabled,
+  }: {
+    participantId: string;
+    presenceEnabled: boolean;
+  }): DropdownOption[] | undefined {
+    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    if (disablePresenceControls.value || !presenceEnabled) return;
+
+    if (participantId === this.localParticipantId) {
+      return this.getLocalParticipantControls();
+    }
+
+    return this.getOtherParticipantsControls(participantId);
+  }
+
+  private getOtherParticipantsControls(participantId: string): DropdownOption[] {
+    const { disableGoToParticipant, disableFollowParticipant, following } = this.useStore(
+      StoreType.WHO_IS_ONLINE,
+    );
+
+    const controls: DropdownOption[] = [];
+
+    if (!disableGoToParticipant.value) {
+      controls.push({ option: WIODropdownOptions['GOTO'], icon: 'place' });
+    }
+
+    if (!disableFollowParticipant.value) {
+      const isBeingFollowed = following.value?.id === participantId;
+      const option = isBeingFollowed
+        ? WIODropdownOptions['LOCAL_UNFOLLOW']
+        : WIODropdownOptions['LOCAL_FOLLOW'];
+      const icon = isBeingFollowed ? 'send-off' : 'send';
+      controls.push({ option, icon });
+    }
+
+    return controls;
+  }
+
+  private getLocalParticipantControls(): DropdownOption[] {
+    const {
+      disableFollowMe: { value: disableFollowMe },
+      disableGatherAll: { value: disableGatherAll },
+      disablePrivateMode: { value: disablePrivateMode },
+      everyoneFollowsMe: { value: everyoneFollowsMe },
+      privateMode: { value: privateMode },
+    } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    const controls: DropdownOption[] = [];
+
+    if (!disableGatherAll) {
+      controls.push({ option: WIODropdownOptions['GATHER'], icon: 'gather' });
+    }
+
+    if (!disableFollowMe) {
+      const icon = everyoneFollowsMe ? 'send-off' : 'send';
+      const option = everyoneFollowsMe
+        ? WIODropdownOptions['UNFOLLOW']
+        : WIODropdownOptions['FOLLOW'];
+
+      controls.push({ option, icon });
+    }
+
+    if (!disablePrivateMode) {
+      const icon = privateMode ? 'eye_inative' : 'eye';
+      const option = privateMode
+        ? WIODropdownOptions['LEAVE_PRIVATE']
+        : WIODropdownOptions['PRIVATE'];
+
+      controls.push({ option, icon });
+    }
+
+    return controls;
+  }
+
+  private setParticipants = (participantsList: Participant[]): Participant[] => {
+    const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    const localParticipantIndex = participantsList.findIndex(({ id }) => {
+      return id === this.localParticipantId;
+    });
+
+    const localParticipant = participantsList.splice(localParticipantIndex, 1);
+    const otherParticipants = participantsList.splice(0, 3);
+    participants.publish([...localParticipant, ...otherParticipants]);
+    return participantsList;
+  };
+
+  private setExtras = (participantsList: Participant[]) => {
+    const { extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish(participantsList);
   };
 }

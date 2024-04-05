@@ -15,7 +15,7 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle
 export class Tooltip extends WebComponentsBaseElement {
   static styles = styles;
 
-  declare tooltipData: { name: string; action: string };
+  declare tooltipData: { name: string; info: string };
 
   declare tooltip: HTMLElement;
   declare tooltipOnLeft: boolean;
@@ -255,8 +255,8 @@ export class Tooltip extends WebComponentsBaseElement {
         ?.width}px;"
     >
       <p class="tooltip-name ${this.getClass('title')}">${this.tooltipData?.name}</p>
-      ${this.tooltipData?.action
-        ? html`<p class="tooltip-action ${this.getClass('action')}">${this.tooltipData?.action}</p>`
+      ${this.tooltipData?.info
+        ? html`<p class="tooltip-action ${this.getClass('action')}">${this.tooltipData?.info}</p>`
         : ''}
       <div class="superviz-who-is-online__tooltip-arrow ${this.getClass('')}"></div>
     </div>`;

@@ -4,11 +4,12 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import { Participant } from '../../../common/types/participant.types';
 import { StoreType } from '../../../common/types/stores.types';
+import { Following } from '../../../services/stores/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { messagesStyle } from '../css';
 
-import { HorizontalSide, Following, VerticalSide } from './types';
+import { HorizontalSide, VerticalSide } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle];
@@ -17,17 +18,16 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle
 export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   static styles = styles;
 
-  declare following: Following | undefined;
   declare everyoneFollowsMe: boolean;
   declare isPrivate: boolean;
   declare verticalSide: VerticalSide;
   declare horizontalSide: HorizontalSide;
 
+  private following: Following | undefined;
   private participantColor: string;
   private animationFrame: number | undefined;
 
   static properties = {
-    following: { type: Object },
     everyoneFollowsMe: { type: Boolean },
     isPrivate: { type: Boolean },
     verticalSide: { type: String },
@@ -40,6 +40,9 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     localParticipant.subscribe((participant: Participant) => {
       this.participantColor = participant.color;
     });
+
+    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
+    following.subscribe();
   }
 
   protected firstUpdated(
@@ -148,6 +151,7 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   // new messages/interactions be added
   // The exception is 1 class unique to each message, so the user can target this message in particular
   private followingMessage() {
+    console.log('uh', this.following);
     if (!this.following) return '';
 
     const { name, color } = this.following;
