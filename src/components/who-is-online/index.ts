@@ -50,7 +50,7 @@ export class WhoIsOnline extends BaseComponent {
       disablePrivateMode,
       disableGatherAll,
       disableFollowMe,
-      extras,
+      following,
     } = this.useStore(StoreType.WHO_IS_ONLINE);
 
     disablePresenceControls.publish(options.flags?.disablePresenceControls);
@@ -59,6 +59,8 @@ export class WhoIsOnline extends BaseComponent {
     disablePrivateMode.publish(options.flags?.disablePrivateMode);
     disableGatherAll.publish(options.flags?.disableGatherAll);
     disableFollowMe.publish(options.flags?.disableFollowMe);
+
+    following.subscribe();
   }
 
   /**
@@ -239,8 +241,6 @@ export class WhoIsOnline extends BaseComponent {
   private followMousePointer = ({ detail }: CustomEvent) => {
     this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, detail.id);
 
-    const { participants, following } = this.useStore(StoreType.WHO_IS_ONLINE);
-
     if (this.following) {
       this.publish(WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT, this.following);
     }
@@ -249,21 +249,11 @@ export class WhoIsOnline extends BaseComponent {
       this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
     }
 
-    participants.publish(
-      participants.value.map((participant: Participant) => {
-        const participantId = participant.id;
-        const disableDropdown = this.shouldDisableDropdown({
-          activeComponents: participant.activeComponents,
-        });
-        const presenceEnabled = !disableDropdown;
-        const controls = this.getControls({ participantId, presenceEnabled }) ?? [];
+    if (detail.source === 'extras') {
+      this.highlightParticipantBeingFollowed();
+    }
 
-        return {
-          ...participant,
-          controls,
-        };
-      }),
-    );
+    this.updateParticipantsControls(detail.id);
   };
 
   /**
@@ -288,25 +278,21 @@ export class WhoIsOnline extends BaseComponent {
     }
   };
 
-  private setFollow = (followingData) => {
+  private setFollow = (followingData: AblyParticipant) => {
     if (followingData.clientId === this.localParticipantId) return;
 
-    this.followMousePointer({ detail: { id: followingData?.data?.id } } as CustomEvent);
+    const data = followingData.data?.id ? followingData.data : undefined;
     const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
+    following.publish(data);
 
-    if (!followingData.data.id) {
-      following.publish(undefined);
-      return;
-    }
-
-    following.publish(followingData.data);
+    this.followMousePointer({ detail: { id: data?.id } } as CustomEvent);
   };
 
-  private follow = (data: CustomEvent) => {
-    const { everyoneFollowsMe, participants } = this.useStore(StoreType.WHO_IS_ONLINE);
-    everyoneFollowsMe.publish(!!data.detail?.id);
+  private follow = ({ detail }: CustomEvent) => {
+    const { everyoneFollowsMe } = this.useStore(StoreType.WHO_IS_ONLINE);
+    everyoneFollowsMe.publish(!!detail?.id);
 
-    this.realtime.setFollowWIOParticipant({ ...data.detail });
+    this.realtime.setFollowWIOParticipant({ ...detail });
 
     if (this.following) {
       this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);
@@ -316,26 +302,19 @@ export class WhoIsOnline extends BaseComponent {
       this.publish(WhoIsOnlineEvent.STOP_FOLLOW_ME);
     }
 
-    participants.publish(
-      participants.value.map((participant) => {
-        if (participant.id !== this.localParticipantId) return participant;
-
-        const controls = this.getLocalParticipantControls();
-        return {
-          ...participant,
-          controls,
-        };
-      }),
-    );
+    this.updateParticipantsControls(detail?.id);
   };
 
-  private stopFollowing = (participant: { clientId: string }) => {
+  private stopFollowing = (participant: { clientId: string }, stopEvent?: boolean) => {
     if (participant.clientId !== this.following?.id) return;
 
     const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
     following.publish(undefined);
 
     this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
+
+    if (stopEvent) return;
+
     this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
   };
 
@@ -346,7 +325,10 @@ export class WhoIsOnline extends BaseComponent {
 
   private filterParticipants(participants: AblyParticipant[]) {
     return participants.filter(({ data: { activeComponents, id, isPrivate } }) => {
-      if (isPrivate && this.localParticipantId !== id) return false;
+      if (isPrivate && this.localParticipantId !== id) {
+        this.stopFollowing(id, true);
+        return false;
+      }
 
       const isLocal = id === this.localParticipantId;
 
@@ -365,13 +347,13 @@ export class WhoIsOnline extends BaseComponent {
   private getParticipant(participant: AblyParticipant): Participant {
     const { avatar: avatarLinks, activeComponents, participantId, name } = participant.data;
     const isLocalParticipant = participant.clientId === this.localParticipantId;
-
-    const { color } = this.realtime.getSlotColor(participant.data.slotIndex);
-    const disableDropdown = this.shouldDisableDropdown({ activeComponents });
+    const { slotIndex } = participant.data;
+    const { color } = this.realtime.getSlotColor(slotIndex);
+    const disableDropdown = this.shouldDisableDropdown({ activeComponents, participantId });
     const presenceEnabled = !disableDropdown;
 
     const tooltip = this.getTooltipData({ isLocalParticipant, name, presenceEnabled });
-    const avatar = this.getAvatar({ avatar: avatarLinks, color, name });
+    const avatar = this.getAvatar({ avatar: avatarLinks, color, name, slotIndex });
     const controls = this.getControls({ participantId, presenceEnabled }) ?? [];
 
     return {
@@ -386,9 +368,35 @@ export class WhoIsOnline extends BaseComponent {
     };
   }
 
-  private shouldDisableDropdown({ activeComponents }: { activeComponents: string[] | undefined }) {
-    const { joinedPresence, disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
-    if (joinedPresence.value === false || disablePresenceControls.value === true) return true;
+  private shouldDisableDropdown({
+    activeComponents,
+    participantId,
+  }: {
+    activeComponents: string[] | undefined;
+    participantId: string;
+  }) {
+    const {
+      joinedPresence,
+      disablePresenceControls: { value: disablePresenceControls },
+      disableFollowMe: { value: disableFollowMe },
+      disableFollowParticipant: { value: disableFollowParticipant },
+      disableGoToParticipant: { value: disableGoToParticipant },
+      disableGatherAll: { value: disableGatherAll },
+      disablePrivateMode: { value: disablePrivateMode },
+    } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    if (
+      joinedPresence.value === false ||
+      disablePresenceControls.value === true ||
+      (participantId === this.localParticipantId &&
+        disableFollowMe &&
+        disablePrivateMode &&
+        disableGatherAll) ||
+      (participantId !== this.localParticipantId &&
+        disableFollowParticipant &&
+        disableGoToParticipant)
+    )
+      return true;
 
     return !activeComponents?.some((component) => component.toLowerCase().includes('presence'));
   }
@@ -415,11 +423,21 @@ export class WhoIsOnline extends BaseComponent {
     return data;
   }
 
-  private getAvatar({ avatar, color, name }: { avatar: Avatar; name: string; color: string }) {
+  private getAvatar({
+    avatar,
+    color,
+    name,
+    slotIndex,
+  }: {
+    avatar: Avatar;
+    name: string;
+    color: string;
+    slotIndex: number;
+  }) {
     const imageUrl = avatar?.imageUrl;
     const firstLetter = name?.at(0).toUpperCase() ?? 'A';
 
-    return { imageUrl, firstLetter, color };
+    return { imageUrl, firstLetter, color, slotIndex };
   }
 
   private getControls({
@@ -448,16 +466,16 @@ export class WhoIsOnline extends BaseComponent {
     const controls: DropdownOption[] = [];
 
     if (!disableGoToParticipant.value) {
-      controls.push({ option: WIODropdownOptions['GOTO'], icon: 'place' });
+      controls.push({ label: WIODropdownOptions['GOTO'], icon: 'place' });
     }
 
     if (!disableFollowParticipant.value) {
       const isBeingFollowed = following.value?.id === participantId;
-      const option = isBeingFollowed
+      const label = isBeingFollowed
         ? WIODropdownOptions['LOCAL_UNFOLLOW']
         : WIODropdownOptions['LOCAL_FOLLOW'];
       const icon = isBeingFollowed ? 'send-off' : 'send';
-      controls.push({ option, icon });
+      controls.push({ label, icon });
     }
 
     return controls;
@@ -475,25 +493,25 @@ export class WhoIsOnline extends BaseComponent {
     const controls: DropdownOption[] = [];
 
     if (!disableGatherAll) {
-      controls.push({ option: WIODropdownOptions['GATHER'], icon: 'gather' });
+      controls.push({ label: WIODropdownOptions['GATHER'], icon: 'gather' });
     }
 
     if (!disableFollowMe) {
       const icon = everyoneFollowsMe ? 'send-off' : 'send';
-      const option = everyoneFollowsMe
+      const label = everyoneFollowsMe
         ? WIODropdownOptions['UNFOLLOW']
         : WIODropdownOptions['FOLLOW'];
 
-      controls.push({ option, icon });
+      controls.push({ label, icon });
     }
 
     if (!disablePrivateMode) {
       const icon = privateMode ? 'eye_inative' : 'eye';
-      const option = privateMode
+      const label = privateMode
         ? WIODropdownOptions['LEAVE_PRIVATE']
         : WIODropdownOptions['PRIVATE'];
 
-      controls.push({ option, icon });
+      controls.push({ label, icon });
     }
 
     return controls;
@@ -516,4 +534,48 @@ export class WhoIsOnline extends BaseComponent {
     const { extras } = this.useStore(StoreType.WHO_IS_ONLINE);
     extras.publish(participantsList);
   };
+
+  private updateParticipantsControls(participantId: string | undefined) {
+    const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    participants.publish(
+      participants.value.map((participant: Participant) => {
+        if (participantId && participant.id !== participantId) return participant;
+
+        const { id } = participant;
+        const disableDropdown = this.shouldDisableDropdown({
+          activeComponents: participant.activeComponents,
+          participantId: id,
+        });
+        const presenceEnabled = !disableDropdown;
+        const controls = this.getControls({ participantId: id, presenceEnabled }) ?? [];
+
+        return {
+          ...participant,
+          controls,
+        };
+      }),
+    );
+  }
+
+  private highlightParticipantBeingFollowed() {
+    const {
+      extras,
+      participants,
+      following: { value: following },
+    } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    const firstParticipant = participants.value[0];
+
+    const participantId = extras.value.findIndex((participant) => participant.id === following.id);
+    const participant = extras.value.splice(participantId, 1)[0];
+
+    participants.value.unshift(firstParticipant);
+    participants.value[1] = participant;
+    const lastParticipant = participants.value.pop();
+
+    extras.value.push(lastParticipant);
+    extras.publish(extras.value);
+    participants.publish(participants.value);
+  }
 }

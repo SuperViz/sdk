@@ -115,7 +115,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   };
 
-  private getAvatar({ color, imageUrl, firstLetter }: Avatar) {
+  private getAvatar({ color, imageUrl, firstLetter, slotIndex }: Avatar) {
     if (imageUrl) {
       return html` <img
         class="who-is-online__participant__avatar"
@@ -124,8 +124,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
       />`;
     }
 
-    const letterColor =
-      /* INDEX_IS_WHITE_TEXT.includes(participant.slotIndex) ? '#FFFFFF' : */ '#26242A';
+    const letterColor = INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"

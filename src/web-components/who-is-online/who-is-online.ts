@@ -144,7 +144,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.showTooltip = !this.showTooltip;
   };
 
-  private getAvatar({ color, imageUrl, firstLetter }: Avatar) {
+  private getAvatar({ color, imageUrl, firstLetter, slotIndex }: Avatar) {
     if (imageUrl) {
       return html` <img
         class="who-is-online__participant__avatar"
@@ -153,8 +153,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       />`;
     }
 
-    const letterColor =
-      /* INDEX_IS_WHITE_TEXT.includes(participant.slotIndex) ? '#FFFFFF' : */ '#26242A';
+    const letterColor = INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"
@@ -220,36 +219,33 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
   // ----- handle presence controls options -----
   private dropdownOptionsHandler = ({ detail: { label, participantId, source } }: CustomEvent) => {
-    if (label === WIODropdownOptions.GOTO) {
-      this.handleGoTo(participantId);
-    }
-
-    if (label === WIODropdownOptions.LOCAL_FOLLOW) {
-      this.handleLocalFollow(participantId, source);
-    }
-
-    if (label === WIODropdownOptions.LOCAL_UNFOLLOW) {
-      this.handleLocalUnfollow();
-    }
-
-    if (label === WIODropdownOptions.PRIVATE) {
-      this.handlePrivate(participantId);
-    }
-
-    if (label === WIODropdownOptions.LEAVE_PRIVATE) {
-      this.handleCancelPrivate(participantId);
-    }
-
-    if (label === WIODropdownOptions.FOLLOW) {
-      this.handleFollow(participantId, source);
-    }
-
-    if (label === WIODropdownOptions.UNFOLLOW) {
-      this.handleStopFollow();
-    }
-
-    if (label === WIODropdownOptions.GATHER) {
-      this.handleGatherAll(participantId);
+    switch (label) {
+      case WIODropdownOptions.GOTO:
+        this.handleGoTo(participantId);
+        break;
+      case WIODropdownOptions.LOCAL_FOLLOW:
+        this.handleLocalFollow(participantId, source);
+        break;
+      case WIODropdownOptions.LOCAL_UNFOLLOW:
+        this.handleLocalUnfollow();
+        break;
+      case WIODropdownOptions.PRIVATE:
+        this.handlePrivate(participantId);
+        break;
+      case WIODropdownOptions.LEAVE_PRIVATE:
+        this.handleCancelPrivate(participantId);
+        break;
+      case WIODropdownOptions.FOLLOW:
+        this.handleFollow(participantId, source);
+        break;
+      case WIODropdownOptions.UNFOLLOW:
+        this.handleStopFollow();
+        break;
+      case WIODropdownOptions.GATHER:
+        this.handleGatherAll(participantId);
+        break;
+      default:
+        break;
     }
   };
 
@@ -271,7 +267,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       this.handleStopFollow();
     }
     following.publish({ name, id, color });
-    this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id });
+    this.emitEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, { id, source });
   }
 
   private handleLocalUnfollow() {
@@ -299,11 +295,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       this.cancelPrivate();
     }
 
-    const participants = this.useStore(StoreType.WHO_IS_ONLINE)[source].value;
+    const participants: Participant[] = this.useStore(StoreType.WHO_IS_ONLINE)[source].value;
+
     const {
       id,
       name,
-      avatar: { color },
+      avatar: { color, slotIndex },
     } = participants.find(({ id }) => id === participantId);
 
     this.everyoneFollowsMe = true;
@@ -314,7 +311,8 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.emitEvent(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, {
       id,
       name,
-      color /* , slotIndex */,
+      color,
+      slotIndex,
     });
   }
 

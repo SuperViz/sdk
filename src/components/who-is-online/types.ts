@@ -15,7 +15,8 @@ export interface TooltipData {
 
 export interface Avatar {
   imageUrl: string;
-  firstLetter?: string;
+  firstLetter: string;
+  slotIndex: number;
   color: string;
 }
 
@@ -28,14 +29,7 @@ export interface Participant {
   avatar: Avatar;
   activeComponents: string[];
   isLocalParticipant: boolean;
-  // beingFollowed?: boolean;
-  // slotIndex?: number;
-  // make go immediately to the mouse when following
 }
-
-// refactor everywhere that uses superviz-dropdown because of icon changes
-// and label removed too
-// create tooltip inside WIO store
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string | '';
 
