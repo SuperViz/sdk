@@ -35,14 +35,6 @@ export class WhoIsOnline extends BaseComponent {
     this.name = ComponentNames.WHO_IS_ONLINE;
     this.logger = new Logger('@superviz/sdk/who-is-online-component');
 
-    if (typeof options !== 'object') {
-      this.position = options ?? Position.TOP_RIGHT;
-      return;
-    }
-
-    this.position = options.position ?? Position.TOP_RIGHT;
-    this.setStyles(options.styles);
-
     const {
       disablePresenceControls,
       disableGoToParticipant,
@@ -53,14 +45,24 @@ export class WhoIsOnline extends BaseComponent {
       following,
     } = this.useStore(StoreType.WHO_IS_ONLINE);
 
-    disablePresenceControls.publish(options.flags?.disablePresenceControls);
-    disableGoToParticipant.publish(options.flags?.disableGoToParticipant);
-    disableFollowParticipant.publish(options.flags?.disableFollowParticipant);
-    disablePrivateMode.publish(options.flags?.disablePrivateMode);
-    disableGatherAll.publish(options.flags?.disableGatherAll);
-    disableFollowMe.publish(options.flags?.disableFollowMe);
-
     following.subscribe();
+
+    if (typeof options !== 'object') {
+      this.position = options ?? Position.TOP_RIGHT;
+      return;
+    }
+
+    if (typeof options === 'object') {
+      this.position = options.position ?? Position.TOP_RIGHT;
+      this.setStyles(options.styles);
+
+      disablePresenceControls.publish(options.flags?.disablePresenceControls);
+      disableGoToParticipant.publish(options.flags?.disableGoToParticipant);
+      disableFollowParticipant.publish(options.flags?.disableFollowParticipant);
+      disablePrivateMode.publish(options.flags?.disablePrivateMode);
+      disableGatherAll.publish(options.flags?.disableGatherAll);
+      disableFollowMe.publish(options.flags?.disableFollowMe);
+    }
   }
 
   /**
@@ -278,6 +280,12 @@ export class WhoIsOnline extends BaseComponent {
     }
   };
 
+  /**
+   * @function setFollow
+   * @description Sets participant being followed after someone used Everyone Follows Me
+   * @param followingData
+   * @returns
+   */
   private setFollow = (followingData: AblyParticipant) => {
     if (followingData.clientId === this.localParticipantId) return;
 
@@ -305,6 +313,13 @@ export class WhoIsOnline extends BaseComponent {
     this.updateParticipantsControls(detail?.id);
   };
 
+  /**
+   * @function stopFollowing
+   * @description Stops following a participant
+   * @param {AblyParticipant} participant The message sent from Ably (in case of being called as a callback)
+   * @param {boolean} stopEvent A flag that stops the "stop following" event from being published to the user
+   * @returns
+   */
   private stopFollowing = (participant: { clientId: string }, stopEvent?: boolean) => {
     if (participant.clientId !== this.following?.id) return;
 
@@ -318,12 +333,23 @@ export class WhoIsOnline extends BaseComponent {
     this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
   };
 
+  /**
+   * @function gather
+   * @description Propagates the gather all event in the room
+   * @param {CustomEvent} data The custom event object containing data about the participant calling for the gather all
+   */
   private gather = (data: CustomEvent) => {
     this.realtime.setGatherWIOParticipant({ ...data.detail });
     this.publish(WhoIsOnlineEvent.GATHER_ALL, data.detail.id);
   };
 
-  private filterParticipants(participants: AblyParticipant[]) {
+  /**
+   * @function filterParticipants
+   * @description Removes all participants in the room that shouldn't be shown as part of the Who Is Online component, either because they are private, or because they don't have the component active
+   * @param {AblyParticipant[]} participants The list of participants that will be filtered
+   * @returns {AblyParticipant[]}
+   */
+  private filterParticipants(participants: AblyParticipant[]): AblyParticipant[] {
     return participants.filter(({ data: { activeComponents, id, isPrivate } }) => {
       if (isPrivate && this.localParticipantId !== id) {
         this.stopFollowing(id, true);
@@ -344,6 +370,12 @@ export class WhoIsOnline extends BaseComponent {
     });
   }
 
+  /**
+   * @function getParticipant
+   * @description Accomodates the data from a participant coming from Ably to something used in Who Is Online.
+   * @param {AblyParticipant} participant The participant that will be analyzed
+   * @returns {Participant} The data that will be used in the Who Is Online component the most
+   */
   private getParticipant(participant: AblyParticipant): Participant {
     const { avatar: avatarLinks, activeComponents, participantId, name } = participant.data;
     const isLocalParticipant = participant.clientId === this.localParticipantId;
@@ -368,6 +400,12 @@ export class WhoIsOnline extends BaseComponent {
     };
   }
 
+  /**
+   * @function shouldDisableDropdown
+   * @description Decides whether the dropdown with presence controls should be available in a given participant, varying whether they have a presence control enabled or not
+   * @param {activeComponents: string[] | undefined; participantId: string;} data Info regarding the participant that will be used to decide if their avatar will be clickable
+   * @returns {boolean} True or false depending if should disable the participant dropdown or not
+   */
   private shouldDisableDropdown({
     activeComponents,
     participantId,
@@ -376,7 +414,7 @@ export class WhoIsOnline extends BaseComponent {
     participantId: string;
   }) {
     const {
-      joinedPresence,
+      joinedPresence: { value: joinedPresence },
       disablePresenceControls: { value: disablePresenceControls },
       disableFollowMe: { value: disableFollowMe },
       disableFollowParticipant: { value: disableFollowParticipant },
@@ -386,8 +424,8 @@ export class WhoIsOnline extends BaseComponent {
     } = this.useStore(StoreType.WHO_IS_ONLINE);
 
     if (
-      joinedPresence.value === false ||
-      disablePresenceControls.value === true ||
+      joinedPresence === false ||
+      disablePresenceControls === true ||
       (participantId === this.localParticipantId &&
         disableFollowMe &&
         disablePrivateMode &&
@@ -401,6 +439,12 @@ export class WhoIsOnline extends BaseComponent {
     return !activeComponents?.some((component) => component.toLowerCase().includes('presence'));
   }
 
+  /**
+   * @function getTooltipData
+   * @description Processes the participant info and discovers how the tooltip message should looking when hovering over their avatars
+   * @param {isLocalParticipant: boolean; name: string; presenceEnabled: boolean } data Relevant info about the participant that will be used to decide
+   * @returns {TooltipData} What the participant tooltip will look like
+   */
   private getTooltipData({
     isLocalParticipant,
     name,
@@ -423,6 +467,12 @@ export class WhoIsOnline extends BaseComponent {
     return data;
   }
 
+  /**
+   * @function getAvatar
+   * @description Processes the info of the participant's avatar
+   * @param { avatar: Avatar; name: string; color: string; slotIndex: number } data Information about the participant that will take part in their avatar somehow
+   * @returns {Avatar} Information used to decide how to construct the participant's avatar html
+   */
   private getAvatar({
     avatar,
     color,
@@ -435,11 +485,17 @@ export class WhoIsOnline extends BaseComponent {
     slotIndex: number;
   }) {
     const imageUrl = avatar?.imageUrl;
-    const firstLetter = name?.at(0).toUpperCase() ?? 'A';
+    const firstLetter = name?.at(0)?.toUpperCase() ?? 'A';
 
     return { imageUrl, firstLetter, color, slotIndex };
   }
 
+  /**
+   * @function getControls
+   * @description Decides which presence controls the user should see when opening a participant dropdown
+   * @param { participantId: string; presenceEnabled: boolean } data Relevant info about the participant that will be used to decide
+   * @returns {DropdownOption[]} The presence controls enabled for a given participant
+   */
   private getControls({
     participantId,
     presenceEnabled,
@@ -458,6 +514,12 @@ export class WhoIsOnline extends BaseComponent {
     return this.getOtherParticipantsControls(participantId);
   }
 
+  /**
+   * @function getOtherParticipantsControls
+   * @description Decides which presence controls the user should see when opening the dropdown of a participant that is not the local participant
+   * @param {string} participantId Which participant is being analyzed
+   * @returns {DropdownOption[]} The presence controls enabled for the participant
+   */
   private getOtherParticipantsControls(participantId: string): DropdownOption[] {
     const { disableGoToParticipant, disableFollowParticipant, following } = this.useStore(
       StoreType.WHO_IS_ONLINE,
@@ -481,6 +543,11 @@ export class WhoIsOnline extends BaseComponent {
     return controls;
   }
 
+  /**
+   * @function getLocalParticipantControls
+   * @description Decides which presence controls the user should see when opening the dropdown of the local participant
+   * @returns {DropdownOption[]} The presence controls enabled for the local participant
+   */
   private getLocalParticipantControls(): DropdownOption[] {
     const {
       disableFollowMe: { value: disableFollowMe },
@@ -517,6 +584,12 @@ export class WhoIsOnline extends BaseComponent {
     return controls;
   }
 
+  /**
+   * @function setParticipants
+   * @description Adds participants to the main participants (the 4 that are shown without opening any dropdown) until the list is full
+   * @param {Participant[]} participantsList The total participants list
+   * @returns {Participant[]} The participants that did not fit the main list and will be inserted in the extras participants list
+   */
   private setParticipants = (participantsList: Participant[]): Participant[] => {
     const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
 
@@ -530,12 +603,24 @@ export class WhoIsOnline extends BaseComponent {
     return participantsList;
   };
 
-  private setExtras = (participantsList: Participant[]) => {
+  /**
+   * @function setExtras
+   * @description Adds remaining participants to extras participants (those who are shown without opening any dropdown)
+   * @param {Participant[]} participantsList The remaining participants list
+   * @returns {void}
+   */
+  private setExtras = (participantsList: Participant[]): void => {
     const { extras } = this.useStore(StoreType.WHO_IS_ONLINE);
     extras.publish(participantsList);
   };
 
-  private updateParticipantsControls(participantId: string | undefined) {
+  /**
+   * @function updateParticipantsControls
+   * @description Updated what the presence controls of a single participant should look like now that something about them was updated
+   * @param {string | undefined} participantId The participant that suffered some update
+   * @returns {void} The participants that did not fit the main list and will be inserted in the extras participants list
+   */
+  private updateParticipantsControls(participantId: string | undefined): void {
     const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
 
     participants.publish(
@@ -558,7 +643,12 @@ export class WhoIsOnline extends BaseComponent {
     );
   }
 
-  private highlightParticipantBeingFollowed() {
+  /**
+   * @function highlightParticipantBeingFollowed
+   * @description Brings a participant that is in the list of extra participants to the front, in the second place of the list of main participants, so they are visible while being followed
+   * @returns {void}
+   */
+  private highlightParticipantBeingFollowed(): void {
     const {
       extras,
       participants,

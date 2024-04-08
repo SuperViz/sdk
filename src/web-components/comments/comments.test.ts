@@ -79,14 +79,14 @@ describe('comments', () => {
   });
 
   test('should set filter', async () => {
-    const filter = 'test';
-    const detail = { filter };
+    const label = 'test';
+    const detail = { filter: { label } };
 
     element['setFilter']({ detail });
 
     await sleep();
 
-    expect(element['annotationFilter']).toEqual(filter);
+    expect(element['annotationFilter']).toEqual(label);
   });
 
   test('should show water mark', async () => {

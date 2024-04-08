@@ -82,10 +82,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     importStyle.call(this, 'who-is-online');
   }
 
-  public updateParticipants(data: Participant[]) {
-    this.participants = data;
-  }
-
   private toggleOpen() {
     this.open = !this.open;
   }

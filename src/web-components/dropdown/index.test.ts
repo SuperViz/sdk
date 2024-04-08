@@ -2,26 +2,26 @@ import '.';
 
 import sleep from '../../common/utils/sleep';
 
+import { DropdownOption } from './types';
+
 interface elementProps {
   position: string;
   align: string;
   label?: string;
-  returnTo?: string;
-  options?: Record<string, unknown>;
+  options?: DropdownOption[];
   name?: string;
-  icons?: string[];
   showTooltip?: boolean;
+  returnData?: any;
 }
 
 export const createEl = ({
   position,
   align,
   label,
-  returnTo,
   options,
   name,
-  icons,
   showTooltip,
+  returnData,
 }: elementProps): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-dropdown');
 
@@ -29,20 +29,16 @@ export const createEl = ({
     element.setAttribute('label', label);
   }
 
-  if (returnTo) {
-    element.setAttribute('returnTo', returnTo);
-  }
-
   if (options) {
     element.setAttribute('options', JSON.stringify(options));
   }
 
-  if (name) {
-    element.setAttribute('name', name);
+  if (returnData) {
+    element.setAttribute('returnData', JSON.stringify(returnData));
   }
 
-  if (icons) {
-    element.setAttribute('icons', JSON.stringify(icons));
+  if (name) {
+    element.setAttribute('name', name);
   }
 
   if (showTooltip) {
@@ -137,7 +133,7 @@ describe('dropdown', () => {
   });
 
   test('should close dropdown when click on it', async () => {
-    const el = createEl({ position: 'bottom-left', align: 'left', icons: ['left', 'right'] });
+    const el = createEl({ position: 'bottom-left', align: 'left' });
     await sleep();
 
     dropdownContent()?.click();
@@ -213,8 +209,8 @@ describe('dropdown', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  test('should emit event with all content when returnTo not specified', async () => {
-    createEl({ position: 'bottom-right', align: 'left' });
+  test('should emit event with returnData when returnData specified', async () => {
+    createEl({ position: 'bottom-right', align: 'left', returnData: { value: 1 } });
 
     await sleep();
 
@@ -235,10 +231,7 @@ describe('dropdown', () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         detail: {
-          name: 'EDIT',
-          value: {
-            uuid: 'any_uuid',
-          },
+          value: 1,
         },
       }),
     );
@@ -273,43 +266,20 @@ describe('dropdown', () => {
   });
 
   test('should show icons if icons is specified', async () => {
-    createEl({ position: 'bottom-right', align: 'left', icons: ['left', 'right'] });
+    createEl({
+      position: 'bottom-right',
+      align: 'left',
+      options: [
+        { label: 'left', icon: 'left' },
+        { label: 'right', icon: 'right' },
+      ],
+    });
 
     await sleep();
 
     const icons = dropdownListUL()?.querySelector('superviz-icon');
 
     expect(icons).not.toBeNull();
-  });
-
-  test('should emit event with returnTo content when returnTo specified', async () => {
-    createEl({ position: 'bottom-right', align: 'left', label: 'name', returnTo: 'value' });
-
-    await sleep();
-
-    element()!['emitEvent'] = jest.fn();
-
-    dropdownContent()?.click();
-
-    await sleep();
-
-    const option = dropdownListUL()?.querySelector('li');
-
-    option?.click();
-
-    await sleep();
-
-    expect(element()!['emitEvent']).toHaveBeenNthCalledWith(
-      3,
-      'selected',
-      {
-        uuid: 'any_uuid',
-      },
-      {
-        bubbles: false,
-        composed: true,
-      },
-    );
   });
 
   describe('tooltip', () => {

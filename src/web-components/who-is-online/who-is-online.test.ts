@@ -1,18 +1,14 @@
-import { html } from 'lit';
-
 import '.';
-import {
-  MOCK_ABLY_PARTICIPANT_DATA_1,
-  MOCK_LOCAL_PARTICIPANT,
-} from '../../../__mocks__/participants.mock';
+
+import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { RealtimeEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { StoreType } from '../../common/types/stores.types';
 import sleep from '../../common/utils/sleep';
-import { Participant } from '../../components/who-is-online/types';
+import { useStore } from '../../common/utils/use-store';
+import { Participant, WIODropdownOptions } from '../../components/who-is-online/types';
 import { useGlobalStore } from '../../services/stores';
-import { Dropdown } from '../dropdown/index';
-
-import { WIODropdownOptions } from './components/types';
+import { Following } from '../../services/stores/who-is-online/types';
 
 let element: HTMLElement;
 
@@ -20,34 +16,74 @@ const MOCK_PARTICIPANTS: Participant[] = [
   {
     name: 'John Zero',
     avatar: {
-      imageUrl: '',
-      model3DUrl: '',
+      imageUrl: 'https://example.com',
+      color: MeetingColorsHex[0],
+      firstLetter: 'J',
+      slotIndex: 0,
     },
-    color: MeetingColorsHex[0],
     id: '1',
-    slotIndex: 0,
-    joinedPresence: true,
+    activeComponents: ['whoisonline', 'presence'],
+    isLocalParticipant: true,
+    tooltip: {
+      name: 'John Zero (you)',
+    },
+    controls: [
+      {
+        label: WIODropdownOptions.GATHER,
+      },
+      {
+        label: WIODropdownOptions.FOLLOW,
+      },
+      {
+        label: WIODropdownOptions.PRIVATE,
+      },
+    ],
   },
   {
     name: 'John Uno',
     avatar: {
-      imageUrl: 'https://link.com/image',
-      model3DUrl: '',
+      imageUrl: '',
+      color: MeetingColorsHex[1],
+      firstLetter: 'J',
+      slotIndex: 1,
     },
-    color: MeetingColorsHex[1],
     id: '2',
-    slotIndex: 1,
-    isLocal: true,
+    activeComponents: ['whoisonline'],
+    isLocalParticipant: false,
+    tooltip: {
+      name: 'John Uno',
+    },
+    controls: [
+      {
+        label: WIODropdownOptions.GOTO,
+      },
+      {
+        label: WIODropdownOptions.LOCAL_FOLLOW,
+      },
+    ],
   },
   {
     name: 'John Doe',
     avatar: {
       imageUrl: '',
-      model3DUrl: '',
+      color: MeetingColorsHex[2],
+      firstLetter: 'J',
+      slotIndex: 2,
     },
-    color: MeetingColorsHex[2],
     id: '3',
-    slotIndex: 2,
+    activeComponents: ['whoisonline', 'presence'],
+    isLocalParticipant: true,
+    tooltip: {
+      name: 'John Doe',
+    },
+    controls: [
+      {
+        label: WIODropdownOptions.GOTO,
+      },
+      {
+        label: WIODropdownOptions.LOCAL_FOLLOW,
+      },
+    ],
   },
 ];
 
@@ -55,6 +91,8 @@ describe('Who Is Online', () => {
   beforeEach(async () => {
     const { localParticipant } = useGlobalStore();
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
+    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
+    participants.publish([]);
 
     element = document.createElement('superviz-who-is-online');
     element['localParticipantData'] = {
@@ -71,10 +109,10 @@ describe('Who Is Online', () => {
   });
 
   test('should render a participants with class "who-is-online__participant-list"', async () => {
-    element['updateParticipants'](MOCK_PARTICIPANTS);
-    await sleep();
-    const participants = element?.shadowRoot?.querySelector('.who-is-online__participant-list');
-    expect(participants).not.toBeFalsy();
+    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
+    participants.publish(MOCK_PARTICIPANTS);
+    const participantsDivs = element?.shadowRoot?.querySelector('.who-is-online__participant-list');
+    expect(participantsDivs).not.toBeFalsy();
   });
 
   test('should have default positioning style', () => {
@@ -109,33 +147,36 @@ describe('Who Is Online', () => {
   });
 
   test('should update participants list', async () => {
-    let participants = element?.shadowRoot?.querySelectorAll('.who-is-online__participant');
+    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
+    let participantsDivs = element?.shadowRoot?.querySelectorAll('.who-is-online__participant');
+    expect(participantsDivs?.length).toBe(0);
 
-    expect(participants?.length).toBe(0);
+    participants.publish(MOCK_PARTICIPANTS);
 
-    element['updateParticipants'](MOCK_PARTICIPANTS);
     await sleep();
 
-    participants = element.shadowRoot?.querySelectorAll('.who-is-online__participant');
-    expect(participants?.length).toBe(3);
+    participantsDivs = element.shadowRoot?.querySelectorAll('.who-is-online__participant');
+    expect(participantsDivs?.length).toBe(3);
 
-    element['updateParticipants'](MOCK_PARTICIPANTS.slice(0, 2));
+    participants.publish(MOCK_PARTICIPANTS.slice(0, 2));
     await sleep();
 
-    participants = element.shadowRoot?.querySelectorAll('.who-is-online__participant');
+    participantsDivs = element.shadowRoot?.querySelectorAll('.who-is-online__participant');
 
-    expect(participants?.length).toBe(2);
+    expect(participantsDivs?.length).toBe(2);
   });
 
   test('should render excess participants dropdown icon', async () => {
-    element['updateParticipants'](MOCK_PARTICIPANTS);
+    const { participants, extras } = useStore(StoreType.WHO_IS_ONLINE);
+    participants.publish(MOCK_PARTICIPANTS);
+
     await sleep();
 
     let extraParticipants = element?.shadowRoot?.querySelector('.superviz-who-is-online__excess');
 
-    expect(extraParticipants).toBeFalsy();
+    expect(extraParticipants).toBe(null);
 
-    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
+    extras.publish(MOCK_PARTICIPANTS);
     await sleep();
 
     extraParticipants = element?.shadowRoot?.querySelector('.superviz-who-is-online__excess');
@@ -144,30 +185,25 @@ describe('Who Is Online', () => {
   });
 
   test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
-    element['updateParticipants'](MOCK_PARTICIPANTS.slice(0, 1));
+    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
+    participants.publish([MOCK_PARTICIPANTS[2]]);
     await sleep();
 
     const letter = element?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
-    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[0].slotIndex as number];
-
+    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[2].avatar.slotIndex as number];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #26242A`,
     );
   });
 
   test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
-    const participant = {
-      ...MOCK_PARTICIPANTS[0],
-      slotIndex: 1,
-      color: MeetingColorsHex[1],
-    };
-
-    element['updateParticipants']([participant]);
+    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
+    participants.publish([MOCK_PARTICIPANTS[1]]);
     await sleep();
 
     const letter = element?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
-    const backgroundColor = MeetingColorsHex[participant.slotIndex];
+    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[1].avatar.slotIndex as number];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #FFFFFF`,
     );
@@ -184,14 +220,15 @@ describe('Who Is Online', () => {
   });
 
   test('should update open property when clicking outside', async () => {
+    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
+
     const event = new CustomEvent('clickout', {
       detail: {
         open: false,
       },
     });
 
-    element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
-
+    participants.publish([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
     await sleep();
     const dropdown = element.shadowRoot?.querySelector(
       'superviz-who-is-online-dropdown',
@@ -202,69 +239,56 @@ describe('Who Is Online', () => {
   });
 
   test('should correctly display either name letter or image', () => {
-    const letter = element['getAvatar'](MOCK_PARTICIPANTS[0]);
+    const letter = element['getAvatar'](MOCK_PARTICIPANTS[1].avatar);
     expect(letter.strings[0]).not.toContain('img');
 
     const participant = {
       ...MOCK_PARTICIPANTS[0],
-      avatar: {
-        imageUrl: 'https://link.com/image',
-        model3DUrl: '',
-      },
     };
 
-    const avatar = element['getAvatar'](participant);
+    const avatar = element['getAvatar'](participant.avatar);
     expect(avatar.strings[0]).toContain('img');
   });
 
-  test('should stop following if already following', async () => {
-    const event = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
-      detail: { id: 1, label: WIODropdownOptions.LOCAL_FOLLOW, slotIndex: 0 },
-    });
+  test('should start and stop following', async () => {
+    const { following, participants } = useStore(StoreType.WHO_IS_ONLINE);
+    participants.publish(MOCK_PARTICIPANTS);
+    await sleep();
 
-    element['dropdownOptionsHandler'](event);
-    expect(element['following']).toBeTruthy();
-
-    element['dropdownOptionsHandler'](event);
-    expect(element['following']).toBeFalsy();
-  });
-
-  test('should bring hidden participant to second position when following them', async () => {
-    const participants = [
-      ...MOCK_PARTICIPANTS,
-      ...MOCK_PARTICIPANTS,
-      {
-        name: 'Test participant',
-        avatar: {
-          imageUrl: '',
-          model3DUrl: '',
-        },
-        color: MeetingColorsHex[10],
-        id: 'test',
-        slotIndex: 10,
+    const event1 = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
+      detail: {
+        participantId: '1',
+        label: WIODropdownOptions.LOCAL_FOLLOW,
+        source: 'participants',
       },
-    ];
-
-    element['updateParticipants'](participants);
-
-    expect(element['participants'].findIndex((participant) => participant.id === 'test')).not.toBe(
-      1,
-    );
-
-    const event = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
-      detail: { id: 'test', label: WIODropdownOptions.LOCAL_FOLLOW, slotIndex: 2 },
     });
 
-    element['dropdownOptionsHandler'](event);
+    element['dropdownOptionsHandler'](event1);
+    await sleep();
 
-    expect(element['participants'].findIndex((participant) => participant.id === 'test')).toBe(1);
+    expect(following.value).toBeTruthy();
+
+    const event2 = new CustomEvent(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, {
+      detail: {
+        label: WIODropdownOptions.LOCAL_UNFOLLOW,
+      },
+    });
+
+    element['dropdownOptionsHandler'](event2);
+    await sleep();
+
+    expect(following.value).toBeFalsy();
   });
 
   describe('dropdownOptionsHandler', () => {
     let dropdown: HTMLElement;
+    const { participants, extras } = useStore(StoreType.WHO_IS_ONLINE);
+
     beforeEach(async () => {
-      element['updateParticipants']([...MOCK_PARTICIPANTS, ...MOCK_PARTICIPANTS]);
+      participants.publish(MOCK_PARTICIPANTS);
+      extras.publish(MOCK_PARTICIPANTS);
       await sleep();
+
       dropdown = element.shadowRoot?.querySelector(
         'superviz-who-is-online-dropdown',
       ) as HTMLElement;
@@ -284,19 +308,26 @@ describe('Who Is Online', () => {
     });
 
     test('should emit event when selecting follow option in dropdown', async () => {
+      const { following } = useStore(StoreType.WHO_IS_ONLINE);
+
       const event = new CustomEvent('selected', {
-        detail: { id: 1, label: WIODropdownOptions.LOCAL_FOLLOW, slotIndex: 1 },
+        detail: {
+          participantId: '1',
+          label: WIODropdownOptions.LOCAL_FOLLOW,
+          source: 'participants',
+        },
       });
 
       const spy = jest.fn();
       element.addEventListener(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, spy);
 
-      expect(element['following']).toBeUndefined();
+      expect(following.value).toBeUndefined();
 
       dropdown.dispatchEvent(event);
+      await sleep();
 
       expect(spy).toHaveBeenCalledWith(event);
-      expect(element['following']).toBeDefined();
+      expect(following.value).toBeDefined();
     });
 
     test('should emit event when selecting unfollow option in dropdown', async () => {
@@ -315,15 +346,18 @@ describe('Who Is Online', () => {
       expect(element['following']).toBeUndefined();
     });
 
-    test('should emit event when selecting follow option in dropdown', async () => {
+    test('should emit event when selecting follow me option in dropdown', async () => {
       const event = new CustomEvent('selected', {
-        detail: { id: 1, label: WIODropdownOptions.FOLLOW, slotIndex: 1 },
+        detail: { participantId: '1', label: WIODropdownOptions.FOLLOW, source: 'participants' },
       });
 
       const spy = jest.fn();
       element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
 
-      element['following'] = { id: 1, slotIndex: 1 };
+      const { following } = useStore(StoreType.WHO_IS_ONLINE);
+      following.publish<Following>({ color: 'red', id: '1', name: 'John' });
+      element['following'] = { participantId: 1, slotIndex: 1 };
+      await sleep();
 
       dropdown.dispatchEvent(event);
 

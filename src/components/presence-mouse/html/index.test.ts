@@ -449,15 +449,40 @@ describe('MousePointers on HTML', () => {
   });
 
   describe('onMyParticipantMouseLeave', () => {
-    test('should call room.presence.update', () => {
+    test('should only call room.presence.update if mouse is out of container boundaries', () => {
       const updatePresenceMouseSpy = jest.spyOn(
         presenceMouseComponent['room']['presence'],
         'update',
       );
 
-      presenceMouseComponent['onMyParticipantMouseLeave']();
+      presenceMouseComponent['container'].getBoundingClientRect = jest.fn(
+        () =>
+          ({
+            x: 50,
+            y: 50,
+            width: 100,
+            height: 100,
+          } as any),
+      );
+
+      const mouseEvent1 = {
+        x: 20,
+        y: 30,
+      } as any;
+
+      presenceMouseComponent['onMyParticipantMouseLeave'](mouseEvent1);
 
       expect(updatePresenceMouseSpy).toHaveBeenCalledWith({ visible: false });
+      updatePresenceMouseSpy.mockClear();
+
+      const mouseEvent2 = {
+        x: 75,
+        y: 75,
+      } as any;
+
+      presenceMouseComponent['onMyParticipantMouseLeave'](mouseEvent2);
+
+      expect(updatePresenceMouseSpy).not.toHaveBeenCalled();
     });
   });
 

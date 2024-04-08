@@ -1,4 +1,3 @@
-import { Participant as GeneralParticipant } from '../../common/types/participant.types';
 import { DropdownOption } from '../../web-components/dropdown/types';
 
 export enum Position {

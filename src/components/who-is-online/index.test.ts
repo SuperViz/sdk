@@ -9,8 +9,12 @@ import {
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
+import { Following } from '../../services/stores/who-is-online/types';
+
+import { Avatar, Participant, TooltipData } from './types';
 
 import { WhoIsOnline } from './index';
 
@@ -30,7 +34,6 @@ describe('Who Is Online', () => {
     });
 
     whoIsOnlineComponent['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
-    whoIsOnlineComponent['element'].updateParticipants = jest.fn();
 
     const gray = MeetingColorsHex[16];
     whoIsOnlineComponent['color'] = gray;
@@ -97,12 +100,18 @@ describe('Who Is Online', () => {
   });
 
   describe('onParticipantListUpdate', () => {
+    let participants;
+
+    beforeEach(() => {
+      participants = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE)['participants'];
+    });
+
     test('should correctly update participant list', () => {
       whoIsOnlineComponent['onParticipantListUpdate']({
         'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(1);
+      expect(participants.value.length).toBe(1);
 
       whoIsOnlineComponent['onParticipantListUpdate']({
         'unit-test-participant2-ably-id': {
@@ -113,7 +122,7 @@ describe('Who Is Online', () => {
         'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(2);
+      expect(participants.value.length).toBe(2);
     });
 
     test('should not update participant list if participant is does not have whoIsOnline activated', () => {
@@ -124,7 +133,7 @@ describe('Who Is Online', () => {
         },
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(0);
+      expect(participants.value.length).toBe(0);
     });
 
     test('should not add the same participant twice', () => {
@@ -132,13 +141,13 @@ describe('Who Is Online', () => {
         'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(1);
+      expect(participants.value.length).toBe(1);
 
       whoIsOnlineComponent['onParticipantListUpdate']({
         'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(1);
+      expect(participants.value.length).toBe(1);
     });
 
     test('should not display private participants', () => {
@@ -146,7 +155,7 @@ describe('Who Is Online', () => {
         'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(1);
+      expect(participants.value.length).toBe(1);
 
       const privateParticipant = {
         ...MOCK_ABLY_PARTICIPANT,
@@ -160,7 +169,7 @@ describe('Who Is Online', () => {
         'unit-test-participant1-ably-id': privateParticipant,
       });
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(0);
+      expect(participants.value.length).toBe(0);
     });
 
     test('should display private local participant', () => {
@@ -176,30 +185,13 @@ describe('Who Is Online', () => {
 
       whoIsOnlineComponent['onParticipantListUpdate'](participantsData);
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(1);
+      expect(participants.value.length).toBe(1);
 
       participantsData[MOCK_LOCAL_PARTICIPANT.id].data.isPrivate = true;
 
       whoIsOnlineComponent['onParticipantListUpdate'](participantsData);
 
-      expect(whoIsOnlineComponent['participants'].length).toBe(1);
-    });
-
-    test('should call stopFollowing if previously followed participant leaves', () => {
-      whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_1;
-      whoIsOnlineComponent['following'] = MOCK_ABLY_PARTICIPANT_DATA_2.id;
-
-      whoIsOnlineComponent['stopFollowing'] = jest
-        .fn()
-        .mockImplementation(whoIsOnlineComponent['stopFollowing']);
-
-      whoIsOnlineComponent['onParticipantListUpdate']({
-        'unit-test-participant1-ably-id': MOCK_ABLY_PARTICIPANT,
-      });
-
-      expect(whoIsOnlineComponent['stopFollowing']).toHaveBeenCalledWith({
-        clientId: MOCK_ABLY_PARTICIPANT_DATA_2.id,
-      });
+      expect(participants.value.length).toBe(1);
     });
   });
 
@@ -273,21 +265,36 @@ describe('Who Is Online', () => {
     });
 
     test('should set element.data to following.data', () => {
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+
       whoIsOnlineComponent['setFollow']({ ...MOCK_ABLY_PARTICIPANT, clientId: 'ably-id' });
-      expect(whoIsOnlineComponent['element'].following).toBe(MOCK_ABLY_PARTICIPANT_DATA_1);
+      expect(following.value).toBe(MOCK_ABLY_PARTICIPANT_DATA_1);
     });
 
     test('should early return if following the local participant', () => {
-      whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_2;
+      const followingData: Following = {
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      };
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish<Following>(followingData);
 
       whoIsOnlineComponent['setFollow'](MOCK_ABLY_PARTICIPANT);
 
       expect(whoIsOnlineComponent['followMousePointer']).not.toHaveBeenCalled();
-      expect(whoIsOnlineComponent['element'].following).toBe(MOCK_ABLY_PARTICIPANT_DATA_2);
+      expect(following.value).toBe(followingData);
     });
 
-    test('should set element.following to undefiend return if no id is passed', () => {
-      whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_2;
+    test('should set following to undefined if no id is passed', () => {
+      const followingData: Following = {
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      };
+
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish<Following>(followingData);
 
       whoIsOnlineComponent['setFollow']({
         ...MOCK_ABLY_PARTICIPANT,
@@ -296,11 +303,11 @@ describe('Who Is Online', () => {
       });
 
       const event = {
-        detail: { id: '' },
+        detail: { id: undefined },
       };
 
       expect(whoIsOnlineComponent['followMousePointer']).toHaveBeenCalledWith(event);
-      expect(whoIsOnlineComponent['element'].following).toBe(undefined);
+      expect(following.value).toBe(undefined);
     });
   });
 
@@ -322,25 +329,32 @@ describe('Who Is Online', () => {
 
   describe('stopFollowing', () => {
     test('should do nothing if participant leaving is not being followed', () => {
-      whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_2;
-      whoIsOnlineComponent['following'] = 'ably-id';
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish<Following>({
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      });
 
       whoIsOnlineComponent['stopFollowing'](MOCK_ABLY_PARTICIPANT);
 
-      expect(whoIsOnlineComponent['element'].following).toBe(MOCK_ABLY_PARTICIPANT_DATA_2);
-      expect(whoIsOnlineComponent['following']).toBe('ably-id');
+      expect(following.value).toBeDefined();
+      expect(following.value.id).toBe(MOCK_ABLY_PARTICIPANT_DATA_2.id);
     });
 
-    test('should set element.following to undefined if following the participant who is leaving', () => {
-      whoIsOnlineComponent['element'].following = MOCK_ABLY_PARTICIPANT_DATA_1;
-      whoIsOnlineComponent['following'] = MOCK_ABLY_PARTICIPANT_DATA_1.id;
+    test('should set following to undefined if following the participant who is leaving', () => {
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish<Following>({
+        color: MOCK_ABLY_PARTICIPANT_DATA_1.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_1.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_1.name,
+      });
 
       whoIsOnlineComponent['stopFollowing']({
-        ...MOCK_ABLY_PARTICIPANT,
         clientId: MOCK_ABLY_PARTICIPANT_DATA_1.id,
       });
 
-      expect(whoIsOnlineComponent['element'].following).toBe(undefined);
+      expect(following.value).toBe(undefined);
       expect(whoIsOnlineComponent['following']).toBe(undefined);
     });
   });
@@ -386,17 +400,33 @@ describe('Who Is Online', () => {
     });
 
     test('should publish "follow" event when followMousePointer is called', () => {
+      const followingData: Following = {
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      };
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish<Following>(followingData);
+
       whoIsOnlineComponent['followMousePointer']({
         detail: { id: 'unit-test-id' },
       } as CustomEvent);
 
       expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
         WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT,
-        'unit-test-id',
+        followingData,
       );
     });
 
     test('should publish "stop following" if follow is called with undefined id', () => {
+      const followingData: Following = {
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      };
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish(undefined);
+
       whoIsOnlineComponent['followMousePointer']({
         detail: { id: undefined },
       } as CustomEvent);
@@ -407,14 +437,15 @@ describe('Who Is Online', () => {
     });
 
     test('should publish "stop following" event when stopFollowing is called', () => {
-      whoIsOnlineComponent['element'].following = {
-        id: 'unit-test-id',
-        color: 'unit-test-color',
-        name: 'unit-test-name',
-      };
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish<Following>({
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      });
 
       whoIsOnlineComponent['stopFollowing']({
-        clientId: 'unit-test-id',
+        clientId: MOCK_ABLY_PARTICIPANT_DATA_2.id,
       });
 
       expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
@@ -443,17 +474,29 @@ describe('Who Is Online', () => {
     });
 
     test('should publish "follow me" event when follow is called with defined id', () => {
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      const followingData: Following = {
+        color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
+        id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
+        name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
+      };
+
+      following.publish<Following>(followingData);
+
       whoIsOnlineComponent['follow']({
         detail: { id: 'unit-test-id' },
       } as CustomEvent);
 
       expect(whoIsOnlineComponent['publish']).toHaveBeenCalledWith(
         WhoIsOnlineEvent.START_FOLLOW_ME,
-        'unit-test-id',
+        followingData,
       );
     });
 
     test('should publish "stop follow me" event when follow is called with undefined id', () => {
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      following.publish(undefined);
+
       whoIsOnlineComponent['follow']({
         detail: { id: undefined },
       } as CustomEvent);
@@ -478,6 +521,557 @@ describe('Who Is Online', () => {
       whoIsOnlineComponent['setStyles']();
       const styleElement = document.getElementById('superviz-who-is-online-styles');
       expect(styleElement).toBeFalsy();
+    });
+  });
+
+  describe('followMousePointer', () => {
+    test('should highlight participant being followed if they are an extra', () => {
+      whoIsOnlineComponent['highlightParticipantBeingFollowed'] = jest.fn();
+
+      whoIsOnlineComponent['followMousePointer']({
+        detail: { id: 'test-id', source: 'extras' },
+      } as any);
+
+      expect(whoIsOnlineComponent['highlightParticipantBeingFollowed']).toHaveBeenCalled();
+    });
+  });
+
+  describe('shouldDisableDropdown', () => {
+    test('should disable dropdown when joinedPresence is false', () => {
+      whoIsOnlineComponent['useStore'] = jest.fn().mockReturnValue({
+        joinedPresence: { value: false },
+        disablePresenceControls: { value: false },
+        disableFollowMe: { value: false },
+        disableFollowParticipant: { value: false },
+        disableGoToParticipant: { value: false },
+        disableGatherAll: { value: false },
+        disablePrivateMode: { value: false },
+      });
+
+      expect(
+        whoIsOnlineComponent['shouldDisableDropdown']({
+          activeComponents: ['PresenceButton'],
+          participantId: 'someId',
+        }),
+      ).toEqual(true);
+    });
+
+    test('should disable dropdown when disablePresenceControls is true', () => {
+      whoIsOnlineComponent['useStore'] = jest.fn().mockReturnValue({
+        joinedPresence: { value: true },
+        disablePresenceControls: { value: true },
+        disableFollowMe: { value: false },
+        disableFollowParticipant: { value: false },
+        disableGoToParticipant: { value: false },
+        disableGatherAll: { value: false },
+        disablePrivateMode: { value: false },
+      });
+
+      expect(
+        whoIsOnlineComponent['shouldDisableDropdown']({
+          activeComponents: ['PresenceButton'],
+          participantId: 'someId',
+        }),
+      ).toEqual(true);
+    });
+
+    test('should disable dropdown for local participant with specific conditions', () => {
+      whoIsOnlineComponent['useStore'] = jest.fn().mockReturnValue({
+        joinedPresence: { value: true },
+        disablePresenceControls: { value: false },
+        disableFollowMe: { value: true },
+        disablePrivateMode: { value: true },
+        disableGatherAll: { value: true },
+        disableFollowParticipant: { value: true },
+        disableGoToParticipant: { value: true },
+      });
+
+      expect(
+        whoIsOnlineComponent['shouldDisableDropdown']({
+          activeComponents: ['PresenceButton'],
+          participantId: 'localParticipantId',
+        }),
+      ).toEqual(true);
+    });
+
+    test('should not disable dropdown when conditions are not met', () => {
+      whoIsOnlineComponent['useStore'] = jest.fn().mockReturnValue({
+        joinedPresence: { value: true },
+        disablePresenceControls: { value: false },
+        disableFollowMe: { value: false },
+        disableFollowParticipant: { value: false },
+        disableGoToParticipant: { value: false },
+        disableGatherAll: { value: false },
+        disablePrivateMode: { value: false },
+      });
+
+      expect(
+        whoIsOnlineComponent['shouldDisableDropdown']({
+          activeComponents: ['presence'],
+          participantId: 'someId',
+        }),
+      ).toEqual(false);
+    });
+
+    test('should not disable dropdown when activeComponents do not match', () => {
+      whoIsOnlineComponent['useStore'] = jest.fn().mockReturnValue({
+        joinedPresence: { value: true },
+        disablePresenceControls: { value: false },
+        disableFollowMe: { value: false },
+        disableFollowParticipant: { value: false },
+        disableGoToParticipant: { value: false },
+        disableGatherAll: { value: false },
+        disablePrivateMode: { value: false },
+      });
+
+      expect(
+        whoIsOnlineComponent['shouldDisableDropdown']({
+          activeComponents: ['OtherComponent'],
+          participantId: 'someId',
+        }),
+      ).toEqual(true);
+    });
+  });
+
+  describe('getTooltipData', () => {
+    test('should return tooltip data for local participant', () => {
+      const tooltipData = whoIsOnlineComponent['getTooltipData']({
+        isLocalParticipant: true,
+        name: 'John',
+        presenceEnabled: true,
+      });
+
+      expect(tooltipData).toEqual({
+        name: 'John (You)',
+      });
+    });
+
+    test('should return tooltip data for remote participant with presence enabled', () => {
+      const tooltipData = whoIsOnlineComponent['getTooltipData']({
+        isLocalParticipant: false,
+        name: 'Alice',
+        presenceEnabled: true,
+      });
+
+      expect(tooltipData).toEqual({
+        name: 'Alice',
+        info: 'Click to follow',
+      });
+    });
+
+    test('should return tooltip data for remote participant with presence disabled', () => {
+      const tooltipData = whoIsOnlineComponent['getTooltipData']({
+        isLocalParticipant: false,
+        name: 'Bob',
+        presenceEnabled: false,
+      });
+
+      expect(tooltipData).toEqual({
+        name: 'Bob',
+      });
+    });
+
+    test('should return tooltip data for local participant with presence disabled', () => {
+      const tooltipData = whoIsOnlineComponent['getTooltipData']({
+        isLocalParticipant: true,
+        name: 'Jane',
+        presenceEnabled: false,
+      });
+
+      expect(tooltipData).toEqual({
+        name: 'Jane (You)',
+      });
+    });
+  });
+
+  describe('getAvatar', () => {
+    const mockAvatar: Avatar = {
+      imageUrl: 'https://example.com/avatar.jpg',
+      color: 'white',
+      firstLetter: 'L',
+      slotIndex: 0,
+    };
+
+    test('should return avatar data with image URL', () => {
+      const result = whoIsOnlineComponent['getAvatar']({
+        avatar: mockAvatar as any,
+        name: 'John Doe',
+        color: '#007bff',
+        slotIndex: 1,
+      });
+
+      expect(result).toEqual({
+        imageUrl: 'https://example.com/avatar.jpg',
+        firstLetter: 'J',
+        color: '#007bff',
+        slotIndex: 1,
+      });
+    });
+
+    test('should return avatar data with default first letter', () => {
+      const result = whoIsOnlineComponent['getAvatar']({
+        avatar: {
+          imageUrl: '',
+          model3DUrl: '',
+        },
+        name: 'Alice Smith',
+        color: '#dc3545',
+        slotIndex: 2,
+      });
+
+      expect(result).toEqual({
+        imageUrl: '',
+        firstLetter: 'A',
+        color: '#dc3545',
+        slotIndex: 2,
+      });
+    });
+
+    test('should handle empty name by defaulting to "A"', () => {
+      const result = whoIsOnlineComponent['getAvatar']({
+        avatar: mockAvatar as any,
+        name: 'User name',
+        color: '#28a745',
+        slotIndex: 3,
+      });
+
+      expect(result).toEqual({
+        imageUrl: 'https://example.com/avatar.jpg',
+        firstLetter: 'U',
+        color: '#28a745',
+        slotIndex: 3,
+      });
+    });
+
+    test('should handle undefined name by defaulting to "A"', () => {
+      const result = whoIsOnlineComponent['getAvatar']({
+        avatar: {
+          imageUrl: '',
+          model3DUrl: '',
+        },
+        name: '',
+        color: '#ffc107',
+        slotIndex: 4,
+      });
+
+      expect(result).toEqual({
+        imageUrl: '',
+        firstLetter: 'A',
+        color: '#ffc107',
+        slotIndex: 4,
+      });
+    });
+  });
+
+  describe('getControls', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('should return undefined when presence controls are disabled', () => {
+      const { disablePresenceControls } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disablePresenceControls.publish(true);
+
+      const controls = whoIsOnlineComponent['getControls']({
+        participantId: 'remoteParticipant123',
+        presenceEnabled: true,
+      });
+
+      expect(controls).toBeUndefined();
+    });
+
+    test('should return controls for local participant', () => {
+      const { disablePresenceControls } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disablePresenceControls.publish(false);
+
+      const controls = whoIsOnlineComponent['getControls']({
+        participantId: MOCK_LOCAL_PARTICIPANT.id,
+        presenceEnabled: true,
+      });
+
+      expect(controls).toEqual([
+        { label: 'gather all', icon: 'gather' },
+        { icon: 'send', label: 'everyone follows me' },
+        { icon: 'eye', label: 'private mode' },
+      ]);
+    });
+
+    test('should return controls for other participants', () => {
+      const { disablePresenceControls } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disablePresenceControls.publish(false);
+
+      const getOtherParticipantsControlsMock = jest.fn().mockReturnValue([
+        { label: 'gather all', icon: 'gather' },
+        { icon: 'send', label: 'everyone follows me' },
+        { icon: 'eye', label: 'private mode' },
+      ]);
+
+      const controls = whoIsOnlineComponent['getControls']({
+        participantId: 'remoteParticipant456',
+        presenceEnabled: true,
+      });
+
+      expect(controls).toEqual([
+        { icon: 'place', label: 'go to' },
+        { label: 'follow', icon: 'send' },
+      ]);
+    });
+  });
+
+  describe('getOtherParticipantsControls', () => {
+    test('should return controls without "Go To" option when disableGoToParticipant is true', () => {
+      const { disableGoToParticipant, disableFollowParticipant, following } = whoIsOnlineComponent[
+        'useStore'
+      ](StoreType.WHO_IS_ONLINE);
+      disableGoToParticipant.publish(true);
+      disableFollowParticipant.publish(false);
+      following.publish(undefined);
+
+      const controls = whoIsOnlineComponent['getOtherParticipantsControls']('participant123');
+
+      expect(controls).toEqual([
+        {
+          label: 'follow',
+          icon: 'send',
+        },
+      ]);
+    });
+
+    test('should return controls with "Go To" option when disableGoToParticipant is false', () => {
+      const { disableGoToParticipant, disableFollowParticipant, following } = whoIsOnlineComponent[
+        'useStore'
+      ](StoreType.WHO_IS_ONLINE);
+      disableGoToParticipant.publish(false);
+      disableFollowParticipant.publish(false);
+      following.publish(undefined);
+
+      const controls = whoIsOnlineComponent['getOtherParticipantsControls']('participant123');
+
+      expect(controls).toEqual([
+        {
+          label: 'go to',
+          icon: 'place',
+        },
+        {
+          label: 'follow',
+          icon: 'send',
+        },
+      ]);
+    });
+
+    test('should return controls for when following a participant', () => {
+      const { disableGoToParticipant, disableFollowParticipant, following } = whoIsOnlineComponent[
+        'useStore'
+      ](StoreType.WHO_IS_ONLINE);
+      disableGoToParticipant.publish(false);
+      disableFollowParticipant.publish(false);
+      following.publish<Following>({ color: 'red', id: 'participant123', name: 'name' });
+
+      const controls = whoIsOnlineComponent['getOtherParticipantsControls']('participant123');
+
+      expect(controls).toEqual([
+        {
+          label: 'go to',
+          icon: 'place',
+        },
+        {
+          label: 'unfollow',
+          icon: 'send-off',
+        },
+      ]);
+    });
+
+    test('should return controls when disableFollowParticipant is true', () => {
+      const { disableGoToParticipant, disableFollowParticipant, following } = whoIsOnlineComponent[
+        'useStore'
+      ](StoreType.WHO_IS_ONLINE);
+      disableGoToParticipant.publish(false);
+      disableFollowParticipant.publish(true);
+      following.publish(undefined);
+
+      const controls = whoIsOnlineComponent['getOtherParticipantsControls']('participant123');
+
+      expect(controls).toEqual([
+        {
+          label: 'go to',
+          icon: 'place',
+        },
+      ]);
+    });
+  });
+
+  describe('getLocalParticipantControls', () => {
+    test('should return controls without "Gather" option when disableGatherAll is true', () => {
+      const {
+        disableFollowMe,
+        disableGatherAll,
+        disablePrivateMode,
+        everyoneFollowsMe,
+        privateMode,
+      } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disableFollowMe.publish(false);
+      disableGatherAll.publish(true);
+      disablePrivateMode.publish(false);
+      everyoneFollowsMe.publish(false);
+      privateMode.publish(false);
+
+      const controls = whoIsOnlineComponent['getLocalParticipantControls']();
+
+      expect(controls).toEqual([
+        {
+          label: 'everyone follows me',
+          icon: 'send',
+        },
+        {
+          label: 'private mode',
+          icon: 'eye',
+        },
+      ]);
+    });
+
+    test('should return controls with "Unfollow" and "Leave Private" options when everyoneFollowsMe and privateMode are true', () => {
+      const {
+        disableFollowMe,
+        disableGatherAll,
+        disablePrivateMode,
+        everyoneFollowsMe,
+        privateMode,
+      } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disableFollowMe.publish(false);
+      disableGatherAll.publish(false);
+      disablePrivateMode.publish(false);
+      everyoneFollowsMe.publish(true);
+      privateMode.publish(true);
+
+      const controls = whoIsOnlineComponent['getLocalParticipantControls']();
+
+      expect(controls).toEqual([
+        {
+          icon: 'gather',
+          label: 'gather all',
+        },
+        {
+          icon: 'send-off',
+          label: 'stop followers',
+        },
+        {
+          icon: 'eye_inative',
+          label: 'leave private mode',
+        },
+      ]);
+    });
+
+    test('should return controls with "Follow" and "Private" options when all flags are false', () => {
+      const {
+        disableFollowMe,
+        disableGatherAll,
+        disablePrivateMode,
+        everyoneFollowsMe,
+        privateMode,
+      } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disableFollowMe.publish(false);
+      disableGatherAll.publish(false);
+      disablePrivateMode.publish(false);
+      everyoneFollowsMe.publish(false);
+      privateMode.publish(false);
+
+      const controls = whoIsOnlineComponent['getLocalParticipantControls']();
+
+      expect(controls).toEqual([
+        {
+          label: 'gather all',
+          icon: 'gather',
+        },
+        {
+          label: 'everyone follows me',
+          icon: 'send',
+        },
+        {
+          label: 'private mode',
+          icon: 'eye',
+        },
+      ]);
+    });
+
+    test('should return controls without "Follow" option when disableFollowMe is true', () => {
+      const {
+        disableFollowMe,
+        disableGatherAll,
+        disablePrivateMode,
+        everyoneFollowsMe,
+        privateMode,
+      } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      disableFollowMe.publish(true);
+      disableGatherAll.publish(false);
+      disablePrivateMode.publish(false);
+      everyoneFollowsMe.publish(false);
+      privateMode.publish(false);
+
+      const controls = whoIsOnlineComponent['getLocalParticipantControls']();
+
+      expect(controls).toEqual([
+        {
+          label: 'gather all',
+          icon: 'gather',
+        },
+        {
+          label: 'private mode',
+          icon: 'eye',
+        },
+      ]);
+    });
+  });
+
+  describe('highlightParticipantBeingFollowed', () => {
+    test('should put participant being followed from extras in second position over all', () => {
+      const participant1 = {
+        activeComponents: [],
+        avatar: {} as Avatar,
+        id: 'test id 1',
+        isLocalParticipant: false,
+        name: 'participant',
+        tooltip: {} as TooltipData,
+        controls: {} as any,
+        disableDropdown: false,
+      };
+
+      const participant2 = { ...participant1, id: 'test id 2' };
+      const participant3 = { ...participant1, id: 'test id 3' };
+      const participant4 = { ...participant1, id: 'test id 4' };
+      const participant5 = { ...participant1, id: 'test id 5' };
+
+      const participantsList: Participant[] = [
+        participant1,
+        participant2,
+        participant3,
+        participant4,
+      ];
+
+      const { participants, extras, following } = whoIsOnlineComponent['useStore'](
+        StoreType.WHO_IS_ONLINE,
+      );
+
+      participants.publish(participantsList);
+      extras.publish([participant5]);
+      following.publish<Following>({
+        color: 'red',
+        id: 'test id 5',
+        name: 'participant 5',
+      });
+
+      expect(participants.value[0]).toBe(participant1);
+      expect(participants.value[1]).toBe(participant2);
+      expect(participants.value[2]).toBe(participant3);
+      expect(participants.value[3]).toBe(participant4);
+      expect(extras.value[0]).toBe(participant5);
+
+      whoIsOnlineComponent['highlightParticipantBeingFollowed']();
+
+      expect(participants.value[0]).toBe(participant1);
+      expect(participants.value[1]).toBe(participant5);
+      expect(participants.value[2]).toBe(participant2);
+      expect(participants.value[3]).toBe(participant3);
+      expect(extras.value[0]).toBe(participant4);
     });
   });
 });
