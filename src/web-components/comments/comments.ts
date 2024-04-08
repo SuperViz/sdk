@@ -84,8 +84,10 @@ export class Comments extends WebComponentsBaseElement {
   }
 
   private setFilter({ detail }) {
-    const { filter } = detail;
-    this.annotationFilter = filter;
+    const {
+      filter: { label },
+    } = detail;
+    this.annotationFilter = label;
   }
 
   private getOffset(offset: number) {

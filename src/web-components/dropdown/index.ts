@@ -21,8 +21,6 @@ export class Dropdown extends WebComponentsBaseElement {
   declare options: DropdownOption[];
   declare returnData: { [k: string]: any };
 
-  declare returnTo: string;
-  declare active: string | object;
   declare icons?: string[];
   declare name?: string;
   declare tooltipData: { name: string; action: string };
@@ -46,8 +44,6 @@ export class Dropdown extends WebComponentsBaseElement {
     disabled: { type: Boolean },
     align: { type: String },
     options: { type: Array },
-    returnTo: { type: String },
-    active: { type: [String, Object] },
     icons: { type: Array },
     name: { type: String },
     tooltipData: { type: Object },
@@ -136,12 +132,12 @@ export class Dropdown extends WebComponentsBaseElement {
     });
   };
 
-  private callbackSelected = ({ option }: DropdownOption) => {
+  private callbackSelected = ({ label }: DropdownOption) => {
     this.open = false;
 
     this.emitEvent(
       'selected',
-      { ...this.returnData, label: option },
+      { ...this.returnData, label },
       {
         bubbles: false,
         composed: true,
@@ -244,19 +240,16 @@ export class Dropdown extends WebComponentsBaseElement {
   }
 
   private get listOptions() {
-    return this.options.map(({ option, icon, data }) => {
+    return this.options.map(({ label, icon, active }) => {
       const liClasses = {
         text: true,
         [this.getClass('item')]: true,
         'text-bold': true,
-        active: option?.[this.returnTo] && this.active === option?.[this.returnTo],
+        active,
       };
 
-      return html`<li
-        @click=${() => this.callbackSelected({ option, data })}
-        class=${classMap(liClasses)}
-      >
-        ${this.getIcon(icon)} ${this.getLabel(option)}
+      return html`<li @click=${() => this.callbackSelected({ label })} class=${classMap(liClasses)}>
+        ${this.getIcon(icon)} ${this.getLabel(label)}
       </li>`;
     });
   }

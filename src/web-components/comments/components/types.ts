@@ -19,8 +19,8 @@ export enum PinMode {
 }
 
 export enum AnnotationFilter {
-  ALL = 'all',
-  RESOLVED = 'resolved',
+  ALL = 'All comments',
+  RESOLVED = 'Resolved comments',
 }
 
 export type HorizontalSide = 'left' | 'right';

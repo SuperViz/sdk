@@ -148,13 +148,13 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
       },
     ];
 
-    const dropdownOptionsHandler = ({ detail }: CustomEvent) => {
-      if (detail === CommentDropdownOptions.EDIT) {
+    const dropdownOptionsHandler = ({ detail: { label } }: CustomEvent) => {
+      if (label === CommentDropdownOptions.EDIT) {
         this.mode = CommentMode.EDITABLE;
         this.emitEvent('edit-comment', { editing: true });
       }
 
-      if (detail === CommentDropdownOptions.DELETE) {
+      if (label === CommentDropdownOptions.DELETE) {
         this.deleteCommentModalOpen = true;
       }
     };
@@ -247,8 +247,6 @@ export class CommentsCommentItem extends WebComponentsBaseElement {
             </button>
             <superviz-dropdown
               options=${JSON.stringify(options)}
-              label="label"
-              returnTo="label"
               position="bottom-left"
               @selected=${dropdownOptionsHandler}
               @click=${(event: Event) => event.stopPropagation()}
