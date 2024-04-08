@@ -98,7 +98,9 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
-    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.EDIT }));
+    dropdown.dispatchEvent(
+      new CustomEvent('selected', { detail: { label: CommentDropdownOptions.EDIT } }),
+    );
 
     await element['updateComplete'];
 
@@ -110,7 +112,9 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
-    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.EDIT }));
+    dropdown.dispatchEvent(
+      new CustomEvent('selected', { detail: { label: CommentDropdownOptions.EDIT } }),
+    );
 
     await element['updateComplete'];
 
@@ -131,7 +135,9 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
-    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.EDIT }));
+    dropdown.dispatchEvent(
+      new CustomEvent('selected', { detail: { label: CommentDropdownOptions.EDIT } }),
+    );
 
     await element['updateComplete'];
 
@@ -156,7 +162,9 @@ describe('CommentsCommentItem', () => {
     await element['updateComplete'];
 
     const dropdown = element.shadowRoot!.querySelector('superviz-dropdown') as HTMLElement;
-    dropdown.dispatchEvent(new CustomEvent('selected', { detail: CommentDropdownOptions.DELETE }));
+    dropdown.dispatchEvent(
+      new CustomEvent('selected', { detail: { label: CommentDropdownOptions.DELETE } }),
+    );
 
     await element['updateComplete'];
 

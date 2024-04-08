@@ -49,6 +49,9 @@ export function useStore<T extends StoreType>(name: T): Store<T> {
           bindedSubscribeTo(valueName, store[valueName], callback);
         },
         subject: store[valueName] as typeof storeData,
+        get value() {
+          return this.subject.value;
+        },
         publish(newValue: keyof Store<T>) {
           this.subject.value = newValue;
         },

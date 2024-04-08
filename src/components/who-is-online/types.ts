@@ -1,4 +1,4 @@
-import { Participant as GeneralParticipant } from '../../common/types/participant.types';
+import { DropdownOption } from '../../web-components/dropdown/types';
 
 export enum Position {
   TOP_LEFT = 'top-left',
@@ -7,11 +7,27 @@ export enum Position {
   BOTTOM_RIGHT = 'bottom-right',
 }
 
-export interface Participant extends GeneralParticipant {
-  slotIndex?: number;
-  isLocal?: boolean;
-  joinedPresence?: boolean;
-  isPrivate?: boolean;
+export interface TooltipData {
+  name: string;
+  info?: string;
+}
+
+export interface Avatar {
+  imageUrl: string;
+  firstLetter: string;
+  slotIndex: number;
+  color: string;
+}
+
+export interface Participant {
+  id: string;
+  name: string;
+  disableDropdown?: boolean;
+  controls?: DropdownOption[];
+  tooltip: TooltipData;
+  avatar: Avatar;
+  activeComponents: string[];
+  isLocalParticipant: boolean;
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string | '';
@@ -21,5 +37,22 @@ export interface WhoIsOnlineOptions {
   styles?: string;
   flags?: {
     disablePresenceControls?: boolean;
-  }
+    disableGoToParticipant?: boolean;
+    disableFollowParticipant?: boolean;
+    disablePrivateMode?: boolean;
+    disableGatherAll?: boolean;
+    disableFollowMe?: boolean;
+  };
+}
+
+export enum WIODropdownOptions {
+  GOTO = 'go to',
+  LOCAL_FOLLOW = 'follow',
+  LOCAL_UNFOLLOW = 'unfollow',
+  FOLLOW = 'everyone follows me',
+  UNFOLLOW = 'stop followers',
+  PRIVATE = 'private mode',
+  LEAVE_PRIVATE = 'leave private mode',
+  GATHER = 'gather all',
+  STOP_GATHER = 'stop gather all',
 }

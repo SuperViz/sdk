@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
+import { DropdownOption } from '../../dropdown/types';
 import { annotationFilterStyle } from '../css';
 
 import { AnnotationFilter } from './types';
@@ -11,14 +12,12 @@ import { AnnotationFilter } from './types';
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationFilterStyle];
 
-const options = [
+const options: DropdownOption[] = [
   {
-    label: 'All comments',
-    code: AnnotationFilter.ALL,
+    label: AnnotationFilter.ALL,
   },
   {
-    label: 'Resolved comments',
-    code: AnnotationFilter.RESOLVED,
+    label: AnnotationFilter.RESOLVED,
   },
 ];
 
@@ -48,20 +47,21 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
     });
   }
 
+  private selectClick = () => {
+    this.caret = this.caret === 'down' ? 'up' : 'down';
+  };
+
+  private dropdownOptionsHandler = ({ detail }: CustomEvent) => {
+    this.emitEvent('select', { filter: detail });
+    this.selectClick();
+  };
+
   protected render() {
     const selectedLabel =
       this.filter === AnnotationFilter.ALL ? options[0].label : options[1].label;
 
-    const dropdownOptionsHandler = ({ detail }: CustomEvent) => {
-      this.emitEvent('select', { filter: detail });
-      selectClick();
-    };
-
-    const selectClick = () => {
-      this.caret = this.caret === 'down' ? 'up' : 'down';
-    };
-
-    const active = this.filter === AnnotationFilter.ALL ? options[0].code : options[1].code;
+    options[0].active = this.filter === AnnotationFilter.ALL;
+    options[1].active = this.filter === AnnotationFilter.RESOLVED;
 
     const textClasses = {
       text: true,
@@ -77,14 +77,11 @@ export class CommentsAnnotationFilter extends WebComponentsBaseElement {
         <div class="comments__filter">
           <superviz-dropdown
             options=${JSON.stringify(options)}
-            active=${active}
-            label="label"
-            returnTo="code"
             position="bottom-left"
             right-offset="100px"
-            @click=${selectClick}
-            @selected=${dropdownOptionsHandler}
-            @close=${selectClick}
+            @click=${this.selectClick}
+            @selected=${this.dropdownOptionsHandler}
+            @close=${this.selectClick}
             classesPrefix="comments__dropdown"
             parentComponent="comments"
           >
