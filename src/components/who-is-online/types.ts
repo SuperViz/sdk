@@ -35,14 +35,12 @@ export type WhoIsOnlinePosition = Position | `${Position}` | string | '';
 export interface WhoIsOnlineOptions {
   position?: WhoIsOnlinePosition;
   styles?: string;
-  flags?: {
-    disablePresenceControls?: boolean;
-    disableGoToParticipant?: boolean;
-    disableFollowParticipant?: boolean;
-    disablePrivateMode?: boolean;
-    disableGatherAll?: boolean;
-    disableFollowMe?: boolean;
-  };
+  disablePresenceControls?: boolean;
+  disableGoToParticipant?: boolean;
+  disableFollowParticipant?: boolean;
+  disablePrivateMode?: boolean;
+  disableGatherAll?: boolean;
+  disableFollowMe?: boolean;
 }
 
 export enum WIODropdownOptions {

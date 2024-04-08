@@ -56,12 +56,12 @@ export class WhoIsOnline extends BaseComponent {
       this.position = options.position ?? Position.TOP_RIGHT;
       this.setStyles(options.styles);
 
-      disablePresenceControls.publish(options.flags?.disablePresenceControls);
-      disableGoToParticipant.publish(options.flags?.disableGoToParticipant);
-      disableFollowParticipant.publish(options.flags?.disableFollowParticipant);
-      disablePrivateMode.publish(options.flags?.disablePrivateMode);
-      disableGatherAll.publish(options.flags?.disableGatherAll);
-      disableFollowMe.publish(options.flags?.disableFollowMe);
+      disablePresenceControls.publish(options.disablePresenceControls);
+      disableGoToParticipant.publish(options.disableGoToParticipant);
+      disableFollowParticipant.publish(options.disableFollowParticipant);
+      disablePrivateMode.publish(options.disablePrivateMode);
+      disableGatherAll.publish(options.disableGatherAll);
+      disableFollowMe.publish(options.disableFollowMe);
     }
   }
 
