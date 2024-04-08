@@ -3,7 +3,7 @@ import sleep from '../../common/utils/sleep';
 import '.';
 
 interface Attributes {
-  tooltipData?: { name: string; action: string };
+  tooltipData?: { name: string; info: string };
   shiftTooltipLeft?: boolean;
 }
 
@@ -123,7 +123,7 @@ describe('tooltip', () => {
 
   test('should render tooltip with the correct data', async () => {
     const element = createEl({
-      tooltipData: { name: 'test name', action: 'test action' },
+      tooltipData: { name: 'test name', info: 'test action' },
     });
     await sleep();
 

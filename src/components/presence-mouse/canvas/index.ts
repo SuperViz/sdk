@@ -262,7 +262,7 @@ export class PointersCanvas extends BaseComponent {
 
   private updateParticipantsMouses = (): void => {
     this.presences.forEach((mouse) => {
-      if (!mouse?.visible) {
+      if (!mouse?.visible || (this.following && this.following !== mouse.id)) {
         this.removePresenceMouseParticipant(mouse.id);
         return;
       }
@@ -367,6 +367,7 @@ export class PointersCanvas extends BaseComponent {
 
   private followMouse = (id: string) => {
     this.following = id;
+    this.goToMouse(id);
   };
 
   /**

@@ -11,3 +11,10 @@ export type RealtimeData = {
   name: string;
   payload: any;
 };
+
+export type RealtimeMessage = {
+  name: string;
+  participantId: string;
+  data: unknown;
+  timestamp: number;
+};
