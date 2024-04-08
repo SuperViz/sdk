@@ -223,6 +223,7 @@ export class PointersHTML extends BaseComponent {
    */
   private followMouse = (id: string) => {
     this.userBeingFollowedId = id;
+    this.goToMouse(id);
   };
 
   /**

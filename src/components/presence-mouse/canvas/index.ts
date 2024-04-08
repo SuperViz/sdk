@@ -367,6 +367,7 @@ export class PointersCanvas extends BaseComponent {
 
   private followMouse = (id: string) => {
     this.following = id;
+    this.goToMouse(id);
   };
 
   /**
