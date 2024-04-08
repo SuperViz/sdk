@@ -4,12 +4,16 @@ import throttle from 'lodash/throttle';
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observer } from '../../common/utils';
-import { RealtimeMessage } from '../../services/realtime/ably/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 import { Participant } from '../who-is-online/types';
 
-import { RealtimeComponentEvent, RealtimeComponentState, RealtimeData } from './types';
+import {
+  RealtimeComponentEvent,
+  RealtimeComponentState,
+  RealtimeData,
+  RealtimeMessage,
+} from './types';
 
 export class Realtime extends BaseComponent {
   private callbacksToSubscribeWhenJoined: Array<{
