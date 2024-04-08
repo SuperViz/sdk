@@ -2,13 +2,10 @@ import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
 import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
-import { Nullable } from '../../../common/types/global.types';
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { Annotation } from '../../../components/comments/types';
-import { ParticipantMouse } from '../../../components/presence-mouse/types';
-import { ComponentNames } from '../../../components/types';
 import { DrawingData } from '../../video-conference-manager/types';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
@@ -19,31 +16,23 @@ import {
   AblyRealtimeData,
   AblyTokenCallBack,
   ParticipantDataInput,
-  RealtimeMessage,
 } from './types';
 
 const MESSAGE_SIZE_LIMIT = 60000;
-const CLIENT_MESSAGE_SIZE_LIMIT = 10000;
 const SYNC_PROPERTY_INTERVAL = 1000;
-const SYNC_MOUSE_INTERVAL = 100;
 
 export default class AblyRealtimeService extends RealtimeService implements AblyRealtime {
   private client: Ably.Realtime;
   private participants: Record<string, AblyParticipant> = {};
-  private participantsWIO: Record<string, AblyParticipant> = {};
-  private participantsMouse: Record<string, ParticipantMouse> = {};
   private participantsOn3d: Record<string, AblyParticipant> = {};
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
   private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private clientRoomStateChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presenceWIOChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private clientRoomState: Record<string, RealtimeMessage> = {};
-  private clientSyncPropertiesQueue: Record<string, RealtimeMessage[]> = {};
 
   private isReconnecting: boolean = false;
 
@@ -195,8 +184,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     // join custom sync channel
     this.clientSyncChannel = this.client.channels.get(`${this.roomId}:client-sync`);
 
-    this.clientRoomStateChannel = this.client.channels.get(`${this.roomId}:client-state`);
-
     this.broadcastChannel = this.client.channels.get(`${this.roomId}:broadcast`);
     if (!this.enableSync) {
       this.broadcastChannel.subscribe('update', this.onReceiveBroadcastSync);
@@ -300,38 +287,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const roomProperties = this.localRoomProperties;
 
     this.updateRoomProperties(Object.assign({}, roomProperties, { transcript: state }));
-  }
-
-  /**
-   * @function setSyncProperty
-   * @param {string} name
-   * @param {unknown} property
-   * @description add/change and sync a property in the room
-   * @returns {void}
-   */
-  public setSyncProperty<T>(name: string, property: T): void {
-    // closure to create the event
-    const createEvent = (name: string, data: T): RealtimeMessage => {
-      return {
-        name,
-        data,
-        participantId: this.myParticipant.data.participantId,
-        timestamp: Date.now(),
-      };
-    };
-    // if the property is too big, don't add to the queue
-    if (this.isMessageTooBig(createEvent(name, property), CLIENT_MESSAGE_SIZE_LIMIT)) {
-      this.logger.log('REALTIME', 'Message too big, not sending');
-      this.throw('Message too long, the message limit size is 10kb.');
-    }
-
-    this.logger.log('adding to queue', name, property);
-
-    if (!this.clientSyncPropertiesQueue[name]) {
-      this.clientSyncPropertiesQueue[name] = [];
-    }
-
-    this.clientSyncPropertiesQueue[name].push(createEvent(name, property));
   }
 
   /**

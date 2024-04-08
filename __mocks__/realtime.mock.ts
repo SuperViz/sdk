@@ -29,7 +29,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   setDrawing: jest.fn(),
   freezeSync: jest.fn(),
   setParticipantData: jest.fn(),
-  setSyncProperty: jest.fn(),
   setKickParticipant: jest.fn(),
   setTranscript: jest.fn(),
   start: jest.fn(),
