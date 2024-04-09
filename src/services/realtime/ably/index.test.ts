@@ -134,12 +134,9 @@ describe('AblyRealtimeService', () => {
 
     AblyRealtimeServiceInstance.join();
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
-    );
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
-      'superviz:unit-test-room-id-unit-test-api-key:client-state',
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
@@ -166,12 +163,9 @@ describe('AblyRealtimeService', () => {
 
     const spy = jest.spyOn(AblyRealtimeServiceInstance['broadcastChannel'], 'subscribe');
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
-    );
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
-      'superviz:unit-test-room-id-unit-test-api-key:client-state',
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
@@ -433,7 +427,7 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(2);
-      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(1);
+      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(2);
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).toHaveBeenCalledTimes(1);
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
@@ -471,7 +465,6 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(1);
-      expect(AblyRealtimeServiceInstance['updateParticipants']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,

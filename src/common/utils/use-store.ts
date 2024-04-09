@@ -1,9 +1,11 @@
 import { PublicSubject } from '../../services/stores/common/types';
 import { useGlobalStore } from '../../services/stores/global';
+import { useWhoIsOnlineStore } from '../../services/stores/who-is-online';
 import { Store, StoreType } from '../types/stores.types';
 
 const stores = {
   [StoreType.GLOBAL]: useGlobalStore,
+  [StoreType.WHO_IS_ONLINE]: useWhoIsOnlineStore,
 };
 
 /**
@@ -19,16 +21,16 @@ function subscribeTo<T>(
   callback?: (value: T) => void,
 ): void {
   subject.subscribe(this, () => {
-    this[name] = subject.value;
-
     if (callback) {
       callback(subject.value);
+    } else {
+      this[name] = subject.value;
     }
+
+    if (this.requestUpdate) this.requestUpdate();
   });
 
   this.unsubscribeFrom.push(subject.unsubscribe);
-
-  if (this.requestUpdate) this.requestUpdate();
 }
 
 /**
@@ -47,6 +49,9 @@ export function useStore<T extends StoreType>(name: T): Store<T> {
           bindedSubscribeTo(valueName, store[valueName], callback);
         },
         subject: store[valueName] as typeof storeData,
+        get value() {
+          return this.subject.value;
+        },
         publish(newValue: keyof Store<T>) {
           this.subject.value = newValue;
         },

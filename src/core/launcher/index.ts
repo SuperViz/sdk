@@ -79,7 +79,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to add
    * @returns {void}
    */
-  public addComponent = (component: Partial<BaseComponent>): void => {
+  public addComponent = (component: any): void => {
     if (!this.canAddComponent(component)) return;
 
     if (!this.realtime.isJoinedRoom) {
@@ -133,7 +133,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to remove
    * @returns {void}
    */
-  public removeComponent = (component: Partial<BaseComponent>): void => {
+  public removeComponent = (component: any): void => {
     if (!this.activeComponents.includes(component.name)) {
       const message = `Component ${component.name} is not initialized yet.`;
       this.logger.log(message);
@@ -298,6 +298,17 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     if (localParticipant && !isEqual(this.participant.value, localParticipant)) {
       this.LauncherRealtimeRoom.presence.update<Participant>(localParticipant);
+
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+        /**
+         * @NOTE - Prevents removing all components when
+         * in the first update, activeComponents is undefined.
+         * It means we should keep all instances
+         */
+        if (!localParticipant.activeComponents) return true;
+
+        return this.activeComponents.includes(component.name);
+      });
     }
   };
 
@@ -330,6 +341,13 @@ export class Launcher extends Observable implements DefaultLauncher {
   private startIOC = (): void => {
     this.logger.log('launcher service @ startIOC');
 
+    // retrieve the current participants in the room
+    this.LauncherRealtimeRoom.presence.get((presences) => {
+      presences.forEach((presence) => {
+        this.participants.value.set(presence.id, presence.data as Participant);
+      });
+    });
+
     this.LauncherRealtimeRoom.presence.on<Participant>(
       Socket.PresenceEvents.JOINED_ROOM,
       this.onParticipantJoinedIOC,
@@ -352,28 +370,26 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param presence - participant presence
    * @returns {void}
    */
-  private onParticipantJoinedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
-    if (presence.id === this.participant.value.id) {
-      // Assign a slot to the participant
-      SlotService.register(this.LauncherRealtimeRoom, this.participant.value);
-      this.LauncherRealtimeRoom.presence.update<Participant>(this.participant.value);
-    }
+  private onParticipantJoinedIOC = async (
+    presence: Socket.PresenceEvent<Participant>,
+  ): Promise<void> => {
+    if (presence.id !== this.participant.value.id) return;
 
-    // When the participant joins, it is without any data, it's updated later
-    this.participants.value.set(presence.id, {
-      id: presence.id,
-      name: presence.name,
-      ...presence.data,
-    });
+    // Assign a slot to the participant
+    const slot = new SlotService(this.LauncherRealtimeRoom, this.participant.value);
+    const slotData = await slot.assignSlot();
 
-    if (presence.id === this.participant.value.id) {
-      this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-      this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
-    }
+    this.participant.value = {
+      ...this.participant.value,
+      slot: slotData,
+    };
 
-    this.logger.log('launcher service @ onParticipantJoined - participant joined', presence.data);
+    this.LauncherRealtimeRoom.presence.update<Participant>(this.participant.value);
 
-    this.publish(ParticipantEvent.JOINED, this.participants.value.get(presence.id));
+    this.logger.log('launcher service @ onParticipantJoined - local participant joined');
+
+    this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
+    this.publish(ParticipantEvent.JOINED, this.participant.value);
   };
 
   /**
@@ -405,17 +421,6 @@ export class Launcher extends Observable implements DefaultLauncher {
       presence.id === this.participant.value.id &&
       !isEqual(this.participant.value, presence.data)
     ) {
-      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
-        /**
-         * @NOTE - Prevents removing all components when
-         * in the first update, activeComponents is undefined.
-         * It means we should keep all instances
-         */
-        if (!presence.data.activeComponents) return true;
-
-        return this.activeComponents.includes(component.name);
-      });
-
       this.participant.value = presence.data;
       this.publish(ParticipantEvent.LOCAL_UPDATED, presence.data);
 
@@ -427,6 +432,10 @@ export class Launcher extends Observable implements DefaultLauncher {
       ) {
         this.realtime.updateMyProperties({ slotIndex: presence.data.slot.index });
       }
+    }
+
+    if (!this.participants.value.has(presence.id)) {
+      this.publish(ParticipantEvent.JOINED, presence.data);
     }
 
     this.participants.value.set(presence.id, presence.data);
