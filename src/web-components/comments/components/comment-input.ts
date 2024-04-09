@@ -10,6 +10,8 @@ import { commentInputStyle } from '../css';
 import { AutoCompleteHandler } from '../utils/autocomplete-handler';
 import mentionHandler from '../utils/mention-handler';
 
+import { CommentMode } from './types';
+
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
 
@@ -25,6 +27,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   declare mentions: CommentMention[];
   declare participantsList: ParticipantByGroupApi[];
   declare hideInput: boolean;
+  declare mode: CommentMode;
 
   private pinCoordinates: AnnotationPositionInfo | null = null;
 
@@ -36,6 +39,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     this.text = '';
     this.mentionList = [];
     this.mentions = [];
+    this.mode = CommentMode.READONLY;
   }
 
   static styles = styles;
@@ -50,6 +54,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     mentionList: { type: Object },
     participantsList: { type: Object },
     hideInput: { type: Boolean },
+    mode: { type: String },
   };
 
   private addAtSymbolInCaretPosition = () => {
@@ -139,6 +144,13 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   }
 
   updated(changedProperties: Map<string, any>) {
+    if (changedProperties.has('mode') && this.mode === CommentMode.EDITABLE) {
+      this.focusInput()
+      this.updateHeight();
+      this.sendBtn.disabled = false;
+      this.btnActive = true;
+    }
+
     if (changedProperties.has('text') && this.text.length > 0) {
       const commentsInput = this.commentInput;
       commentsInput.value = this.text;
@@ -381,7 +393,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
       </button>
       <button
         id="confirm"
-        class="icon-button icon-button--medium icon-button--clickable comments__input__button comments__input__send-button"
+        class="icon-button icon-button--medium icon-button--clickable icon-button--no-hover comments__input__button comments__input__send-button"
         disabled
         @click=${this.send}
       >

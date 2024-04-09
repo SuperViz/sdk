@@ -29,7 +29,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   setDrawing: jest.fn(),
   freezeSync: jest.fn(),
   setParticipantData: jest.fn(),
-  setSyncProperty: jest.fn(),
   setKickParticipant: jest.fn(),
   setTranscript: jest.fn(),
   start: jest.fn(),
@@ -39,13 +38,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   setGatherWIOParticipant: jest.fn(),
   domainWhitelisted: true,
   isDomainWhitelisted: jest.fn().mockReturnValue(true),
-  fetchSyncClientProperty: jest.fn((key?: string) => {
-    if (key) {
-      return createRealtimeMessage(key);
-    }
-
-    return createRealtimeHistory();
-  }),
   getSlotColor: jest.fn().mockReturnValue({
     color: MeetingColorsHex[0],
     name: MeetingColors[0],
@@ -61,7 +53,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   participantsObserver: MOCK_OBSERVER_HELPER,
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
   participantLeaveObserver: MOCK_OBSERVER_HELPER,
-  syncPropertiesObserver: MOCK_OBSERVER_HELPER,
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
   kickParticipantObserver: MOCK_OBSERVER_HELPER,
   authenticationObserver: MOCK_OBSERVER_HELPER,

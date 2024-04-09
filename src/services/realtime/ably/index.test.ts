@@ -25,27 +25,6 @@ const mockTokenRequest: Ably.Types.TokenRequest = {
   timestamp: new Date().getTime(),
 };
 
-const AblyClientRoomStateHistoryMock = {
-  items: [
-    {
-      data: {
-        fizz: {
-          name: 'fizz',
-          data: "999  is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-          participantId: '123',
-          timestamp: new Date().getTime(),
-        },
-        buzz: {
-          name: 'buzz',
-          data: "999 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-          participantId: '123',
-          timestamp: new Date().getTime(),
-        },
-      },
-    },
-  ],
-};
-
 const AblyRealtimeMock = {
   channels: {
     get: jest.fn().mockImplementation(() => {
@@ -155,12 +134,9 @@ describe('AblyRealtimeService', () => {
 
     AblyRealtimeServiceInstance.join();
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
-    );
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
-      'superviz:unit-test-room-id-unit-test-api-key:client-state',
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
@@ -187,12 +163,9 @@ describe('AblyRealtimeService', () => {
 
     const spy = jest.spyOn(AblyRealtimeServiceInstance['broadcastChannel'], 'subscribe');
 
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(5);
+    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledTimes(4);
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:client-sync',
-    );
-    expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
-      'superviz:unit-test-room-id-unit-test-api-key:client-state',
     );
     expect(AblyRealtimeMock.channels.get).toHaveBeenCalledWith(
       'superviz:unit-test-room-id-unit-test-api-key:broadcast',
@@ -454,7 +427,7 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(2);
-      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(1);
+      expect(AblyRealtimeServiceInstance['updateParticipants']).toHaveBeenCalledTimes(2);
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).toHaveBeenCalledTimes(1);
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
@@ -492,7 +465,6 @@ describe('AblyRealtimeService', () => {
 
       expect(AblyRealtimeServiceInstance['isJoinedRoom']).toBe(true);
       expect(AblyRealtimeServiceInstance['fetchRoomProperties']).toHaveBeenCalledTimes(1);
-      expect(AblyRealtimeServiceInstance['updateParticipants']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['updateLocalRoomState']).not.toBeCalled();
       expect(AblyRealtimeServiceInstance['publishStateUpdate']).toHaveBeenCalledWith(
         RealtimeStateTypes.CONNECTED,
@@ -807,176 +779,6 @@ describe('AblyRealtimeService', () => {
       expect(AblyRealtimeServiceInstance['state']).toBe(RealtimeStateTypes.RETRYING);
       expect(AblyRealtimeServiceInstance['currentReconnectAttempt']).toBe(1);
       expect(AblyRealtimeServiceInstance.reconnectObserver.publish).toBeCalled();
-    });
-  });
-
-  describe('client message handlers', () => {
-    beforeEach(() => {
-      AblyRealtimeServiceInstance.start({
-        apiKey: 'unit-test-api-key',
-        participant: MOCK_LOCAL_PARTICIPANT,
-        roomId: 'unit-test-room-id',
-      });
-
-      AblyRealtimeServiceInstance.join();
-
-      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.CONNECTED;
-    });
-
-    /**
-     * IsMessageTooBig
-     */
-
-    test('should return true if message size is bigger than 60kb', () => {
-      const message = {
-        data: 'a'.repeat(60000),
-      };
-
-      expect(AblyRealtimeServiceInstance['isMessageTooBig'](message)).toBeTruthy();
-    });
-
-    test('should return false if message size is smaller than 60kb', () => {
-      const message = {
-        data: 'a'.repeat(60000 - 11),
-      };
-
-      expect(AblyRealtimeServiceInstance['isMessageTooBig'](message)).toBeFalsy();
-    });
-
-    /**
-     * setSyncProperty
-     */
-
-    test('should add the event to the queue', () => {
-      const publishClientSyncPropertiesSpy = jest.spyOn(
-        AblyRealtimeServiceInstance as any,
-        'publishClientSyncProperties',
-      );
-      const name = 'test';
-      const property = { test: true };
-
-      AblyRealtimeServiceInstance.setSyncProperty(name, property);
-
-      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
-      expect(AblyRealtimeServiceInstance['clientSyncPropertiesQueue'][name]).toHaveLength(1);
-    });
-
-    test('should throw an error if the message is too big', () => {
-      const publishClientSyncPropertiesSpy = jest.spyOn(
-        AblyRealtimeServiceInstance as any,
-        'publishClientSyncProperties',
-      );
-      const throwSpy = jest.spyOn(AblyRealtimeServiceInstance as any, 'throw');
-      const name = 'test';
-      const property = { test: true, tooBig: new Array(10000).fill('a').join('') };
-
-      expect(() => AblyRealtimeServiceInstance.setSyncProperty(name, property)).toThrowError(
-        'Message too long, the message limit size is 10kb.',
-      );
-      expect(publishClientSyncPropertiesSpy).not.toHaveBeenCalled();
-      expect(throwSpy).toHaveBeenCalledWith('Message too long, the message limit size is 10kb.');
-    });
-
-    /**
-     * publishClientSyncProperties
-     * */
-
-    test('should not publish if the queue is empty', () => {
-      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'] = {
-        test: [],
-      };
-
-      AblyRealtimeServiceInstance['publishClientSyncProperties']();
-
-      expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).not.toHaveBeenCalled();
-    });
-
-    test('should not publish if the state is different than connected', () => {
-      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'] = {
-        test: [],
-      };
-
-      AblyRealtimeServiceInstance['state'] = RealtimeStateTypes.DISCONNECTED;
-
-      AblyRealtimeServiceInstance['publishClientSyncProperties']();
-
-      expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).not.toHaveBeenCalled();
-    });
-
-    test('should publish the queue', () => {
-      AblyRealtimeServiceInstance['clientSyncPropertiesQueue'] = {
-        test: [
-          {
-            data: { test: true },
-            name: 'test',
-            participantId: 'unit-test-participant-id',
-            timestamp: new Date().getTime(),
-          },
-        ],
-      };
-
-      AblyRealtimeServiceInstance['publishClientSyncProperties']();
-
-      expect(AblyRealtimeServiceInstance['clientSyncChannel'].publish).toHaveBeenCalled();
-    });
-
-    /**
-     * fetchClientSyncProperties
-     */
-
-    test('should return the client sync properties history', async () => {
-      // @ts-ignore
-      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
-        (callback as any)(null, AblyClientRoomStateHistoryMock);
-      });
-
-      const expected = AblyClientRoomStateHistoryMock.items[0].data;
-
-      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).resolves.toEqual(
-        expected,
-      );
-    });
-
-    test('should return the client sync properties history for a specific key', async () => {
-      // @ts-ignore
-      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
-        (callback as any)(null, AblyClientRoomStateHistoryMock);
-      });
-
-      const expected = AblyClientRoomStateHistoryMock.items[0].data.buzz;
-
-      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty('buzz')).resolves.toEqual(
-        expected,
-      );
-    });
-
-    test('should return null if the history is empty', async () => {
-      // @ts-ignore
-      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
-        (callback as any)(null, null);
-      });
-
-      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).resolves.toEqual(null);
-    });
-
-    test('should return throw an error if a event is not found', async () => {
-      // @ts-ignore
-      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
-        (callback as any)(null, AblyClientRoomStateHistoryMock);
-      });
-
-      await expect(
-        AblyRealtimeServiceInstance.fetchSyncClientProperty('not-found'),
-      ).rejects.toThrow('Event not-found not found in the history');
-    });
-
-    test('should throw an error if ably dont responds', async () => {
-      // @ts-ignore
-      AblyRealtimeServiceInstance['clientRoomStateChannel'].history = jest.fn((callback) => {
-        (callback as any)('error', null);
-      });
-
-      await expect(AblyRealtimeServiceInstance.fetchSyncClientProperty()).rejects.toThrow();
     });
   });
 
@@ -1407,7 +1209,6 @@ describe('AblyRealtimeService', () => {
         AblyRealtimeServiceInstance.freezeSync(false);
 
         expect(AblyRealtimeServiceInstance['supervizChannel'].subscribe).toBeCalled();
-        expect(AblyRealtimeServiceInstance['clientSyncChannel'].subscribe).toBeCalled();
 
         expect(AblyRealtimeServiceInstance['isSyncFrozen']).toBe(false);
       });

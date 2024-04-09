@@ -66,6 +66,7 @@ export const commentItemStyle = css`
 
   .comments__comment-item__content {
     width: 100%;
+    word-wrap: break-word;
   }
 
   .line-clamp {

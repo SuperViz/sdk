@@ -1,4 +1,4 @@
-@import url('https://unpkg.com/@superviz/sv-icons@0.8.12/css/style.css');
+@import url('https://unpkg.com/@superviz/sv-icons@0.8.13/css/style.css');
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
 
 :root {
@@ -17,7 +17,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  z-index: 5;
+  z-index: 1000;
 }
 
 #sv-video-wrapper iframe.sv-video-frame--right {
@@ -75,5 +75,5 @@ html, body {
   position: absolute;
   display: block;
   z-index: 2;
-  transition: all 300ms ease-in-out;
+  transition: all 150ms linear, opacity 100s ease-in;
 }

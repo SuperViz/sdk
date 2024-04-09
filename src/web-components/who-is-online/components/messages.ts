@@ -2,11 +2,14 @@ import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, html
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+import { Participant } from '../../../common/types/participant.types';
+import { StoreType } from '../../../common/types/stores.types';
+import { Following } from '../../../services/stores/who-is-online/types';
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { messagesStyle } from '../css';
 
-import { HorizontalSide, Following, VerticalSide } from './types';
+import { HorizontalSide, VerticalSide } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle];
@@ -15,23 +18,32 @@ const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle
 export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   static styles = styles;
 
-  declare following: Following | undefined;
   declare everyoneFollowsMe: boolean;
   declare isPrivate: boolean;
-  declare participantColor: string;
   declare verticalSide: VerticalSide;
   declare horizontalSide: HorizontalSide;
 
+  private following: Following | undefined;
+  private participantColor: string;
   private animationFrame: number | undefined;
 
   static properties = {
-    following: { type: Object },
     everyoneFollowsMe: { type: Boolean },
     isPrivate: { type: Boolean },
-    participantColor: { type: String },
     verticalSide: { type: String },
     horizontalSide: { type: String },
   };
+
+  constructor() {
+    super();
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe((participant: Participant) => {
+      this.participantColor = participant.color;
+    });
+
+    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
+    following.subscribe();
+  }
 
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,

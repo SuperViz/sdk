@@ -12,7 +12,6 @@ export interface DefaultRealtimeService {
   roomInfoUpdatedObserver: Observer;
   roomListUpdatedObserver: Observer;
   realtimeStateObserver: Observer;
-  syncPropertiesObserver: Observer;
   kickAllParticipantsObserver: Observer;
   kickParticipantObserver: Observer;
   authenticationObserver: Observer;
@@ -22,7 +21,6 @@ export interface DefaultRealtimeMethods {
   start: (options: StartRealtimeType) => void;
   leave: () => void;
   join: (participant?: Participant) => void;
-  setSyncProperty: <T>(name: string, property: T) => void;
   setHost: (masterParticipantId: string) => void;
   setGridMode: (value: boolean) => void;
   setDrawing: (drawing: DrawingData) => void;
