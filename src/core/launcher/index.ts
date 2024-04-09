@@ -79,7 +79,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to add
    * @returns {void}
    */
-  public addComponent = (component: Partial<BaseComponent>): void => {
+  public addComponent = (component: any): void => {
     if (!this.canAddComponent(component)) return;
 
     if (!this.realtime.isJoinedRoom) {
@@ -133,7 +133,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to remove
    * @returns {void}
    */
-  public removeComponent = (component: Partial<BaseComponent>): void => {
+  public removeComponent = (component: any): void => {
     if (!this.activeComponents.includes(component.name)) {
       const message = `Component ${component.name} is not initialized yet.`;
       this.logger.log(message);
