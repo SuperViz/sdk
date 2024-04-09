@@ -13,6 +13,7 @@ type StoreApi<T extends (...args: any[]) => any> = {
     subscribe(callback?: (value: keyof T) => void): void;
     subject: PublicSubject<keyof T>;
     publish<T>(value: T): void;
+    value: any;
   };
 };
 

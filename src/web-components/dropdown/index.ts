@@ -6,6 +6,7 @@ import { WebComponentsBase } from '../base';
 import importStyle from '../base/utils/importStyle';
 
 import { dropdownStyle } from './index.style';
+import { DropdownOption } from './types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
@@ -17,19 +18,19 @@ export class Dropdown extends WebComponentsBaseElement {
   declare open: boolean;
   declare disabled: boolean;
   declare align: 'left' | 'right';
-  declare options: object[];
-  declare label: string;
-  declare returnTo: string;
-  declare active: string | object;
+  declare options: DropdownOption[];
+  declare returnData: { [k: string]: any };
+
   declare icons?: string[];
   declare name?: string;
-  declare onHoverData: { name: string; action: string };
+  declare tooltipData: { name: string; action: string };
   declare shiftTooltipLeft: boolean;
   declare lastParticipant: boolean;
   declare classesPrefix: string;
   declare parentComponent: string;
   declare tooltipPrefix: string;
   declare dropdown: HTMLElement;
+
   // true when the dropdown is hovered (pass to tooltip element)
   declare showTooltip: boolean;
   // true if the tooltip should be shown when hovering (use in this element)
@@ -43,12 +44,9 @@ export class Dropdown extends WebComponentsBaseElement {
     disabled: { type: Boolean },
     align: { type: String },
     options: { type: Array },
-    label: { type: String },
-    returnTo: { type: String },
-    active: { type: [String, Object] },
     icons: { type: Array },
     name: { type: String },
-    onHoverData: { type: Object },
+    tooltipData: { type: Object },
     showTooltip: { type: Boolean },
     dropdown: { type: Object },
     canShowTooltip: { type: Boolean },
@@ -58,11 +56,13 @@ export class Dropdown extends WebComponentsBaseElement {
     classesPrefix: { type: String },
     parentComponent: { type: String },
     tooltipPrefix: { type: String },
+    returnData: { type: Object },
   };
 
   constructor() {
     super();
     this.showTooltip = false;
+    this.returnData = {};
   }
 
   protected firstUpdated(
@@ -132,15 +132,17 @@ export class Dropdown extends WebComponentsBaseElement {
     });
   };
 
-  private callbackSelected = (option) => {
+  private callbackSelected = ({ label }: DropdownOption) => {
     this.open = false;
 
-    const returnTo = this.returnTo ? option[this.returnTo] : option;
-
-    this.emitEvent('selected', returnTo, {
-      bubbles: false,
-      composed: true,
-    });
+    this.emitEvent(
+      'selected',
+      { ...this.returnData, label },
+      {
+        bubbles: false,
+        composed: true,
+      },
+    );
   };
 
   private setHorizontalPosition() {
@@ -223,24 +225,31 @@ export class Dropdown extends WebComponentsBaseElement {
     this.emitEvent('open', { open: this.open });
   }
 
-  private get supervizIcons() {
-    return this.icons?.map((icon) => {
-      return html`<superviz-icon name="${icon}" size="sm"></superviz-icon>`;
-    });
+  private getIcon(icon: string) {
+    if (!icon) return;
+
+    return html`
+      <span class=${this.getClass('item__icon')}>
+        <superviz-icon name="${icon}" size="sm"></superviz-icon>
+      </span>
+    `;
+  }
+
+  private getLabel(option: string) {
+    return html`<span class="option-label ${this.getClass('item__label')}">${option}</span>`;
   }
 
   private get listOptions() {
-    return this.options.map((option, index) => {
+    return this.options.map(({ label, icon, active }) => {
       const liClasses = {
         text: true,
         [this.getClass('item')]: true,
         'text-bold': true,
-        active: option?.[this.returnTo] && this.active === option?.[this.returnTo],
+        active,
       };
 
-      return html`<li @click=${() => this.callbackSelected(option)} class=${classMap(liClasses)}>
-        <span class=${this.getClass('item__icon')}>${this.supervizIcons?.at(index)}</span>
-        <span class="option-label ${this.getClass('item__label')}">${option[this.label]}</span>
+      return html`<li @click=${() => this.callbackSelected({ label })} class=${classMap(liClasses)}>
+        ${this.getIcon(icon)} ${this.getLabel(label)}
       </li>`;
     });
   }
@@ -251,7 +260,7 @@ export class Dropdown extends WebComponentsBaseElement {
     const tooltipVerticalPosition = this.lastParticipant ? 'tooltip-top' : 'tooltip-bottom';
 
     return html` <superviz-tooltip
-      tooltipData=${JSON.stringify(this.onHoverData)}
+      tooltipData=${JSON.stringify(this.tooltipData)}
       ?shiftTooltipLeft=${this.shiftTooltipLeft}
       tooltipVerticalPosition=${tooltipVerticalPosition}
       classesPrefix="${this.tooltipPrefix}__tooltip"

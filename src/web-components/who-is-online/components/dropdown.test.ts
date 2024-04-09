@@ -1,11 +1,12 @@
 import '.';
 import { MeetingColorsHex } from '../../../common/types/meeting-colors.types';
+import { StoreType } from '../../../common/types/stores.types';
 import sleep from '../../../common/utils/sleep';
-import { Participant } from '../../../components/who-is-online/types';
+import { useStore } from '../../../common/utils/use-store';
+import { Participant, WIODropdownOptions } from '../../../components/who-is-online/types';
 
 interface elementProps {
   position: string;
-  participants?: Participant[];
   label?: string;
   returnTo?: string;
   options?: any;
@@ -13,27 +14,82 @@ interface elementProps {
   icons?: string[];
 }
 
-const mockParticipants: Participant[] = [
+const MOCK_PARTICIPANTS: Participant[] = [
   {
+    name: 'John Zero',
+    avatar: {
+      imageUrl: 'https://example.com',
+      color: MeetingColorsHex[0],
+      firstLetter: 'J',
+      slotIndex: 0,
+    },
+    id: '1',
+    activeComponents: ['whoisonline', 'presence'],
+    isLocalParticipant: true,
+    tooltip: {
+      name: 'John Zero (you)',
+    },
+    controls: [
+      {
+        label: WIODropdownOptions.GATHER,
+      },
+      {
+        label: WIODropdownOptions.FOLLOW,
+      },
+      {
+        label: WIODropdownOptions.PRIVATE,
+      },
+    ],
+  },
+  {
+    name: 'John Uno',
     avatar: {
       imageUrl: '',
-      model3DUrl: '',
+      color: MeetingColorsHex[1],
+      firstLetter: 'J',
+      slotIndex: 1,
     },
-    color: MeetingColorsHex[0],
-    id: '1',
-    name: 'John Zero',
-    slotIndex: 0,
+    id: '2',
+    activeComponents: ['whoisonline'],
+    isLocalParticipant: false,
+    tooltip: {
+      name: 'John Uno',
+    },
+    controls: [
+      {
+        label: WIODropdownOptions.GOTO,
+      },
+      {
+        label: WIODropdownOptions.LOCAL_FOLLOW,
+      },
+    ],
+  },
+  {
+    name: 'John Doe',
+    avatar: {
+      imageUrl: '',
+      color: MeetingColorsHex[2],
+      firstLetter: 'J',
+      slotIndex: 2,
+    },
+    id: '3',
+    activeComponents: ['whoisonline', 'presence'],
+    isLocalParticipant: true,
+    tooltip: {
+      name: 'John Doe',
+    },
+    controls: [
+      {
+        label: WIODropdownOptions.GOTO,
+      },
+      {
+        label: WIODropdownOptions.LOCAL_FOLLOW,
+      },
+    ],
   },
 ];
 
-const createEl = ({
-  position,
-  label,
-  returnTo,
-  name,
-  icons,
-  participants,
-}: elementProps): HTMLElement => {
+const createEl = ({ position, label, returnTo, name, icons }: elementProps): HTMLElement => {
   const element: HTMLElement = document.createElement('superviz-who-is-online-dropdown');
 
   /* eslint-disable no-unused-expressions */
@@ -41,7 +97,6 @@ const createEl = ({
   returnTo && element.setAttribute('returnTo', returnTo);
   name && element.setAttribute('name', name);
   icons && element.setAttribute('icons', JSON.stringify(icons));
-  !!participants?.length && element.setAttribute('participants', JSON.stringify(participants));
   /* eslint-enable no-unused-expressions */
 
   element.setAttribute('position', position);
@@ -91,14 +146,19 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should render dropdown', () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+
     const element = document.querySelector('superviz-who-is-online-dropdown');
 
     expect(element).not.toBeNull();
   });
 
   test('should open dropdown when click on it', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
 
     await sleep();
 
@@ -110,7 +170,9 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should close dropdown when click on it', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
 
     await sleep();
     dropdownContent()?.click();
@@ -130,7 +192,9 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should open another dropdown when click on participant', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
 
     await sleep();
 
@@ -151,7 +215,9 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should listen click event when click out', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
 
     await sleep();
 
@@ -171,13 +237,15 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
 
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>([MOCK_PARTICIPANTS[2]]);
     await sleep();
 
     const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
-    const backgroundColor = MeetingColorsHex[mockParticipants[0].slotIndex as number];
+    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[2].avatar.slotIndex as number];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #26242A`,
     );
@@ -185,18 +253,19 @@ describe('who-is-online-dropdown', () => {
 
   test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
     const participant = {
-      ...mockParticipants[0],
+      ...MOCK_PARTICIPANTS[0],
       slotIndex: 1,
       color: MeetingColorsHex[1],
     };
 
-    createEl({ position: 'bottom', participants: [participant] });
-
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish([MOCK_PARTICIPANTS[1]]);
     await sleep();
 
     const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
 
-    const backgroundColor = MeetingColorsHex[1];
+    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[1].avatar.slotIndex as number];
     expect(letter?.getAttribute('style')).toBe(
       `background-color: ${backgroundColor}; color: #FFFFFF`,
     );
@@ -204,13 +273,17 @@ describe('who-is-online-dropdown', () => {
 
   test('should not render participants when there is no participant', async () => {
     createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish([]);
 
     await sleep();
     expect(dropdownMenu()?.children?.length).toBe(0);
   });
 
   test('should render participants when there is participant', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>([MOCK_PARTICIPANTS[0]]);
 
     await sleep();
 
@@ -218,22 +291,27 @@ describe('who-is-online-dropdown', () => {
   });
 
   test('should change selected participant when click on it', async () => {
-    createEl({
-      position: 'bottom',
-      participants: [
-        {
-          avatar: {
-            imageUrl: '',
-            model3DUrl: '',
-          },
-          color: MeetingColorsHex[0],
-          id: '1',
-          name: 'John Zero',
+    createEl({ position: 'bottom' });
+
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>([
+      {
+        avatar: {
+          imageUrl: '',
+          color: 'red',
+          firstLetter: 'J',
           slotIndex: 0,
-          joinedPresence: true,
         },
-      ],
-    });
+        id: '1',
+        name: 'John Zero',
+        activeComponents: ['whoisonline', 'presence'],
+        isLocalParticipant: false,
+        tooltip: {
+          name: 'John',
+        },
+      },
+    ]);
 
     await sleep();
 
@@ -245,11 +323,18 @@ describe('who-is-online-dropdown', () => {
 
     await sleep();
 
-    expect(element()?.['selected']).toBe(mockParticipants[0].id);
+    expect(element()?.['selected']).toBe(MOCK_PARTICIPANTS[0].id);
   });
 
-  test('should not change selected participant when click on it if not in presence', async () => {
-    createEl({ position: 'bottom', participants: mockParticipants });
+  test('should not change selected participant when click on it if disableDropdown is true', async () => {
+    createEl({ position: 'bottom' });
+    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+    extras.publish<Participant[]>([
+      {
+        ...MOCK_PARTICIPANTS[0],
+        disableDropdown: true,
+      },
+    ]);
 
     await sleep();
 
@@ -261,12 +346,15 @@ describe('who-is-online-dropdown', () => {
 
     await sleep();
 
-    expect(element()?.['selected']).not.toBe(mockParticipants[0].id);
+    expect(element()?.['selected']).not.toBe(MOCK_PARTICIPANTS[0].id);
   });
 
   describe('repositionDropdown', () => {
     test('should call reposition methods if is open', () => {
-      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      const el = createEl({ position: 'bottom' });
+      const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+
       el['open'] = true;
 
       el['repositionInVerticalDirection'] = jest.fn();
@@ -279,7 +367,10 @@ describe('who-is-online-dropdown', () => {
     });
 
     test('should do nothing if is not open', () => {
-      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      const el = createEl({ position: 'bottom' });
+      const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+
       el['open'] = false;
 
       el['repositionInVerticalDirection'] = jest.fn();
@@ -292,22 +383,6 @@ describe('who-is-online-dropdown', () => {
     });
   });
 
-  /**
-   *   private repositionInVerticalDirection = () => {
-    const { bottom, top, height } = this.parentElement.getBoundingClientRect();
-    const windowVerticalMidpoint = window.innerHeight / 2;
-    const dropdownVerticalMidpoint = top + height / 2;
-
-    if (dropdownVerticalMidpoint > windowVerticalMidpoint) {
-      this.dropdownList.style.setProperty('bottom', `${window.innerHeight - top + 8}px`);
-      this.dropdownList.style.setProperty('top', '');
-      return;
-    }
-
-    this.dropdownList.style.setProperty('top', `${bottom + 8}px`);
-    this.dropdownList.style.setProperty('bottom', '');
-  };
-   */
   describe('repositionInVerticalDirection', () => {
     beforeEach(() => {
       document.body.innerHTML = '';
@@ -315,7 +390,9 @@ describe('who-is-online-dropdown', () => {
     });
 
     test('should set bottom and top styles when dropdownVerticalMidpoint is greater than windowVerticalMidpoint', async () => {
-      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      const el = createEl({ position: 'bottom' });
+      const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
 
       await sleep();
 
@@ -336,7 +413,9 @@ describe('who-is-online-dropdown', () => {
     });
 
     test('should set top and bottom styles when dropdownVerticalMidpoint is less than windowVerticalMidpoint', async () => {
-      const el = createEl({ position: 'bottom', participants: mockParticipants });
+      const el = createEl({ position: 'bottom' });
+      const { extras } = useStore(StoreType.WHO_IS_ONLINE);
+      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
 
       await sleep();
 

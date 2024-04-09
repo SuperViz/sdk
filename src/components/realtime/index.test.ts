@@ -135,6 +135,13 @@ describe('realtime component', () => {
   });
 
   describe('fetchHistory', () => {
+    test('should return null when the realtime is not started', async () => {
+      RealtimeComponentInstance['state'] = RealtimeComponentState.STOPPED;
+      const h = await RealtimeComponentInstance.fetchHistory();
+
+      expect(h).toEqual(null);
+    });
+
     test('should return null when the history is empty', async () => {
       const spy = jest
         .spyOn(RealtimeComponentInstance['room'], 'history' as any)

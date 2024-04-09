@@ -647,10 +647,7 @@ export class VideoConference extends BaseComponent {
       return participant.id === hostId;
     });
 
-    if (this.realtime.isLocalParticipantHost) {
-      this.realtime.setSyncProperty(MeetingEvent.MEETING_HOST_CHANGE, newHost);
-      this.publish(MeetingEvent.MEETING_HOST_CHANGE, newHost);
-    }
+    this.publish(MeetingEvent.MEETING_HOST_CHANGE, newHost);
   };
 
   /**

@@ -4,12 +4,16 @@ import throttle from 'lodash/throttle';
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observer } from '../../common/utils';
-import { RealtimeMessage } from '../../services/realtime/ably/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 import { Participant } from '../who-is-online/types';
 
-import { RealtimeComponentEvent, RealtimeComponentState, RealtimeData } from './types';
+import {
+  RealtimeComponentEvent,
+  RealtimeComponentState,
+  RealtimeData,
+  RealtimeMessage,
+} from './types';
 
 export class Realtime extends BaseComponent {
   private callbacksToSubscribeWhenJoined: Array<{
@@ -59,7 +63,7 @@ export class Realtime extends BaseComponent {
     if (this.state !== RealtimeComponentState.STARTED) {
       const message = `Realtime component is not started yet. You can't publish event ${event} before start`;
       this.logger.log(message);
-      console.error(message);
+      console.warn(`[SuperViz] ${message}`);
       return;
     }
 
@@ -107,6 +111,14 @@ export class Realtime extends BaseComponent {
   public fetchHistory = async (
     eventName?: string,
   ): Promise<RealtimeMessage[] | Record<string, RealtimeMessage[]> | null> => {
+    if (this.state !== RealtimeComponentState.STARTED) {
+      const message = `Realtime component is not started yet. You can't retrieve history before start`;
+
+      this.logger.log(message);
+      console.warn(`[SuperViz] ${message}`);
+      return null;
+    }
+
     const history: RealtimeMessage[] | Record<string, RealtimeMessage[]> = await new Promise(
       (resolve, reject) => {
         const next = (data: Socket.RoomHistory) => {

@@ -82,6 +82,7 @@ export const annotationItemStyle = css`
 
   .hidden {
     overflow: hidden;
+    opacity: 0;
   }
 
   .comments__thread {
@@ -111,7 +112,6 @@ export const annotationItemStyle = css`
     grid-template-rows: 0fr;
     opacity: 0;
     width: 100%;
-    overflow: hidden;
     transition: grid-template-rows 0.3s linear, opacity 0.3s linear;
   }
 
