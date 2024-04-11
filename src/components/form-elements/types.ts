@@ -1,9 +1,8 @@
 import { SocketEvent } from '@superviz/socket-client';
 
-export interface FormElementsProps {
+export type FormElementsProps = {
   fields?: string[] | string;
-  flags?: Flags;
-}
+} & Flags;
 
 export type Flags = {
   disableOutline?: boolean;

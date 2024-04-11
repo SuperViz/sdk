@@ -91,7 +91,7 @@ export class FormElements extends BaseComponent {
     this.name = ComponentNames.PRESENCE;
     this.logger = new Logger('@superviz/sdk/presence-input-component');
 
-    const { fields, flags } = props;
+    const { fields, ...flags } = props;
 
     this.flags = flags ?? {};
 
