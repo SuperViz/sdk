@@ -191,8 +191,13 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseLeave = (event: MouseEvent): void => {
-    const { x, y, width, height } = this.container.getBoundingClientRect();
-    if (event.x > 0 && event.y > 0 && event.x < x + width && event.y < y + height) return;
+    const { left, top, right, bottom } = this.container.getBoundingClientRect();
+    const isInsideContainer =
+      event.x > left && event.y > top && event.x < right && event.y < bottom;
+    const isInsideScreen =
+      event.x > 0 && event.y > 0 && event.x < window.innerWidth && event.y < window.innerHeight;
+    if (isInsideContainer && isInsideScreen) return;
+
     this.room.presence.update({ visible: false });
   };
 
