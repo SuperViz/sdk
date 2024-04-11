@@ -458,16 +458,16 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['container'].getBoundingClientRect = jest.fn(
         () =>
           ({
-            x: 10,
-            y: 10,
-            width: 10,
-            height: 10,
+            left: 10,
+            right: 100,
+            top: 20,
+            bottom: 90
           } as any),
       );
 
       const mouseEvent1 = {
-        x: -50,
-        y: -50,
+        x: 5,
+        y: 5,
       } as any;
 
       presenceMouseComponent['onMyParticipantMouseLeave'](mouseEvent1);
@@ -476,8 +476,8 @@ describe('MousePointers on HTML', () => {
       updatePresenceMouseSpy.mockClear();
 
       const mouseEvent2 = {
-        x: 5,
-        y: 5,
+        x: 30,
+        y: 40,
       } as any;
 
       presenceMouseComponent['onMyParticipantMouseLeave'](mouseEvent2);
