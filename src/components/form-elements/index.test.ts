@@ -39,7 +39,7 @@ describe('form elements', () => {
     });
 
     test('should set the name of the component', () => {
-      expect(instance.name).toBe(ComponentNames.PRESENCE);
+      expect(instance.name).toBe(ComponentNames.FORM_ELEMENTS);
     });
 
     test('should set the logger', () => {
