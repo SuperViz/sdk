@@ -7,7 +7,7 @@ import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-import { ParticipantMouse, PresenceMouseProps, Transform } from '../types';
+import { Camera, ParticipantMouse, PresenceMouseProps, Transform } from '../types';
 
 export class PointersCanvas extends BaseComponent {
   public name: ComponentNames;
@@ -21,6 +21,11 @@ export class PointersCanvas extends BaseComponent {
   private isPrivate: boolean;
   private localParticipant: Participant;
   private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
+  private camera: Camera = {
+    x: 0,
+    y: 0,
+    scale: 1,
+  };
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -42,6 +47,7 @@ export class PointersCanvas extends BaseComponent {
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe();
+    this.getCamera();
   }
 
   /**
@@ -165,6 +171,7 @@ export class PointersCanvas extends BaseComponent {
    * @returns {void}
    */
   private animate = (): void => {
+    this.getCamera();
     this.renderDivWrapper();
     this.updateParticipantsMouses();
 
@@ -181,18 +188,7 @@ export class PointersCanvas extends BaseComponent {
 
     if (!mouse) return;
 
-    const rect = this.canvas.getBoundingClientRect();
-    const { width, height } = rect;
-
-    const { x, y } = mouse;
-
-    const widthHalf = width / 2;
-    const heightHalf = height / 2;
-
-    const translateX = widthHalf - x;
-    const translateY = heightHalf - y;
-
-    if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
+    if (this.goToMouseCallback) this.goToMouseCallback({ x: mouse.camera.x, y: mouse.camera.y });
   };
 
   /** Presence Mouse Events */
@@ -221,6 +217,7 @@ export class PointersCanvas extends BaseComponent {
       ...this.localParticipant,
       ...coordinates,
       visible: !this.isPrivate,
+      camera: this.camera,
     });
   }, 30);
 
@@ -269,6 +266,26 @@ export class PointersCanvas extends BaseComponent {
 
       this.renderPresenceMouses(mouse);
     });
+  };
+
+  /**
+   * @function getCamera
+   * @description - retrieves the camera information from the canvas context's transform.
+   * The camera information includes the current translation (x, y) and scale.
+   */
+  private getCamera = () => {
+    const context = this.canvas.getContext('2d');
+    const transform = context?.getTransform();
+
+    const currentTranslateX = transform?.e;
+    const currentTranslateY = transform?.f;
+    const currentScale = transform?.a;
+
+    this.camera = {
+      x: currentTranslateX,
+      y: currentTranslateY,
+      scale: currentScale,
+    };
   };
 
   /**

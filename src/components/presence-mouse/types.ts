@@ -4,6 +4,13 @@ export interface ParticipantMouse extends Participant {
   x: number;
   y: number;
   visible: boolean;
+  camera: Camera;
+}
+
+export interface Camera {
+  x: number;
+  y: number;
+  scale: number;
 }
 
 export interface Transform {

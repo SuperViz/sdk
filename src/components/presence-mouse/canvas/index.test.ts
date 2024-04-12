@@ -21,6 +21,11 @@ const MOCK_MOUSE: ParticipantMouse = {
     timestamp: 1710448079918,
   },
   visible: true,
+  camera: {
+    x: 0,
+    y: 0,
+    scale: 1,
+  },
 };
 
 const participant1 = { ...MOCK_MOUSE };
@@ -90,6 +95,11 @@ describe('MousePointers on Canvas', () => {
   describe('onMyParticipantMouseMove', () => {
     test('should update my participant mouse position', () => {
       const spy = jest.spyOn(presenceMouseComponent['room']['presence'], 'update');
+      presenceMouseComponent['camera'] = {
+        x: 0,
+        y: 0,
+        scale: 1,
+      };
 
       const presenceContainerId = document.createElement('div');
       presenceMouseComponent['containerId'] = 'container';
@@ -100,6 +110,11 @@ describe('MousePointers on Canvas', () => {
 
       expect(spy).toHaveBeenCalledWith({
         ...MOCK_LOCAL_PARTICIPANT,
+        camera: {
+          x: 0,
+          y: 0,
+          scale: 1,
+        },
         x: event.x,
         y: event.y,
         visible: true,
@@ -206,6 +221,11 @@ describe('MousePointers on Canvas', () => {
           timestamp: 1710448079918,
         },
         visible: true,
+        camera: {
+          x: 0,
+          y: 0,
+          scale: 1,
+        },
       };
 
       presenceMouseComponent['onPresenceLeftRoom']({
@@ -234,6 +254,11 @@ describe('MousePointers on Canvas', () => {
           timestamp: 1710448079918,
         },
         visible: true,
+        camera: {
+          x: 0,
+          y: 0,
+          scale: 1,
+        },
       };
 
       const participant2 = MOCK_MOUSE;
@@ -267,8 +292,8 @@ describe('MousePointers on Canvas', () => {
 
       expect(presenceMouseComponent['goToMouseCallback']).toHaveBeenCalledTimes(1);
       expect(presenceMouseComponent['goToMouseCallback']).toHaveBeenCalledWith({
-        x: 20,
-        y: 20,
+        x: participant2.camera.x,
+        y: participant2.camera.y,
       });
     });
   });

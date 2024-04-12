@@ -43,6 +43,11 @@ describe('MousePointers on HTML', () => {
         timestamp: 1710448079918,
       },
       visible: true,
+      camera: {
+        x: 0,
+        y: 0,
+        scale: 1,
+      },
     };
 
     const participant1 = { ...MOCK_MOUSE };
@@ -461,7 +466,7 @@ describe('MousePointers on HTML', () => {
             left: 10,
             right: 100,
             top: 20,
-            bottom: 90
+            bottom: 90,
           } as any),
       );
 
