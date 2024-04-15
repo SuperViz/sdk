@@ -1,4 +1,5 @@
 const fs = require('fs');
+require('jest-canvas-mock');
 
 const { MOCK_CONFIG } = require('./__mocks__/config.mock');
 const config = require('./src/services/config');
