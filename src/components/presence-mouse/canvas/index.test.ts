@@ -24,6 +24,10 @@ const MOCK_MOUSE: ParticipantMouse = {
   camera: {
     x: 0,
     y: 0,
+    screen: {
+      width: 1920,
+      height: 1080,
+    },
     scale: 1,
   },
 };
@@ -99,6 +103,10 @@ describe('MousePointers on Canvas', () => {
         x: 0,
         y: 0,
         scale: 1,
+        screen: {
+          width: 1920,
+          height: 1080,
+        },
       };
 
       const presenceContainerId = document.createElement('div');
@@ -114,6 +122,10 @@ describe('MousePointers on Canvas', () => {
           x: 0,
           y: 0,
           scale: 1,
+          screen: {
+            width: 1920,
+            height: 1080,
+          },
         },
         x: event.x,
         y: event.y,
@@ -225,6 +237,10 @@ describe('MousePointers on Canvas', () => {
           x: 0,
           y: 0,
           scale: 1,
+          screen: {
+            width: 1920,
+            height: 1080,
+          },
         },
       };
 
@@ -258,6 +274,10 @@ describe('MousePointers on Canvas', () => {
           x: 0,
           y: 0,
           scale: 1,
+          screen: {
+            width: 1920,
+            height: 1080,
+          },
         },
       };
 
@@ -294,6 +314,8 @@ describe('MousePointers on Canvas', () => {
       expect(presenceMouseComponent['goToMouseCallback']).toHaveBeenCalledWith({
         x: participant2.camera.x,
         y: participant2.camera.y,
+        scaleX: 0,
+        scaleY: 0,
       });
     });
   });

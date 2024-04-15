@@ -10,6 +10,10 @@ export interface ParticipantMouse extends Participant {
 export interface Camera {
   x: number;
   y: number;
+  screen: {
+    width: number;
+    height: number;
+  };
   scale: number;
 }
 
@@ -21,9 +25,16 @@ export interface Transform {
   scale?: number;
 }
 
+export interface Position {
+  x: number;
+  y: number;
+  scaleX?: number;
+  scaleY?: number;
+}
+
 export interface PresenceMouseProps {
   callbacks: {
-    onGoToPresence?: (position: { x: number; y: number }) => void;
+    onGoToPresence?: (position: Position) => void;
   };
 }
 

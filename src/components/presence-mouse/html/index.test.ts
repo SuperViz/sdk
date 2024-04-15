@@ -47,6 +47,10 @@ describe('MousePointers on HTML', () => {
         x: 0,
         y: 0,
         scale: 1,
+        screen: {
+          width: 1920,
+          height: 1080,
+        },
       },
     };
 
