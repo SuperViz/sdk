@@ -430,7 +430,16 @@ describe('MousePointers on HTML', () => {
         x: 30,
         y: 30,
         visible: true,
-      });
+        camera: {
+          scale: 1,
+          x: 10,
+          y: 10,
+          screen: {
+            height: 0,
+            width: 0,
+          },
+        },
+      } as ParticipantMouse);
     });
 
     test('should not call room.presence.update if isPrivate', () => {
@@ -648,7 +657,7 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['goToPresenceCallback'] = callback;
       presenceMouseComponent['goToMouse']('unit-test-participant2-id');
 
-      expect(callback).toHaveBeenCalledWith({ x, y });
+      expect(callback).toHaveBeenCalledWith({ x, y, scaleX: 0, scaleY: 0 });
     });
   });
 

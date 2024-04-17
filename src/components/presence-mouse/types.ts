@@ -28,8 +28,8 @@ export interface Transform {
 export interface Position {
   x: number;
   y: number;
-  scaleX?: number;
-  scaleY?: number;
+  scaleX: number;
+  scaleY: number;
 }
 
 export interface PresenceMouseProps {
