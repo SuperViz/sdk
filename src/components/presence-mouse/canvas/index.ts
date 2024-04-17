@@ -413,6 +413,6 @@ export class PointersCanvas extends BaseComponent {
    * @param {Transform} transformation Which transformations to apply
    */
   public transform(transformation: Transform) {
-    console.warn('[SuperViz] - Transform only available for HTML component.');
+    console.warn('[SuperViz] - transform method not available when container is a canvas element.');
   }
 }
