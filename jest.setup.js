@@ -1,7 +1,9 @@
+/* eslint-disable no-undef */
 const fs = require('fs');
 require('jest-canvas-mock');
 
 const { MOCK_CONFIG } = require('./__mocks__/config.mock');
+const { MOCK_IO } = require('./__mocks__/io.mock');
 const config = require('./src/services/config');
 
 config.default.setConfig(MOCK_CONFIG);
@@ -33,3 +35,5 @@ global.DOMPoint = class {
     return this;
   }
 };
+
+jest.mock('@superviz/socket-client', () => MOCK_IO);
