@@ -9,6 +9,7 @@ import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import {
+  Camera,
   ParticipantMouse,
   PresenceMouseProps,
   SVGElements,
@@ -36,6 +37,7 @@ export class PointersHTML extends BaseComponent {
   private isPrivate: boolean;
   private containerTagname: string;
   private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
+  private camera: Camera;
   private pointerMoveObserver: Subscription;
 
   // callbacks
@@ -58,6 +60,16 @@ export class PointersHTML extends BaseComponent {
       this.logger.log(message);
       throw new Error(message);
     }
+
+    this.camera = {
+      x: 0,
+      y: 0,
+      scale: 1,
+      screen: {
+        width: this.container.clientWidth,
+        height: this.container.clientHeight,
+      },
+    };
 
     this.name = ComponentNames.PRESENCE;
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
@@ -178,11 +190,12 @@ export class PointersHTML extends BaseComponent {
     const x = (event.x - left - this.transformation.translate.x) / this.transformation.scale;
     const y = (event.y - top - this.transformation.translate.y) / this.transformation.scale;
 
-    this.room.presence.update({
+    this.room.presence.update<ParticipantMouse>({
       ...this.localParticipant,
       x,
       y,
       visible: true,
+      camera: this.camera,
     });
   };
 
@@ -209,16 +222,29 @@ export class PointersHTML extends BaseComponent {
    */
   private goToMouse = (id: string): void => {
     const pointer = this.mouses.get(id);
-    if (!pointer) return;
+    const presence = this.presences.get(id);
+
+    if (!presence) return;
 
     if (this.goToPresenceCallback) {
-      const mouse = this.mouses.get(id);
-      const x = Number(mouse.style.left.replace('px', ''));
-      const y = Number(mouse.style.top.replace('px', ''));
+      const translatedX = presence.camera.x;
+      const translatedY = presence.camera.y;
+      const screenScaleX = this.container.clientHeight / presence.camera.screen.height;
+      const scaleToAllowVisibilityX = Math.min(screenScaleX, 2);
+      const screenScaleY = this.container.clientWidth / presence.camera.screen.width;
+      const scaleToAllowVisibilityY = Math.min(screenScaleY, 2);
 
-      this.goToPresenceCallback({ x, y });
+      this.goToPresenceCallback({
+        x: translatedX,
+        y: translatedY,
+        scaleX: scaleToAllowVisibilityX,
+        scaleY: scaleToAllowVisibilityY,
+      });
+
       return;
     }
+
+    if (!pointer) return;
 
     pointer.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
@@ -502,6 +528,16 @@ export class PointersHTML extends BaseComponent {
    */
   public transform(transformation: Transform) {
     this.transformation = transformation;
+    this.camera = {
+      x: transformation.translate.x,
+      y: transformation.translate.y,
+      scale: transformation.scale,
+      screen: {
+        width: this.container.clientWidth,
+        height: this.container.clientHeight,
+      },
+    };
+
     this.updateParticipantsMouses(true);
   }
 
@@ -599,11 +635,9 @@ export class PointersHTML extends BaseComponent {
   /**
    * @function renderWrapper
    * @description prepares, creates and renders a wrapper for the specified element
-   * @param {HTMLElement} element the element to be wrapped
-   * @param {string} id the id of the element
    * @returns {void}
    */
-  private renderWrapper() {
+  private renderWrapper(): void {
     if (this.wrapper) return;
 
     if (VoidElements[this.containerTagname]) {
