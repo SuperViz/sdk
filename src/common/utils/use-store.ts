@@ -43,6 +43,8 @@ export function useStore<T extends StoreType>(name: T): Store<T> {
 
   const proxy = new Proxy(storeData, {
     get(store, valueName: string) {
+      if (valueName === 'destroy') return store.destroy;
+      
       return {
         subscribe(callback?) {
           bindedSubscribeTo(valueName, store[valueName], callback);
