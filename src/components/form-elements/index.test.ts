@@ -907,7 +907,7 @@ describe('form elements', () => {
       instance['publishTypedEvent']({ presence, data });
 
       expect(instance['publish']).toHaveBeenCalledWith(
-        `${FieldEvents.KEYBOARD_INTERACTION}-${fieldId}`,
+        FieldEvents.KEYBOARD_INTERACTION,
         {
           fieldId,
           userId: '123',

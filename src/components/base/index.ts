@@ -11,6 +11,7 @@ import { AblyRealtimeService } from '../../services/realtime';
 import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
+import { useGlobalStore } from '../../services/stores';
 
 export abstract class BaseComponent extends Observable {
   public abstract name: ComponentNames;
