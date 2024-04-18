@@ -61,7 +61,7 @@ export class Comments extends BaseComponent {
     const { group, localParticipant } = this.useStore(StoreType.GLOBAL);
     group.subscribe();
 
-    localParticipant.subscribe((participant: Participant) => {
+    localParticipant.subscribe((participant) => {
       this.localParticipantId = participant.id;
     });
   }

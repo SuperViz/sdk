@@ -605,7 +605,7 @@ export class FormElements extends BaseComponent {
   }: SocketEvent<InputPayload>) => {
     if (presence.id === this.localParticipant.id) return;
 
-    this.publish(`${FieldEvents.INPUT}-${fieldId}`, {
+    this.publish(FieldEvents.INPUT, {
       value,
       fieldId,
       attribute,
@@ -627,7 +627,7 @@ export class FormElements extends BaseComponent {
   }: SocketEvent<FocusPayload>) => {
     if (presence.id === this.localParticipant.id) return;
 
-    this.publish(`${FieldEvents.KEYBOARD_INTERACTION}-${fieldId}`, {
+    this.publish(FieldEvents.KEYBOARD_INTERACTION, {
       fieldId,
       userId: presence.id,
       userName: presence.name,

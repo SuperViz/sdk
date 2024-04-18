@@ -148,7 +148,7 @@ describe('who-is-online-dropdown', () => {
   test('should render dropdown', () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+    extras.publish(MOCK_PARTICIPANTS);
 
     const element = document.querySelector('superviz-who-is-online-dropdown');
 
@@ -158,7 +158,7 @@ describe('who-is-online-dropdown', () => {
   test('should open dropdown when click on it', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+    extras.publish(MOCK_PARTICIPANTS);
 
     await sleep();
 
@@ -172,7 +172,7 @@ describe('who-is-online-dropdown', () => {
   test('should close dropdown when click on it', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+    extras.publish(MOCK_PARTICIPANTS);
 
     await sleep();
     dropdownContent()?.click();
@@ -194,7 +194,7 @@ describe('who-is-online-dropdown', () => {
   test('should open another dropdown when click on participant', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+    extras.publish(MOCK_PARTICIPANTS);
 
     await sleep();
 
@@ -217,7 +217,7 @@ describe('who-is-online-dropdown', () => {
   test('should listen click event when click out', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+    extras.publish(MOCK_PARTICIPANTS);
 
     await sleep();
 
@@ -240,7 +240,7 @@ describe('who-is-online-dropdown', () => {
     createEl({ position: 'bottom' });
 
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>([MOCK_PARTICIPANTS[2]]);
+    extras.publish([MOCK_PARTICIPANTS[2]]);
     await sleep();
 
     const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
@@ -283,7 +283,7 @@ describe('who-is-online-dropdown', () => {
   test('should render participants when there is participant', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>([MOCK_PARTICIPANTS[0]]);
+    extras.publish([MOCK_PARTICIPANTS[0]]);
 
     await sleep();
 
@@ -295,7 +295,7 @@ describe('who-is-online-dropdown', () => {
 
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>([
+    extras.publish([
       {
         avatar: {
           imageUrl: '',
@@ -329,7 +329,7 @@ describe('who-is-online-dropdown', () => {
   test('should not change selected participant when click on it if disableDropdown is true', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish<Participant[]>([
+    extras.publish([
       {
         ...MOCK_PARTICIPANTS[0],
         disableDropdown: true,
@@ -353,7 +353,7 @@ describe('who-is-online-dropdown', () => {
     test('should call reposition methods if is open', () => {
       const el = createEl({ position: 'bottom' });
       const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+      extras.publish(MOCK_PARTICIPANTS);
 
       el['open'] = true;
 
@@ -369,7 +369,7 @@ describe('who-is-online-dropdown', () => {
     test('should do nothing if is not open', () => {
       const el = createEl({ position: 'bottom' });
       const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+      extras.publish(MOCK_PARTICIPANTS);
 
       el['open'] = false;
 
@@ -392,7 +392,7 @@ describe('who-is-online-dropdown', () => {
     test('should set bottom and top styles when dropdownVerticalMidpoint is greater than windowVerticalMidpoint', async () => {
       const el = createEl({ position: 'bottom' });
       const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+      extras.publish(MOCK_PARTICIPANTS);
 
       await sleep();
 
@@ -415,7 +415,7 @@ describe('who-is-online-dropdown', () => {
     test('should set top and bottom styles when dropdownVerticalMidpoint is less than windowVerticalMidpoint', async () => {
       const el = createEl({ position: 'bottom' });
       const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-      extras.publish<Participant[]>(MOCK_PARTICIPANTS);
+      extras.publish(MOCK_PARTICIPANTS);
 
       await sleep();
 

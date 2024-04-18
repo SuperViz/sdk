@@ -38,21 +38,20 @@ function subscribeTo<T>(
  * @description Returns a proxy of the global store data and a subscribe function to be used in the components
  */
 export function useStore<T extends StoreType>(name: T): Store<T> {
-  // @TODO - Improve types to get better sugestions when writing code
   const storeData = stores[name as StoreType]();
   const bindedSubscribeTo = subscribeTo.bind(this);
 
   const proxy = new Proxy(storeData, {
-    get(store: Store<T>, valueName: string) {
+    get(store, valueName: string) {
       return {
-        subscribe<K extends Store<T>>(callback?: (value: K) => void) {
+        subscribe(callback?) {
           bindedSubscribeTo(valueName, store[valueName], callback);
         },
-        subject: store[valueName] as typeof storeData,
+        subject: store[valueName],
         get value() {
           return this.subject.value;
         },
-        publish(newValue: keyof Store<T>) {
+        publish(newValue) {
           this.subject.value = newValue;
         },
       };
