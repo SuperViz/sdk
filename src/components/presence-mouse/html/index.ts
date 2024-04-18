@@ -227,18 +227,20 @@ export class PointersHTML extends BaseComponent {
     if (!presence) return;
 
     if (this.goToPresenceCallback) {
-      const translatedX = presence.camera.x;
-      const translatedY = presence.camera.y;
-      const screenScaleX = this.wrapper.clientHeight / presence.camera.screen.height;
-      const scaleToAllowVisibilityX = Math.min(screenScaleX, 2);
-      const screenScaleY = this.wrapper.clientWidth / presence.camera.screen.width;
-      const scaleToAllowVisibilityY = Math.min(screenScaleY, 2);
+      const scaleFactorX = this.camera.screen.width / presence.camera.screen.width;
+      const scaleFactorY = this.camera.screen.height / presence.camera.screen.height;
+
+      const translatedX = presence.camera.x * scaleFactorX;
+      const translatedY = presence.camera.y * scaleFactorY;
+
+      const screenScaleX = presence.camera.scale * scaleFactorX;
+      const screenScaleY = presence.camera.scale * scaleFactorY;
 
       this.goToPresenceCallback({
         x: translatedX,
         y: translatedY,
-        scaleX: scaleToAllowVisibilityX,
-        scaleY: scaleToAllowVisibilityY,
+        scaleX: screenScaleX,
+        scaleY: screenScaleY,
       });
 
       return;
