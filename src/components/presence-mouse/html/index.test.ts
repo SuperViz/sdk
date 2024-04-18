@@ -435,8 +435,8 @@ describe('MousePointers on HTML', () => {
           x: 10,
           y: 10,
           screen: {
-            height: 0,
-            width: 0,
+            height: 1,
+            width: 1,
           },
         },
       } as ParticipantMouse);

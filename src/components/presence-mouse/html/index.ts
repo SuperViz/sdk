@@ -229,9 +229,9 @@ export class PointersHTML extends BaseComponent {
     if (this.goToPresenceCallback) {
       const translatedX = presence.camera.x;
       const translatedY = presence.camera.y;
-      const screenScaleX = this.container.clientHeight / presence.camera.screen.height;
+      const screenScaleX = this.wrapper.clientHeight / presence.camera.screen.height;
       const scaleToAllowVisibilityX = Math.min(screenScaleX, 2);
-      const screenScaleY = this.container.clientWidth / presence.camera.screen.width;
+      const screenScaleY = this.wrapper.clientWidth / presence.camera.screen.width;
       const scaleToAllowVisibilityY = Math.min(screenScaleY, 2);
 
       this.goToPresenceCallback({
@@ -533,8 +533,8 @@ export class PointersHTML extends BaseComponent {
       y: transformation.translate.y,
       scale: transformation.scale,
       screen: {
-        width: this.container.clientWidth,
-        height: this.container.clientHeight,
+        width: this.wrapper?.clientWidth || 1,
+        height: this.wrapper?.clientHeight || 1,
       },
     };
 
@@ -738,10 +738,7 @@ export class PointersHTML extends BaseComponent {
    */
   private renderVoidElementWrapper = (): void => {
     const wrapper = document.createElement('div');
-    const container = this.container as HTMLElement;
     const { width, height, left, top } = this.container.getBoundingClientRect();
-    const x = container.offsetLeft - left;
-    const y = container.offsetTop - top;
 
     wrapper.style.position = 'absolute';
     wrapper.style.width = `${width}px`;
