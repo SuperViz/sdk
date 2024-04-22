@@ -233,7 +233,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   };
 
   private repositionDropdown = () => {
-    if (!this.open) {
+    if (!this.open || !this.parentElement) {
       window.cancelAnimationFrame(this.animationFrame);
       return;
     }
