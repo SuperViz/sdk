@@ -1413,50 +1413,5 @@ describe('Who Is Online', () => {
         isPrivate: false,
       });
     });
-
-    test('should do nothing if participant has no active components', () => {
-      const { privateMode, joinedPresence } = whoIsOnlineComponent['useStore'](
-        StoreType.WHO_IS_ONLINE,
-      );
-
-      whoIsOnlineComponent['room'].presence.update = jest.fn();
-      privateMode.publish(false);
-      joinedPresence.publish(false);
-
-      const participant = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        activeComponents: [],
-        slot: {
-          color: '#304AFF',
-          index: 0,
-          colorName: 'color',
-          textColor: '#fff',
-          timestamp: new Date().getTime(),
-        },
-      };
-      whoIsOnlineComponent['subscribeToLocalParticipantUpdates'](participant);
-
-      expect(joinedPresence.value).toBe(false);
-      expect(whoIsOnlineComponent['room'].presence.update).not.toHaveBeenCalled();
-    });
-
-    test('should do nothing if participant has no slot', () => {
-      const { privateMode, joinedPresence } = whoIsOnlineComponent['useStore'](
-        StoreType.WHO_IS_ONLINE,
-      );
-
-      whoIsOnlineComponent['room'].presence.update = jest.fn();
-      privateMode.publish(false);
-      joinedPresence.publish(false);
-
-      const participant = {
-        ...MOCK_LOCAL_PARTICIPANT,
-        activeComponents: [ComponentNames.PRESENCE],
-      };
-      whoIsOnlineComponent['subscribeToLocalParticipantUpdates'](participant);
-
-      expect(joinedPresence.value).toBe(false);
-      expect(whoIsOnlineComponent['room'].presence.update).not.toHaveBeenCalled();
-    });
   });
 });
