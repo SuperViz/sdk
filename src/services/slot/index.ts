@@ -6,13 +6,11 @@ import {
   MeetingColorsHex,
 } from '../../common/types/meeting-colors.types';
 import { Participant, Slot } from '../../common/types/participant.types';
-import { AblyRealtimeService } from '../realtime';
 
 export class SlotService {
   private room: Socket.Room;
   private participant: Participant;
   private slotIndex: number;
-  private static instance: SlotService;
 
   // @NOTE - reciving old realtime service instance until we migrate to new IO
   constructor(room: Socket.Room, participant: Participant) {
@@ -28,14 +26,16 @@ export class SlotService {
    * @returns void
    */
   public async assignSlot(): Promise<Slot> {
+    let slots = Array.from({ length: 16 }, (_, i) => i);
+    let slot = Math.floor(Math.random() * 16);
+
     try {
-      const slot = Math.floor(Math.random() * 16);
-
-      const isUsing = await new Promise((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         this.room.presence.get((presences) => {
-          if (!presences || !presences.length) resolve(false);
+          if (!presences || !presences.length) resolve(true);
 
-          if (presences.length >= 16) {
+          if (presences.length >= 17) {
+            slots = [];
             reject(new Error('[SuperViz] - No more slots available'));
             return;
           }
@@ -43,16 +43,16 @@ export class SlotService {
           presences.forEach((presence: Socket.PresenceEvent<Participant>) => {
             if (presence.id === this.participant.id) return;
 
-            if (presence.data?.slot?.index === slot) resolve(true);
+            slots = slots.filter((s) => s !== presence.data?.slot?.index);
           });
 
-          resolve(false);
+          resolve(true);
         });
       });
 
+      const isUsing = !slots.includes(slot);
       if (isUsing) {
-        const slotData = await this.assignSlot();
-        return slotData;
+        slot = slots.shift();
       }
 
       const slotData = {
