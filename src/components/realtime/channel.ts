@@ -3,7 +3,7 @@ import throttle from 'lodash/throttle';
 
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
-import { Logger, Observable, Observer } from "../../common/utils";
+import { Logger, Observable, Observer } from '../../common/utils';
 import { IOC } from '../../services/io';
 
 import { RealtimeChannelEvent, RealtimeChannelState, RealtimeData, RealtimeMessage } from './types';
@@ -13,7 +13,7 @@ export class Channel extends Observable {
   private ioc: IOC;
   private channel: Socket.Room;
   protected logger: Logger;
-  private state: RealtimeChannelState = RealtimeChannelState.DISCONNECTED; 
+  private state: RealtimeChannelState = RealtimeChannelState.DISCONNECTED;
   private declare localParticipant: Participant;
   private callbacksToSubscribeWhenJoined: Array<{
     event: string;
@@ -36,12 +36,12 @@ export class Channel extends Observable {
   public async disconnect(): Promise<void> {
     if (this.state === RealtimeChannelState.DISCONNECTED) {
       this.logger.log('Realtime channel is already disconnected');
-      return
+      return;
     }
 
-    this.logger.log('destroyed')
+    this.logger.log('destroyed');
     this.changeState(RealtimeChannelState.DISCONNECTED);
-    this.channel.disconnect()
+    this.channel.disconnect();
   }
 
   /**
@@ -64,7 +64,7 @@ export class Channel extends Observable {
       return;
     }
 
-    this.channel.emit('message', { name: event, payload: data });
+    this.channel.emit(`message:${this.name}`, { name: event, payload: data });
   }, 30);
 
   /**
@@ -128,7 +128,7 @@ export class Channel extends Observable {
       this.changeState(RealtimeChannelState.CONNECTED);
     });
 
-    this.channel.on<RealtimeData>('message', (event) => {
+    this.channel.on<RealtimeData>(`message:${this.name}`, (event) => {
       this.logger.log('message received', event);
       this.publishEventToClient(event.data.name, {
         data: event.data.payload,
@@ -153,7 +153,6 @@ export class Channel extends Observable {
 
     this.observers[event].publish(data);
   };
-
 
   /**
    * @function fetchHistory

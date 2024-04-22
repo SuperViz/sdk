@@ -1,7 +1,7 @@
 import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
-import { BaseComponent } from "../base";
+import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { Channel } from './channel';
@@ -25,15 +25,13 @@ export class Realtime extends BaseComponent {
 
   public connect(name: string): any {
     if (this.state !== RealtimeComponentState.STARTED) {
-      this.logger.log('Realtime component is not started yet. You can\'t create a channel before start');
+      this.logger.log(
+        "Realtime component is not started yet. You can't create a channel before start",
+      );
       return;
     }
 
-    const channel = new Channel(
-      name,
-      this.ioc,
-      this.localParticipant
-    );
+    const channel = new Channel(name, this.ioc, this.localParticipant);
 
     this.channels.push(channel);
 
@@ -46,7 +44,7 @@ export class Realtime extends BaseComponent {
   }
 
   protected destroy(): void {
-    this.logger.log('destroyed')
+    this.logger.log('destroyed');
     this.changeState(RealtimeComponentState.STOPPED);
     this.disconnectToAllChannels();
   }
