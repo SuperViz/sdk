@@ -52,11 +52,11 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const { participants, following, extras } = this.useStore(StoreType.WHO_IS_ONLINE);
     participants.subscribe();
     following.subscribe();
-    extras.subscribe((participants: Participant[]) => {
+    extras.subscribe((participants) => {
       this.amountOfExtras = participants.length;
     });
 
-    localParticipant.subscribe((value: Participant) => {
+    localParticipant.subscribe((value) => {
       const joinedPresence = value.activeComponents?.some((component) =>
         component.toLowerCase().includes('presence'),
       );
@@ -249,7 +249,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.emitEvent(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, { id: participantId });
   }
 
-  private handleLocalFollow(participantId: string, source: string) {
+  private handleLocalFollow(participantId: string, source: 'participants' | 'extras') {
     const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
     const participants = this.useStore(StoreType.WHO_IS_ONLINE)[source].value;
 
@@ -286,12 +286,12 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.isPrivate = false;
   }
 
-  private handleFollow(participantId: string, source: string) {
+  private handleFollow(participantId: string, source: 'participants' | 'extras') {
     if (this.isPrivate) {
       this.cancelPrivate();
     }
 
-    const participants: Participant[] = this.useStore(StoreType.WHO_IS_ONLINE)[source].value;
+    const participants = this.useStore(StoreType.WHO_IS_ONLINE)[source].value;
 
     const {
       id,

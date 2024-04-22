@@ -10,6 +10,7 @@ export enum ComponentNames {
   COMMENTS_MATTERPORT = 'comments3dMatterport',
   COMMENTS_AUTODESK = 'comments3dAutodesk',
   COMMENTS_THREEJS = 'comments3dThreejs',
+  FORM_ELEMENTS = 'formElements',
 }
 
 export enum PresenceMap {
@@ -18,7 +19,9 @@ export enum PresenceMap {
   'presence3dThreejs' = 'presence',
   'realtime' = 'presence',
   'whoIsOnline' = 'presence',
+  'formElements' = 'presence',
 }
+
 export enum Comments3d {
   'comments3dMatterport' = 'comments3d',
   'comments3dAutodesk' = 'comments3d',

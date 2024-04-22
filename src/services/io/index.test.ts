@@ -3,8 +3,6 @@ import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 
 import { IOC } from '.';
 
-jest.mock('@superviz/socket-client', () => MOCK_IO);
-
 describe('io', () => {
   let instance: IOC | null = null;
 

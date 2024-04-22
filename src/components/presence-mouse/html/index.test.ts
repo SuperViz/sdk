@@ -43,6 +43,15 @@ describe('MousePointers on HTML', () => {
         timestamp: 1710448079918,
       },
       visible: true,
+      camera: {
+        x: 0,
+        y: 0,
+        scale: 1,
+        screen: {
+          width: 1920,
+          height: 1080,
+        },
+      },
     };
 
     const participant1 = { ...MOCK_MOUSE };
@@ -421,7 +430,16 @@ describe('MousePointers on HTML', () => {
         x: 30,
         y: 30,
         visible: true,
-      });
+        camera: {
+          scale: 1,
+          x: 10,
+          y: 10,
+          screen: {
+            height: 1,
+            width: 1,
+          },
+        },
+      } as ParticipantMouse);
     });
 
     test('should not call room.presence.update if isPrivate', () => {
@@ -458,16 +476,16 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['container'].getBoundingClientRect = jest.fn(
         () =>
           ({
-            x: 10,
-            y: 10,
-            width: 10,
-            height: 10,
+            left: 10,
+            right: 100,
+            top: 20,
+            bottom: 90,
           } as any),
       );
 
       const mouseEvent1 = {
-        x: -50,
-        y: -50,
+        x: 5,
+        y: 5,
       } as any;
 
       presenceMouseComponent['onMyParticipantMouseLeave'](mouseEvent1);
@@ -476,8 +494,8 @@ describe('MousePointers on HTML', () => {
       updatePresenceMouseSpy.mockClear();
 
       const mouseEvent2 = {
-        x: 5,
-        y: 5,
+        x: 30,
+        y: 40,
       } as any;
 
       presenceMouseComponent['onMyParticipantMouseLeave'](mouseEvent2);
@@ -639,7 +657,7 @@ describe('MousePointers on HTML', () => {
       presenceMouseComponent['goToPresenceCallback'] = callback;
       presenceMouseComponent['goToMouse']('unit-test-participant2-id');
 
-      expect(callback).toHaveBeenCalledWith({ x, y });
+      expect(callback).toHaveBeenCalledWith({ x, y, scaleX: 0, scaleY: 0 });
     });
   });
 

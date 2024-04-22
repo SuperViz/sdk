@@ -278,7 +278,7 @@ describe('Who Is Online', () => {
         name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
       };
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
-      following.publish<Following>(followingData);
+      following.publish(followingData);
 
       whoIsOnlineComponent['setFollow'](MOCK_ABLY_PARTICIPANT);
 
@@ -294,7 +294,7 @@ describe('Who Is Online', () => {
       };
 
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
-      following.publish<Following>(followingData);
+      following.publish(followingData);
 
       whoIsOnlineComponent['setFollow']({
         ...MOCK_ABLY_PARTICIPANT,
@@ -330,7 +330,7 @@ describe('Who Is Online', () => {
   describe('stopFollowing', () => {
     test('should do nothing if participant leaving is not being followed', () => {
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
-      following.publish<Following>({
+      following.publish({
         color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
         id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
         name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
@@ -339,12 +339,12 @@ describe('Who Is Online', () => {
       whoIsOnlineComponent['stopFollowing'](MOCK_ABLY_PARTICIPANT);
 
       expect(following.value).toBeDefined();
-      expect(following.value.id).toBe(MOCK_ABLY_PARTICIPANT_DATA_2.id);
+      expect(following.value!.id).toBe(MOCK_ABLY_PARTICIPANT_DATA_2.id);
     });
 
     test('should set following to undefined if following the participant who is leaving', () => {
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
-      following.publish<Following>({
+      following.publish({
         color: MOCK_ABLY_PARTICIPANT_DATA_1.color,
         id: MOCK_ABLY_PARTICIPANT_DATA_1.id,
         name: MOCK_ABLY_PARTICIPANT_DATA_1.name,
@@ -406,7 +406,7 @@ describe('Who Is Online', () => {
         name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
       };
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
-      following.publish<Following>(followingData);
+      following.publish(followingData);
 
       whoIsOnlineComponent['followMousePointer']({
         detail: { id: 'unit-test-id' },
@@ -438,7 +438,7 @@ describe('Who Is Online', () => {
 
     test('should publish "stop following" event when stopFollowing is called', () => {
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
-      following.publish<Following>({
+      following.publish({
         color: MOCK_ABLY_PARTICIPANT_DATA_2.color,
         id: MOCK_ABLY_PARTICIPANT_DATA_2.id,
         name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
@@ -481,7 +481,7 @@ describe('Who Is Online', () => {
         name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
       };
 
-      following.publish<Following>(followingData);
+      following.publish(followingData);
 
       whoIsOnlineComponent['follow']({
         detail: { id: 'unit-test-id' },
@@ -546,6 +546,7 @@ describe('Who Is Online', () => {
         disableGoToParticipant: { value: false },
         disableGatherAll: { value: false },
         disablePrivateMode: { value: false },
+        destroy: jest.fn(),
       });
 
       expect(
@@ -565,6 +566,7 @@ describe('Who Is Online', () => {
         disableGoToParticipant: { value: false },
         disableGatherAll: { value: false },
         disablePrivateMode: { value: false },
+        destroy: jest.fn(),
       });
 
       expect(
@@ -584,6 +586,7 @@ describe('Who Is Online', () => {
         disableGatherAll: { value: true },
         disableFollowParticipant: { value: true },
         disableGoToParticipant: { value: true },
+        destroy: jest.fn(),
       });
 
       expect(
@@ -603,6 +606,7 @@ describe('Who Is Online', () => {
         disableGoToParticipant: { value: false },
         disableGatherAll: { value: false },
         disablePrivateMode: { value: false },
+        destroy: jest.fn(),
       });
 
       expect(
@@ -622,6 +626,7 @@ describe('Who Is Online', () => {
         disableGoToParticipant: { value: false },
         disableGatherAll: { value: false },
         disablePrivateMode: { value: false },
+        destroy: jest.fn(),
       });
 
       expect(
@@ -865,7 +870,7 @@ describe('Who Is Online', () => {
       ](StoreType.WHO_IS_ONLINE);
       disableGoToParticipant.publish(false);
       disableFollowParticipant.publish(false);
-      following.publish<Following>({ color: 'red', id: 'participant123', name: 'name' });
+      following.publish({ color: 'red', id: 'participant123', name: 'name' });
 
       const controls = whoIsOnlineComponent['getOtherParticipantsControls']('participant123');
 
@@ -1053,7 +1058,7 @@ describe('Who Is Online', () => {
 
       participants.publish(participantsList);
       extras.publish([participant5]);
-      following.publish<Following>({
+      following.publish({
         color: 'red',
         id: 'test id 5',
         name: 'participant 5',

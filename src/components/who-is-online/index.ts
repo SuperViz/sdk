@@ -72,8 +72,8 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected start(): void {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe((value: { id: string }) => {
-      this.localParticipantId = value.id;
+    localParticipant.subscribe((participant) => {
+      this.localParticipantId = participant.id;
     });
 
     this.subscribeToRealtimeEvents();
@@ -94,6 +94,9 @@ export class WhoIsOnline extends BaseComponent {
     this.removeListeners();
     this.element.remove();
     this.element = null;
+
+    const { destroy } = this.useStore(StoreType.WHO_IS_ONLINE);
+    destroy();
   }
 
   /**
@@ -623,24 +626,24 @@ export class WhoIsOnline extends BaseComponent {
   private updateParticipantsControls(participantId: string | undefined): void {
     const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
 
-    participants.publish(
-      participants.value.map((participant: Participant) => {
-        if (participantId && participant.id !== participantId) return participant;
+    const newParticipantsList = participants.value.map((participant: Participant) => {
+      if (participantId && participant.id !== participantId) return participant;
 
-        const { id } = participant;
-        const disableDropdown = this.shouldDisableDropdown({
-          activeComponents: participant.activeComponents,
-          participantId: id,
-        });
-        const presenceEnabled = !disableDropdown;
-        const controls = this.getControls({ participantId: id, presenceEnabled }) ?? [];
+      const { id } = participant;
+      const disableDropdown = this.shouldDisableDropdown({
+        activeComponents: participant.activeComponents,
+        participantId: id,
+      });
+      const presenceEnabled = !disableDropdown;
+      const controls = this.getControls({ participantId: id, presenceEnabled }) ?? [];
 
-        return {
-          ...participant,
-          controls,
-        };
-      }),
-    );
+      return {
+        ...participant,
+        controls,
+      };
+    })
+
+    participants.publish(newParticipantsList);
   }
 
   /**

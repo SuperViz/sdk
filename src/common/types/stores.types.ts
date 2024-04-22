@@ -8,14 +8,19 @@ export enum StoreType {
   WHO_IS_ONLINE = 'who-is-online-store',
 }
 
-type StoreApi<T extends (...args: any[]) => any> = {
+type Subject<T extends (...args: any[]) => any, K extends keyof ReturnType<T>> = ReturnType<T>[K]
+
+type StoreApiWithoutDestroy<T extends (...args: any[]) => any> = {
   [K in keyof ReturnType<T>]: {
-    subscribe(callback?: (value: keyof T) => void): void;
-    subject: PublicSubject<keyof T>;
-    publish<T>(value: T): void;
-    value: any;
+    subscribe(callback?: (value: Subject<T, K>['value']) => void): void;
+    subject: Subject<T, K>;
+    publish(value: Subject<T, K>['value']): void;
+    value: Subject<T, K>['value'];
   };
-};
+}
+
+type StoreApi<T extends (...args: any[]) => any> = Omit<StoreApiWithoutDestroy<T>, 'destroy'> & { destroy(): void };
+
 
 // When creating new Stores, expand the ternary with the new Store. For example:
 // ...T extends StoreType.GLOBAL ? StoreApi<typeof useGlobalStore> : T extends StoreType.WHO_IS_ONLINE ? StoreApi<typeof useWhoIsOnlineStore> : never;

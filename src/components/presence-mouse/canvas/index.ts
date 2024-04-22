@@ -7,7 +7,7 @@ import { StoreType } from '../../../common/types/stores.types';
 import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
-import { ParticipantMouse, PresenceMouseProps, Transform } from '../types';
+import { Camera, ParticipantMouse, PresenceMouseProps, Transform } from '../types';
 
 export class PointersCanvas extends BaseComponent {
   public name: ComponentNames;
@@ -20,7 +20,15 @@ export class PointersCanvas extends BaseComponent {
   private following: string;
   private isPrivate: boolean;
   private localParticipant: Participant;
-  private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
+  private camera: Camera = {
+    x: 0,
+    y: 0,
+    screen: {
+      width: 0,
+      height: 0,
+    },
+    scale: 1,
+  };
 
   constructor(canvasId: string, options?: PresenceMouseProps) {
     super();
@@ -42,6 +50,7 @@ export class PointersCanvas extends BaseComponent {
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe();
+    this.getCamera();
   }
 
   /**
@@ -165,6 +174,7 @@ export class PointersCanvas extends BaseComponent {
    * @returns {void}
    */
   private animate = (): void => {
+    this.getCamera();
     this.renderDivWrapper();
     this.updateParticipantsMouses();
 
@@ -181,18 +191,20 @@ export class PointersCanvas extends BaseComponent {
 
     if (!mouse) return;
 
-    const rect = this.canvas.getBoundingClientRect();
-    const { width, height } = rect;
+    const translatedX = mouse.camera.x;
+    const translatedY = mouse.camera.y;
+    const screenScaleX = this.divWrapper.clientHeight / mouse.camera.screen.height;
+    const scaleToAllowVisibilityX = Math.min(screenScaleX, 1);
+    const screenScaleY = this.divWrapper.clientWidth / mouse.camera.screen.width;
+    const scaleToAllowVisibilityY = Math.min(screenScaleY, 1);
 
-    const { x, y } = mouse;
-
-    const widthHalf = width / 2;
-    const heightHalf = height / 2;
-
-    const translateX = widthHalf - x;
-    const translateY = heightHalf - y;
-
-    if (this.goToMouseCallback) this.goToMouseCallback({ x: translateX, y: translateY });
+    if (this.goToMouseCallback)
+      this.goToMouseCallback({
+        x: translatedX,
+        y: translatedY,
+        scaleX: scaleToAllowVisibilityX,
+        scaleY: scaleToAllowVisibilityY,
+      });
   };
 
   /** Presence Mouse Events */
@@ -213,14 +225,15 @@ export class PointersCanvas extends BaseComponent {
     const transformedPoint = new DOMPoint(x, y).matrixTransform(invertedMatrix);
 
     const coordinates = {
-      x: (transformedPoint.x - this.transformation.translate.x) / this.transformation.scale,
-      y: (transformedPoint.y - this.transformation.translate.y) / this.transformation.scale,
+      x: transformedPoint.x,
+      y: transformedPoint.y,
     };
 
     this.room.presence.update({
       ...this.localParticipant,
       ...coordinates,
       visible: !this.isPrivate,
+      camera: this.camera,
     });
   }, 30);
 
@@ -272,6 +285,30 @@ export class PointersCanvas extends BaseComponent {
   };
 
   /**
+   * @function getCamera
+   * @description - retrieves the camera information from the canvas context's transform.
+   * The camera information includes the current translation (x, y) and scale.
+   */
+  private getCamera = () => {
+    const context = this.canvas?.getContext('2d');
+    const transform = context?.getTransform();
+
+    const currentTranslateX = transform?.e;
+    const currentTranslateY = transform?.f;
+    const currentScale = transform?.a;
+
+    this.camera = {
+      screen: {
+        width: this.divWrapper.clientHeight,
+        height: this.divWrapper.clientWidth,
+      },
+      x: currentTranslateX,
+      y: currentTranslateY,
+      scale: currentScale,
+    };
+  };
+
+  /**
    * @function renderPresenceMouses
    * @description add presence mouses to screen
    * @param {ParticipantMouse} mouse - presence mouse change data
@@ -308,11 +345,11 @@ export class PointersCanvas extends BaseComponent {
 
     const currentTranslateX = transform?.e;
     const currentTranslateY = transform?.f;
+    const currentScaleWidth = transform.a;
+    const currentScaleHeight = transform.d;
 
-    const x =
-      this.transformation.translate.x + (savedX + currentTranslateX) * this.transformation.scale;
-    const y =
-      this.transformation.translate.y + (savedY + currentTranslateY) * this.transformation.scale;
+    const x = savedX * currentScaleWidth + currentTranslateX;
+    const y = savedY * currentScaleHeight + currentTranslateY;
 
     const isVisible =
       this.divWrapper.clientWidth > x && this.divWrapper.clientHeight > y && mouse.visible;
@@ -376,6 +413,6 @@ export class PointersCanvas extends BaseComponent {
    * @param {Transform} transformation Which transformations to apply
    */
   public transform(transformation: Transform) {
-    this.transformation = transformation;
+    console.warn('[SuperViz] - transform method not available when container is a canvas element.');
   }
 }
