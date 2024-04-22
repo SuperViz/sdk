@@ -64,7 +64,7 @@ export class Channel extends Observable {
       return;
     }
 
-    this.channel.emit(event, data)
+    this.channel.emit('message', { name: event, payload: data });
   }, 30);
 
   /**
@@ -79,6 +79,7 @@ export class Channel extends Observable {
       this.callbacksToSubscribeWhenJoined.push({ event, callback });
       return;
     }
+
     if (!this.observers[event]) {
       this.observers[event] = new Observer();
     }
