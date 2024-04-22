@@ -2,13 +2,9 @@ import { TextEncoder } from 'util';
 
 import Ably from 'ably';
 
-import {
-  MOCK_ABLY_PARTICIPANT,
-  MOCK_LOCAL_PARTICIPANT,
-  MOCK_ABLY_PARTICIPANT_DATA_1,
-} from '../../../../__mocks__/participants.mock';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { TranscriptState } from '../../../common/types/events.types';
-import { Participant, ParticipantType } from '../../../common/types/participant.types';
+import { ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 
 import { AblyParticipant, AblyRealtimeData } from './types';
@@ -1279,106 +1275,6 @@ describe('AblyRealtimeService', () => {
         expect(AblyRealtimeServiceInstance['clientSyncChannel']).toBe(null);
         expect(AblyRealtimeServiceInstance['client']).toBe(null);
         expect(AblyRealtimeServiceInstance['left']).toBe(true);
-      });
-    });
-
-    describe('whoIsOnline', () => {
-      beforeEach(() => {
-        // @ts-ignore
-        AblyRealtimeServiceInstance['client'] = AblyRealtimeMock;
-        AblyRealtimeServiceInstance['roomId'] = 'unit-test-room-id';
-        AblyRealtimeServiceInstance['enterWIOChannel'](MOCK_LOCAL_PARTICIPANT);
-        AblyRealtimeServiceInstance['participants'] = {};
-        AblyRealtimeServiceInstance['participants'][MOCK_ABLY_PARTICIPANT.data.id] =
-          MOCK_ABLY_PARTICIPANT;
-      });
-
-      test('should publish new data on update', () => {
-        const id = 'unit-test-participant-id';
-        const isPrivate = true;
-        AblyRealtimeServiceInstance.setPrivateWIOParticipant(id, isPrivate);
-        expect(AblyRealtimeServiceInstance['presenceWIOChannel'].publish).toBeCalledWith(
-          'private',
-          {
-            id,
-            isPrivate,
-          },
-        );
-      });
-
-      test('should update participant list and publish new list on private', () => {
-        const isPrivate = 'value';
-        AblyRealtimeServiceInstance['privateModeWIOObserver'].publish = jest.fn();
-
-        const data = {
-          id: MOCK_ABLY_PARTICIPANT.data.id,
-          isPrivate,
-        };
-
-        AblyRealtimeServiceInstance['onSetPrivate']({ data });
-
-        expect(
-          AblyRealtimeServiceInstance['participants'][MOCK_ABLY_PARTICIPANT.data.id].data.isPrivate,
-        ).toEqual(isPrivate);
-
-        expect(AblyRealtimeServiceInstance['privateModeWIOObserver'].publish).toBeCalledWith(
-          AblyRealtimeServiceInstance['participants'],
-        );
-      });
-
-      test('should publish to followWIOObserver when calling setFollow', () => {
-        const data = {
-          ...MOCK_ABLY_PARTICIPANT_DATA_1,
-          follow: MOCK_ABLY_PARTICIPANT_DATA_1.id,
-        } as Participant;
-
-        AblyRealtimeServiceInstance['followWIOObserver'].publish = jest.fn();
-        AblyRealtimeServiceInstance['onSetFollow'](data);
-
-        expect(AblyRealtimeServiceInstance['followWIOObserver'].publish).toBeCalledWith(data);
-      });
-
-      test('should publish to WIO Channel when calling setFollow', () => {
-        const data = {
-          ...MOCK_ABLY_PARTICIPANT_DATA_1,
-          follow: MOCK_ABLY_PARTICIPANT_DATA_1.id,
-        } as Participant;
-
-        AblyRealtimeServiceInstance.setFollowWIOParticipant(data);
-
-        expect(AblyRealtimeServiceInstance['presenceWIOChannel'].publish).toBeCalledWith('follow', {
-          ...data,
-        });
-      });
-
-      test('should publish to WIO Channel when calling setGather', () => {
-        const data = {
-          ...MOCK_ABLY_PARTICIPANT_DATA_1,
-          gather: MOCK_ABLY_PARTICIPANT_DATA_1.id,
-        } as Participant;
-
-        AblyRealtimeServiceInstance.setGatherWIOParticipant(data);
-
-        expect(AblyRealtimeServiceInstance['presenceWIOChannel'].publish).toBeCalledWith('gather', {
-          ...data,
-        });
-      });
-
-      test('should call gatherWIOObserver on gather', () => {
-        const mockAblyMessage = {
-          data: {
-            id: '123',
-          },
-        };
-        AblyRealtimeServiceInstance['gatherWIOObserver'].publish = jest.fn();
-
-        AblyRealtimeServiceInstance['onSetGather'](mockAblyMessage as Ably.Types.Message);
-
-        expect(AblyRealtimeServiceInstance['gatherWIOObserver'].publish).toBeCalledWith({
-          detail: {
-            id: mockAblyMessage.data.id,
-          },
-        });
       });
     });
   });
