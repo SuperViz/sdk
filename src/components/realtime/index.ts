@@ -2,11 +2,11 @@ import * as Socket from '@superviz/socket-client';
 import throttle from 'lodash/throttle';
 
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
+import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observer } from '../../common/utils';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
-import { Participant } from '../who-is-online/types';
 
 import {
   RealtimeComponentEvent,

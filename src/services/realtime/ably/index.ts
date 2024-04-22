@@ -31,7 +31,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private presenceWIOChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
 
   private isReconnecting: boolean = false;
@@ -899,52 +898,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
   public updateComments = (annotations: Annotation[]) => {
     this.commentsChannel.publish('update', annotations);
-  };
-
-  /** Who Is Online */
-
-  public enterWIOChannel = (participant: Participant): void => {
-    if (!this.presenceWIOChannel) {
-      this.presenceWIOChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-wio`);
-    }
-
-    this.presenceWIOChannel.attach();
-    this.presenceWIOChannel.subscribe('private', this.onSetPrivate);
-    this.presenceWIOChannel.subscribe('follow', this.onSetFollow);
-    this.presenceWIOChannel.subscribe('gather', this.onSetGather);
-  };
-
-  public leaveWIOChannel = (): void => {
-    if (!this.presenceWIOChannel) return;
-
-    this.presenceWIOChannel.unsubscribe();
-    this.presenceWIOChannel.detach();
-    this.presenceWIOChannel = null;
-  };
-
-  private onSetPrivate = ({ data: { id, isPrivate } }): void => {
-    this.participants[id].data.isPrivate = isPrivate;
-    this.privateModeWIOObserver.publish(this.participants);
-  };
-
-  private onSetFollow = (data: Participant): void => {
-    this.followWIOObserver.publish(data);
-  };
-
-  private onSetGather = ({ data }: Ably.Types.Message): void => {
-    this.gatherWIOObserver.publish({ detail: { id: data.id } });
-  };
-
-  public setPrivateWIOParticipant = (id: string, isPrivate: boolean): void => {
-    this.presenceWIOChannel.publish('private', { id, isPrivate });
-  };
-
-  public setFollowWIOParticipant = (data): void => {
-    this.presenceWIOChannel.publish('follow', { ...data });
-  };
-
-  public setGatherWIOParticipant = (data): void => {
-    this.presenceWIOChannel.publish('gather', { ...data });
   };
 
   /** Presence 3D */

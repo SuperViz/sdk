@@ -1,5 +1,4 @@
 import { useGlobalStore } from '../../services/stores';
-import { PublicSubject } from '../../services/stores/common/types';
 import { useWhoIsOnlineStore } from '../../services/stores/who-is-online/index';
 
 export enum StoreType {

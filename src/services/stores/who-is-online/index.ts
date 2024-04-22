@@ -1,4 +1,4 @@
-import { Participant } from '../../../components/who-is-online/types';
+import { WhoIsOnlineParticipant } from '../../../components/who-is-online/types';
 import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
@@ -14,8 +14,8 @@ export class WhoIsOnlineStore {
   public disablePrivateMode = subject<boolean>(false);
   public disableGatherAll = subject<boolean>(false);
   public disableFollowMe = subject<boolean>(false);
-  public participants = subject<Participant[]>([]);
-  public extras = subject<Participant[]>([]);
+  public participants = subject<WhoIsOnlineParticipant[]>([]);
+  public extras = subject<WhoIsOnlineParticipant[]>([]);
   public joinedPresence = subject<boolean | undefined>(undefined);
   public everyoneFollowsMe = subject<boolean>(false);
   public privateMode = subject<boolean>(false);

@@ -60,5 +60,5 @@ export const MOCK_PARTICIPANT_LIST: ParticipantByGroupApi[] = [
     name: 'unit-test-participant1-name',
     avatar: 'unit-test-participant1-avatar',
     email: 'unit-test-participant1-email',
-  }
-]
+  },
+];
