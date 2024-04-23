@@ -2481,10 +2481,10 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.0.tgz#96116f2a912e0c02817345b3c10751069920d553"
   integrity sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==
 
-"@superviz/socket-client@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.2.2.tgz#6f228e84588051ca092e827c172af6c8f18182f5"
-  integrity sha512-JDvKBtyamCe00Tf0KM5Uaac73LVafcLKlByPxXBc5wTmcEo/cuLeaQ4sbpQzUUwJaS2ptnbvZMmYkhL3SnW1AQ==
+"@superviz/socket-client@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@superviz/socket-client/-/socket-client-1.4.0.tgz#374326131dd4a89f2d8f71e8be1305ed55311921"
+  integrity sha512-Ue66/5dxhGaPxqiFE3KWjusfp2FCBmT8vPJfq8FMD/ZCR6ac/tqnKqLrMtpz3oA6/51CQW9tfoSuqaXC+hrKWw==
   dependencies:
     "@reactivex/rxjs" "^6.6.7"
     debug "^4.3.4"

@@ -3,8 +3,18 @@ export enum RealtimeComponentState {
   STOPPED = 'STOPPED',
 }
 
+export enum RealtimeChannelState {
+  DISCONNECTED = 'DISCONNECTED',
+  CONNECTED = 'CONNECTED',
+  CONNECTING = 'CONNECTING',
+}
+
 export enum RealtimeComponentEvent {
   REALTIME_STATE_CHANGED = 'realtime-component.state-changed',
+}
+
+export enum RealtimeChannelEvent {
+  REALTIME_CHANNEL_STATE_CHANGED = 'realtime-channel.state-changed',
 }
 
 export type RealtimeData = {

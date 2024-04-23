@@ -197,10 +197,15 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {boolean}
    */
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
+    const isProvidedFeature = config.get<boolean>(`features.${component.name}`);
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
 
     const verifications = [
+      {
+        isValid: isProvidedFeature,
+        message: `Component ${component.name} is not enabled in the room`,
+      },
       {
         isValid: !this.isDestroyed,
         message:
