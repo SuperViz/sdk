@@ -41,7 +41,7 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback(new Array(16).fill({}));
+          callback(new Array(17).fill({}));
         }),
         update: jest.fn(),
       },
@@ -52,7 +52,7 @@ describe('slot service', () => {
     } as any;
 
     const instance = new SlotService(room, participant);
-    const result = await instance.assignSlot();
+    await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeUndefined();
     expect(instance['participant'].slot).toBeUndefined();

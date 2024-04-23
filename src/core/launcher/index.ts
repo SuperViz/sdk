@@ -423,6 +423,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private onParticipantUpdatedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
     if (
+      this.participant &&
       presence.id === this.participant.value.id &&
       !isEqual(this.participant.value, presence.data)
     ) {
