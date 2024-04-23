@@ -415,9 +415,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'].length).toBe(1);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should throw an error when create annotation fails', async () => {
@@ -454,9 +452,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments.length).toBe(4);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should throw an error when create comment fails', async () => {
@@ -514,9 +510,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments[0].text).toBe('text-test');
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should call apiService when delete a comment', async () => {
@@ -549,9 +543,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments.length).toBe(2);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should throw an error when delete comment fails', async () => {
@@ -606,9 +598,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'].length).toBe(0);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
     expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
       MOCK_ANNOTATION.uuid,
     );

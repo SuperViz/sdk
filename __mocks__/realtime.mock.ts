@@ -56,7 +56,6 @@ export const ABLY_REALTIME_MOCK: AblyRealtimeService = {
   kickAllParticipantsObserver: MOCK_OBSERVER_HELPER,
   kickParticipantObserver: MOCK_OBSERVER_HELPER,
   authenticationObserver: MOCK_OBSERVER_HELPER,
-  commentsObserver: MOCK_OBSERVER_HELPER,
   presenceMouseParticipantLeaveObserver: MOCK_OBSERVER_HELPER,
   presenceMouseParticipantJoinedObserver: MOCK_OBSERVER_HELPER,
   presenceMouseObserver: MOCK_OBSERVER_HELPER,
