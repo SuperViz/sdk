@@ -194,10 +194,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.supervizChannel.on(this.onAblyChannelStateChange);
     this.supervizChannel.subscribe('update', this.onAblyRoomUpdate);
 
-    // join the comments channel
-    this.commentsChannel = this.client.channels.get(`${this.roomId}:comments`);
-    this.commentsChannel.subscribe('update', this.onCommentsChannelUpdate);
-
     // presence only in the main channel
     this.supervizChannel.presence.subscribe('enter', this.onAblyPresenceEnter);
     if (this.enableSync) {
@@ -889,16 +885,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       return true;
     }
     return false;
-  };
-
-  /** Comments */
-  private onCommentsChannelUpdate = (message: Ably.Types.Message): void => {
-    this.logger.log('REALTIME', 'Comments channel update', message);
-    this.commentsObserver.publish(message);
-  };
-
-  public updateComments = (annotations: Annotation[]) => {
-    this.commentsChannel.publish('update', annotations);
   };
 
   /** Who Is Online */
