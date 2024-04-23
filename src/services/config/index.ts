@@ -1,8 +1,8 @@
-import _ from 'lodash';
+import { get } from 'lodash';
 
 import { Nullable } from '../../common/types/global.types';
 
-import type { Configuration } from './types';
+import type { Configuration, Key } from './types';
 
 export class ConfigurationService {
   public configuration: Nullable<Configuration>;
@@ -11,14 +11,10 @@ export class ConfigurationService {
     this.configuration = config;
   }
 
-  public get<T>(key: keyof Configuration, defaultValue?: T): T {
+  public get<T>(key: Key, defaultValue?: T): T {
     if (!this.configuration) return defaultValue;
 
-    return _.get<Configuration, keyof Configuration, T>(
-      this.configuration,
-      key,
-      defaultValue as T,
-    ) as T;
+    return get<Configuration, any, T>(this.configuration, key, defaultValue as T) as T;
   }
 }
 
