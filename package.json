@@ -79,7 +79,7 @@
     "yargs": "^17.7.2"
   },
   "dependencies": {
-    "@superviz/socket-client": "1.2.2",
+    "@superviz/socket-client": "1.4.0",
     "ably": "^1.2.45",
     "bowser": "^2.11.0",
     "bowser-jr": "^1.0.6",
