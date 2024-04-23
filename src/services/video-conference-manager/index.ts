@@ -129,6 +129,7 @@ export default class VideoConfereceManager {
       layoutMode,
       skipMeetingSettings,
       layoutPosition: positions.layoutPosition,
+      transcriptLangs: config.get<string[]>('features.transcriptLangs'),
     };
 
     this.customColors = customColors;
