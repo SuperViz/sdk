@@ -525,9 +525,8 @@ export class WhoIsOnline extends BaseComponent {
       activeComponents,
       id,
       name,
-      slot: { index },
+      slot: { index, color },
     } = participant;
-    const { color } = this.realtime.getSlotColor(index);
     const disableDropdown = this.shouldDisableDropdown({ activeComponents, participantId: id });
 
     const avatar = this.getAvatar({ avatar: avatarLinks, color, name, slotIndex: index });

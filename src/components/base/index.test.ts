@@ -34,7 +34,7 @@ class DummyComponent extends BaseComponent {
   }
 }
 
-const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true });
+const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true });
 
 jest.mock('../../common/utils/observer', () => ({
   Observer: jest.fn().mockImplementation(() => MOCK_OBSERVER_HELPER),

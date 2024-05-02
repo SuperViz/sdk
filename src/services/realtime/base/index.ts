@@ -9,9 +9,7 @@ export class RealtimeService implements DefaultRealtimeService {
   public participantObservers: Observer[];
   public participants3DObservers: Observer[];
   public participantsObserver: Observer;
-  public participantJoinedObserver: Observer;
   public participantLeaveObserver: Observer;
-  public reconnectObserver: Observer;
   public roomInfoUpdatedObserver: Observer;
   public roomListUpdatedObserver: Observer;
   public realtimeStateObserver: Observer;
@@ -31,9 +29,7 @@ export class RealtimeService implements DefaultRealtimeService {
     this.logger = new Logger('@superviz/sdk/realtime-service');
 
     this.participantsObserver = new Observer({ logger: this.logger });
-    this.participantJoinedObserver = new Observer({ logger: this.logger });
     this.participantLeaveObserver = new Observer({ logger: this.logger });
-    this.reconnectObserver = new Observer({ logger: this.logger });
     this.sameAccountObserver = new Observer({ logger: this.logger });
 
     // Room info observers helpers

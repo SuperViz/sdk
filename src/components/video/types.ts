@@ -37,7 +37,7 @@ export interface VideoComponentOptions {
   };
   callbacks?: {
     onToggleMicrophone?: () => void;
-    onToggleCamera?: () => void;
+    onToggleCam?: () => void;
     onToggleTranscript?: () => void;
     onToggleChat?: () => void;
     onToggleScreenShare?: () => void;
@@ -48,7 +48,6 @@ export interface VideoComponentOptions {
 
 export type ParticipandToFrame = {
   timestamp: number;
-  connectionId: string;
   participantId: string;
   color: string;
   name: string;

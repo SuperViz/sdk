@@ -30,18 +30,18 @@ export class WhoIsOnlineStore {
   }
 
   public destroy() {
-    this.disableGoToParticipant.destroy()
-    this.disablePresenceControls.destroy()
-    this.disableFollowParticipant.destroy()
-    this.disablePrivateMode.destroy()
-    this.disableGatherAll.destroy()
-    this.disableFollowMe.destroy()
-    this.participants.destroy()
-    this.extras.destroy()
-    this.joinedPresence.destroy()
-    this.everyoneFollowsMe.destroy()
-    this.privateMode.destroy()
-    this.following.destroy()
+    this.disableGoToParticipant.destroy();
+    this.disablePresenceControls.destroy();
+    this.disableFollowParticipant.destroy();
+    this.disablePrivateMode.destroy();
+    this.disableGatherAll.destroy();
+    this.disableFollowMe.destroy();
+    this.participants.destroy();
+    this.extras.destroy();
+    this.joinedPresence.destroy();
+    this.everyoneFollowsMe.destroy();
+    this.privateMode.destroy();
+    this.following.destroy();
 
     instance.value = null;
   }
