@@ -1,4 +1,6 @@
-import { PresenceEvent, PresenceEvents, RoomEvents, SocketEvent } from '@superviz/socket-client';
+import { TextEncoder, TextDecoder } from 'util';
+
+import { PresenceEvent, PresenceEvents, RoomEvents } from '@superviz/socket-client';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { TranscriptState } from '../../common/types/events.types';
@@ -13,6 +15,8 @@ import { DrawingData } from '../video-conference-manager/types';
 import { RoomPropertiesEvents } from './type';
 
 import { RoomStateService } from '.';
+
+Object.assign(global, { TextDecoder, TextEncoder });
 
 function createInstance() {
   const ioc = new IOC(MOCK_LOCAL_PARTICIPANT);

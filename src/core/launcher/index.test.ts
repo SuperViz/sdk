@@ -75,7 +75,9 @@ describe('Launcher', () => {
 
     test('should not add component if realtime is not joined room', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
-      LauncherInstance['realtime'].hasJoinedRoom = false;
+      const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+      hasJoinedRoom.publish(false);
+
       const spy = jest.spyOn(LauncherInstance, 'addComponent');
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
@@ -94,7 +96,7 @@ describe('Launcher', () => {
       expect(spy).toHaveBeenCalledWith(MOCK_COMPONENT);
     });
 
-    test.only('should add component', () => {
+    test('should add component', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
@@ -123,7 +125,7 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).not.toBeCalled();
     });
 
-    test('should be remove component', () => {
+    test('should remove component', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
@@ -132,7 +134,7 @@ describe('Launcher', () => {
       const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
 
       expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
-      expect(localParticipant.value.activeComponents).toBe([]);
+      expect(localParticipant.value.activeComponents?.length).toBe(0);
     });
 
     test('should show a console message if component is not initialized yet', () => {
@@ -161,8 +163,11 @@ describe('Launcher', () => {
 
   describe('Participant Events', () => {
     test('should publish ParticipantEvent.JOINED event', () => {
-      LauncherInstance['participants'].value = new Map();
-      LauncherInstance['participants'].value.set(MOCK_LOCAL_PARTICIPANT.id, MOCK_LOCAL_PARTICIPANT);
+      const { participants } = useStore(StoreType.GLOBAL);
+      participants.publish({
+        [MOCK_LOCAL_PARTICIPANT.id]: { ...MOCK_LOCAL_PARTICIPANT },
+      });
+
       const spy = jest.spyOn(LauncherInstance, 'subscribe');
       LauncherInstance['publish'] = jest.fn();
 
@@ -184,8 +189,11 @@ describe('Launcher', () => {
     });
 
     test('should publish ParticipantEvent.LEFT event', () => {
-      LauncherInstance['participants'].value = new Map();
-      LauncherInstance['participants'].value.set(MOCK_LOCAL_PARTICIPANT.id, MOCK_LOCAL_PARTICIPANT);
+      const { participants } = useStore(StoreType.GLOBAL);
+      participants.publish({
+        [MOCK_LOCAL_PARTICIPANT.id]: { ...MOCK_LOCAL_PARTICIPANT },
+      });
+
       const callback = jest.fn();
       const spy = jest.spyOn(LauncherInstance, 'subscribe');
       LauncherInstance['publish'] = jest.fn();

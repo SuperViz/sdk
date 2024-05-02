@@ -1,3 +1,5 @@
+import { TextEncoder, TextDecoder } from 'util';
+
 import { PresenceEvent } from '@superviz/socket-client';
 
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
@@ -25,6 +27,8 @@ import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
 import { VideoConference } from '.';
+
+Object.assign(global, { TextDecoder, TextEncoder });
 
 const VIDEO_MANAGER_MOCK = {
   start: jest.fn(),
@@ -97,8 +101,9 @@ describe('VideoConference', () => {
       allowGuests: false,
     });
 
-    const { localParticipant } = useStore(StoreType.GLOBAL);
+    const { localParticipant, hasJoinedRoom } = useStore(StoreType.GLOBAL);
     localParticipant.publish(MOCK_LOCAL_PARTICIPANT);
+    hasJoinedRoom.publish(true);
 
     VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
     VideoConferenceInstance.attach({
@@ -651,7 +656,7 @@ describe('VideoConference', () => {
       VideoConferenceInstance['onParticipantListUpdate'](participants);
       VideoConferenceInstance['onParticipantListUpdate'](participants);
 
-      expect(VideoConferenceInstance['publish']).toBeCalledTimes(2);
+      expect(VideoConferenceInstance['publish']).toBeCalledTimes(3);
     });
   });
 

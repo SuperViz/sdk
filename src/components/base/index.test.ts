@@ -3,6 +3,7 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
 import { Configuration } from '../../services/config/types';
@@ -50,9 +51,10 @@ describe('BaseComponent', () => {
     console.error = jest.fn();
 
     jest.clearAllMocks();
-    const { localParticipant, group } = useGlobalStore();
+    const { localParticipant, group, hasJoinedRoom } = useGlobalStore();
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
     group.value = MOCK_GROUP;
+    hasJoinedRoom.value = true;
 
     DummyComponentInstance = new DummyComponent();
   });
@@ -63,6 +65,9 @@ describe('BaseComponent', () => {
 
   describe('attach', () => {
     test('should not call start if realtime is not joined room', () => {
+      const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+      hasJoinedRoom.publish(false);
+
       DummyComponentInstance.attach({
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: ABLY_REALTIME_MOCK,

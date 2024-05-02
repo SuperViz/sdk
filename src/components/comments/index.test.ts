@@ -71,9 +71,10 @@ describe('Comments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    const { localParticipant, group } = useGlobalStore();
+    const { localParticipant, group, hasJoinedRoom } = useGlobalStore();
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
     group.value = MOCK_GROUP;
+    hasJoinedRoom.value = true;
 
     commentsComponent = new Comments(DummiePinAdapter);
 
