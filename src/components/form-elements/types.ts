@@ -12,11 +12,10 @@ export type Flags = {
 export type Field = HTMLInputElement | HTMLTextAreaElement;
 
 export enum FieldEvents {
-  INPUT = 'field.input',
   BLUR = 'field.blur',
   FOCUS = 'field.focus',
-  CHANGE = 'field.change',
-  KEYBOARD_INTERACTION = 'field.keyboard-interaction',
+  CONTENT_CHANGE = 'field.content-change',
+  INTERACTION = 'field.interaction',
 }
 
 export interface FocusPayload {
