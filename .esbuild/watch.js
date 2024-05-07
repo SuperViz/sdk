@@ -18,7 +18,6 @@ require('esbuild')
 require('esbuild')
   .build({
     ...config,
-    platform: 'neutral', // for ESM
     format: 'esm',
     outfile: 'dist/index.esm.js',
   })
