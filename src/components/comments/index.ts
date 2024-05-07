@@ -37,7 +37,7 @@ export class Comments extends BaseComponent {
   private localParticipantId: string;
   private offset: Offset;
 
-  constructor(pinAdapter: PinAdapter, options?: CommentsOptions) {
+  constructor(pinAdapter: any, options?: CommentsOptions) {
     super();
     this.name = ComponentNames.COMMENTS;
     this.logger = new Logger('@superviz/sdk/comments-component');
