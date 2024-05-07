@@ -214,7 +214,8 @@ export class FormElements extends BaseComponent {
       attribute: hasCheckedProperty ? 'checked' : 'value',
     };
 
-    this.room?.emit(FieldEvents.INPUT + fieldId, payload);
+    this.room?.emit(FieldEvents.CONTENT_CHANGE + fieldId, payload);
+    this.room?.emit(FieldEvents.INTERACTION + fieldId, payload);
   };
 
   /**
@@ -321,8 +322,8 @@ export class FormElements extends BaseComponent {
   private addRealtimeListenersToField(fieldId: string) {
     if (!this.room) return;
 
-    this.room.on<InputPayload>(FieldEvents.INPUT + fieldId, this.updateFieldContent);
-    this.room.on<FocusPayload>(FieldEvents.KEYBOARD_INTERACTION + fieldId, this.publishTypedEvent);
+    this.room.on<InputPayload>(FieldEvents.CONTENT_CHANGE + fieldId, this.updateFieldContent);
+    this.room.on<FocusPayload>(FieldEvents.INTERACTION + fieldId, this.publishTypedEvent);
 
     if (this.flags.disableOutline) return;
 
@@ -358,8 +359,8 @@ export class FormElements extends BaseComponent {
   private removeRealtimeListenersFromField(fieldId: string) {
     if (!this.room) return;
 
-    this.room.off(FieldEvents.INPUT + fieldId, this.updateFieldContent);
-    this.room.off<FocusPayload>(FieldEvents.KEYBOARD_INTERACTION + fieldId, this.publishTypedEvent);
+    this.room.off(FieldEvents.CONTENT_CHANGE + fieldId, this.updateFieldContent);
+    this.room.off<FocusPayload>(FieldEvents.INTERACTION + fieldId, this.publishTypedEvent);
 
     if (this.flags.disableOutline) return;
 
@@ -391,7 +392,7 @@ export class FormElements extends BaseComponent {
   private handleInput = (event: InputEvent) => {
     const target = event.target as HTMLInputElement;
 
-    this.room?.emit(FieldEvents.KEYBOARD_INTERACTION + target.id, {
+    this.room?.emit(FieldEvents.INTERACTION + target.id, {
       fieldId: target.id,
       color: this.localParticipant.slot.color,
     });
@@ -408,7 +409,7 @@ export class FormElements extends BaseComponent {
       attribute: 'value',
     };
 
-    this.room?.emit(FieldEvents.INPUT + target.id, payload);
+    this.room?.emit(FieldEvents.CONTENT_CHANGE + target.id, payload);
   };
 
   /**
@@ -432,7 +433,7 @@ export class FormElements extends BaseComponent {
       attribute: 'checked',
     };
 
-    this.room?.emit(FieldEvents.INPUT + target.id, payload);
+    this.room?.emit(FieldEvents.CONTENT_CHANGE + target.id, payload);
   };
 
   /**
@@ -603,18 +604,17 @@ export class FormElements extends BaseComponent {
     timestamp,
     ...params
   }: SocketEvent<InputPayload>) => {
-    if (presence.id === this.localParticipant.id) return;
-
-    this.publish(FieldEvents.INPUT, {
-      value,
-      fieldId,
-      attribute,
-      userId: presence.id,
-      userName: presence.name,
-      timestamp,
-    });
-
-    if (syncContent && this.canSyncContent(fieldId)) this.fields[fieldId][attribute] = value;
+    if (syncContent && this.canSyncContent(fieldId)) {
+      this.fields[fieldId][attribute] = value;
+      this.publish(FieldEvents.CONTENT_CHANGE, {
+        value,
+        fieldId,
+        attribute,
+        userId: presence.id,
+        userName: presence.name,
+        timestamp,
+      });
+    }
 
     if (showOutline && this.canUpdateColor(fieldId)) {
       this.updateFieldColor({ presence, data: { color, fieldId }, timestamp, ...params });
@@ -625,9 +625,7 @@ export class FormElements extends BaseComponent {
     presence,
     data: { fieldId, color },
   }: SocketEvent<FocusPayload>) => {
-    if (presence.id === this.localParticipant.id) return;
-
-    this.publish(FieldEvents.KEYBOARD_INTERACTION, {
+    this.publish(FieldEvents.INTERACTION, {
       fieldId,
       userId: presence.id,
       userName: presence.name,
