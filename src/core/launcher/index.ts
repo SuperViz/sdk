@@ -52,7 +52,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       StoreType.GLOBAL,
     );
 
-    localParticipant.publish(participant);
+    localParticipant.publish({ ...participant });
     participants.subscribe(this.onParticipantListUpdate);
     isDomainWhitelisted.subscribe(this.onAuthentication);
 
@@ -293,18 +293,12 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.logger.log('launcher service @ onParticipantListUpdate', participants);
     const { localParticipant } = useStore(StoreType.GLOBAL);
 
-    const participant: Participant = Object.values(participants)
+    const participant: ParticipantInfo = Object.values(participants)
       .filter((participant) => participant.id === localParticipant.value.id)
       .map((participant) => {
         return {
-          id: participant.id,
-          name: participant.name,
-          type: participant.type,
-          avatar: participant.avatar,
-          avatarConfig: participant.avatarConfig,
-          isHost: participant.isHost,
+          ...participant,
           color: participant.slot?.color,
-          activeComponents: participant.activeComponents,
         };
       })[0];
 

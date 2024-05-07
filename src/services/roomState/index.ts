@@ -59,7 +59,6 @@ export class RoomStateService {
     this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeave);
     this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onPresenceEnter);
     this.room.on(RoomEvents.JOINED_ROOM, this.onJoinRoom);
-    this.room.on(RoomEvents.JOINED_ROOM, this.onJoinRoom);
 
     if (!this.enableSync) return;
     this.room.on(RoomPropertiesEvents.UPDATE, this.updateLocalRoomState);
@@ -227,7 +226,7 @@ export class RoomStateService {
 
   /**
    * @function fetchRoomProperties
-   * @returns {AblyRealtimeData | null}
+   * @returns {VideoRoomProperties | null}
    */
   private async fetchRoomProperties(): Promise<unknown | null> {
     const lastMessage: SocketEvent<unknown> = await new Promise((resolve, reject) => {
@@ -246,9 +245,9 @@ export class RoomStateService {
       });
     });
 
-    if (lastMessage?.timestamp < Date.now() - 1000 * 60 * 60) return null;
+    if (!lastMessage?.data || lastMessage?.timestamp < Date.now() - 1000 * 60 * 60) return null;
 
-    return lastMessage?.data || null;
+    return lastMessage.data;
   }
 
   /**
