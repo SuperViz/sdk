@@ -299,6 +299,7 @@ describe('VideoConference', () => {
             [MOCK_LOCAL_PARTICIPANT.id]: VideoConferenceInstance['localParticipant'],
           },
         },
+        destroy: jest.fn(),
       });
       VideoConferenceInstance['validateIfInTheRoomHasHost']();
 
@@ -614,7 +615,7 @@ describe('VideoConference', () => {
       const participantInfoList: ParticipantInfo[] = [
         {
           id: participants.value[MOCK_LOCAL_PARTICIPANT.id].id,
-          color: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot?.colorName,
+          color: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot?.colorName || 'gray',
           avatar: participants.value[MOCK_LOCAL_PARTICIPANT.id].avatar,
           name: participants.value[MOCK_LOCAL_PARTICIPANT.id].name,
           type: participants.value[MOCK_LOCAL_PARTICIPANT.id].type,

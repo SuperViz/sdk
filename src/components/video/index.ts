@@ -12,6 +12,7 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
+import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
@@ -217,8 +218,8 @@ export class VideoConference extends BaseComponent {
    */
   protected destroy(): void {
     this.logger.log('video conference @ destroy');
-    // const { destroy } = this.useStore(StoreType.VIDEO);
-    // destroy();
+    const { destroy } = this.useStore(StoreType.VIDEO);
+    destroy();
 
     this.roomState.destroy();
 
@@ -360,7 +361,7 @@ export class VideoConference extends BaseComponent {
   ): Participant => {
     return {
       id: participant.id,
-      color: participant.data.slot?.color,
+      color: participant.data.slot?.color || MeetingColorsHex[16],
       avatar: participant.data.avatar,
       type: participant.data.type,
       name: participant.data.name,
@@ -582,7 +583,7 @@ export class VideoConference extends BaseComponent {
     const list: ParticipantInfo[] = Object.values(participants).map((participant) => {
       return {
         id: participant.id,
-        color: participant.slot?.colorName,
+        color: participant.slot?.colorName || 'gray',
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
