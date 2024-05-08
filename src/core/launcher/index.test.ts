@@ -1,9 +1,12 @@
+import { PresenceEvent } from '@superviz/socket-client';
+
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { BaseComponent } from '../../components/base';
 import { DefaultAttachComponentOptions } from '../../components/base/types';
@@ -67,12 +70,14 @@ describe('Launcher', () => {
 
   describe('Components', () => {
     beforeEach(() => {
-      LauncherInstance['realtime'].isJoinedRoom = true;
+      LauncherInstance['realtime'].hasJoinedRoom = true;
     });
 
     test('should not add component if realtime is not joined room', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
-      LauncherInstance['realtime'].isJoinedRoom = false;
+      const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+      hasJoinedRoom.publish(false);
+
       const spy = jest.spyOn(LauncherInstance, 'addComponent');
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
@@ -81,12 +86,12 @@ describe('Launcher', () => {
       expect(LauncherInstance['activeComponentsInstances'].length).toBe(0);
       expect(LauncherInstance['componentsToAttachAfterJoin'].length).toBe(1);
 
-      LauncherInstance['realtime'].isJoinedRoom = true;
+      LauncherInstance['realtime'].hasJoinedRoom = true;
       LauncherInstance['onParticipantJoined']({
         data: {
           id: MOCK_LOCAL_PARTICIPANT.id,
         },
-      } as unknown as AblyParticipant);
+      } as unknown as PresenceEvent<Participant>);
 
       expect(spy).toHaveBeenCalledWith(MOCK_COMPONENT);
     });
@@ -106,9 +111,10 @@ describe('Launcher', () => {
         } as DefaultAttachComponentOptions),
       );
 
-      expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
-        activeComponents: [MOCK_COMPONENT.name],
-      });
+      const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
+
+      expect(localParticipant.value.activeComponents?.length).toBe(1);
+      expect(localParticipant.value.activeComponents![0]).toBe(MOCK_COMPONENT.name);
     });
 
     test('should show a console message if limit reached and not add component', () => {
@@ -119,16 +125,16 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).not.toBeCalled();
     });
 
-    test('should be remove component', () => {
+    test('should remove component', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
       LauncherInstance.removeComponent(MOCK_COMPONENT);
 
+      const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
+
       expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.updateMyProperties).toHaveBeenCalledWith({
-        activeComponents: [],
-      });
+      expect(localParticipant.value.activeComponents?.length).toBe(0);
     });
 
     test('should show a console message if component is not initialized yet', () => {
@@ -157,8 +163,11 @@ describe('Launcher', () => {
 
   describe('Participant Events', () => {
     test('should publish ParticipantEvent.JOINED event', () => {
-      LauncherInstance['participants'].value = new Map();
-      LauncherInstance['participants'].value.set(MOCK_LOCAL_PARTICIPANT.id, MOCK_LOCAL_PARTICIPANT);
+      const { participants } = useStore(StoreType.GLOBAL);
+      participants.publish({
+        [MOCK_LOCAL_PARTICIPANT.id]: { ...MOCK_LOCAL_PARTICIPANT },
+      });
+
       const spy = jest.spyOn(LauncherInstance, 'subscribe');
       LauncherInstance['publish'] = jest.fn();
 
@@ -167,7 +176,9 @@ describe('Launcher', () => {
 
       LauncherInstance['onParticipantUpdatedIOC']({
         connectionId: 'connection1',
-        data: MOCK_LOCAL_PARTICIPANT,
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+        },
         id: MOCK_LOCAL_PARTICIPANT.id,
         name: MOCK_LOCAL_PARTICIPANT.name as string,
         timestamp: Date.now(),
@@ -178,8 +189,11 @@ describe('Launcher', () => {
     });
 
     test('should publish ParticipantEvent.LEFT event', () => {
-      LauncherInstance['participants'].value = new Map();
-      LauncherInstance['participants'].value.set(MOCK_LOCAL_PARTICIPANT.id, MOCK_LOCAL_PARTICIPANT);
+      const { participants } = useStore(StoreType.GLOBAL);
+      participants.publish({
+        [MOCK_LOCAL_PARTICIPANT.id]: { ...MOCK_LOCAL_PARTICIPANT },
+      });
+
       const callback = jest.fn();
       const spy = jest.spyOn(LauncherInstance, 'subscribe');
       LauncherInstance['publish'] = jest.fn();
@@ -226,7 +240,9 @@ describe('Launcher', () => {
         connectionId: 'connection1',
         id: MOCK_LOCAL_PARTICIPANT.id,
         name: MOCK_LOCAL_PARTICIPANT.name as string,
-        data: MOCK_LOCAL_PARTICIPANT as Participant,
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+        },
         timestamp: Date.now(),
       });
 
@@ -238,7 +254,9 @@ describe('Launcher', () => {
         connectionId: 'connection1',
         id: MOCK_LOCAL_PARTICIPANT.id,
         name: MOCK_LOCAL_PARTICIPANT.name as string,
-        data: MOCK_LOCAL_PARTICIPANT as Participant,
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+        },
         timestamp: Date.now(),
       });
 
@@ -259,10 +277,10 @@ describe('Launcher', () => {
       console.error = jest.fn();
       jest.spyOn(LauncherInstance, 'destroy');
 
-      LauncherInstance['onAuthentication'](RealtimeEvent.REALTIME_DRAWING_CHANGE);
+      LauncherInstance['onAuthentication'](true);
       expect(LauncherInstance.destroy).not.toHaveBeenCalled();
 
-      LauncherInstance['onAuthentication'](RealtimeEvent.REALTIME_AUTHENTICATION_FAILED);
+      LauncherInstance['onAuthentication'](false);
       expect(LauncherInstance.destroy).toHaveBeenCalled();
       expect(console.error).toHaveBeenCalledWith(
         `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
@@ -279,7 +297,6 @@ describe('Launcher', () => {
     test('should unsubscribe from realtime events', () => {
       LauncherInstance.destroy();
 
-      expect(ABLY_REALTIME_MOCK.participantJoinedObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
       expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
     });

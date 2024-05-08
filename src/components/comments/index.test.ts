@@ -71,15 +71,16 @@ describe('Comments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    const { localParticipant, group } = useGlobalStore();
+    const { localParticipant, group, hasJoinedRoom } = useGlobalStore();
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
     group.value = MOCK_GROUP;
+    hasJoinedRoom.value = true;
 
     commentsComponent = new Comments(DummiePinAdapter);
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       useStore,
@@ -333,7 +334,7 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       useStore,
@@ -352,7 +353,7 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       useStore,

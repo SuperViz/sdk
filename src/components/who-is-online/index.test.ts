@@ -50,9 +50,13 @@ describe('Who Is Online', () => {
     jest.clearAllMocks();
 
     whoIsOnlineComponent = new WhoIsOnline();
+
+    const { hasJoinedRoom } = whoIsOnlineComponent['useStore'](StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
+
     whoIsOnlineComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       useStore,

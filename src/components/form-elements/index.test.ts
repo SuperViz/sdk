@@ -2,6 +2,7 @@ import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { ComponentNames } from '../types';
@@ -24,9 +25,11 @@ describe('form elements', () => {
 
     instance = new FormElements();
 
+    const { hasJoinedRoom } = (instance as FormElements)['useStore'](StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
     instance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       useStore,
@@ -906,15 +909,12 @@ describe('form elements', () => {
 
       instance['publishTypedEvent']({ presence, data });
 
-      expect(instance['publish']).toHaveBeenCalledWith(
-        FieldEvents.KEYBOARD_INTERACTION,
-        {
-          fieldId,
-          userId: '123',
-          userName: undefined,
-          color,
-        },
-      );
+      expect(instance['publish']).toHaveBeenCalledWith(FieldEvents.KEYBOARD_INTERACTION, {
+        fieldId,
+        userId: '123',
+        userName: undefined,
+        color,
+      });
     });
 
     test('should not publish event if presence id is local participant id', () => {
@@ -1074,7 +1074,7 @@ describe('form elements', () => {
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
 
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputcheckbox', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.INPUT}checkbox`, {
         value: true,
         color: 'red',
         fieldId: 'checkbox',

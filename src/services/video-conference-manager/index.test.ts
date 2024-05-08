@@ -579,14 +579,14 @@ describe('VideoConferenceManager', () => {
 
   describe('onGridModeChange', () => {
     test('should publish the new grid mode state', () => {
-      const isGridModeEnable = true;
+      const isGridModeEnabled = true;
       const spy = jest.spyOn(VideoConferenceManagerInstance.realtimeEventsObserver, 'publish');
 
-      VideoConferenceManagerInstance['onGridModeChange'](isGridModeEnable);
+      VideoConferenceManagerInstance['onGridModeChange'](isGridModeEnabled);
 
       expect(spy).toHaveBeenCalledWith({
         event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
-        data: isGridModeEnable,
+        data: isGridModeEnabled,
       });
     });
   });

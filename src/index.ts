@@ -37,6 +37,7 @@ import {
   LayoutPosition,
 } from './services/video-conference-manager/types';
 
+export { FieldEvents } from './components/form-elements/types';
 export { PinMode } from './web-components/comments/components/types';
 
 export { Participant, Group, Avatar } from './common/types/participant.types';

@@ -7,6 +7,13 @@ export const MOCK_IO = {
     ERROR: 'presence.error',
     UPDATE: 'presence.update',
   },
+  RoomEvents: {
+    JOIN_ROOM: 'room.join',
+    JOINED_ROOM: 'room.joined',
+    LEAVE_ROOM: 'room.leave',
+    UPDATE: 'room.update',
+    ERROR: 'room.error',
+  },
   Realtime: class {
     connection;
 
