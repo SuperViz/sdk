@@ -230,8 +230,8 @@ export class VideoConference extends BaseComponent {
     this.unsubscribeFromRealtimeEvents();
     this.unsubscribeFromVideoEvents();
 
-    this.videoManager.leave();
-    this.connectionService.removeListeners();
+    this.videoManager?.leave();
+    this.connectionService?.removeListeners();
   }
 
   /**
@@ -307,6 +307,8 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    * */
   private unsubscribeFromVideoEvents = (): void => {
+    if (!this.videoManager) return;
+
     this.logger.log('video conference @ unsubscribe from video events');
 
     this.videoManager.meetingConnectionObserver.unsubscribe(
@@ -563,7 +565,15 @@ export class VideoConference extends BaseComponent {
   private onParticipantLeft = (_: Participant): void => {
     this.logger.log('video conference @ on participant left', this.localParticipant);
 
+    this.videoManager.leave();
+    this.connectionService.removeListeners();
+    this.publish(MeetingEvent.DESTROY);
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
+
+    this.unsubscribeFromVideoEvents();
+    this.videoManager = undefined;
+    this.connectionService = undefined;
+
     this.detach();
   };
 

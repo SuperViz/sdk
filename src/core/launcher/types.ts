@@ -11,6 +11,6 @@ export interface LauncherFacade {
   subscribe: typeof Observable.prototype.subscribe;
   unsubscribe: typeof Observable.prototype.unsubscribe;
   destroy: () => void;
-  addComponent: (component: Partial<BaseComponent>) => void;
-  removeComponent: (component: Partial<BaseComponent>) => void;
+  addComponent: (component: any) => void;
+  removeComponent: (component: any) => void;
 }

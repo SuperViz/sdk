@@ -3,7 +3,6 @@
   "version": "0.0.0-development",
   "description": "SuperViz SDK",
   "main": "./lib/index.js",
-  "module": "./lib/index.esm.js",
   "types": "./lib/index.d.ts",
   "files": [
     "lib"
