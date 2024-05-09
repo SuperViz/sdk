@@ -7,7 +7,6 @@ export class RealtimeService implements DefaultRealtimeService {
   protected readonly logger: Logger;
 
   public participantObservers: Observer[];
-  public participants3DObservers: Observer[];
   public participantsObserver: Observer;
   public participantLeaveObserver: Observer;
   public roomInfoUpdatedObserver: Observer;
@@ -24,7 +23,6 @@ export class RealtimeService implements DefaultRealtimeService {
 
   constructor() {
     this.participantObservers = [];
-    this.participants3DObservers = [];
 
     this.logger = new Logger('@superviz/sdk/realtime-service');
 
@@ -75,34 +73,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public unsubscribeFromParticipantUpdate(participantId: string, callback: Function): void {
     if (this.participantObservers[participantId]) {
       this.participantObservers[participantId].unsubscribe(callback);
-    }
-  }
-
-  /**
-   * @function subscribeToParticipant3DUpdate
-   * @description subscribe to a participant's events
-   * @param {string} participantId
-   * @param {Function} callback
-   * @returns {void}
-   */
-  public subscribeToParticipant3DUpdate(participantId: string, callback: Function): void {
-    if (!this.participants3DObservers[participantId]) {
-      this.participants3DObservers[participantId] = new Observer({ logger: this.logger });
-    }
-
-    this.participants3DObservers[participantId].subscribe(callback);
-  }
-
-  /**
-   * @function unsubscribeFromParticipantUpdate
-   * @description unsubscribe to a participant's events
-   * @param {string} participantId
-   * @param {Function} callback
-   * @returns {void}
-   */
-  public unsubscribeFromParticipant3DUpdate(participantId: string, callback: Function): void {
-    if (this.participants3DObservers[participantId]) {
-      this.participants3DObservers[participantId].unsubscribe(callback);
     }
   }
 
