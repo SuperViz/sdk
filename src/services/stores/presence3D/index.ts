@@ -1,11 +1,14 @@
+import { Participant } from '../../../common/types/participant.types';
+import { ParticipantInfo } from '../../realtime/base/types';
 import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
 
 const instance: Singleton<Presence3DStore> = CreateSingleton<Presence3DStore>();
 
-export class Presence3DStore {
+class Presence3DStore {
   public hasJoined3D = subject<boolean>(false);
+  public participants = subject<ParticipantInfo[]>([]);
 
   constructor() {
     if (instance.value) {
@@ -24,10 +27,12 @@ const store = new Presence3DStore();
 const destroy = store.destroy.bind(store);
 
 const hasJoined3D = store.hasJoined3D.expose();
+const participants = store.participants.expose();
 
 export function usePresence3DStore() {
   return {
     hasJoined3D,
+    participants,
     destroy,
   };
 }
