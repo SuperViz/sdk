@@ -11,7 +11,10 @@ export class IOC {
   private stateSubject: Subject<Socket.ConnectionState> = new Subject();
 
   constructor(participant: Participant) {
-    this.client = new Socket.Realtime(config.get<string>('apiKey'), config.get('environment'), {
+    let environment = config.get<string>('environment') as 'dev' | 'prod';
+    environment = ['dev', 'prod'].includes(environment) ? environment : 'dev';
+
+    this.client = new Socket.Realtime(config.get<string>('apiKey'), environment, {
       id: participant.id,
       name: participant.name,
     });
