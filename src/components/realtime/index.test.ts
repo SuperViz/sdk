@@ -5,6 +5,7 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 
@@ -30,6 +31,7 @@ describe('realtime component', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      roomState: ROOM_STATE_MOCK,
       useStore,
     });
 

@@ -20,7 +20,6 @@ import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
 import { ParticipantInfo } from '../../services/realtime/base/types';
-import { RoomStateService } from '../../services/roomState';
 import VideoConferenceManager from '../../services/video-conference-manager';
 import {
   CamerasPosition,

@@ -333,6 +333,8 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private subscribeToLocalParticipantUpdates = (participant: Participant): void => {
+    if (!participant.slot) return;
+
     this.localParticipantId = participant.id;
 
     const { privateMode, joinedPresence } = this.useStore(StoreType.WHO_IS_ONLINE);

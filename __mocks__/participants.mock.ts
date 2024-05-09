@@ -1,5 +1,5 @@
 import { Avatar, Group, Participant } from '../src';
-import { MeetingColorsHex } from '../src/common/types/meeting-colors.types';
+import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-colors.types';
 import { ParticipantByGroupApi } from '../src/common/types/participant.types';
 import { AblyParticipant } from '../src/services/realtime/ably/types';
 
@@ -15,6 +15,13 @@ export const MOCK_LOCAL_PARTICIPANT: Participant = {
   avatar: {
     imageUrl: 'unit-test-avatar-thumbnail.png',
     model3DUrl: 'unit-test-avatar-model.glb',
+  },
+  slot: {
+    color: MeetingColorsHex[0],
+    index: 0,
+    colorName: MeetingColors[0],
+    textColor: '#000',
+    timestamp: 0,
   },
 };
 

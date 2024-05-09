@@ -24,11 +24,13 @@ export class Presence3DManager {
     this.room = room;
     this.logger = new Logger('@superviz/sdk/presence3D-manager');
     this.roomState = roomState;
-    this.useStore = store.bind(this);
+    this.useStore = store;
 
     this.subscribeToRoomEvents();
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
+
+    // have to set manually because useStore is binded to the 3d plugin that creates the service
     localParticipant.subscribe((participant) => {
       this.localParticipant = participant;
     });
@@ -70,12 +72,15 @@ export class Presence3DManager {
     this.room.presence.on(PresenceEvents.LEAVE, this.onLeaveRoom);
     this.room.presence.on(PresenceEvents.UPDATE, this.onParticipantUpdate);
 
-    this.room.presence.on(PresenceEvents.JOINED_ROOM, (event) => {
-      if (event.id !== this.localParticipant.id) return;
+    this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onJoinedPresence);
+  };
 
-      this.logger.log('participant joined 3D room', event.id);
-      this.onLocalParticipantJoined(this.localParticipant);
-    });
+  private unsubscribeFromRoomEvents = (): void => {
+    this.room.off<Participant>(Presence3dEvents.PARTICIPANT_JOINED, this.onJoinedRoom);
+    this.room.presence.off(PresenceEvents.LEAVE);
+    this.room.presence.off(PresenceEvents.UPDATE);
+
+    this.room.presence.off(PresenceEvents.JOINED_ROOM);
   };
 
   private onJoinedRoom = (event: SocketEvent<Participant>): void => {
@@ -93,9 +98,7 @@ export class Presence3DManager {
 
   public onLeaveRoom = (event: PresenceEvent): void => {
     if (event.id === this.localParticipant.id) {
-      this.room.presence.off(PresenceEvents.JOINED_ROOM);
-      this.room.presence.off(PresenceEvents.LEAVE);
-
+      this.unsubscribeFromRoomEvents();
       this.useStore(StoreType.PRESENCE_3D).destroy();
       return;
     }
@@ -125,11 +128,16 @@ export class Presence3DManager {
       participant,
     ]);
 
-    if (!hasJoined3D.value) return;
+    if (!hasJoined3D.value || participant.id !== this.localParticipant.id) return;
 
-    if (participant.id === this.localParticipant.id) {
-      this.room.presence.update(participant);
-    }
+    this.room.presence.update(participant);
+  };
+
+  private onJoinedPresence = (event: PresenceEvent<ParticipantInfo>): void => {
+    if (event.id !== this.localParticipant.id) return;
+
+    this.logger.log('participant joined 3D room', event.id);
+    this.onLocalParticipantJoined(this.localParticipant);
   };
 
   public updatePresence3D = throttle((data: ParticipantInfo): void => {

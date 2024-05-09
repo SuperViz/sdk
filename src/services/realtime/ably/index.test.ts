@@ -8,7 +8,7 @@ import { RealtimeStateTypes } from '../../../common/types/realtime.types';
 import { StoreType } from '../../../common/types/stores.types';
 import { useStore } from '../../../common/utils/use-store';
 
-import { AblyParticipant, AblyRealtimeData } from './types';
+import { AblyRealtimeData } from './types';
 
 import AblyRealtimeService from '.';
 

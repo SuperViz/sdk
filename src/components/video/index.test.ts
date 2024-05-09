@@ -24,6 +24,7 @@ import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { ParticipantInfo } from '../../services/realtime/base/types';
+import { RoomStateService } from '../../services/roomState';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
@@ -111,7 +112,7 @@ describe('VideoConference', () => {
       realtime: { ...MOCK_REALTIME, hasJoinedRoom: true } as any,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
-      roomState: ROOM_STATE_MOCK,
+      roomState: { ...ROOM_STATE_MOCK } as RoomStateService,
       useStore,
     });
   });
