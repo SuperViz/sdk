@@ -3,7 +3,6 @@
   "version": "0.0.0-development",
   "description": "SuperViz SDK",
   "main": "./lib/index.js",
-  "module": "./lib/index.esm.js",
   "types": "./lib/index.d.ts",
   "files": [
     "lib"
@@ -68,6 +67,7 @@
     "husky": "^8.0.3",
     "jest": "^29.7.0",
     "jest-browser-globals": "^25.1.0-beta",
+    "jest-canvas-mock": "^2.5.2",
     "jest-environment-jsdom": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "rimraf": "^5.0.5",

@@ -152,7 +152,7 @@ export class CommentsAnnotationPin extends WebComponentsBaseElement {
     if (this.type !== PinMode.ADD) return;
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe((participant: Participant) => {
+    localParticipant.subscribe((participant) => {
       this.localAvatar = participant?.avatar?.imageUrl;
       this.localName = participant?.name;
     });

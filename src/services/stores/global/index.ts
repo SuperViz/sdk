@@ -20,6 +20,8 @@ export class GlobalStore {
 
   public destroy() {
     this.localParticipant.destroy();
+    this.participants.destroy();
+    this.group.destroy();
     instance.value = null;
   }
 }

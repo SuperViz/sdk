@@ -9,6 +9,7 @@ import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import {
+  Camera,
   ParticipantMouse,
   PresenceMouseProps,
   SVGElements,
@@ -36,6 +37,7 @@ export class PointersHTML extends BaseComponent {
   private isPrivate: boolean;
   private containerTagname: string;
   private transformation: Transform = { translate: { x: 0, y: 0 }, scale: 1 };
+  private camera: Camera;
   private pointerMoveObserver: Subscription;
 
   // callbacks
@@ -58,6 +60,16 @@ export class PointersHTML extends BaseComponent {
       this.logger.log(message);
       throw new Error(message);
     }
+
+    this.camera = {
+      x: 0,
+      y: 0,
+      scale: 1,
+      screen: {
+        width: this.container.clientWidth,
+        height: this.container.clientHeight,
+      },
+    };
 
     this.name = ComponentNames.PRESENCE;
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
@@ -178,11 +190,12 @@ export class PointersHTML extends BaseComponent {
     const x = (event.x - left - this.transformation.translate.x) / this.transformation.scale;
     const y = (event.y - top - this.transformation.translate.y) / this.transformation.scale;
 
-    this.room.presence.update({
+    this.room.presence.update<ParticipantMouse>({
       ...this.localParticipant,
       x,
       y,
       visible: true,
+      camera: this.camera,
     });
   };
 
@@ -191,8 +204,13 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseLeave = (event: MouseEvent): void => {
-    const { x, y, width, height } = this.container.getBoundingClientRect();
-    if (event.x > 0 && event.y > 0 && event.x < x + width && event.y < y + height) return;
+    const { left, top, right, bottom } = this.container.getBoundingClientRect();
+    const isInsideContainer =
+      event.x > left && event.y > top && event.x < right && event.y < bottom;
+    const isInsideScreen =
+      event.x > 0 && event.y > 0 && event.x < window.innerWidth && event.y < window.innerHeight;
+    if (isInsideContainer && isInsideScreen) return;
+
     this.room.presence.update({ visible: false });
   };
 
@@ -204,16 +222,31 @@ export class PointersHTML extends BaseComponent {
    */
   private goToMouse = (id: string): void => {
     const pointer = this.mouses.get(id);
-    if (!pointer) return;
+    const presence = this.presences.get(id);
+
+    if (!presence) return;
 
     if (this.goToPresenceCallback) {
-      const mouse = this.mouses.get(id);
-      const x = Number(mouse.style.left.replace('px', ''));
-      const y = Number(mouse.style.top.replace('px', ''));
+      const scaleFactorX = this.camera.screen.width / presence.camera.screen.width;
+      const scaleFactorY = this.camera.screen.height / presence.camera.screen.height;
 
-      this.goToPresenceCallback({ x, y });
+      const translatedX = presence.camera.x * scaleFactorX;
+      const translatedY = presence.camera.y * scaleFactorY;
+
+      const screenScaleX = presence.camera.scale * scaleFactorX;
+      const screenScaleY = presence.camera.scale * scaleFactorY;
+
+      this.goToPresenceCallback({
+        x: translatedX,
+        y: translatedY,
+        scaleX: screenScaleX,
+        scaleY: screenScaleY,
+      });
+
       return;
     }
+
+    if (!pointer) return;
 
     pointer.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
@@ -497,6 +530,16 @@ export class PointersHTML extends BaseComponent {
    */
   public transform(transformation: Transform) {
     this.transformation = transformation;
+    this.camera = {
+      x: transformation.translate.x,
+      y: transformation.translate.y,
+      scale: transformation.scale,
+      screen: {
+        width: this.wrapper?.clientWidth || 1,
+        height: this.wrapper?.clientHeight || 1,
+      },
+    };
+
     this.updateParticipantsMouses(true);
   }
 
@@ -594,11 +637,9 @@ export class PointersHTML extends BaseComponent {
   /**
    * @function renderWrapper
    * @description prepares, creates and renders a wrapper for the specified element
-   * @param {HTMLElement} element the element to be wrapped
-   * @param {string} id the id of the element
    * @returns {void}
    */
-  private renderWrapper() {
+  private renderWrapper(): void {
     if (this.wrapper) return;
 
     if (VoidElements[this.containerTagname]) {
@@ -699,10 +740,7 @@ export class PointersHTML extends BaseComponent {
    */
   private renderVoidElementWrapper = (): void => {
     const wrapper = document.createElement('div');
-    const container = this.container as HTMLElement;
     const { width, height, left, top } = this.container.getBoundingClientRect();
-    const x = container.offsetLeft - left;
-    const y = container.offsetTop - top;
 
     wrapper.style.position = 'absolute';
     wrapper.style.width = `${width}px`;

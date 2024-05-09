@@ -8,6 +8,7 @@ import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import { AblyRealtimeService } from '../../services/realtime';
+import { useGlobalStore } from '../../services/stores';
 import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
@@ -85,6 +86,8 @@ export abstract class BaseComponent extends Observable {
     this.logger.log('detached');
     this.publish(ComponentLifeCycleEvent.UNMOUNT);
     this.destroy();
+    this.room.disconnect();
+
     this.unsubscribeFrom.forEach((unsubscribe) => unsubscribe(this));
 
     Object.values(this.observers).forEach((observer) => {

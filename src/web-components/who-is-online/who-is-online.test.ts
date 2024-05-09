@@ -355,7 +355,7 @@ describe('Who Is Online', () => {
       element.addEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, spy);
 
       const { following } = useStore(StoreType.WHO_IS_ONLINE);
-      following.publish<Following>({ color: 'red', id: '1', name: 'John' });
+      following.publish({ color: 'red', id: '1', name: 'John' });
       element['following'] = { participantId: 1, slotIndex: 1 };
       await sleep();
 

@@ -20,6 +20,7 @@ import {
   CanvasPin,
   HTMLPin,
   WhoIsOnline,
+  FormElements,
 } from './components';
 import { Transform } from './components/presence-mouse/types';
 import {
@@ -73,6 +74,7 @@ if (window) {
     CanvasPin,
     HTMLPin,
     WhoIsOnline,
+    FormElements,
     ParticipantType,
     LayoutPosition,
     CamerasPosition,
@@ -101,6 +103,7 @@ export {
   CommentEvent,
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
+  FormElements,
   Transform,
   Comments,
   CanvasPin,

@@ -1,32 +1,38 @@
 import { jest } from '@jest/globals';
-import * as Socket from '@superviz/socket-client';
 
 export const MOCK_IO = {
+  PresenceEvents: {
+    JOINED_ROOM: 'presence.joined-room',
+    LEAVE: 'presence.leave',
+    ERROR: 'presence.error',
+    UPDATE: 'presence.update',
+  },
   Realtime: class {
-    public connection: {
-      on: (state: string) => void;
-      off: () => void;
-    };
+    connection;
 
-    constructor(apiKey: string, environment: string, participant: any) {
+    constructor(apiKey, environment, participant) {
       this.connection = {
         on: jest.fn(),
         off: jest.fn(),
       };
     }
 
-    public connect() {
+    connect() {
       return {
         on: jest.fn(),
         off: jest.fn(),
         emit: jest.fn(),
+        disconnect: jest.fn(),
+        history: jest.fn(),
         presence: {
           on: jest.fn(),
           off: jest.fn(),
+          get: jest.fn(),
+          update: jest.fn(),
         },
       };
     }
 
-    public destroy() {}
+    destroy() {}
   },
 };

@@ -14,14 +14,11 @@ export class WhoIsOnlineStore {
   public disablePrivateMode = subject<boolean>(false);
   public disableGatherAll = subject<boolean>(false);
   public disableFollowMe = subject<boolean>(false);
-
   public participants = subject<Participant[]>([]);
   public extras = subject<Participant[]>([]);
-
   public joinedPresence = subject<boolean | undefined>(undefined);
   public everyoneFollowsMe = subject<boolean>(false);
   public privateMode = subject<boolean>(false);
-
   public following = subject<Following | undefined>(undefined);
 
   constructor() {
@@ -33,7 +30,19 @@ export class WhoIsOnlineStore {
   }
 
   public destroy() {
-    this.disablePresenceControls.destroy();
+    this.disableGoToParticipant.destroy()
+    this.disablePresenceControls.destroy()
+    this.disableFollowParticipant.destroy()
+    this.disablePrivateMode.destroy()
+    this.disableGatherAll.destroy()
+    this.disableFollowMe.destroy()
+    this.participants.destroy()
+    this.extras.destroy()
+    this.joinedPresence.destroy()
+    this.everyoneFollowsMe.destroy()
+    this.privateMode.destroy()
+    this.following.destroy()
+
     instance.value = null;
   }
 }
