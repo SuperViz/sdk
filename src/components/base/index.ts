@@ -9,6 +9,7 @@ import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import { AblyRealtimeService } from '../../services/realtime';
+import { RoomStateService } from '../../services/roomState';
 import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
@@ -24,6 +25,7 @@ export abstract class BaseComponent extends Observable {
   protected unsubscribeFrom: Array<(id: unknown) => void> = [];
   protected useStore = useStore.bind(this) as typeof useStore;
   protected room: Socket.Room;
+  protected roomState: RoomStateService;
 
   /**
    * @function attach
@@ -39,7 +41,7 @@ export abstract class BaseComponent extends Observable {
       throw new Error(message);
     }
 
-    const { realtime, config: globalConfig, eventBus, ioc } = params;
+    const { realtime, config: globalConfig, eventBus, ioc, roomState } = params;
     const { isDomainWhitelisted, hasJoinedRoom } = this.useStore(StoreType.GLOBAL);
 
     if (!isDomainWhitelisted.value) {
@@ -54,6 +56,7 @@ export abstract class BaseComponent extends Observable {
     this.isAttached = true;
     this.ioc = ioc;
     this.room = ioc.createRoom(this.name);
+    this.roomState = roomState;
 
     if (!hasJoinedRoom.value) {
       this.logger.log(`${this.name} @ attach - not joined yet`);

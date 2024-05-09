@@ -7,6 +7,7 @@ import {
   MOCK_ABLY_PARTICIPANT_DATA_1,
 } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
@@ -59,6 +60,7 @@ describe('Who Is Online', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      roomState: ROOM_STATE_MOCK,
       useStore,
     });
 

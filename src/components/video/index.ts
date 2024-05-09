@@ -42,7 +42,6 @@ export class VideoConference extends BaseComponent {
   protected logger: Logger;
   private participantsOnMeeting: Partial<Participant>[] = [];
   private localParticipant: Participant;
-  private roomState: RoomStateService;
   private videoManager: VideoConferenceManager;
   private connectionService: ConnectionService;
   private browserService: BrowserService;
@@ -60,18 +59,20 @@ export class VideoConference extends BaseComponent {
     };
 
     const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+    const { drawing, hostId, isGridModeEnabled, transcript, followParticipantId, gather } =
+      this.useStore(StoreType.VIDEO);
 
     localParticipant.publish({
       ...localParticipant.value,
       type: this.params.userType as ParticipantType,
-      isHost: this.params.userType === ParticipantType.HOST,
+      isHost: hostId.value === localParticipant.value.id,
     });
 
     participants.publish({
       ...participants.value,
       [localParticipant.value.id]: {
         ...localParticipant.value,
-        isHost: this.params.userType === ParticipantType.HOST,
+        isHost: hostId.value === localParticipant.value.id,
         timestamp: 0,
       },
     });
@@ -85,9 +86,6 @@ export class VideoConference extends BaseComponent {
 
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
-
-    const { drawing, hostId, isGridModeEnabled, transcript, followParticipantId, gather } =
-      this.useStore(StoreType.VIDEO);
 
     drawing.subscribe(this.setDrawing);
     hostId.subscribe(this.setHost);
@@ -167,7 +165,6 @@ export class VideoConference extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('video conference @ start');
-    this.roomState = new RoomStateService(this.room, this.logger);
 
     const { localParticipant, group, participants } = this.useStore(StoreType.GLOBAL);
     participants.subscribe(this.onParticipantListUpdate);

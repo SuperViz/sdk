@@ -16,6 +16,7 @@ import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
 import { AblyRealtimeService } from '../../services/realtime';
 import { ParticipantInfo } from '../../services/realtime/base/types';
+import { RoomStateService } from '../../services/roomState';
 import { SlotService } from '../../services/slot';
 import { useGlobalStore } from '../../services/stores';
 
@@ -30,6 +31,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
 
   private ioc: IOC;
+  private roomState: RoomStateService;
   private LauncherRealtimeRoom: Socket.Room;
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
@@ -59,6 +61,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
     this.LauncherRealtimeRoom = this.ioc.createRoom('launcher');
+    this.roomState = new RoomStateService(this.ioc.createRoom('video-conference'), this.logger);
 
     // internal events without realtime
     this.eventBus = new EventBus();
@@ -77,6 +80,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   public addComponent = (component: any): void => {
     if (!this.canAddComponent(component)) return;
+
     const { hasJoinedRoom, localParticipant, group } = useStore(StoreType.GLOBAL);
 
     if (!hasJoinedRoom.value) {
@@ -91,6 +95,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       config: config.configuration,
       eventBus: this.eventBus,
       useStore,
+      roomState: this.roomState,
     });
 
     this.activeComponents.push(component.name);
