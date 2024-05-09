@@ -179,19 +179,19 @@ describe('form elements', () => {
 
       expect(instance['room'].on).toHaveBeenCalledTimes(4);
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.inputfield-1',
+        `${FieldEvents.CONTENT_CHANGE}field-1`,
         instance['updateFieldContent'],
       );
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.keyboard-interactionfield-1',
+        `${FieldEvents.INTERACTION}field-1`,
         instance['publishTypedEvent'],
       );
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.focusfield-1',
+        `${FieldEvents.FOCUS}field-1`,
         instance['updateFieldColor'],
       );
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.blurfield-1',
+        `${FieldEvents.BLUR}field-1`,
         instance['removeFieldColor'],
       );
     });
@@ -210,11 +210,11 @@ describe('form elements', () => {
 
       expect(instance['room'].on).toHaveBeenCalledTimes(2);
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.inputfield-1',
+        `${FieldEvents.CONTENT_CHANGE}field-1`,
         instance['updateFieldContent'],
       );
       expect(instance['room'].on).toHaveBeenCalledWith(
-        'field.keyboard-interactionfield-1',
+        `${FieldEvents.INTERACTION}field-1`,
         instance['publishTypedEvent'],
       );
     });
@@ -287,22 +287,22 @@ describe('form elements', () => {
       expect(instance['room'].off).toHaveBeenCalledTimes(4);
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         1,
-        'field.inputfield-1',
+        `${FieldEvents.CONTENT_CHANGE}field-1`,
         instance['updateFieldContent'],
       );
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         2,
-        'field.keyboard-interactionfield-1',
+        `${FieldEvents.INTERACTION}field-1`,
         instance['publishTypedEvent'],
       );
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         3,
-        'field.focusfield-1',
+        `${FieldEvents.FOCUS}field-1`,
         instance['updateFieldColor'],
       );
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         4,
-        'field.blurfield-1',
+        `${FieldEvents.BLUR}field-1`,
         instance['removeFieldColor'],
       );
     });
@@ -335,12 +335,12 @@ describe('form elements', () => {
       expect(instance['room'].off).toHaveBeenCalledTimes(2);
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         1,
-        'field.inputfield-1',
+        `${FieldEvents.CONTENT_CHANGE}field-1`,
         instance['updateFieldContent'],
       );
       expect(instance['room'].off).toHaveBeenNthCalledWith(
         2,
-        'field.keyboard-interactionfield-1',
+        `${FieldEvents.INTERACTION}field-1`,
         instance['publishTypedEvent'],
       );
     });
@@ -414,7 +414,7 @@ describe('form elements', () => {
       instance['deregisterField']('field-1');
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.blurfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.BLUR}field-1`, {
         fieldId: 'field-1',
       });
     });
@@ -437,12 +437,12 @@ describe('form elements', () => {
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(2);
 
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.keyboard-interactionfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.INTERACTION}field-1`, {
         fieldId: 'field-1',
         color: 'red',
       });
 
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.CONTENT_CHANGE}field-1`, {
         value: 'some value',
         color: 'red',
         fieldId: 'field-1',
@@ -470,7 +470,7 @@ describe('form elements', () => {
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
 
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.keyboard-interactionfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.INTERACTION}field-1`, {
         fieldId: 'field-1',
         color: 'red',
       });
@@ -494,7 +494,7 @@ describe('form elements', () => {
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
 
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.CONTENT_CHANGE}field-1`, {
         value: true,
         color: 'red',
         fieldId: 'field-1',
@@ -540,7 +540,7 @@ describe('form elements', () => {
       instance['handleFocus'](event);
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.focusfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.FOCUS}field-1`, {
         color: 'red',
         fieldId: 'field-1',
       });
@@ -560,7 +560,7 @@ describe('form elements', () => {
       instance['handleBlur'](event);
 
       expect(instance['room'].emit).toHaveBeenCalledTimes(1);
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.blurfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.BLUR}field-1`, {
         fieldId: 'field-1',
       });
     });
@@ -911,25 +911,12 @@ describe('form elements', () => {
 
       instance['publishTypedEvent']({ presence, data });
 
-      expect(instance['publish']).toHaveBeenCalledWith(FieldEvents.KEYBOARD_INTERACTION, {
+      expect(instance['publish']).toHaveBeenCalledWith(FieldEvents.INTERACTION, {
         fieldId,
         userId: '123',
         userName: undefined,
         color,
       });
-    });
-
-    test('should not publish event if presence id is local participant id', () => {
-      const fieldId = 'field-1';
-      const color = 'red';
-      const presence = { id: '123' };
-      const data = { fieldId, color };
-      instance['localParticipant'] = { id: '123' } as any;
-      instance['publish'] = jest.fn();
-
-      instance['publishTypedEvent']({ presence, data });
-
-      expect(instance['publish']).not.toHaveBeenCalled();
     });
   });
 
@@ -1047,9 +1034,18 @@ describe('form elements', () => {
       instance['hasCheckedProperty'] = jest.fn().mockReturnValue(false);
       instance['sync']('field-1');
 
-      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+      expect(instance['room'].emit).toHaveBeenCalledTimes(2);
 
-      expect(instance['room'].emit).toHaveBeenCalledWith('field.inputfield-1', {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.CONTENT_CHANGE}field-1`, {
+        value: 'some value',
+        color: 'red',
+        fieldId: 'field-1',
+        showOutline: true,
+        syncContent: true,
+        attribute: 'value',
+      });
+
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.INTERACTION}field-1`, {
         value: 'some value',
         color: 'red',
         fieldId: 'field-1',
@@ -1074,9 +1070,18 @@ describe('form elements', () => {
       instance['hasCheckedProperty'] = jest.fn().mockReturnValue(true);
       instance['sync']('checkbox');
 
-      expect(instance['room'].emit).toHaveBeenCalledTimes(1);
+      expect(instance['room'].emit).toHaveBeenCalledTimes(2);
 
-      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.INPUT}checkbox`, {
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.CONTENT_CHANGE}checkbox`, {
+        value: true,
+        color: 'red',
+        fieldId: 'checkbox',
+        showOutline: true,
+        syncContent: true,
+        attribute: 'checked',
+      });
+
+      expect(instance['room'].emit).toHaveBeenCalledWith(`${FieldEvents.INTERACTION}checkbox`, {
         value: true,
         color: 'red',
         fieldId: 'checkbox',
