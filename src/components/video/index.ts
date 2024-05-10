@@ -20,7 +20,6 @@ import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
 import { ParticipantInfo } from '../../services/realtime/base/types';
-import { RoomStateService } from '../../services/roomState';
 import VideoConferenceManager from '../../services/video-conference-manager';
 import {
   CamerasPosition,
@@ -43,7 +42,6 @@ export class VideoConference extends BaseComponent {
   protected logger: Logger;
   private participantsOnMeeting: Partial<Participant>[] = [];
   private localParticipant: Participant;
-  private roomState: RoomStateService;
   private videoManager: VideoConferenceManager;
   private connectionService: ConnectionService;
   private browserService: BrowserService;
@@ -169,7 +167,6 @@ export class VideoConference extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('video conference @ start');
-    this.roomState = new RoomStateService(this.room, this.logger);
 
     const { localParticipant, group, participants } = this.useStore(StoreType.GLOBAL);
     participants.subscribe(this.onParticipantListUpdate);

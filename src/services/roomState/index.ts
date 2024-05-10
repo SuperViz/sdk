@@ -217,7 +217,7 @@ export class RoomStateService {
       this.left = true;
     }
 
-    const followedLeft = presence.id === this.localRoomProperties.followParticipantId;
+    const followedLeft = presence.id === this.localRoomProperties?.followParticipantId;
 
     if (followedLeft) {
       this.setFollowParticipant();

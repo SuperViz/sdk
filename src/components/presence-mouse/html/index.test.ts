@@ -2,6 +2,7 @@ import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
+import { ROOM_STATE_MOCK } from '../../../../__mocks__/roomState.mock';
 import { useStore } from '../../../common/utils/use-store';
 import { IOC } from '../../../services/io';
 import { ParticipantMouse } from '../types';
@@ -17,6 +18,7 @@ const createMousePointers = (id: string = 'html'): PointersHTML => {
     realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
+    roomState: ROOM_STATE_MOCK,
     useStore,
   });
 
@@ -379,6 +381,7 @@ describe('MousePointers on HTML', () => {
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
+        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 

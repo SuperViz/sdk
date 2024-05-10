@@ -29,12 +29,10 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private myParticipant: AblyParticipant = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
 
   private isReconnecting: boolean = false;
 
   public hasJoinedRoom: boolean = false;
-  public isJoinedPresence3D: boolean = false;
 
   private currentReconnectAttempt: number = 0;
   private localRoomProperties?: AblyRealtimeData = null;
@@ -237,8 +235,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public setParticipantData = (data: ParticipantDataInput): void => {
     this.myParticipant.data = Object.assign({}, this.myParticipant.data, data);
-
-    this.updatePresence3D(this.myParticipant.data);
   };
 
   /**
@@ -533,110 +529,4 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       lengthToBeSplitted: splicedArrays[0].length,
     };
   }
-
-  /** Presence 3D */
-
-  public enterPresence3DChannel(participant: Participant) {
-    if (!this.hasJoinedRoom) {
-      this.logger.log(
-        'REALTIME',
-        'Cannot enter presence 3D channel because the participant is not in the room',
-      );
-
-      setTimeout(() => {
-        this.enterPresence3DChannel(participant);
-      }, 1000);
-
-      return;
-    }
-
-    if (!this.presence3DChannel) {
-      this.presence3DChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-presence-3d`);
-      this.presence3DChannel.attach();
-
-      this.presence3DChannel.presence.subscribe('enter', this.onPresence3DChannelEnter);
-      this.presence3DChannel.presence.subscribe('leave', this.onPresence3DChannelLeave);
-      this.presence3DChannel.presence.subscribe('update', this.publish3DUpdate);
-    }
-
-    this.presence3DChannel.presence.enter(participant);
-  }
-
-  public leavePresence3DChannel = (): void => {
-    if (!this.presence3DChannel) return;
-
-    this.presence3DChannel.presence.leave();
-    this.presence3DChannel = null;
-  };
-
-  public updatePresence3D = throttle((data: ParticipantInfo): void => {
-    if (!data || !data.id) return;
-
-    const participant = Object.assign({}, this.participantsOn3d[data.id]?.data ?? {}, data);
-
-    this.participantsOn3d[data.id] = {
-      ...this.participants[participant.id],
-      data: {
-        ...participant,
-        ...this.participants[participant.id]?.data,
-      },
-    };
-
-    if (!this.presence3DChannel) return;
-
-    this.presence3DChannel.presence.update(participant);
-  }, SYNC_PROPERTY_INTERVAL);
-
-  private onPresence3DChannelEnter = (participant: Ably.Types.PresenceMessage): void => {
-    const { hasJoined3D } = useStore(StoreType.PRESENCE_3D);
-
-    if (participant.clientId === this.myParticipant.clientId) {
-      hasJoined3D.publish(true);
-    }
-
-    const slot = this.getParticipantSlot(participant.clientId);
-
-    this.presence3dJoinedObserver.publish({
-      ...participant,
-      data: {
-        ...participant.data,
-        ...this.participants[participant.clientId]?.data,
-        slotIndex: slot,
-        color: this.getSlotColor(slot).color,
-      },
-    });
-  };
-
-  private onPresence3DChannelLeave = (participant: Ably.Types.PresenceMessage): void => {
-    delete this.participantsOn3d[participant.clientId];
-    this.presence3dLeaveObserver.publish(participant);
-  };
-
-  /**
-   * @function publish3DUpdate
-   * @param {AblyParticipant} participant
-   * @description publish a participant's changes to observer
-   * @returns {void}
-   */
-  private publish3DUpdate = (participant: Ably.Types.PresenceMessage): void => {
-    const slot = this.getParticipantSlot(participant.clientId);
-
-    const participantToPublish = {
-      ...participant,
-      data: {
-        ...participant.data,
-        ...this.participants[participant.clientId]?.data,
-        slotIndex: slot,
-        color: this.getSlotColor(slot).color,
-      },
-    };
-
-    this.participantsOn3d[participant.clientId] = participantToPublish;
-
-    if (this.participants3DObservers[participant.clientId]) {
-      this.participants3DObservers[participant.clientId].publish(participantToPublish);
-    }
-
-    this.presence3dObserver.publish(this.participantsOn3d);
-  };
 }

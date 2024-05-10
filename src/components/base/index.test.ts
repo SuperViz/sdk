@@ -3,6 +3,7 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
@@ -73,6 +74,7 @@ describe('BaseComponent', () => {
         realtime: ABLY_REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -97,6 +99,7 @@ describe('BaseComponent', () => {
         realtime: ablyMock as AblyRealtimeService,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -116,6 +119,7 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -133,6 +137,7 @@ describe('BaseComponent', () => {
           realtime: null as unknown as AblyRealtimeService,
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
+          roomState: ROOM_STATE_MOCK,
           useStore: null as unknown as typeof useStore,
         });
       }).toThrowError();
@@ -149,6 +154,7 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -170,6 +176,7 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
