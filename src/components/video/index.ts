@@ -647,6 +647,15 @@ export class VideoConference extends BaseComponent {
   private setHost = (hostId: string): void => {
     if (!this.videoManager) return;
 
+    if (!this.videoManager.isMessageBridgeReady) {
+      this.logger.log('video conference @ Message Bridge not ready yet');
+      setTimeout(() => {
+        this.logger.log('video conference @ Retrying to set host id');
+        this.setHost(hostId);
+      }, 3000);
+      return;
+    }
+
     this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
     this.onHostParticipantDidChange(hostId);
   };
@@ -882,6 +891,7 @@ export class VideoConference extends BaseComponent {
         isHost: true,
       };
       this.hasSetHost = true;
+      hostId.publish(host.id);
       participants.publish(participantsList);
       return;
     }
@@ -890,6 +900,7 @@ export class VideoConference extends BaseComponent {
 
     this.logger.log('video conference @ validate if in the room has host - set host', host);
 
+    hostId.publish(host.id);
     this.roomState.setHost(host.id);
   };
 }
