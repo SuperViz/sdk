@@ -99,7 +99,10 @@ export class MessageBridge {
     if (type === MeetingEvent.MEETING_PARTICIPANT_JOINED) {
       const { participants } = useStore(StoreType.GLOBAL);
       const participantsList = { ...participants.value };
-      participantsList[data.id] = data;
+      participantsList[data.id] = {
+        ...participantsList[data.id],
+        ...data,
+      };
       participants.publish(participantsList);
     }
 
