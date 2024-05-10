@@ -26,13 +26,18 @@ type StoreApi<T extends (...args: any[]) => any> = Omit<StoreApiWithoutDestroy<T
   destroy(): void;
 };
 
-export type Store<T> = T extends StoreType.GLOBAL
+type GlobalStore = StoreType.GLOBAL | `${StoreType.GLOBAL}`;
+type WhoIsOnlineStore = StoreType.WHO_IS_ONLINE | 'who-is-online-store';
+type VideoStore = StoreType.VIDEO | 'video-store';
+type Presence3DStore = StoreType.PRESENCE_3D | 'presence-3d-store';
+
+export type Store<T> = T extends GlobalStore
   ? StoreApi<typeof useGlobalStore>
-  : T extends StoreType.WHO_IS_ONLINE
+  : T extends WhoIsOnlineStore
   ? StoreApi<typeof useWhoIsOnlineStore>
-  : T extends StoreType.VIDEO
+  : T extends VideoStore
   ? StoreApi<typeof useVideoStore>
-  : T extends StoreType.PRESENCE_3D
+  : T extends Presence3DStore
   ? StoreApi<typeof usePresence3DStore>
   : never;
 export type StoresTypes = typeof StoreType;

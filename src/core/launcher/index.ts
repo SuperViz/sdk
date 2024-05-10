@@ -14,6 +14,7 @@ import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 import { AblyRealtimeService } from '../../services/realtime';
 import { ParticipantInfo } from '../../services/realtime/base/types';
 import { RoomStateService } from '../../services/roomState';
@@ -96,6 +97,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       eventBus: this.eventBus,
       useStore,
       roomState: this.roomState,
+      Presence3DManagerService: Presence3DManager,
     });
 
     this.activeComponents.push(component.name);
