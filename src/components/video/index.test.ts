@@ -47,6 +47,7 @@ const VIDEO_MANAGER_MOCK = {
   participantJoinedObserver: MOCK_OBSERVER_HELPER,
   participantLeftObserver: MOCK_OBSERVER_HELPER,
   participantListObserver: MOCK_OBSERVER_HELPER,
+  isMessageBridgeReady: jest.fn().mockReturnValue(true),
 };
 
 const MOCK_DRAW_DATA = {
@@ -188,12 +189,28 @@ describe('VideoConference', () => {
         },
       ];
 
-      VideoConferenceInstance['roomState'].setHost = jest.fn();
+      const fn = jest.fn();
+
+      VideoConferenceInstance['useStore'] = jest.fn().mockReturnValue({
+        participants: {
+          value: {
+            [MOCK_LOCAL_PARTICIPANT.id]: {
+              ...participant[0],
+              type: ParticipantType.HOST,
+            },
+          },
+        },
+        hostId: {
+          value: '',
+          publish: fn,
+        },
+      });
+
+      VideoConferenceInstance['roomState']['setHost'] = fn;
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](participant);
 
-      expect(VideoConferenceInstance['roomState'].setHost).toBeCalledWith(
-        MOCK_LOCAL_PARTICIPANT.id,
-      );
+      expect(fn).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
+      expect(fn).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
     });
 
     test('should keep the host if it is already set and stays in the room', () => {
@@ -215,12 +232,14 @@ describe('VideoConference', () => {
         },
       ];
 
+      VideoConferenceInstance['useStore'](StoreType.GLOBAL).participants.publish({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...originalList[0],
+        },
+      });
+
       VideoConferenceInstance['roomState'].setHost = jest.fn();
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](originalList);
-
-      expect(VideoConferenceInstance['roomState'].setHost).toBeCalledWith(
-        MOCK_LOCAL_PARTICIPANT.id,
-      );
 
       VideoConferenceInstance['participantsTypes']['second-id'] = ParticipantType.HOST;
       const secondList: ParticipantInfo[] = [
@@ -252,7 +271,7 @@ describe('VideoConference', () => {
 
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](secondList);
 
-      expect(VideoConferenceInstance['roomState'].setHost).toBeCalledTimes(1);
+      expect(VideoConferenceInstance['roomState'].setHost).toBeCalledTimes(0);
     });
 
     test('should not set host if the participant is not me', () => {
@@ -673,12 +692,13 @@ describe('VideoConference', () => {
 
   describe('realtime events', () => {
     test('should update host', () => {
+      VIDEO_MANAGER_MOCK.publishMessageToFrame = jest.fn();
       const { hostId } = VideoConferenceInstance['useStore'](StoreType.VIDEO);
-      hostId.publish(MOCK_LOCAL_PARTICIPANT.id);
+      hostId.publish('new-host');
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
         RealtimeEvent.REALTIME_HOST_CHANGE,
-        MOCK_LOCAL_PARTICIPANT.id,
+        'new-host',
       );
     });
 
