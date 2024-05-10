@@ -166,6 +166,10 @@ export default class VideoConfereceManager {
     window.addEventListener('orientationchange', this.onWindowResize);
   }
 
+  public get isMessageBridgeReady(): boolean {
+    return !!this.messageBridge;
+  }
+
   get isWaterMarkEnabled(): boolean {
     if (this.browserService.isMobileDevice) return false;
     return this.frameConfig.waterMark;

@@ -1,5 +1,8 @@
+import { MeetingEvent } from '../../common/types/events.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Observer } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
+import { useStore } from '../../common/utils/use-store';
 
 import { Message, MessageBridgeOptions } from './types';
 
@@ -91,6 +94,16 @@ export class MessageBridge {
     if (!hasType || !isFromAllowedOrgin || !hasListenerRegistered) {
       this.logger.log('MessageBridge', 'Message discarded');
       return;
+    }
+
+    if (type === MeetingEvent.MEETING_PARTICIPANT_JOINED) {
+      const { participants } = useStore(StoreType.GLOBAL);
+      const participantsList = { ...participants.value };
+      participantsList[data.id] = {
+        ...participantsList[data.id],
+        ...data,
+      };
+      participants.publish(participantsList);
     }
 
     this.observers[type].publish(data);
