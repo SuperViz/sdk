@@ -13,6 +13,7 @@ import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 import { Following } from '../../services/stores/who-is-online/types';
 import { ComponentNames } from '../types';
 
@@ -60,6 +61,7 @@ describe('Who Is Online', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      Presence3DManagerService: Presence3DManager,
       roomState: ROOM_STATE_MOCK,
       useStore,
     });

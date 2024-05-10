@@ -10,6 +10,7 @@ import { useStore } from '../../common/utils/use-store';
 import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 import { AblyRealtimeService } from '../../services/realtime';
 import { useGlobalStore } from '../../services/stores';
 import { ComponentNames } from '../types';
@@ -75,6 +76,7 @@ describe('BaseComponent', () => {
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         roomState: ROOM_STATE_MOCK,
+        Presence3DManagerService: Presence3DManager,
         useStore,
       });
 
@@ -95,6 +97,7 @@ describe('BaseComponent', () => {
       ablyMock['isDomainWhitelisted'] = false;
 
       DummyComponentInstance.attach({
+        Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: ablyMock as AblyRealtimeService,
         config: MOCK_CONFIG,
@@ -115,6 +118,7 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance.attach).toBeDefined();
 
       DummyComponentInstance.attach({
+        Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
@@ -134,6 +138,7 @@ describe('BaseComponent', () => {
       expect(() => {
         DummyComponentInstance.attach({
           ioc: null as unknown as IOC,
+          Presence3DManagerService: Presence3DManager,
           realtime: null as unknown as AblyRealtimeService,
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
@@ -150,6 +155,7 @@ describe('BaseComponent', () => {
       expect(DummyComponentInstance.detach).toBeDefined();
 
       DummyComponentInstance.attach({
+        Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
@@ -172,6 +178,7 @@ describe('BaseComponent', () => {
       DummyComponentInstance['destroy'] = jest.fn();
 
       DummyComponentInstance.attach({
+        Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
