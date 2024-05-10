@@ -23,6 +23,7 @@ import { Participant, ParticipantType } from '../../common/types/participant.typ
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 import { ParticipantInfo } from '../../services/realtime/base/types';
 import { RoomStateService } from '../../services/roomState';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
@@ -113,6 +114,7 @@ describe('VideoConference', () => {
       realtime: { ...MOCK_REALTIME, hasJoinedRoom: true } as any,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      Presence3DManagerService: Presence3DManager,
       roomState: { ...ROOM_STATE_MOCK } as RoomStateService,
       useStore,
     });
@@ -132,6 +134,7 @@ describe('VideoConference', () => {
 
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
+      Presence3DManagerService: Presence3DManager,
       realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,

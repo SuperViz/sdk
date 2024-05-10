@@ -6,6 +6,7 @@ import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
 import { ROOM_STATE_MOCK } from '../../../../__mocks__/roomState.mock';
 import { useStore } from '../../../common/utils/use-store';
 import { IOC } from '../../../services/io';
+import { Presence3DManager } from '../../../services/presence-3d-manager';
 import { ParticipantMouse } from '../types';
 
 import { PointersCanvas } from './index';
@@ -54,6 +55,7 @@ const createMousePointers = (): PointersCanvas => {
     realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
+    Presence3DManagerService: Presence3DManager,
     roomState: ROOM_STATE_MOCK,
     useStore,
   });

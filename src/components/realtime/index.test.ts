@@ -8,6 +8,7 @@ import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 
 import { RealtimeComponentState } from './types';
 
@@ -32,6 +33,7 @@ describe('realtime component', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       roomState: ROOM_STATE_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 

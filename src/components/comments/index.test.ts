@@ -11,6 +11,7 @@ import sleep from '../../common/utils/sleep';
 import { useStore } from '../../common/utils/use-store';
 import ApiService from '../../services/api';
 import { IOC } from '../../services/io';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 import { RoomStateService } from '../../services/roomState';
 import { useGlobalStore } from '../../services/stores';
 import { CommentsFloatButton } from '../../web-components';
@@ -86,6 +87,7 @@ describe('Comments', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       roomState: ROOM_STATE_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 
@@ -341,6 +343,7 @@ describe('Comments', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       roomState: ROOM_STATE_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 
@@ -361,6 +364,7 @@ describe('Comments', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       roomState: ROOM_STATE_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 
