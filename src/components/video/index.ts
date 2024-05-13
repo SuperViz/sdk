@@ -48,6 +48,7 @@ export class VideoConference extends BaseComponent {
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
   private participantsTypes: Record<string, ParticipantType> = {};
+  private initializedList: boolean = false;
   private hasSetHost = false;
 
   private kickParticipantsOnHostLeave = false;
@@ -159,6 +160,8 @@ export class VideoConference extends BaseComponent {
       });
 
       this.participantsTypes[this.localParticipant.id] = this.localParticipant.type;
+
+      this.initializedList = true;
       this.validateIfInTheRoomHasHost();
     });
   };
@@ -822,6 +825,8 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private validateIfInTheRoomHasHost = (): void => {
+    if (!this.initializedList) return;
+
     const { hostId } = this.useStore(StoreType.VIDEO);
     const { participants } = this.useStore(StoreType.GLOBAL);
     const participantsList = Object.values(participants.value);

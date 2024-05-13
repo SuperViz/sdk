@@ -162,6 +162,7 @@ describe('VideoConference', () => {
 
   describe('host handler', () => {
     beforeEach(() => {
+      VideoConferenceInstance['initializedList'] = true;
       VideoConferenceInstance['participantsTypes'][MOCK_LOCAL_PARTICIPANT.id] =
         ParticipantType.HOST;
       const { participants } = VideoConferenceInstance['useStore'](StoreType.GLOBAL);
