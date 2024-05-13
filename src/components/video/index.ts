@@ -60,25 +60,6 @@ export class VideoConference extends BaseComponent {
       userType: params?.participantType ?? params?.userType ?? ParticipantType.GUEST,
     };
 
-    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
-    const { drawing, hostId, isGridModeEnabled, transcript, followParticipantId, gather } =
-      this.useStore(StoreType.VIDEO);
-
-    localParticipant.publish({
-      ...localParticipant.value,
-      type: this.params.userType as ParticipantType,
-      isHost: localParticipant.value.id === hostId.value,
-    });
-
-    participants.publish({
-      ...participants.value,
-      [localParticipant.value.id]: {
-        ...localParticipant.value,
-        isHost: localParticipant.value.id === hostId.value,
-        timestamp: 0,
-      },
-    });
-
     this.name = ComponentNames.VIDEO_CONFERENCE;
     this.logger = new Logger(`@superviz/sdk/${ComponentNames.VIDEO_CONFERENCE}`);
 
@@ -88,13 +69,6 @@ export class VideoConference extends BaseComponent {
 
     // Connection observers
     this.connectionService.connectionStatusObserver.subscribe(this.onConnectionStatusChange);
-
-    drawing.subscribe(this.setDrawing);
-    hostId.subscribe(this.setHost);
-    isGridModeEnabled.subscribe(this.setGridMode);
-    transcript.subscribe(this.setTranscript);
-    followParticipantId.subscribe(this.setFollowParticipant);
-    gather.subscribe(this.setGather);
   }
 
   /**
@@ -168,14 +142,7 @@ export class VideoConference extends BaseComponent {
   protected start(): void {
     this.logger.log('video conference @ start');
 
-    const { localParticipant, group, participants } = this.useStore(StoreType.GLOBAL);
-    participants.subscribe(this.onParticipantListUpdate);
-
-    localParticipant.subscribe((participant) => {
-      this.localParticipant = participant;
-    });
-
-    group.subscribe();
+    this.subscribeToStoreUpdates();
     this.suscribeToRealtimeEvents();
     this.startVideo();
   }
@@ -347,6 +314,40 @@ export class VideoConference extends BaseComponent {
     this.room.presence.off(PresenceEvents.LEAVE);
     this.room.presence.off(PresenceEvents.JOINED_ROOM);
     this.roomState.kickParticipantObserver.unsubscribe(this.onKickLocalParticipant);
+  };
+
+  private subscribeToStoreUpdates = (): void => {
+    const { localParticipant, group, participants } = this.useStore(StoreType.GLOBAL);
+    participants.subscribe(this.onParticipantListUpdate);
+
+    const { drawing, hostId, isGridModeEnabled, transcript, followParticipantId, gather } =
+      this.useStore(StoreType.VIDEO);
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      type: this.params.userType as ParticipantType,
+      isHost: localParticipant.value.id === hostId.value,
+    });
+
+    participants.publish({
+      ...participants.value,
+      [localParticipant.value.id]: {
+        ...localParticipant.value,
+        isHost: localParticipant.value.id === hostId.value,
+      },
+    });
+
+    localParticipant.subscribe((participant) => {
+      this.localParticipant = participant;
+    });
+
+    drawing.subscribe(this.setDrawing);
+    hostId.subscribe(this.setHost);
+    isGridModeEnabled.subscribe(this.setGridMode);
+    transcript.subscribe(this.setTranscript);
+    followParticipantId.subscribe(this.setFollowParticipant);
+    gather.subscribe(this.setGather);
+    group.subscribe();
   };
 
   /**
@@ -811,6 +812,8 @@ export class VideoConference extends BaseComponent {
       MeetingEvent.MEETING_PARTICIPANT_LEFT,
       this.createParticipantFromPresence(participant),
     );
+
+    delete this.participantsTypes[participant.id];
   };
 
   /**
@@ -823,12 +826,16 @@ export class VideoConference extends BaseComponent {
     const { participants } = this.useStore(StoreType.GLOBAL);
     const participantsList = Object.values(participants.value);
 
+    const participantsTypesList = Object.entries(this.participantsTypes);
+
+    const participantsIdsWithHostType = participantsTypesList.filter(
+      ([_, type]) => type === ParticipantType.HOST,
+    );
+
     // list with all participants that have the type host
-    const participantsCanBeHost = Object.entries(this.participantsTypes)
-      .filter(([_, type]) => type === ParticipantType.HOST)
-      .map(([id]) => {
-        return participantsList.find((participant) => participant.id === id);
-      }) as ParticipantInfo[];
+    const participantsCanBeHost = participantsIdsWithHostType.map(([id]) => {
+      return participantsList.find((participant) => participant.id === id);
+    });
 
     if (
       !participantsCanBeHost.length &&
@@ -863,7 +870,7 @@ export class VideoConference extends BaseComponent {
       (participant) => participant?.id === hostId.value,
     );
 
-    if (!participantsCanBeHost.length || hostAlreadyInRoom) return;
+    if (!participantsCanBeHost.length || hostAlreadyInRoom || !participantsTypesList.length) return;
 
     const host = participantsCanBeHost.reduce((previous, current) => {
       this.logger.log(
@@ -874,16 +881,20 @@ export class VideoConference extends BaseComponent {
         },
       );
 
-      if (!previous) return current;
-      if (current?.id === hostId.value) return current;
+      if (!previous || current?.id === hostId.value) {
+        return current;
+      }
 
       // set the first participant with host privileges as host
-      if (current?.timestamp > previous.timestamp) return current;
+      if (current?.timestamp > previous.timestamp) {
+        return previous;
+      }
 
-      return previous;
+      return current;
     }, null) as ParticipantInfo;
 
     if (!host || host.id === hostId.value) return;
+
     if (host.id !== this.localParticipant?.id && !this.hasSetHost) {
       const participantsList = { ...participants.value };
       participantsList[host.id] = {
