@@ -881,12 +881,12 @@ export class VideoConference extends BaseComponent {
         },
       );
 
-      if (!previous || current.id === hostId.value) {
+      if (!previous || current?.id === hostId.value) {
         return current;
       }
 
       // set the first participant with host privileges as host
-      if (current.timestamp > previous.timestamp) {
+      if (current?.timestamp > previous.timestamp) {
         return previous;
       }
 
