@@ -75,7 +75,6 @@ describe('BaseComponent', () => {
         realtime: ABLY_REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
-        roomState: ROOM_STATE_MOCK,
         Presence3DManagerService: Presence3DManager,
         useStore,
       });
@@ -102,7 +101,6 @@ describe('BaseComponent', () => {
         realtime: ablyMock as AblyRealtimeService,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
-        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -123,7 +121,6 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
-        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -142,7 +139,6 @@ describe('BaseComponent', () => {
           realtime: null as unknown as AblyRealtimeService,
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
-          roomState: ROOM_STATE_MOCK,
           useStore: null as unknown as typeof useStore,
         });
       }).toThrowError();
@@ -160,7 +156,6 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
-        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
@@ -183,7 +178,6 @@ describe('BaseComponent', () => {
         realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
-        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 

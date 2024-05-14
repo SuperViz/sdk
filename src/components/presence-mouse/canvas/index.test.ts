@@ -56,7 +56,6 @@ const createMousePointers = (): PointersCanvas => {
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
     Presence3DManagerService: Presence3DManager,
-    roomState: ROOM_STATE_MOCK,
     useStore,
   });
 

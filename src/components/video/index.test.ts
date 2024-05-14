@@ -115,9 +115,10 @@ describe('VideoConference', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
-      roomState: { ...ROOM_STATE_MOCK } as RoomStateService,
       useStore,
     });
+
+    VideoConferenceInstance['onFrameStateChange'](VideoFrameState.INITIALIZED);
   });
 
   test('should not show avatar settings if local participant has avatar', () => {
@@ -138,7 +139,6 @@ describe('VideoConference', () => {
       realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
-      roomState: ROOM_STATE_MOCK,
       useStore,
     });
 
@@ -422,6 +422,9 @@ describe('VideoConference', () => {
     });
 
     test('should not initialize video when frame is not initialized', () => {
+      jest.clearAllMocks();
+      jest.restoreAllMocks();
+
       VideoConferenceInstance['onFrameStateChange'](VideoFrameState.INITIALIZING);
 
       expect(VIDEO_MANAGER_MOCK.start).not.toHaveBeenCalled();

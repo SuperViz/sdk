@@ -20,7 +20,6 @@ const createMousePointers = (id: string = 'html'): PointersHTML => {
     config: MOCK_CONFIG,
     Presence3DManagerService: Presence3DManager,
     eventBus: EVENT_BUS_MOCK,
-    roomState: ROOM_STATE_MOCK,
     useStore,
   });
 
@@ -384,7 +383,6 @@ describe('MousePointers on HTML', () => {
         eventBus: EVENT_BUS_MOCK,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         Presence3DManagerService: Presence3DManager,
-        roomState: ROOM_STATE_MOCK,
         useStore,
       });
 
