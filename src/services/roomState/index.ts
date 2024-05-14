@@ -29,6 +29,7 @@ export class RoomStateService {
   private readonly MESSAGE_SIZE_LIMIT = 60000;
   private useStore: typeof useStore = useStore.bind(this);
   public kickParticipantObserver: Observer;
+  private started: boolean;
 
   constructor(room: Room, logger: Logger) {
     this.room = room;
@@ -58,7 +59,6 @@ export class RoomStateService {
   private join = (): void => {
     this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeave);
     this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onPresenceEnter);
-    this.room.on(RoomEvents.JOINED_ROOM, this.onJoinRoom);
 
     if (!this.enableSync) return;
     this.room.on(RoomPropertiesEvents.UPDATE, this.updateLocalRoomState);
@@ -231,30 +231,39 @@ export class RoomStateService {
   private async fetchRoomProperties(): Promise<unknown | null> {
     const lastMessage: SocketEvent<unknown> = await new Promise((resolve, reject) => {
       this.room.history((data) => {
-        if (!data) {
-          reject(data);
-        }
+        if (!data) reject(data);
+        if (!data.events.length) resolve(null);
 
-        const lastMessage = data.events[0];
+        const lastMessage = data.events.pop();
 
-        if (lastMessage) {
-          resolve(lastMessage);
-        } else {
-          resolve(null);
-        }
+        resolve(lastMessage);
       });
     });
 
-    if (!lastMessage?.data || lastMessage?.timestamp < Date.now() - 1000 * 60 * 60) return null;
+    const oneHour = 1000 * 60 * 60;
+    const messageIsTooOld = lastMessage?.timestamp < Date.now() - oneHour;
+
+    if (!lastMessage?.data || messageIsTooOld) return null;
 
     return lastMessage.data;
   }
 
   /**
-   * @function onJoinRoom
+   * @function start
    * @returns {Promise<void>}
    */
-  private onJoinRoom = async (): Promise<void> => {
+  public start = async (): Promise<void> => {
+    if (this.started) return;
+    this.started = true;
+
+    if (!this.room['isJoined']) {
+      this.logger.log('room state service - not joined room yet');
+      setTimeout(() => {
+        this.logger.log('room state service - retrying');
+        this.start();
+      }, 2000);
+    }
+
     this.localRoomProperties = await this.fetchRoomProperties();
 
     if (!this.localRoomProperties) {
@@ -368,7 +377,7 @@ export class RoomStateService {
   public destroy() {
     this.room.presence.off(PresenceEvents.LEAVE);
     this.room.presence.off(PresenceEvents.JOINED_ROOM);
-    this.room.off(RoomEvents.JOINED_ROOM, this.onJoinRoom);
+
     this.room.off(RoomPropertiesEvents.UPDATE, this.updateLocalRoomState);
   }
 }

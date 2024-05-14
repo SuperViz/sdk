@@ -32,7 +32,6 @@ describe('realtime component', () => {
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
-      roomState: ROOM_STATE_MOCK,
       Presence3DManagerService: Presence3DManager,
       useStore,
     });

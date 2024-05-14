@@ -58,7 +58,6 @@ describe('roomState', () => {
     test('should subscribe to room events', () => {
       const onParticipantLeave = jest.spyOn(serviceInstance as any, 'onParticipantLeave');
       const onPresenceEnter = jest.spyOn(serviceInstance as any, 'onPresenceEnter');
-      const onJoinRoom = jest.spyOn(serviceInstance as any, 'onJoinRoom');
       const updateLocalRoomState = jest.spyOn(serviceInstance as any, 'updateLocalRoomState');
 
       serviceInstance['join']();
@@ -71,7 +70,7 @@ describe('roomState', () => {
         PresenceEvents.JOINED_ROOM,
         onPresenceEnter,
       );
-      expect(serviceInstance['room'].on).toBeCalledWith(RoomEvents.JOINED_ROOM, onJoinRoom);
+
       expect(serviceInstance['room'].on).toBeCalledWith(
         RoomPropertiesEvents.UPDATE,
         updateLocalRoomState,
@@ -288,7 +287,7 @@ describe('roomState', () => {
     });
   });
 
-  describe('onJoinRoom', () => {
+  describe('start', () => {
     test('should initialize room properties if no last message', async () => {
       const history = jest.fn().mockImplementation((cb) => cb({ events: [] }));
       serviceInstance['room'].history = history;
@@ -301,7 +300,7 @@ describe('roomState', () => {
       const updateLocalRoomState = jest.spyOn(serviceInstance as any, 'updateLocalRoomState');
       const publishStateUpdate = jest.spyOn(serviceInstance as any, 'publishStateUpdate');
 
-      await serviceInstance['onJoinRoom']();
+      await serviceInstance['start']();
 
       expect(fetchRoomProperties).toBeCalled();
       expect(initializeRoomProperties).toBeCalled();
@@ -320,7 +319,7 @@ describe('roomState', () => {
 
       fetchRoomProperties.mockResolvedValue({ isGridModeEnabled: true });
 
-      await serviceInstance['onJoinRoom']();
+      await serviceInstance['start']();
 
       expect(fetchRoomProperties).toBeCalled();
       expect(initializeRoomProperties).not.toBeCalled();
@@ -452,7 +451,7 @@ describe('roomState', () => {
 
       expect(serviceInstance['isSyncFrozen']).toBe(true);
       expect(serviceInstance['room'].presence.off).toBeCalledTimes(2);
-      expect(serviceInstance['room'].off).toBeCalledTimes(2);
+      expect(serviceInstance['room'].off).toBeCalledTimes(1);
     });
 
     test('should unfreeze sync', () => {
@@ -472,7 +471,7 @@ describe('roomState', () => {
 
       serviceInstance['destroy']();
 
-      expect(off).toBeCalledTimes(4);
+      expect(off).toBeCalledTimes(3);
     });
   });
 });

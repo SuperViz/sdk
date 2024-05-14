@@ -20,6 +20,7 @@ import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
 import { ParticipantInfo } from '../../services/realtime/base/types';
+import { RoomStateService } from '../../services/roomState';
 import VideoConferenceManager from '../../services/video-conference-manager';
 import {
   CamerasPosition,
@@ -50,6 +51,7 @@ export class VideoConference extends BaseComponent {
   private participantsTypes: Record<string, ParticipantType> = {};
   private initializedList: boolean = false;
   private hasSetHost = false;
+  private roomState: RoomStateService;
 
   private kickParticipantsOnHostLeave = false;
 
@@ -188,7 +190,7 @@ export class VideoConference extends BaseComponent {
     const { destroy } = this.useStore(StoreType.VIDEO);
     destroy();
 
-    this.roomState.destroy();
+    this.roomState?.destroy();
 
     this.kickParticipantsOnHostLeave = false;
 
@@ -303,7 +305,6 @@ export class VideoConference extends BaseComponent {
     this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onParticipantJoinedOnRealtime);
     this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeftOnRealtime);
     this.room.presence.on(PresenceEvents.UPDATE, this.onParticipantUpdated);
-    this.roomState.kickParticipantObserver.subscribe(this.onKickLocalParticipant);
   };
 
   /**
@@ -316,7 +317,7 @@ export class VideoConference extends BaseComponent {
     this.room.presence.off(PresenceEvents.UPDATE);
     this.room.presence.off(PresenceEvents.LEAVE);
     this.room.presence.off(PresenceEvents.JOINED_ROOM);
-    this.roomState.kickParticipantObserver.unsubscribe(this.onKickLocalParticipant);
+    this.roomState?.kickParticipantObserver.unsubscribe(this.onKickLocalParticipant);
   };
 
   private subscribeToStoreUpdates = (): void => {
@@ -472,6 +473,10 @@ export class VideoConference extends BaseComponent {
     this.logger.log('video conference @ on frame state change', state);
 
     if (state !== VideoFrameState.INITIALIZED) return;
+
+    this.roomState = new RoomStateService(this.room, this.logger);
+    this.roomState.kickParticipantObserver.subscribe(this.onKickLocalParticipant);
+    this.roomState.start();
 
     if (this.params.userType !== ParticipantType.GUEST) {
       this.localParticipant = Object.assign(this.localParticipant, {
@@ -825,7 +830,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private validateIfInTheRoomHasHost = (): void => {
-    if (!this.initializedList) return;
+    if (!this.initializedList || !this.roomState) return;
 
     const { hostId } = this.useStore(StoreType.VIDEO);
     const { participants } = this.useStore(StoreType.GLOBAL);
