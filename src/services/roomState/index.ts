@@ -229,6 +229,16 @@ export class RoomStateService {
    * @returns {VideoRoomProperties | null}
    */
   private async fetchRoomProperties(): Promise<unknown | null> {
+    const presences: number = await new Promise<number>((resolve) => {
+      this.room.presence.get((presences) => {
+        if (!presences) resolve(0);
+
+        resolve(presences.length);
+      });
+    });
+
+    if (presences <= 1) return null;
+
     const lastMessage: SocketEvent<unknown> = await new Promise((resolve, reject) => {
       this.room.history((data) => {
         if (!data) reject(data);

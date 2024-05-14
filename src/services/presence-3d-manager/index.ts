@@ -18,12 +18,10 @@ export class Presence3DManager {
   public participants3DObservers: Observer[] = [];
   private localParticipant: Participant;
   private logger: Logger;
-  private roomState: RoomStateService;
 
-  constructor(room: Room, roomState: RoomStateService, store: typeof useStore) {
+  constructor(room: Room, store: typeof useStore) {
     this.room = room;
     this.logger = new Logger('@superviz/sdk/presence3D-manager');
-    this.roomState = roomState;
     this.useStore = store;
 
     this.subscribeToRoomEvents();
@@ -204,7 +202,6 @@ export class Presence3DManager {
   }
 
   public setParticipantData = (participant: ParticipantDataInput): void => {
-    this.roomState.updateMyProperties(participant);
     this.updatePresence3D(participant);
   };
 
