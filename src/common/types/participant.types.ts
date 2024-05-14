@@ -41,8 +41,8 @@ export interface Group {
 }
 
 export interface Avatar {
-  model3DUrl: string;
-  imageUrl: string;
+  model3DUrl?: string;
+  imageUrl?: string;
 }
 
 export type ParticipantByCommentsApi = {
