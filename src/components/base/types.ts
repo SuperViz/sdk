@@ -13,7 +13,6 @@ export interface DefaultAttachComponentOptions {
   config: Configuration;
   eventBus: EventBus;
   useStore: <T extends StoreType>(name: T) => Store<T>;
-  roomState: RoomStateService;
   Presence3DManagerService: typeof Presence3DManager;
 }
 

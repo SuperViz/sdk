@@ -32,7 +32,6 @@ export class Launcher extends Observable implements DefaultLauncher {
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
 
   private ioc: IOC;
-  private roomState: RoomStateService;
   private LauncherRealtimeRoom: Socket.Room;
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
@@ -62,7 +61,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
     this.LauncherRealtimeRoom = this.ioc.createRoom('launcher');
-    this.roomState = new RoomStateService(this.ioc.createRoom('video-conference'), this.logger);
 
     // internal events without realtime
     this.eventBus = new EventBus();
@@ -96,7 +94,6 @@ export class Launcher extends Observable implements DefaultLauncher {
       config: config.configuration,
       eventBus: this.eventBus,
       useStore,
-      roomState: this.roomState,
       Presence3DManagerService: Presence3DManager,
     });
 
