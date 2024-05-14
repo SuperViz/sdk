@@ -1,13 +1,11 @@
-import { PresenceEvents, Room } from '@superviz/socket-client';
+import { PresenceEvents } from '@superviz/socket-client';
 
 import { MOCK_IO } from '../../../__mocks__/io.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
-import { Participant, Slot } from '../../common/types/participant.types';
+import { Slot } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { ParticipantInfo } from '../realtime/base/types';
-import { RoomStateService } from '../roomState';
 
 import { Presence3dEvents } from './types';
 
@@ -18,9 +16,8 @@ describe('Presence3DManager', () => {
 
   beforeEach(() => {
     const room = new MOCK_IO.Realtime('a', 'b', 'c').connect();
-    const roomState = { ...ROOM_STATE_MOCK } as RoomStateService;
 
-    presence3DManager = new Presence3DManager(room, roomState, useStore);
+    presence3DManager = new Presence3DManager(room, useStore);
 
     const { localParticipant } = presence3DManager['useStore'](StoreType.GLOBAL);
     localParticipant.publish(MOCK_LOCAL_PARTICIPANT);
@@ -34,7 +31,6 @@ describe('Presence3DManager', () => {
       expect(presence3DManager['participants3DObservers']).toEqual([]);
       expect(presence3DManager['localParticipant']).toBe(MOCK_LOCAL_PARTICIPANT);
       expect(presence3DManager['logger']).toBeDefined();
-      expect(presence3DManager['roomState']).toBeDefined();
     });
   });
 
@@ -52,30 +48,6 @@ describe('Presence3DManager', () => {
     });
   });
 
-  /**
-   * private onLocalParticipantJoined = (participant: Participant): void => {
-    if (!participant.slot) {
-      setTimeout(() => {
-        this.onLocalParticipantJoined(this.localParticipant);
-      }, 2000);
-      return;
-    }
-
-    if (!this.room['isJoined']) {
-      setTimeout(() => {
-        this.onLocalParticipantJoined(participant);
-      }, 2000);
-      return;
-    }
-
-    const { hasJoined3D } = this.useStore(StoreType.PRESENCE_3D);
-    hasJoined3D.publish(true);
-
-    this.room.emit(Presence3dEvents.PARTICIPANT_JOINED, participant);
-    this.room.presence.update(participant);
-    this.initializeParticipantsList();
-  };
-   */
   describe('onLocalParticipantJoined', () => {
     test('should update the list of participants', () => {
       presence3DManager['initializeParticipantsList'] = jest.fn();
@@ -248,31 +220,6 @@ describe('Presence3DManager', () => {
     });
   });
 
-  /**
-   *   private unthrottledUpdatePresence3D = (data: ParticipantInfo): void => {
-    if (!data || !data.id) {
-      return;
-    }
-
-    const { participants, hasJoined3D } = this.useStore(StoreType.PRESENCE_3D);
-
-    const participant = {
-      ...participants.value.find((participant) => participant.id === data.id),
-      ...data,
-    };
-
-    participants.publish([
-      ...participants.value.filter((participant) => participant.id !== data.id),
-      participant,
-    ]);
-
-    if (!hasJoined3D.value) return;
-
-    if (participant.id === this.localParticipant.id) {
-      this.room.presence.update(participant);
-    }
-  };
-   */
   describe('unthrottledUpdatePresence3D', () => {
     test('should update the list of participants', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
@@ -515,9 +462,6 @@ describe('Presence3DManager', () => {
       presence3DManager['setParticipantData'](MOCK_LOCAL_PARTICIPANT as any);
 
       expect(presence3DManager['updatePresence3D']).toHaveBeenCalledWith(MOCK_LOCAL_PARTICIPANT);
-      expect(presence3DManager['roomState'].updateMyProperties).toHaveBeenCalledWith(
-        MOCK_LOCAL_PARTICIPANT,
-      );
     });
   });
 
