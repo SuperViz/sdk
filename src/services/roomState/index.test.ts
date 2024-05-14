@@ -260,6 +260,27 @@ describe('roomState', () => {
   });
 
   describe('fetchRoomProperties', () => {
+    beforeEach(() => {
+      serviceInstance['room'].presence.get = jest.fn((callback) =>
+        callback([
+          {
+            connectionId: 'connectionId 1',
+            id: 'id 1',
+            name: 'name 1',
+            timestamp: 1233,
+            data: {},
+          },
+          {
+            connectionId: 'connectionId 2',
+            id: 'id 2',
+            name: 'name 2',
+            timestamp: 1234,
+            data: {},
+          },
+        ]),
+      );
+    });
+
     test('should fetch room properties', async () => {
       const history = jest
         .fn()
@@ -285,12 +306,37 @@ describe('roomState', () => {
       const result = await serviceInstance['fetchRoomProperties']();
       expect(result).toBe(null);
     });
+
+    test('should return null if participant is alone in the room', async () => {
+      serviceInstance['room'].presence.get = jest.fn((callback) => callback([]));
+
+      const result = await serviceInstance['fetchRoomProperties']();
+      expect(result).toBe(null);
+    });
   });
 
   describe('start', () => {
     test('should initialize room properties if no last message', async () => {
       const history = jest.fn().mockImplementation((cb) => cb({ events: [] }));
       serviceInstance['room'].history = history;
+      serviceInstance['room'].presence.get = jest.fn((callback) =>
+        callback([
+          {
+            connectionId: 'connectionId 1',
+            id: 'id 1',
+            name: 'name 1',
+            timestamp: 1233,
+            data: {},
+          },
+          {
+            connectionId: 'connectionId 2',
+            id: 'id 2',
+            name: 'name 2',
+            timestamp: 1234,
+            data: {},
+          },
+        ]),
+      );
 
       const fetchRoomProperties = jest.spyOn(serviceInstance as any, 'fetchRoomProperties');
       const initializeRoomProperties = jest.spyOn(
