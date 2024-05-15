@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
+import { PresenceEvent, PresenceEvents, SocketEvent } from '@superviz/socket-client';
 
 import { ColorsVariables } from '../../common/types/colors.types';
 import {
@@ -305,6 +305,7 @@ export class VideoConference extends BaseComponent {
     this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onParticipantJoinedOnRealtime);
     this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeftOnRealtime);
     this.room.presence.on(PresenceEvents.UPDATE, this.onParticipantUpdated);
+    this.room.on(MeetingEvent.MY_PARTICIPANT_UPDATED, this.updateParticipantGlobally);
   };
 
   /**
@@ -317,6 +318,7 @@ export class VideoConference extends BaseComponent {
     this.room.presence.off(PresenceEvents.UPDATE);
     this.room.presence.off(PresenceEvents.LEAVE);
     this.room.presence.off(PresenceEvents.JOINED_ROOM);
+    this.room.off(MeetingEvent.MY_PARTICIPANT_UPDATED, this.updateParticipantGlobally);
     this.roomState?.kickParticipantObserver.unsubscribe(this.onKickLocalParticipant);
   };
 
@@ -539,8 +541,7 @@ export class VideoConference extends BaseComponent {
    */
   private onParticipantJoined = (participant: Participant): void => {
     this.logger.log('video conference @ on participant joined', participant);
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.publish(participant);
+    this.room.emit(MeetingEvent.MY_PARTICIPANT_UPDATED, participant);
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
@@ -932,5 +933,15 @@ export class VideoConference extends BaseComponent {
 
     hostId.publish(host.id);
     this.roomState.setHost(host.id);
+  };
+
+  private updateParticipantGlobally = (event: SocketEvent<Participant>): void => {
+    const { participants } = this.useStore(StoreType.GLOBAL);
+    const participantsList = { ...participants.value };
+    participantsList[event.data.id] = {
+      ...participantsList[event.data.id],
+      ...event.data,
+    };
+    participants.publish(participantsList);
   };
 }
