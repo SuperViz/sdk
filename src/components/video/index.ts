@@ -709,6 +709,8 @@ export class VideoConference extends BaseComponent {
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       participantId,
     );
+
+    this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   /**
@@ -717,11 +719,18 @@ export class VideoConference extends BaseComponent {
    * @param {boolean} gather - gather
    * @returns {void}
    */
-  private setGather = (gather: boolean): void => {
-    const { hostId } = this.useStore(StoreType.VIDEO);
-    if (!this.videoManager || hostId.value !== this.localParticipant.id) return;
+  private setGather = (shouldGather: boolean): void => {
+    if (!this.videoManager || !shouldGather) return;
 
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_GATHER, gather);
+    const { hostId, gather } = this.useStore(StoreType.VIDEO);
+    gather.publish(false);
+
+    if (hostId.value !== this.localParticipant.id) {
+      this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, hostId.value);
+      return;
+    }
+
+    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_GATHER, shouldGather);
   };
 
   /**
