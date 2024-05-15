@@ -555,6 +555,23 @@ describe('VideoConference', () => {
       });
     });
 
+    test('should emit event to update global participant data when participant joins', () => {
+      const participant = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        name: 'John Doe',
+        type: ParticipantType.HOST,
+      };
+
+      VideoConferenceInstance['room'].emit = jest.fn();
+
+      VideoConferenceInstance['onParticipantJoined'](participant);
+
+      expect(VideoConferenceInstance['room'].emit).toBeCalledWith(
+        MeetingEvent.MY_PARTICIPANT_UPDATED,
+        participant,
+      );
+    });
+
     test('should publish message to client when my participant left', () => {
       VideoConferenceInstance['publish'] = jest.fn();
 
@@ -879,6 +896,39 @@ describe('VideoConference', () => {
       VideoConferenceInstance['hangUp']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(MeetingControlsEvent.HANG_UP);
+    });
+  });
+
+  describe('updateParticipantGlobally', () => {
+    test('should publish participants list update in store', () => {
+      const participant = {
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...MOCK_LOCAL_PARTICIPANT,
+        },
+      };
+
+      const update = {
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: 'New Name',
+      };
+
+      const mockFn = jest.fn();
+
+      VideoConferenceInstance['useStore'] = jest.fn().mockReturnValue({
+        participants: {
+          value: participant,
+          publish: mockFn,
+        },
+      });
+
+      VideoConferenceInstance['updateParticipantGlobally']({ data: update } as any);
+
+      expect(mockFn).toBeCalledWith({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...participant[MOCK_LOCAL_PARTICIPANT.id],
+          ...update,
+        },
+      });
     });
   });
 });
