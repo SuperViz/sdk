@@ -74,7 +74,7 @@ export class Channel extends Observable {
    * @param callback - callback function
    * @returns {void}
    */
-  public subscribe = (event: string, callback: (data: unknown) => void): void => {
+  public subscribe = (event: string, callback: (data: RealtimeMessage) => void): void => {
     if (this.state !== RealtimeChannelState.CONNECTED) {
       this.callbacksToSubscribeWhenJoined.push({ event, callback });
       return;
@@ -94,7 +94,7 @@ export class Channel extends Observable {
    * @param callback - callback function
    * @returns {void}
    */
-  public unsubscribe = (event: string, callback?: (data: unknown) => void): void => {
+  public unsubscribe = (event: string, callback?: (data: RealtimeMessage) => void): void => {
     if (!this.observers[event]) return;
 
     this.observers[event].unsubscribe(callback);
