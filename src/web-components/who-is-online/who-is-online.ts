@@ -55,6 +55,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const { participants, following, extras, disablePresenceControls } = this.useStore(
       StoreType.WHO_IS_ONLINE,
     );
+
     participants.subscribe((participants) => {
       this.participants = participants;
     });

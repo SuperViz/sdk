@@ -130,14 +130,10 @@ export class Presence3DManager {
       ...data,
     };
 
-    console.log('participant in sdk', participant);
-
     participants.publish([
       ...participants.value.filter((participant) => participant.id !== data.id),
       participant,
     ]);
-
-    console.log('participants list', participants.value);
 
     if (!hasJoined3D.value || participant.id !== this.localParticipant.id) return;
 
