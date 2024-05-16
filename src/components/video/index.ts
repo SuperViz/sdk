@@ -942,6 +942,7 @@ export class VideoConference extends BaseComponent {
       ...participantsList[event.data.id],
       ...event.data,
     };
+
     participants.publish(participantsList);
   };
 }
