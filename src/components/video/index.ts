@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
+import { PresenceEvent, PresenceEvents, SocketEvent } from '@superviz/socket-client';
 
 import { ColorsVariables } from '../../common/types/colors.types';
 import {
@@ -493,8 +493,7 @@ export class VideoConference extends BaseComponent {
    */
   private onParticipantJoined = (participant: Participant): void => {
     this.logger.log('video conference @ on participant joined', participant);
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.publish(participant);
+    this.room.emit(MeetingEvent.MY_PARTICIPANT_UPDATED, participant);
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
@@ -640,6 +639,8 @@ export class VideoConference extends BaseComponent {
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       participantId,
     );
+
+    this.eventBus.publish(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, participantId);
   };
 
   /**
@@ -648,11 +649,18 @@ export class VideoConference extends BaseComponent {
    * @param {boolean} gather - gather
    * @returns {void}
    */
-  private setGather = (gather: boolean): void => {
-    const { hostId } = this.useStore(StoreType.VIDEO);
-    if (!this.videoManager || hostId.value !== this.localParticipant.id) return;
+  private setGather = (shouldGather: boolean): void => {
+    if (!this.videoManager || !shouldGather) return;
 
-    this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_GATHER, gather);
+    const { hostId, gather } = this.useStore(StoreType.VIDEO);
+    gather.publish(false);
+
+    if (hostId.value !== this.localParticipant.id) {
+      this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, hostId.value);
+      return;
+    }
+
+    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_GATHER, shouldGather);
   };
 
   /**
