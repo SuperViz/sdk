@@ -20,11 +20,10 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room);
     const result = await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeDefined();
-    expect(instance['participant'].slot).toBeDefined();
     expect(result).toEqual({
       index: expect.any(Number),
       color: expect.any(String),
@@ -47,15 +46,10 @@ describe('slot service', () => {
       },
     } as any;
 
-    const participant = {
-      id: '123',
-    } as any;
-
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room);
     await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeUndefined();
-    expect(instance['participant'].slot).toBeUndefined();
   });
 
   test('if the slot is already in use, it should assign a new slot', async () => {
@@ -85,11 +79,10 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room, participant);
+    const instance = new SlotService(room);
     const result = await instance.assignSlot();
 
     expect(instance['slotIndex']).toBeDefined();
-    expect(instance['participant'].slot).toBeDefined();
     expect(result).toEqual({
       index: expect.any(Number),
       color: expect.any(String),

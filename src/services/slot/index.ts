@@ -6,16 +6,16 @@ import {
   MeetingColorsHex,
 } from '../../common/types/meeting-colors.types';
 import { Participant, Slot } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
+import { useStore } from '../../common/utils/use-store';
 
 export class SlotService {
   private room: Socket.Room;
-  private participant: Participant;
+
   private slotIndex: number;
 
-  // @NOTE - reciving old realtime service instance until we migrate to new IO
-  constructor(room: Socket.Room, participant: Participant) {
+  constructor(room: Socket.Room) {
     this.room = room;
-    this.participant = participant;
 
     this.room.presence.on(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
   }
@@ -28,6 +28,7 @@ export class SlotService {
   public async assignSlot(): Promise<Slot> {
     let slots = Array.from({ length: 16 }, (_, i) => i);
     let slot = Math.floor(Math.random() * 16);
+    const { localParticipant, participants } = useStore(StoreType.GLOBAL);
 
     try {
       await new Promise((resolve, reject) => {
@@ -41,7 +42,7 @@ export class SlotService {
           }
 
           presences.forEach((presence: Socket.PresenceEvent<Participant>) => {
-            if (presence.id === this.participant.id) return;
+            if (presence.id === localParticipant.value.id) return;
 
             slots = slots.filter((s) => s !== presence.data?.slot?.index);
           });
@@ -64,10 +65,21 @@ export class SlotService {
       };
 
       this.slotIndex = slot;
-      this.participant = {
-        ...this.participant,
+
+      localParticipant.publish({
+        ...localParticipant.value,
         slot: slotData,
-      };
+      });
+
+      participants.publish({
+        ...participants.value,
+        [localParticipant.value.id]: {
+          ...participants.value[localParticipant.value.id],
+          slot: slotData,
+        },
+      });
+
+      this.room.presence.update({ slot: slotData });
 
       return slotData;
     } catch (error) {
@@ -77,20 +89,31 @@ export class SlotService {
   }
 
   private onPresenceUpdate = async (event: Socket.PresenceEvent<Participant>) => {
-    if (!event.data.slot || !this.participant?.slot) return;
+    const { localParticipant, participants } = useStore(StoreType.GLOBAL);
 
-    if (event.id === this.participant.id) {
-      this.participant = event.data;
+    if (!event.data.slot || !localParticipant.value?.slot) return;
+
+    if (event.id === localParticipant.value.id) {
+      localParticipant.publish({
+        ...localParticipant.value,
+        slot: event.data.slot,
+      });
       this.slotIndex = event.data.slot.index;
       return;
     }
 
-    const slotOccupied = event.data.slot.timestamp < this.participant?.slot?.timestamp;
+    if (event.data.slot?.index === this.slotIndex) {
+      this.slotIndex = null;
+      localParticipant.publish({
+        ...localParticipant.value,
+        slot: null,
+      });
 
-    // if someone else has the same slot as me, and they were assigned first, I should reassign
-    if (event.data.slot?.index === this.slotIndex && slotOccupied) {
       const slotData = await this.assignSlot();
-      this.room.presence.update({ slot: slotData });
+
+      console.log(
+        `[SuperViz] - Slot reassigned to ${localParticipant.value.id}, slot: ${slotData.colorName}`,
+      );
     }
   };
 }
