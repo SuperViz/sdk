@@ -48,9 +48,6 @@ export class VideoConference extends BaseComponent {
   private browserService: BrowserService;
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
-  private participantsTypes: Record<string, ParticipantType> = {};
-  private initializedList: boolean = false;
-  private hasSetHost = false;
   private roomState: RoomStateService;
 
   private kickParticipantsOnHostLeave = false;
@@ -80,7 +77,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleMeetingSetup(): void {
-    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MEETING_SETUP);
+    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MEETING_SETUP);
   }
 
   /**
@@ -89,7 +86,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleMicrophone(): void {
-    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MICROPHONE);
+    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MICROPHONE);
   }
 
   /**
@@ -98,7 +95,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleCam(): void {
-    this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_CAM);
+    this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_CAM);
   }
 
   /**
@@ -107,7 +104,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleScreenShare(): void {
-    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_SCREENSHARE);
+    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_SCREENSHARE);
   }
 
   /**
@@ -116,7 +113,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleChat(): void {
-    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
+    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MEETING_CHAT);
   }
 
   /**
@@ -125,7 +122,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleTranscript(): void {
-    return this.videoManager.publishMessageToFrame(MeetingControlsEvent.TOGGLE_TRANSCRIPT);
+    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_TRANSCRIPT);
   }
 
   /**
@@ -134,7 +131,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    * */
   public hangUp(): void {
-    this.videoManager.publishMessageToFrame(MeetingControlsEvent.HANG_UP);
+    this.videoManager?.publishMessageToFrame(MeetingControlsEvent.HANG_UP);
   }
 
   /**
@@ -149,36 +146,6 @@ export class VideoConference extends BaseComponent {
     this.suscribeToRealtimeEvents();
     this.startVideo();
   }
-
-  /**
-   * @function initializeListWithTypes
-   * @description pulls the list of participants from the room and stores their types
-   * @returns {void}
-   */
-  private initializeListWithTypes = (): void => {
-    this.room.presence.get((events) => {
-      events.forEach((event: PresenceEvent<Participant>) => {
-        this.participantsTypes[event.id] = event.data.type;
-      });
-
-      this.participantsTypes[this.localParticipant.id] = this.localParticipant.type;
-
-      this.initializedList = true;
-      this.validateIfInTheRoomHasHost();
-    });
-  };
-
-  /**
-   * @function onParticipantUpdated
-   * @description stores the type of the participant and validates if there's host in the room
-   * @param {PresenceEvent<Participant>} event - presence event
-   * @returns {void}
-   *
-   */
-  private onParticipantUpdated = (event: PresenceEvent<Participant>): void => {
-    this.participantsTypes[event.id] = event.data.type;
-    this.validateIfInTheRoomHasHost();
-  };
 
   /**
    * @function destroy
@@ -302,9 +269,9 @@ export class VideoConference extends BaseComponent {
    */
   private suscribeToRealtimeEvents = (): void => {
     this.logger.log('video conference @ subscribe to realtime events');
+    this.room.presence.on(PresenceEvents.UPDATE, this.onParticipantUpdateOnRealtime);
     this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onParticipantJoinedOnRealtime);
     this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeftOnRealtime);
-    this.room.presence.on(PresenceEvents.UPDATE, this.onParticipantUpdated);
   };
 
   /**
@@ -322,24 +289,14 @@ export class VideoConference extends BaseComponent {
 
   private subscribeToStoreUpdates = (): void => {
     const { localParticipant, group, participants } = this.useStore(StoreType.GLOBAL);
-    participants.subscribe(this.onParticipantListUpdate);
+    participants.subscribe((data) => {
+      const participants = Object.values(data);
+
+      this.onRealtimeParticipantsDidChange(participants);
+    });
 
     const { drawing, hostId, isGridModeEnabled, transcript, followParticipantId, gather } =
       this.useStore(StoreType.VIDEO);
-
-    localParticipant.publish({
-      ...localParticipant.value,
-      type: this.params.userType as ParticipantType,
-      isHost: localParticipant.value.id === hostId.value,
-    });
-
-    participants.publish({
-      ...participants.value,
-      [localParticipant.value.id]: {
-        ...localParticipant.value,
-        isHost: localParticipant.value.id === hostId.value,
-      },
-    });
 
     localParticipant.subscribe((participant) => {
       this.localParticipant = participant;
@@ -436,10 +393,7 @@ export class VideoConference extends BaseComponent {
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, state);
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.publish({
-      ...localParticipant.value,
-      joinedMeeting: state === MeetingState.MEETING_CONNECTED,
-    });
+    localParticipant.publish(localParticipant.value);
   };
 
   /**
@@ -589,11 +543,7 @@ export class VideoConference extends BaseComponent {
    * @param {Record<string, ParticipantInfo>} participants - participants
    * @returns {void}
    */
-  private onParticipantListUpdate = (): void => {
-    const {
-      participants: { value: participants },
-    } = this.useStore(StoreType.GLOBAL);
-
+  private onParticipantListUpdate = (participants: Record<string, ParticipantInfo>): void => {
     this.logger.log('video conference @ on participant list update', participants);
 
     const list: ParticipantInfo[] = Object.values(participants).map((participant) => {
@@ -616,7 +566,7 @@ export class VideoConference extends BaseComponent {
     }
 
     this.participantsOnMeeting = list;
-    this.onRealtimeParticipantsDidChange(list);
+    this.validateIfInTheRoomHasHost();
   };
 
   /** Realtime Events */
@@ -642,9 +592,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private setDrawing = (drawing: DrawingData): void => {
-    if (!this.videoManager) return;
-
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_DRAWING_CHANGE, drawing);
+    this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_DRAWING_CHANGE, drawing);
   };
 
   /**
@@ -654,18 +602,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private setHost = (hostId: string): void => {
-    if (!this.videoManager) return;
-
-    if (!this.videoManager.isMessageBridgeReady) {
-      this.logger.log('video conference @ Message Bridge not ready yet');
-      setTimeout(() => {
-        this.logger.log('video conference @ Retrying to set host id');
-        this.setHost(hostId);
-      }, 3000);
-      return;
-    }
-
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
+    this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
     this.onHostParticipantDidChange(hostId);
   };
 
@@ -676,9 +613,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private setGridMode = (isGridModeEnabled: boolean): void => {
-    if (!this.videoManager) return;
-
-    this.videoManager.publishMessageToFrame(
+    this.videoManager?.publishMessageToFrame(
       RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
       isGridModeEnabled,
     );
@@ -691,9 +626,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private setTranscript = (transcript: TranscriptState): void => {
-    if (!this.videoManager) return;
-
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, transcript);
+    this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_TRANSCRIPT_CHANGE, transcript);
   };
 
   /**
@@ -703,9 +636,7 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private setFollowParticipant = (participantId: string): void => {
-    if (!this.videoManager) return;
-
-    this.videoManager.publishMessageToFrame(
+    this.videoManager?.publishMessageToFrame(
       RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT,
       participantId,
     );
@@ -721,7 +652,7 @@ export class VideoConference extends BaseComponent {
     const { hostId } = this.useStore(StoreType.VIDEO);
     if (!this.videoManager || hostId.value !== this.localParticipant.id) return;
 
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_GATHER, gather);
+    this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_GATHER, gather);
   };
 
   /**
@@ -736,7 +667,7 @@ export class VideoConference extends BaseComponent {
       return {
         timestamp: participant.timestamp,
         participantId: participant.id,
-        color: participant.color,
+        color: participant.slot?.colorName ?? 'gray',
         name: participant.name,
         isHost: participant.isHost,
         avatar: participant.avatar,
@@ -749,8 +680,6 @@ export class VideoConference extends BaseComponent {
       RealtimeEvent.REALTIME_PARTICIPANT_LIST_UPDATE,
       participantList,
     );
-
-    this.validateIfInTheRoomHasHost();
   };
 
   /**
@@ -762,7 +691,7 @@ export class VideoConference extends BaseComponent {
   private onHostParticipantDidChange = (hostId: string): void => {
     this.logger.log('video conference @ on host participant did change', hostId);
 
-    this.videoManager.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
+    this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
 
     const newHost = this.participantsOnMeeting.find((participant) => {
       return participant.id === hostId;
@@ -804,7 +733,6 @@ export class VideoConference extends BaseComponent {
     if (participant.id !== this.localParticipant.id) return;
 
     this.room.presence.update(this.localParticipant);
-    this.initializeListWithTypes();
   };
 
   /**
@@ -820,8 +748,32 @@ export class VideoConference extends BaseComponent {
       MeetingEvent.MEETING_PARTICIPANT_LEFT,
       this.createParticipantFromPresence(participant),
     );
+  };
 
-    delete this.participantsTypes[participant.id];
+  private onParticipantUpdateOnRealtime = (participant: PresenceEvent<Participant>): void => {
+    this.logger.log('video conference @ on participant update on realtime', participant);
+    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+
+    if (participant.data.id === this.localParticipant.id) {
+      this.publish(
+        MeetingEvent.MY_PARTICIPANT_UPDATED,
+        this.createParticipantFromPresence(participant),
+      );
+
+      localParticipant.publish({
+        ...localParticipant.value,
+        ...participant.data,
+        type: this.params.userType as ParticipantType,
+      });
+    }
+
+    participants.publish({
+      ...participants.value,
+      [participant.data.id]: {
+        ...localParticipant.value,
+        ...participant.data,
+      },
+    });
   };
 
   /**
@@ -830,22 +782,16 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private validateIfInTheRoomHasHost = (): void => {
-    if (!this.initializedList || !this.roomState) return;
+    if (!this.roomState) return;
 
     const { hostId } = this.useStore(StoreType.VIDEO);
     const { participants } = this.useStore(StoreType.GLOBAL);
     const participantsList = Object.values(participants.value);
 
-    const participantsTypesList = Object.entries(this.participantsTypes);
-
-    const participantsIdsWithHostType = participantsTypesList.filter(
-      ([_, type]) => type === ParticipantType.HOST,
-    );
-
     // list with all participants that have the type host
-    const participantsCanBeHost = participantsIdsWithHostType.map(([id]) => {
-      return participantsList.find((participant) => participant.id === id);
-    });
+    const participantsCanBeHost = participantsList.filter(
+      (participant) => participant.type === ParticipantType.HOST,
+    );
 
     if (
       !participantsCanBeHost.length &&
@@ -856,7 +802,7 @@ export class VideoConference extends BaseComponent {
       this.logger.log(
         'video conference @ validate if in the room has host - init kick all participants timeout',
       );
-      this.hasSetHost = false;
+
       KICK_PARTICIPANTS_TIMEOUT = setTimeout(() => {
         this.logger.log(
           'video conference @ validate if in the room has host - kick all participants',
@@ -880,7 +826,7 @@ export class VideoConference extends BaseComponent {
       (participant) => participant?.id === hostId.value,
     );
 
-    if (!participantsCanBeHost.length || hostAlreadyInRoom || !participantsTypesList.length) return;
+    if (!participantsCanBeHost.length || hostAlreadyInRoom) return;
 
     const host = participantsCanBeHost.reduce((previous, current) => {
       this.logger.log(
@@ -903,21 +849,12 @@ export class VideoConference extends BaseComponent {
       return current;
     }, null) as ParticipantInfo;
 
-    if (!host || host.id === hostId.value) return;
+    this.room.presence.update<Participant>({
+      ...this.localParticipant,
+      isHost: host.id === this.localParticipant.id,
+    });
 
-    if (host.id !== this.localParticipant?.id && !this.hasSetHost) {
-      const participantsList = { ...participants.value };
-      participantsList[host.id] = {
-        ...participantsList[host.id],
-        isHost: true,
-      };
-      this.hasSetHost = true;
-      hostId.publish(host.id);
-      participants.publish(participantsList);
-      return;
-    }
-
-    if (host.id !== this.localParticipant?.id) return;
+    if (!host || host.id !== this.localParticipant?.id) return;
 
     this.logger.log('video conference @ validate if in the room has host - set host', host);
 

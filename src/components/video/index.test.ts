@@ -161,19 +161,6 @@ describe('VideoConference', () => {
   });
 
   describe('host handler', () => {
-    beforeEach(() => {
-      VideoConferenceInstance['initializedList'] = true;
-      VideoConferenceInstance['participantsTypes'][MOCK_LOCAL_PARTICIPANT.id] =
-        ParticipantType.HOST;
-      const { participants } = VideoConferenceInstance['useStore'](StoreType.GLOBAL);
-      participants.publish({
-        [MOCK_LOCAL_PARTICIPANT.id]: {
-          ...MOCK_LOCAL_PARTICIPANT,
-          type: ParticipantType.HOST,
-        },
-      });
-    });
-
     test('should set as host the first participant that joins the room and type is host', () => {
       const participant: ParticipantInfo[] = [
         {
@@ -211,15 +198,19 @@ describe('VideoConference', () => {
       });
 
       VideoConferenceInstance['roomState']['setHost'] = fn;
-      VideoConferenceInstance['onRealtimeParticipantsDidChange'](participant);
+      VideoConferenceInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...participant[0],
+        },
+      });
 
       expect(fn).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
       expect(fn).toBeCalledWith(MOCK_LOCAL_PARTICIPANT.id);
     });
 
     test('should keep the host if it is already set and stays in the room', () => {
-      const originalList: ParticipantInfo[] = [
-        {
+      const originalList: Record<string, ParticipantInfo> = {
+        [MOCK_LOCAL_PARTICIPANT.id]: {
           timestamp: 0,
           id: MOCK_LOCAL_PARTICIPANT.id,
           name: MOCK_LOCAL_PARTICIPANT.name,
@@ -234,7 +225,7 @@ describe('VideoConference', () => {
             timestamp: 0,
           },
         },
-      ];
+      };
 
       VideoConferenceInstance['useStore'](StoreType.GLOBAL).participants.publish({
         [MOCK_LOCAL_PARTICIPANT.id]: {
@@ -243,9 +234,8 @@ describe('VideoConference', () => {
       });
 
       VideoConferenceInstance['roomState'].setHost = jest.fn();
-      VideoConferenceInstance['onRealtimeParticipantsDidChange'](originalList);
+      VideoConferenceInstance['onParticipantListUpdate'](originalList);
 
-      VideoConferenceInstance['participantsTypes']['second-id'] = ParticipantType.HOST;
       const secondList: ParticipantInfo[] = [
         {
           timestamp: 1,
@@ -297,7 +287,6 @@ describe('VideoConference', () => {
         },
       ];
 
-      VideoConferenceInstance['participantsTypes'] = { 'another-client-id': ParticipantType.HOST };
       VideoConferenceInstance['useStore'](StoreType.GLOBAL).participants.publish({
         'another-client-id': participant[0],
       });
@@ -305,7 +294,6 @@ describe('VideoConference', () => {
       VideoConferenceInstance['roomState'].setHost = jest.fn();
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](participant);
 
-      VideoConferenceInstance['participantsTypes'] = {};
       VideoConferenceInstance['useStore'](StoreType.GLOBAL).participants.publish({
         [MOCK_LOCAL_PARTICIPANT.id]: { ...MOCK_LOCAL_PARTICIPANT },
       });
@@ -638,10 +626,6 @@ describe('VideoConference', () => {
         },
       });
 
-      VideoConferenceInstance['participantsOnMeeting'] = [];
-      VideoConferenceInstance['publish'] = jest.fn();
-      VideoConferenceInstance['onParticipantListUpdate']();
-
       const participantInfoList: ParticipantInfo[] = [
         {
           id: participants.value[MOCK_LOCAL_PARTICIPANT.id].id,
@@ -654,6 +638,14 @@ describe('VideoConference', () => {
           timestamp: participants.value[MOCK_LOCAL_PARTICIPANT.id].timestamp,
         },
       ];
+
+      VideoConferenceInstance['participantsOnMeeting'] = [];
+      VideoConferenceInstance['publish'] = jest.fn();
+      VideoConferenceInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...participants.value[MOCK_LOCAL_PARTICIPANT.id],
+        },
+      });
 
       expect(VideoConferenceInstance['publish']).toBeCalledWith(
         MeetingEvent.MEETING_PARTICIPANT_LIST_UPDATE,
@@ -690,8 +682,18 @@ describe('VideoConference', () => {
       VideoConferenceInstance['publish'] = jest.fn();
       VideoConferenceInstance['onHostAvailabilityChange'] = jest.fn();
 
-      VideoConferenceInstance['onParticipantListUpdate']();
-      VideoConferenceInstance['onParticipantListUpdate']();
+      VideoConferenceInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...participants[MOCK_LOCAL_PARTICIPANT.id],
+          timestamp: 0,
+        },
+      });
+      VideoConferenceInstance['onParticipantListUpdate']({
+        [MOCK_LOCAL_PARTICIPANT.id]: {
+          ...participants[MOCK_LOCAL_PARTICIPANT.id],
+          timestamp: 0,
+        },
+      });
 
       expect(VideoConferenceInstance['publish']).toBeCalledTimes(3);
     });
