@@ -140,21 +140,6 @@ export class Channel extends Observable {
   }
 
   /**
-   * @function publishEventToClient
-   * @description - publish event to client
-   * @param event - event name
-   * @param data - data to publish
-   * @returns {void}
-   */
-  public publishEventToClient = (event: string, data?: unknown): void => {
-    this.logger.log('pubsub service @ publishEventToClient', { event, data });
-
-    if (!this.observers[event]) return;
-
-    this.observers[event].publish(data);
-  };
-
-  /**
    * @function fetchHistory
    * @description get realtime client data history
    * @returns {RealtimeMessage | Record<string, RealtimeMessage>}
@@ -212,5 +197,20 @@ export class Channel extends Observable {
     );
 
     return history;
+  };
+
+  /**
+   * @function publishEventToClient
+   * @description - publish event to client
+   * @param event - event name
+   * @param data - data to publish
+   * @returns {void}
+   */
+  private publishEventToClient = (event: string, data?: unknown): void => {
+    this.logger.log('realtime channel @ publishEventToClient', { event, data });
+
+    if (!this.observers[event]) return;
+
+    this.observers[event].publish(data);
   };
 }
