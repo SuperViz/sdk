@@ -405,29 +405,15 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onParticipantJoinedIOC = async (
     presence: Socket.PresenceEvent<Participant>,
   ): Promise<void> => {
-    const { participants, localParticipant } = useStore(StoreType.GLOBAL);
+    const { localParticipant } = useStore(StoreType.GLOBAL);
     if (presence.id !== localParticipant.value.id) return;
 
     // Assign a slot to the participant
-    const slot = new SlotService(this.LauncherRealtimeRoom, localParticipant.value);
-    const slotData = await slot.assignSlot();
-
-    localParticipant.publish({
-      ...localParticipant.value,
-      slot: slotData,
-    });
-
-    const participantsMap = { ...participants.value };
-    participantsMap[presence.id] = {
-      ...participants.value[presence.id],
-      ...localParticipant.value,
-      timestamp: presence.timestamp,
-      slot: slotData,
-    };
+    const slot = new SlotService(this.LauncherRealtimeRoom);
+    await slot.assignSlot();
 
     this.timestamp = presence.timestamp;
 
-    participants.publish(participantsMap);
     this.LauncherRealtimeRoom.presence.update(localParticipant.value);
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
@@ -492,6 +478,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     const { participants } = useStore(StoreType.GLOBAL);
+
     if (!participants.value[presence.id]) {
       this.publish(ParticipantEvent.JOINED, presence.data);
     }
