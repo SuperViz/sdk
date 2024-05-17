@@ -23,11 +23,13 @@ export class Realtime extends BaseComponent {
     localParticipant.subscribe();
   }
 
-  public connect(name: string): any {
+  public connect(name: string): Channel {
     if (this.state !== RealtimeComponentState.STARTED) {
-      this.logger.log(
-        "Realtime component is not started yet. You can't create a channel before start",
-      );
+      const message =
+        "[SuperViz] Realtime component is not started yet. You can't connect to a channel before start";
+
+      this.logger.log(message);
+      console.warn(message);
       return;
     }
 
