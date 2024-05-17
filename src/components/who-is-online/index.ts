@@ -73,7 +73,7 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected start(): void {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe(this.subscribeToLocalParticipantUpdates);
+    this.localParticipantId = localParticipant.value.id;
 
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
@@ -142,6 +142,7 @@ export class WhoIsOnline extends BaseComponent {
     );
     this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeave);
     this.room.presence.on(PresenceEvents.LEAVE, this.stopFollowing);
+    this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onJoinedRoom);
     this.room.on(WhoIsOnlineEvent.GATHER_ALL, this.goToMousePointer);
     this.room.on(WhoIsOnlineEvent.START_FOLLOW_ME, this.setFollow);
   }
@@ -154,6 +155,7 @@ export class WhoIsOnline extends BaseComponent {
   private unsubscribeFromRealtimeEvents(): void {
     this.room.presence.off(PresenceEvents.UPDATE);
     this.room.presence.off(PresenceEvents.LEAVE);
+    this.room.presence.off(PresenceEvents.JOINED_ROOM);
     this.room.off(WhoIsOnlineEvent.GATHER_ALL, this.goToMousePointer);
     this.room.off(WhoIsOnlineEvent.START_FOLLOW_ME, this.setFollow);
   }
@@ -777,4 +779,11 @@ export class WhoIsOnline extends BaseComponent {
   private isInPresence(activeComponents: ComponentNames[]): boolean {
     return activeComponents?.some((component) => component.includes('presence'));
   }
+
+  private onJoinedRoom = (event: PresenceEvent<Participant>) => {
+    if (event.id !== this.localParticipantId) return;
+
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe(this.subscribeToLocalParticipantUpdates);
+  };
 }

@@ -30,6 +30,15 @@ export class Presence3DManager {
 
     // have to set manually because useStore is binded to the 3d plugin that creates the service
     localParticipant.subscribe((participant) => {
+      if (this.localParticipant) {
+        if (
+          this.localParticipant.name !== participant.name ||
+          this.localParticipant.avatar?.model3DUrl !== participant.avatar?.model3DUrl
+        ) {
+          this.unthrottledUpdatePresence3D({ ...participant });
+        }
+      }
+
       this.localParticipant = participant;
     });
   }

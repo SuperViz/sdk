@@ -111,7 +111,7 @@ export class SlotService {
 
       const slotData = await this.assignSlot();
 
-      console.log(
+      console.debug(
         `[SuperViz] - Slot reassigned to ${localParticipant.value.id}, slot: ${slotData.colorName}`,
       );
     }

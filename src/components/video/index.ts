@@ -493,7 +493,6 @@ export class VideoConference extends BaseComponent {
    */
   private onParticipantJoined = (participant: Participant): void => {
     this.logger.log('video conference @ on participant joined', participant);
-    this.room.emit(MeetingEvent.MY_PARTICIPANT_UPDATED, participant);
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
