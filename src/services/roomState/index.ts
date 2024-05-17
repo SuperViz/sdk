@@ -279,7 +279,6 @@ export class RoomStateService {
     if (!this.localRoomProperties) {
       this.initializeRoomProperties();
     } else {
-      this.localRoomProperties = await this.fetchRoomProperties();
       this.updateLocalRoomState({ data: this.localRoomProperties });
     }
 

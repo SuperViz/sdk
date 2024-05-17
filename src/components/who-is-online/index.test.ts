@@ -56,6 +56,8 @@ describe('Who Is Online', () => {
     const { hasJoinedRoom } = whoIsOnlineComponent['useStore'](StoreType.GLOBAL);
     hasJoinedRoom.publish(true);
 
+    useStore(StoreType.GLOBAL).localParticipant.publish(MOCK_LOCAL_PARTICIPANT);
+
     whoIsOnlineComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
@@ -66,6 +68,7 @@ describe('Who Is Online', () => {
     });
 
     whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE).participants.publish([]);
+
     whoIsOnlineComponent['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
 
     const gray = MeetingColorsHex[16];
@@ -134,7 +137,7 @@ describe('Who Is Online', () => {
 
   describe('subscribeToRealtimeEvents', () => {
     test('should subscribe to realtime events', () => {
-      expect(whoIsOnlineComponent['room'].presence.on).toHaveBeenCalledTimes(3);
+      expect(whoIsOnlineComponent['room'].presence.on).toHaveBeenCalledTimes(4);
       expect(whoIsOnlineComponent['room'].on).toHaveBeenCalledTimes(2);
     });
   });
@@ -143,7 +146,7 @@ describe('Who Is Online', () => {
     test('should unsubscribe from realtime events', () => {
       whoIsOnlineComponent['unsubscribeFromRealtimeEvents']();
 
-      expect(whoIsOnlineComponent['room'].presence.off).toHaveBeenCalledTimes(2);
+      expect(whoIsOnlineComponent['room'].presence.off).toHaveBeenCalledTimes(3);
       expect(whoIsOnlineComponent['room'].off).toHaveBeenCalledTimes(2);
     });
   });
