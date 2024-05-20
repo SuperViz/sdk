@@ -46,10 +46,9 @@ export class Channel extends Observable {
 
   /**
    * @function publish
-   * @description Publish an event
-   * @param type - event type
-   * @param data - event data
-   * @returns {void}
+   * @description Publishes an event with optional data to the channel.
+   * @param event - The name of the event to publish.
+   * @param data - Optional data to be sent along with the event.
    */
   public publish = throttle((event: string, data?: unknown): void => {
     if (Object.values(ComponentLifeCycleEvent).includes(event as ComponentLifeCycleEvent)) {
@@ -69,10 +68,10 @@ export class Channel extends Observable {
 
   /**
    * @function subscribe
-   * @description subscribe to event
-   * @param event - event name
-   * @param callback - callback function
-   * @returns {void}
+   * @description Subscribes to a specific event and registers a callback function to handle the received data.
+   *  If the channel is not yet available, the subscription will be queued and executed once the channel is joined.
+   * @param event - The name of the event to subscribe to.
+   * @param callback - The callback function to handle the received data. It takes a parameter of type `RealtimeMessage` or `string`.
    */
   public subscribe = (event: string, callback: (data: RealtimeMessage | string) => void): void => {
     if (this.state !== RealtimeChannelState.CONNECTED) {
@@ -89,10 +88,9 @@ export class Channel extends Observable {
 
   /**
    * @function unsubscribe
-   * @description - unsubscribe from event
-   * @param event - event name
-   * @param callback - callback function
-   * @returns {void}
+   * @description Unsubscribes from a specific event.
+   * @param event - The event to unsubscribe from.
+   * @param callback - An optional callback function to be called when the event is unsubscribed.
    */
   public unsubscribe = (
     event: string,
