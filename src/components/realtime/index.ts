@@ -12,7 +12,7 @@ export class Realtime extends BaseComponent {
   public name: ComponentNames;
   private declare localParticipant: Participant;
   private state: RealtimeComponentState = RealtimeComponentState.STOPPED;
-  private channels: Array<Channel> = [];
+  private channels: Map<string, Channel> = new Map();
 
   constructor() {
     super();
@@ -33,9 +33,13 @@ export class Realtime extends BaseComponent {
       return;
     }
 
-    const channel = new Channel(name, this.ioc, this.localParticipant);
+    let channel: Channel = this.channels.get(name);
 
-    this.channels.push(channel);
+    if (channel) return channel;
+
+    channel = new Channel(name, this.ioc, this.localParticipant);
+
+    this.channels.set(name, channel);
 
     return channel;
   }
@@ -48,7 +52,7 @@ export class Realtime extends BaseComponent {
   protected destroy(): void {
     this.logger.log('destroyed');
     this.changeState(RealtimeComponentState.STOPPED);
-    this.disconnectToAllChannels();
+    this.disconnectFromAllChannels();
   }
 
   /**
@@ -56,24 +60,9 @@ export class Realtime extends BaseComponent {
    * @description - disconnect to all channels
    * @returns {void}
    */
-  private disconnectToAllChannels(): void {
+  private disconnectFromAllChannels(): void {
     this.channels.forEach((channel) => channel.disconnect());
   }
-
-  /**
-   * @function publishEventToClient
-   * @description - publish event to client
-   * @param event - event name
-   * @param data - data to publish
-   * @returns {void}
-   */
-  public publishEventToClient = (event: string, data?: unknown): void => {
-    this.logger.log('pubsub service @ publishEventToClient', { event, data });
-
-    if (!this.observers[event]) return;
-
-    this.observers[event].publish(data);
-  };
 
   /**
    * @function changeState
@@ -85,6 +74,6 @@ export class Realtime extends BaseComponent {
     this.logger.log('realtime component @ changeState - state changed', state);
     this.state = state;
 
-    this.publishEventToClient(RealtimeComponentEvent.REALTIME_STATE_CHANGED, this.state);
+    this.publish(RealtimeComponentEvent.REALTIME_STATE_CHANGED, this.state);
   }
 }
