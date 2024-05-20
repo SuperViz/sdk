@@ -1,12 +1,12 @@
 import Ably from 'ably';
 import throttle from 'lodash/throttle';
 
-import { RealtimeEvent, TranscriptState } from '../../../common/types/events.types';
+import { RealtimeEvent } from '../../../common/types/events.types';
 import { MeetingColors } from '../../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../../common/types/realtime.types';
-import { Annotation } from '../../../components/comments/types';
-import { DrawingData } from '../../video-conference-manager/types';
+import { StoreType } from '../../../common/types/stores.types';
+import { useStore } from '../../../common/utils/use-store';
 import { RealtimeService } from '../base';
 import { ParticipantInfo, StartRealtimeType } from '../base/types';
 
@@ -27,32 +27,25 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   private participantsOn3d: Record<string, AblyParticipant> = {};
   private hostParticipantId: string = null;
   private myParticipant: AblyParticipant = null;
-  private commentsChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private supervizChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private clientSyncChannel: Ably.Types.RealtimeChannelCallbacks = null;
   private broadcastChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private presenceWIOChannel: Ably.Types.RealtimeChannelCallbacks = null;
-  private presence3DChannel: Ably.Types.RealtimeChannelCallbacks = null;
 
   private isReconnecting: boolean = false;
 
-  public isJoinedRoom: boolean = false;
-  public isJoinedPresence3D: boolean = false;
+  public hasJoinedRoom: boolean = false;
 
   private currentReconnectAttempt: number = 0;
   private localRoomProperties?: AblyRealtimeData = null;
   private enableSync: boolean = true;
-  private isSyncFrozen: boolean = false;
   private roomId: string;
   private readonly ablyKey: string;
   private apiKey: string;
   private readonly apiUrl: string;
-  private left: boolean = false;
-  private domainWhitelisted: boolean = true;
 
   private state: RealtimeStateTypes = RealtimeStateTypes.DISCONNECTED;
   private supervizChannelState: Ably.Types.ChannelStateChange;
   private connectionState: Ably.Types.ConnectionStateChange;
+  private useStore: typeof useStore = useStore.bind(this);
 
   constructor(apiUrl: string, ablyKey: string) {
     super();
@@ -61,10 +54,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     this.apiUrl = apiUrl;
 
     // bind ably callbacks
-    this.onAblyPresenceEnter = this.onAblyPresenceEnter.bind(this);
     this.onAblyPresenceUpdate = this.onAblyPresenceUpdate.bind(this);
-    this.onAblyPresenceLeave = this.onAblyPresenceLeave.bind(this);
-    this.onAblyRoomUpdate = this.onAblyRoomUpdate.bind(this);
     this.onAblyChannelStateChange = this.onAblyChannelStateChange.bind(this);
     this.onAblyConnectionStateChange = this.onAblyConnectionStateChange.bind(this);
     this.onReceiveBroadcastSync = this.onReceiveBroadcastSync.bind(this);
@@ -84,10 +74,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     return this.hostClientId === this.localParticipantId;
   }
 
-  public get isDomainWhitelisted(): boolean {
-    return this.domainWhitelisted;
-  }
-
   public get getParticipants(): Record<string, AblyParticipant> {
     return this.participants;
   }
@@ -101,8 +87,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   public get isBroadcast(): boolean {
-    return Object.values(this.participants).some(
-      (participant) => participant.data.type === ParticipantType.AUDIENCE,
+    const { participants } = useStore(StoreType.GLOBAL);
+    return Object.values(participants.value).some(
+      (participant) => participant.type === ParticipantType.AUDIENCE,
     );
   }
 
@@ -128,6 +115,9 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     if (!this.client) {
       this.buildClient();
     }
+
+    const { hasJoinedRoom } = this.useStore(StoreType.GLOBAL);
+    hasJoinedRoom.subscribe();
   }
 
   /**
@@ -138,7 +128,8 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private auth(tokenParams: Ably.Types.TokenParams, callback: AblyTokenCallBack): void {
-    if (!this.domainWhitelisted) return;
+    const { isDomainWhitelisted } = useStore(StoreType.GLOBAL);
+    if (!isDomainWhitelisted.value) return;
 
     const ably = new Ably.Rest({ key: this.ablyKey });
     const { origin } = window.location;
@@ -159,7 +150,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
         }
 
         if (error?.message?.includes("this domain don't have permission")) {
-          this.domainWhitelisted = false;
+          isDomainWhitelisted.publish(false);
         }
 
         callback(error, tokenRequest);
@@ -179,10 +170,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       : this.myParticipant.data;
 
     this.logger.log('REALTIME', `Entering room. Room ID: ${this.roomId}`);
-    this.updateMyProperties(participantInfo);
-
-    // join custom sync channel
-    this.clientSyncChannel = this.client.channels.get(`${this.roomId}:client-sync`);
+    // this.updateMyProperties(participantInfo);
 
     this.broadcastChannel = this.client.channels.get(`${this.roomId}:broadcast`);
     if (!this.enableSync) {
@@ -192,18 +180,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     // join main room channel
     this.supervizChannel = this.client.channels.get(this.roomId);
     this.supervizChannel.on(this.onAblyChannelStateChange);
-    this.supervizChannel.subscribe('update', this.onAblyRoomUpdate);
-
-    // join the comments channel
-    this.commentsChannel = this.client.channels.get(`${this.roomId}:comments`);
-    this.commentsChannel.subscribe('update', this.onCommentsChannelUpdate);
 
     // presence only in the main channel
-    this.supervizChannel.presence.subscribe('enter', this.onAblyPresenceEnter);
     if (this.enableSync) {
       this.supervizChannel.presence.subscribe('update', this.onAblyPresenceUpdate);
     }
-    this.supervizChannel.presence.subscribe('leave', this.onAblyPresenceLeave);
 
     // enter
     this.supervizChannel.presence.enter(this.myParticipant.data);
@@ -216,101 +197,19 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    */
   public leave(): void {
     this.logger.log('REALTIME', 'Disconnecting from ably servers');
-    this.supervizChannel.presence.leave();
-    this.client.close();
-    this.isJoinedRoom = false;
+    this.supervizChannel?.presence.leave();
+    this.client?.close();
+    this.hasJoinedRoom = false;
     this.isReconnecting = false;
     this.roomId = null;
     this.participants = {};
     this.hostParticipantId = null;
     this.myParticipant = null;
     this.supervizChannel = null;
-    this.clientSyncChannel = null;
     this.client = null;
-    this.left = true;
-  }
 
-  /**
-   * @function setHost
-   * @param {string} participantId
-   * @description set a new host to the room
-   * @returns {void}
-   */
-  public setHost = (participantId: string): void => {
-    this.updateRoomProperties({ hostClientId: participantId });
-  };
-
-  /**
-   * @function setKickParticipant
-   * @param {string} kickParticipantId
-   * @description set a participant to be kicked from the room
-   * @returns {void}
-   */
-  public setKickParticipant = (kickParticipantId: string): Promise<void> => {
-    if (!kickParticipantId) return;
-
-    const participant = this.participants[kickParticipantId];
-    this.updateRoomProperties({
-      kickParticipant: participant,
-    });
-  };
-
-  /**
-   * @function setGridMode
-   * @param {boolean} isGridModeEnable
-   * @description synchronizes the grid mode of the cameras in the room
-   * @returns {void}
-   */
-  public setGridMode(isGridModeEnable: boolean): void {
-    const roomProperties = this.localRoomProperties;
-    this.updateRoomProperties(Object.assign({}, roomProperties, { isGridModeEnable }));
-  }
-
-  /**
-   * @function setDrawing
-   * @param drawing {DrawingData}  -  drawing payload*
-   * @description synchronizes the drawing in the room
-   * @returns {void}
-   */
-  public setDrawing(drawing: DrawingData): void {
-    const roomProperties = this.localRoomProperties;
-    this.updateRoomProperties(Object.assign({}, roomProperties, { drawing }));
-  }
-
-  /**
-   * @function setTranscript
-   * @param state {TranscriptState}
-   * @description synchronizes the transcript state in the room
-   * @returns {void}
-   */
-  public setTranscript(state: TranscriptState): void {
-    const roomProperties = this.localRoomProperties;
-
-    this.updateRoomProperties(Object.assign({}, roomProperties, { transcript: state }));
-  }
-
-  /**
-   * @function setFollowParticipant
-   * @param {string} participantId
-   * @description add/change and sync a property in the room
-   * @returns {void}
-   */
-  public setFollowParticipant(participantId?: string): void {
-    this.updateRoomProperties({
-      followParticipantId: participantId,
-    });
-  }
-
-  /**
-   * @function setGather
-   * @param {boolean} active
-   * @description sync to all participants to go to the host position
-   * @returns {void}
-   */
-  public setGather(active: boolean): void {
-    this.updateRoomProperties({
-      gather: active,
-    });
+    const { hasJoinedRoom } = this.useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(false);
   }
 
   /**
@@ -330,57 +229,13 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function freezeSync
-   * @param {boolean} isFrozen
-   * @description Detaches and unsubscribes from channels to freeze synchronization with the room.
-   * @returns {void}
-   */
-  public freezeSync = (isFrozen: boolean): void => {
-    this.isSyncFrozen = isFrozen;
-
-    if (isFrozen) {
-      this.supervizChannel.detach();
-      this.clientSyncChannel.detach();
-      this.broadcastChannel?.detach();
-      this.supervizChannel.unsubscribe();
-      this.clientSyncChannel.unsubscribe();
-      this.broadcastChannel?.unsubscribe();
-      return;
-    }
-
-    this.join();
-  };
-
-  /**
    * @function setParticipantData
    * @param {ParticipantDataInput} data
    * @returns {void}
    */
   public setParticipantData = (data: ParticipantDataInput): void => {
     this.myParticipant.data = Object.assign({}, this.myParticipant.data, data);
-
-    this.updateMyProperties(this.myParticipant.data);
-    this.updatePresence3D(this.myParticipant.data);
   };
-
-  /**
-   * @function onAblyPresenceEnter
-   * @description callback that receives the event that a participant has entered the room
-   * @param {Ably.Types.PresenceMessage} presenceMessage
-   * @returns {void}
-   */
-  private onAblyPresenceEnter(presenceMessage: Ably.Types.PresenceMessage): void {
-    if (presenceMessage.clientId === this.myParticipant.data.participantId && this.isJoinedRoom) {
-      this.sameAccountObserver.publish(true);
-      return;
-    }
-
-    if (presenceMessage.clientId === this.myParticipant.data.participantId) {
-      this.onJoinRoom(presenceMessage);
-    } else {
-      this.onParticipantJoin(presenceMessage);
-    }
-  }
 
   /**
    * @function onAblyPresenceUpdate
@@ -390,7 +245,7 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @returns {void}
    */
   private onAblyPresenceUpdate(presenceMessage: Ably.Types.PresenceMessage): void {
-    if (!this.isJoinedRoom) return;
+    if (!this.hasJoinedRoom) return;
 
     const { clientId } = presenceMessage;
     const participant: AblyParticipant = Object.assign({}, presenceMessage, {
@@ -399,21 +254,15 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
 
     this.publishParticipantUpdate(participant);
 
-    if (this.participants && this.participants[clientId]) {
-      if (this.hostParticipantId === this.localParticipantId && this.isBroadcast) {
-        this.syncBroadcast();
-      }
-    }
-  }
+    const { participants } = useStore(StoreType.GLOBAL);
+    const { hostId } = useStore(StoreType.VIDEO);
 
-  /**
-   * @function onAblyPresenceLeave
-   * @description  callback that receives the exit event from a participant
-   * @param {Ably.Types.PresenceMessage} presenceMessage
-   * @returns {void}
-   */
-  private onAblyPresenceLeave(presenceMessage: Ably.Types.PresenceMessage): void {
-    this.onParticipantLeave(presenceMessage);
+    const shouldSync =
+      participants.value[clientId] && hostId.value === this.localParticipantId && this.isBroadcast;
+
+    if (shouldSync) {
+      this.syncBroadcast();
+    }
   }
 
   /**
@@ -433,83 +282,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       }
     });
   }
-
-  /**
-   * @function onAblyRoomUpdate
-   * @description callback that receives the update event from ably's room
-   * @param {Ably.Types.Message} message
-   * @returns {void}
-   */
-  private onAblyRoomUpdate(message: Ably.Types.Message): void {
-    this.logger.log('REALTIME', 'Room update received', message.data);
-
-    this.updateLocalRoomState(message.data);
-  }
-
-  /**
-   * @function updateLocalRoomState
-   * @description update room data
-   * @param {AblyRealtimeData} data
-   * @returns {void}
-   */
-  private updateLocalRoomState = async (data: AblyRealtimeData): Promise<void> => {
-    this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
-
-    this.roomInfoUpdatedObserver.publish(this.localRoomProperties);
-
-    this.updateParticipants();
-
-    if (data.kickParticipant && data.kickParticipant.clientId === this.myParticipant.clientId) {
-      this.updateRoomProperties({ kickParticipant: null });
-
-      this.kickParticipantObserver.publish(this.myParticipant.clientId);
-    }
-  };
-
-  /**
-   * @function updateMyProperties
-   * @param {ParticipantInfo} participantInfo
-   * @description updates local participant properties
-   * @returns {void}
-   */
-  public updateMyProperties = (newProperties: ParticipantInfo = {}): void => {
-    const properties = newProperties;
-
-    if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
-      return;
-    }
-
-    if (properties.avatar === undefined) {
-      delete properties.avatar;
-    }
-
-    this.myParticipant.data = {
-      ...this.myParticipant.data,
-      ...properties,
-    };
-
-    if (!this.isJoinedRoom) return;
-
-    this.supervizChannel.presence.update(this.myParticipant.data);
-    this.logger.log('REALTIME', 'updating my properties', this.myParticipant.data);
-  };
-
-  /**
-   * @function updateRoomProperties
-   * @param {AblyRealtimeData} properties
-   * @description updates room properties
-   * @returns {void}
-   */
-  private updateRoomProperties = (properties: AblyRealtimeData): void => {
-    if (this.isMessageTooBig(properties) || this.isSyncFrozen || this.left) return;
-
-    const newProperties = {
-      ...this.localRoomProperties,
-      ...properties,
-    };
-
-    this.supervizChannel.publish('update', newProperties);
-  };
 
   /**
    * @function buildClient
@@ -549,46 +321,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function updateParticipants
-   * @description update participant list
-   * @returns {void}
-   */
-  private updateParticipants = (): void => {
-    const participants = {};
-
-    this.supervizChannel.presence.get((_, members) => {
-      members.forEach((member) => {
-        participants[member.clientId] = { ...member };
-      });
-
-      this.participants = participants;
-      this.participantsObserver.publish(this.participants);
-    });
-  };
-
-  /**
-   * @function initializeRoomProperties
-   * @description
-        Initializes the room properties,
-        including setting the host client ID and updating the participant list.
-   * @returns {Promise<void>}
-   */
-  private initializeRoomProperties = (): void => {
-    const roomProperties: AblyRealtimeData = {
-      isGridModeEnable: false,
-      hostClientId: null,
-      followParticipantId: null,
-      gather: false,
-      drawing: null,
-      transcript: TranscriptState.TRANSCRIPT_STOP,
-      kickParticipant: null,
-    };
-
-    this.updateParticipants();
-    this.updateRoomProperties(roomProperties);
-  };
-
-  /**
    * @function forceReconnect
    * @description Forces a reconnection to the Ably server if the participant loses connection.
    * If the client is already connected to the Ably server, it rejoins the room.
@@ -617,8 +349,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     );
 
     this.buildClient();
-
-    this.updateMyProperties(this.myParticipant.data);
   }
 
   /**
@@ -651,37 +381,14 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
   }
 
   /**
-   * @function fetchRoomProperties
-   * @returns {AblyRealtimeData | null}
-   */
-  private async fetchRoomProperties(): Promise<AblyRealtimeData | null> {
-    const lastMessage: Ably.Types.Message | null = await new Promise((resolve, reject) => {
-      this.supervizChannel.history((error, resultPage) => {
-        if (error) {
-          reject(error);
-        }
-
-        const lastMessage = resultPage.items[0];
-
-        if (lastMessage) {
-          resolve(lastMessage);
-        } else {
-          resolve(null);
-        }
-      });
-    });
-
-    if (lastMessage?.timestamp < Date.now() - 1000 * 60 * 60) return null;
-
-    return lastMessage?.data || null;
-  }
-
-  /**
    * @function onStateChange
    * @description Translates connection state and channel state into realtime state
    * @returns {void}
    */
   private onStateChange(): void {
+    const { isDomainWhitelisted } = useStore(StoreType.GLOBAL);
+    if (!isDomainWhitelisted.value) return;
+
     const roomChannelCurrentState = this.supervizChannelState?.current;
     const connectionCurrentState = this.connectionState?.current;
     const isConnectedToAblyService = connectionCurrentState === 'connected';
@@ -706,14 +413,12 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
     const currentState = Object.entries(availableStates).find(([key, value]) => value && key)[0];
     const newState = Number(currentState);
 
-    if (!this.domainWhitelisted) return;
-
     if (newState === RealtimeStateTypes.READY_TO_JOIN) {
       this.currentReconnectAttempt = 0;
     }
 
     if (isConnectedToAblyService && this.isReconnecting) {
-      this.onJoinRoom(this.participant);
+      this.onJoinRoom();
     }
 
     if (newState === RealtimeStateTypes.RETRYING || newState === RealtimeStateTypes.FAILED) {
@@ -725,7 +430,6 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       this.currentReconnectAttempt++;
       this.isReconnecting = true;
       this.publishStateUpdate(RealtimeStateTypes.RETRYING);
-      this.reconnectObserver.publish(this.currentReconnectAttempt);
       return;
     }
 
@@ -759,58 +463,11 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
    * @param {Ably.Types.PresenceMessage} myPresence
    * @returns {void}
    */
-  private async onJoinRoom(
-    myPresence: AblyParticipant | Ably.Types.PresenceMessage,
-  ): Promise<void> {
-    this.isJoinedRoom = true;
-    this.localRoomProperties = await this.fetchRoomProperties();
-    this.updateParticipants();
-    this.myParticipant = myPresence;
-
-    if (!this.localRoomProperties) {
-      this.initializeRoomProperties();
-    } else {
-      this.updateParticipants();
-
-      this.localRoomProperties = await this.fetchRoomProperties();
-      this.updateLocalRoomState(this.localRoomProperties);
-    }
-
+  private async onJoinRoom(): Promise<void> {
+    this.hasJoinedRoom = true;
     this.isReconnecting = false;
-    this.publishStateUpdate(RealtimeStateTypes.CONNECTED);
-    this.participantJoinedObserver.publish(myPresence);
+
     this.logger.log('REALTIME', 'Joined realtime room');
-  }
-
-  /**
-   * @function onParticipantJoin
-   * @returns {void}
-   * @param presence
-   */
-  private onParticipantJoin = (presence: Ably.Types.PresenceMessage): void => {
-    this.updateParticipants();
-    this.participantJoinedObserver.publish(presence);
-    this.updateMyProperties(); // send a sync
-  };
-
-  /**
-   * @function onParticipantLeave
-   * @returns {void}
-   * @param presence
-   */
-  private onParticipantLeave(presence: Ably.Types.PresenceMessage): void {
-    if (this.state === RealtimeStateTypes.READY_TO_JOIN) return;
-
-    const followedLeft =
-      presence.data.participantId === this.localRoomProperties.followParticipantId;
-
-    if (followedLeft) {
-      this.setFollowParticipant();
-    }
-
-    this.participantLeaveObserver.publish(presence);
-
-    this.updateParticipants();
   }
 
   /**
@@ -872,182 +529,4 @@ export default class AblyRealtimeService extends RealtimeService implements Ably
       lengthToBeSplitted: splicedArrays[0].length,
     };
   }
-
-  /**
-   * @function isMessageTooBig
-   * @description calculates the size of a sync message and checks if it's bigger than limit
-   * @param {unknown} msg
-   * @param {number} limit
-   * @returns {boolean}
-   */
-  private isMessageTooBig = (msg: unknown, limit: number = MESSAGE_SIZE_LIMIT): boolean => {
-    const messageString = JSON.stringify(msg);
-    const size = new TextEncoder().encode(messageString).length;
-
-    if (size > limit) {
-      this.logger.log('Message too long, the message limit size is 60kb.');
-      return true;
-    }
-    return false;
-  };
-
-  /** Comments */
-  private onCommentsChannelUpdate = (message: Ably.Types.Message): void => {
-    this.logger.log('REALTIME', 'Comments channel update', message);
-    this.commentsObserver.publish(message);
-  };
-
-  public updateComments = (annotations: Annotation[]) => {
-    this.commentsChannel.publish('update', annotations);
-  };
-
-  /** Who Is Online */
-
-  public enterWIOChannel = (participant: Participant): void => {
-    if (!this.presenceWIOChannel) {
-      this.presenceWIOChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-wio`);
-    }
-
-    this.presenceWIOChannel.attach();
-    this.presenceWIOChannel.subscribe('private', this.onSetPrivate);
-    this.presenceWIOChannel.subscribe('follow', this.onSetFollow);
-    this.presenceWIOChannel.subscribe('gather', this.onSetGather);
-  };
-
-  public leaveWIOChannel = (): void => {
-    if (!this.presenceWIOChannel) return;
-
-    this.presenceWIOChannel.unsubscribe();
-    this.presenceWIOChannel.detach();
-    this.presenceWIOChannel = null;
-  };
-
-  private onSetPrivate = ({ data: { id, isPrivate } }): void => {
-    this.participants[id].data.isPrivate = isPrivate;
-    this.privateModeWIOObserver.publish(this.participants);
-  };
-
-  private onSetFollow = (data: Participant): void => {
-    this.followWIOObserver.publish(data);
-  };
-
-  private onSetGather = ({ data }: Ably.Types.Message): void => {
-    this.gatherWIOObserver.publish({ detail: { id: data.id } });
-  };
-
-  public setPrivateWIOParticipant = (id: string, isPrivate: boolean): void => {
-    this.presenceWIOChannel.publish('private', { id, isPrivate });
-  };
-
-  public setFollowWIOParticipant = (data): void => {
-    this.presenceWIOChannel.publish('follow', { ...data });
-  };
-
-  public setGatherWIOParticipant = (data): void => {
-    this.presenceWIOChannel.publish('gather', { ...data });
-  };
-
-  /** Presence 3D */
-
-  public enterPresence3DChannel(participant: Participant) {
-    if (!this.isJoinedRoom) {
-      this.logger.log(
-        'REALTIME',
-        'Cannot enter presence 3D channel because the participant is not in the room',
-      );
-
-      setTimeout(() => {
-        this.enterPresence3DChannel(participant);
-      }, 1000);
-
-      return;
-    }
-
-    if (!this.presence3DChannel) {
-      this.presence3DChannel = this.client.channels.get(`${this.roomId.toLowerCase()}-presence-3d`);
-      this.presence3DChannel.attach();
-
-      this.presence3DChannel.presence.subscribe('enter', this.onPresence3DChannelEnter);
-      this.presence3DChannel.presence.subscribe('leave', this.onPresence3DChannelLeave);
-      this.presence3DChannel.presence.subscribe('update', this.publish3DUpdate);
-    }
-
-    this.presence3DChannel.presence.enter(participant);
-  }
-
-  public leavePresence3DChannel = (): void => {
-    if (!this.presence3DChannel) return;
-
-    this.presence3DChannel.presence.leave();
-    this.presence3DChannel = null;
-  };
-
-  public updatePresence3D = throttle((data: ParticipantInfo): void => {
-    if (!data || !data.id) return;
-
-    const participant = Object.assign({}, this.participantsOn3d[data.id]?.data ?? {}, data);
-
-    this.participantsOn3d[data.id] = {
-      ...this.participants[participant.id],
-      data: {
-        ...participant,
-        ...this.participants[participant.id]?.data,
-      },
-    };
-
-    if (!this.presence3DChannel) return;
-
-    this.presence3DChannel.presence.update(participant);
-  }, SYNC_PROPERTY_INTERVAL);
-
-  private onPresence3DChannelEnter = (participant: Ably.Types.PresenceMessage): void => {
-    if (participant.clientId === this.myParticipant.clientId) {
-      this.isJoinedPresence3D = true;
-    }
-
-    const slot = this.getParticipantSlot(participant.clientId);
-
-    this.presence3dJoinedObserver.publish({
-      ...participant,
-      data: {
-        ...participant.data,
-        ...this.participants[participant.clientId]?.data,
-        slotIndex: slot,
-        color: this.getSlotColor(slot).color,
-      },
-    });
-  };
-
-  private onPresence3DChannelLeave = (participant: Ably.Types.PresenceMessage): void => {
-    delete this.participantsOn3d[participant.clientId];
-    this.presence3dLeaveObserver.publish(participant);
-  };
-
-  /**
-   * @function publish3DUpdate
-   * @param {AblyParticipant} participant
-   * @description publish a participant's changes to observer
-   * @returns {void}
-   */
-  private publish3DUpdate = (participant: Ably.Types.PresenceMessage): void => {
-    const slot = this.getParticipantSlot(participant.clientId);
-
-    const participantToPublish = {
-      ...participant,
-      data: {
-        ...participant.data,
-        ...this.participants[participant.clientId]?.data,
-        slotIndex: slot,
-        color: this.getSlotColor(slot).color,
-      },
-    };
-
-    this.participantsOn3d[participant.clientId] = participantToPublish;
-
-    if (this.participants3DObservers[participant.clientId]) {
-      this.participants3DObservers[participant.clientId].publish(participantToPublish);
-    }
-
-    this.presence3dObserver.publish(this.participantsOn3d);
-  };
 }

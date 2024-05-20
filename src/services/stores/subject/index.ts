@@ -7,11 +7,9 @@ export class Subject<T> {
   public state: T;
   private subject: BehaviorSubject<T>;
   private subscriptions: Map<string | this, Subscription> = new Map();
-  private showLog: boolean;
 
-  constructor(state: T, subject: BehaviorSubject<T>, showLog?: boolean) {
+  constructor(state: T, subject: BehaviorSubject<T>) {
     this.state = state;
-    this.showLog = !!showLog;
     this.subject = subject.pipe(
       distinctUntilChanged(),
       shareReplay({ bufferSize: 1, refCount: true }),
@@ -61,8 +59,8 @@ export class Subject<T> {
   }
 }
 
-export default function subject<T>(initialState: T, showLog?: boolean): Subject<T> {
+export default function subject<T>(initialState: T): Subject<T> {
   const subject = new BehaviorSubject<T>(initialState);
 
-  return new Subject<T>(initialState, subject, showLog);
+  return new Subject<T>(initialState, subject);
 }

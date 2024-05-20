@@ -1,4 +1,4 @@
-import { Participant } from '../../../components/who-is-online/types';
+import { WhoIsOnlineParticipant } from '../../../components/who-is-online/types';
 import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
@@ -14,8 +14,8 @@ export class WhoIsOnlineStore {
   public disablePrivateMode = subject<boolean>(false);
   public disableGatherAll = subject<boolean>(false);
   public disableFollowMe = subject<boolean>(false);
-  public participants = subject<Participant[]>([]);
-  public extras = subject<Participant[]>([]);
+  public participants = subject<WhoIsOnlineParticipant[]>([]);
+  public extras = subject<WhoIsOnlineParticipant[]>([]);
   public joinedPresence = subject<boolean | undefined>(undefined);
   public everyoneFollowsMe = subject<boolean>(false);
   public privateMode = subject<boolean>(false);
@@ -30,18 +30,18 @@ export class WhoIsOnlineStore {
   }
 
   public destroy() {
-    this.disableGoToParticipant.destroy()
-    this.disablePresenceControls.destroy()
-    this.disableFollowParticipant.destroy()
-    this.disablePrivateMode.destroy()
-    this.disableGatherAll.destroy()
-    this.disableFollowMe.destroy()
-    this.participants.destroy()
-    this.extras.destroy()
-    this.joinedPresence.destroy()
-    this.everyoneFollowsMe.destroy()
-    this.privateMode.destroy()
-    this.following.destroy()
+    this.disableGoToParticipant.destroy();
+    this.disablePresenceControls.destroy();
+    this.disableFollowParticipant.destroy();
+    this.disablePrivateMode.destroy();
+    this.disableGatherAll.destroy();
+    this.disableFollowMe.destroy();
+    this.participants.destroy();
+    this.extras.destroy();
+    this.joinedPresence.destroy();
+    this.everyoneFollowsMe.destroy();
+    this.privateMode.destroy();
+    this.following.destroy();
 
     instance.value = null;
   }

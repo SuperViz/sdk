@@ -16,4 +16,16 @@ export const MOCK_CONFIG: Configuration = {
   limits: LIMITS_MOCK,
   waterMark: WATERMARK_MOCK,
   colors: MOCK_COLORS,
+  features: {
+    realtime: true,
+    presence: true,
+    videoConference: true,
+    comments: true,
+    whoIsOnline: true,
+    presence3dMatterport: true,
+    presence3dAutodesk: true,
+    presence3dThreejs: true,
+    formElements: true,
+    transcriptLangs: ['en-US'],
+  },
 };

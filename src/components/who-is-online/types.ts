@@ -19,15 +19,16 @@ export interface Avatar {
   color: string;
 }
 
-export interface Participant {
+export interface WhoIsOnlineParticipant {
   id: string;
   name: string;
   disableDropdown?: boolean;
   controls?: DropdownOption[];
-  tooltip: TooltipData;
+  tooltip?: TooltipData;
   avatar: Avatar;
   activeComponents: string[];
-  isLocalParticipant: boolean;
+  isLocalParticipant?: boolean;
+  isPrivate: boolean;
 }
 
 export type WhoIsOnlinePosition = Position | `${Position}` | string | '';

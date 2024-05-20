@@ -1,14 +1,17 @@
 import { useGlobalStore } from '../../services/stores';
-import { PublicSubject } from '../../services/stores/common/types';
+import { usePresence3DStore } from '../../services/stores/presence3D';
+import { useVideoStore } from '../../services/stores/video';
 import { useWhoIsOnlineStore } from '../../services/stores/who-is-online/index';
 
 export enum StoreType {
   GLOBAL = 'global-store',
   COMMENTS = 'comments-store',
   WHO_IS_ONLINE = 'who-is-online-store',
+  VIDEO = 'video-store',
+  PRESENCE_3D = 'presence-3d-store',
 }
 
-type Subject<T extends (...args: any[]) => any, K extends keyof ReturnType<T>> = ReturnType<T>[K]
+type Subject<T extends (...args: any[]) => any, K extends keyof ReturnType<T>> = ReturnType<T>[K];
 
 type StoreApiWithoutDestroy<T extends (...args: any[]) => any> = {
   [K in keyof ReturnType<T>]: {
@@ -17,17 +20,24 @@ type StoreApiWithoutDestroy<T extends (...args: any[]) => any> = {
     publish(value: Subject<T, K>['value']): void;
     value: Subject<T, K>['value'];
   };
-}
+};
 
-type StoreApi<T extends (...args: any[]) => any> = Omit<StoreApiWithoutDestroy<T>, 'destroy'> & { destroy(): void };
+type StoreApi<T extends (...args: any[]) => any> = Omit<StoreApiWithoutDestroy<T>, 'destroy'> & {
+  destroy(): void;
+};
 
+type GlobalStore = StoreType.GLOBAL | `${StoreType.GLOBAL}`;
+type WhoIsOnlineStore = StoreType.WHO_IS_ONLINE | 'who-is-online-store';
+type VideoStore = StoreType.VIDEO | 'video-store';
+type Presence3DStore = StoreType.PRESENCE_3D | 'presence-3d-store';
 
-// When creating new Stores, expand the ternary with the new Store. For example:
-// ...T extends StoreType.GLOBAL ? StoreApi<typeof useGlobalStore> : T extends StoreType.WHO_IS_ONLINE ? StoreApi<typeof useWhoIsOnlineStore> : never;
-// Yes, it will be a little bit verbose, but it's not like we'll be creating more and more Stores just for. Rarely will someone need to come here
-export type Store<T> = T extends StoreType.GLOBAL
+export type Store<T> = T extends GlobalStore
   ? StoreApi<typeof useGlobalStore>
-  : T extends StoreType.WHO_IS_ONLINE
+  : T extends WhoIsOnlineStore
   ? StoreApi<typeof useWhoIsOnlineStore>
+  : T extends VideoStore
+  ? StoreApi<typeof useVideoStore>
+  : T extends Presence3DStore
+  ? StoreApi<typeof usePresence3DStore>
   : never;
 export type StoresTypes = typeof StoreType;

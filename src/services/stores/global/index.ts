@@ -1,4 +1,5 @@
 import { Group, Participant } from '../../../common/types/participant.types';
+import { ParticipantInfo } from '../../realtime/base/types';
 import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
@@ -6,9 +7,11 @@ import subject from '../subject';
 const instance: Singleton<GlobalStore> = CreateSingleton<GlobalStore>();
 
 export class GlobalStore {
-  public localParticipant = subject<Participant>(null, true);
-  public participants = subject<Map<string, Participant>>(new Map());
+  public localParticipant = subject<Participant>(null);
+  public participants = subject<Record<string, ParticipantInfo>>({});
   public group = subject<Group>(null);
+  public isDomainWhitelisted = subject<boolean>(true);
+  public hasJoinedRoom = subject<boolean>(false);
 
   constructor() {
     if (instance.value) {
@@ -22,7 +25,8 @@ export class GlobalStore {
     this.localParticipant.destroy();
     this.participants.destroy();
     this.group.destroy();
-    instance.value = null;
+    this.isDomainWhitelisted.destroy();
+    this.hasJoinedRoom.destroy();
   }
 }
 
@@ -32,14 +36,16 @@ const destroy = store.destroy.bind(store);
 const group = store.group.expose();
 const participants = store.participants.expose();
 const localParticipant = store.localParticipant.expose();
+const isDomainWhitelisted = store.isDomainWhitelisted.expose();
+const hasJoinedRoom = store.hasJoinedRoom.expose();
 
 export function useGlobalStore() {
   return {
     localParticipant,
     participants,
-    destroy,
     group,
+    isDomainWhitelisted,
+    hasJoinedRoom,
+    destroy,
   };
 }
-
-export type GlobalStoreReturnType = ReturnType<typeof useGlobalStore>;

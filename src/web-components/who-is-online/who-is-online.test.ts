@@ -6,13 +6,13 @@ import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
 import sleep from '../../common/utils/sleep';
 import { useStore } from '../../common/utils/use-store';
-import { Participant, WIODropdownOptions } from '../../components/who-is-online/types';
+import { WhoIsOnlineParticipant, WIODropdownOptions } from '../../components/who-is-online/types';
 import { useGlobalStore } from '../../services/stores';
 import { Following } from '../../services/stores/who-is-online/types';
 
 let element: HTMLElement;
 
-const MOCK_PARTICIPANTS: Participant[] = [
+const MOCK_PARTICIPANTS: WhoIsOnlineParticipant[] = [
   {
     name: 'John Zero',
     avatar: {
@@ -38,6 +38,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
         label: WIODropdownOptions.PRIVATE,
       },
     ],
+    isPrivate: false,
   },
   {
     name: 'John Uno',
@@ -61,6 +62,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
         label: WIODropdownOptions.LOCAL_FOLLOW,
       },
     ],
+    isPrivate: false,
   },
   {
     name: 'John Doe',
@@ -84,6 +86,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
         label: WIODropdownOptions.LOCAL_FOLLOW,
       },
     ],
+    isPrivate: false,
   },
 ];
 

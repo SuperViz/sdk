@@ -129,6 +129,7 @@ export default class VideoConfereceManager {
       layoutMode,
       skipMeetingSettings,
       layoutPosition: positions.layoutPosition,
+      transcriptLangs: config.get<string[]>('features.transcriptLangs'),
     };
 
     this.customColors = customColors;
@@ -541,13 +542,13 @@ export default class VideoConfereceManager {
 
   /**
    * @function onGridModeChange
-   * @param {boolean} isGridModeEnable
+   * @param {boolean} isGridModeEnabled
    * @returns {void}
    */
-  private onGridModeChange = (isGridModeEnable: boolean): void => {
+  private onGridModeChange = (isGridModeEnabled: boolean): void => {
     this.realtimeEventsObserver.publish({
       event: RealtimeEvent.REALTIME_GRID_MODE_CHANGE,
-      data: isGridModeEnable,
+      data: isGridModeEnabled,
     });
   };
 
