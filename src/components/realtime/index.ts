@@ -33,7 +33,14 @@ export class Realtime extends BaseComponent {
       return;
     }
 
-    const channel = new Channel(name, this.ioc, this.localParticipant);
+    let channel: Channel = this.channels.find((channel) => channel['name'] === name);
+
+    if (channel) {
+      this.logger.log(`Channel ${name} is already connected`);
+      return channel;
+    }
+
+    channel = new Channel(name, this.ioc, this.localParticipant);
 
     this.channels.push(channel);
 
@@ -84,7 +91,7 @@ export class Realtime extends BaseComponent {
   private changeState(state: RealtimeComponentState): void {
     this.logger.log('realtime component @ changeState - state changed', state);
     this.state = state;
-
-    this.publishEventToClient(RealtimeComponentEvent.REALTIME_STATE_CHANGED, this.state);
+    console.log('uh change state', RealtimeComponentEvent.REALTIME_STATE_CHANGED);
+    this.publish(RealtimeComponentEvent.REALTIME_STATE_CHANGED, this.state);
   }
 }
