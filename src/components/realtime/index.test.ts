@@ -72,8 +72,8 @@ describe('realtime component', () => {
       const channel = RealtimeComponentInstance.connect('test');
 
       expect(channel).toBeDefined();
-      expect(RealtimeComponentInstance['channels']).toHaveLength(1);
-      expect(RealtimeComponentInstance['channels'][0]).toBe(channel);
+      expect(RealtimeComponentInstance['channels'].size).toBe(1);
+      expect(RealtimeComponentInstance['channels'].get('test')).toBe(channel);
     });
   });
 
@@ -81,7 +81,7 @@ describe('realtime component', () => {
     test('should disconnect from the channels', () => {
       const channel = RealtimeComponentInstance.connect('test');
 
-      const spy = jest.spyOn(RealtimeComponentInstance, 'disconnectToAllChannels' as any);
+      const spy = jest.spyOn(RealtimeComponentInstance, 'disconnectFromAllChannels' as any);
       const spy2 = jest.spyOn(channel, 'disconnect' as any);
       RealtimeComponentInstance['destroy']();
 

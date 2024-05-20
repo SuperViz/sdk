@@ -12,7 +12,7 @@ export class Realtime extends BaseComponent {
   public name: ComponentNames;
   private declare localParticipant: Participant;
   private state: RealtimeComponentState = RealtimeComponentState.STOPPED;
-  private channels: Array<Channel> = [];
+  private channels: Map<string, Channel> = new Map();
 
   constructor() {
     super();
@@ -33,16 +33,13 @@ export class Realtime extends BaseComponent {
       return;
     }
 
-    let channel: Channel = this.channels.find((channel) => channel['name'] === name);
+    let channel: Channel = this.channels.get(name);
 
-    if (channel) {
-      this.logger.log(`Channel ${name} is already connected`);
-      return channel;
-    }
+    if (channel) return channel;
 
     channel = new Channel(name, this.ioc, this.localParticipant);
 
-    this.channels.push(channel);
+    this.channels.set(name, channel);
 
     return channel;
   }
@@ -55,7 +52,7 @@ export class Realtime extends BaseComponent {
   protected destroy(): void {
     this.logger.log('destroyed');
     this.changeState(RealtimeComponentState.STOPPED);
-    this.disconnectToAllChannels();
+    this.disconnectFromAllChannels();
   }
 
   /**
@@ -63,7 +60,7 @@ export class Realtime extends BaseComponent {
    * @description - disconnect to all channels
    * @returns {void}
    */
-  private disconnectToAllChannels(): void {
+  private disconnectFromAllChannels(): void {
     this.channels.forEach((channel) => channel.disconnect());
   }
 
