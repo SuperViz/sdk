@@ -68,21 +68,6 @@ export class Realtime extends BaseComponent {
   }
 
   /**
-   * @function publishEventToClient
-   * @description - publish event to client
-   * @param event - event name
-   * @param data - data to publish
-   * @returns {void}
-   */
-  public publishEventToClient = (event: string, data?: unknown): void => {
-    this.logger.log('pubsub service @ publishEventToClient', { event, data });
-
-    if (!this.observers[event]) return;
-
-    this.observers[event].publish(data);
-  };
-
-  /**
    * @function changeState
    * @description change realtime component state and publish state to client
    * @param state
@@ -91,7 +76,7 @@ export class Realtime extends BaseComponent {
   private changeState(state: RealtimeComponentState): void {
     this.logger.log('realtime component @ changeState - state changed', state);
     this.state = state;
-    console.log('uh change state', RealtimeComponentEvent.REALTIME_STATE_CHANGED);
+
     this.publish(RealtimeComponentEvent.REALTIME_STATE_CHANGED, this.state);
   }
 }
