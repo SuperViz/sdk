@@ -81,6 +81,10 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     return this.shadowRoot!.querySelector('.comments__input__textarea') as HTMLTextAreaElement;
   }
 
+  private get mentionButton() {
+    return this.shadowRoot!.querySelector('.mention-button') as HTMLButtonElement;
+  }
+
   private get sendBtn() {
     return this.shadowRoot!.querySelector('.comments__input__send-button') as HTMLButtonElement;
   }
@@ -145,7 +149,7 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
 
   updated(changedProperties: Map<string, any>) {
     if (changedProperties.has('mode') && this.mode === CommentMode.EDITABLE) {
-      this.focusInput()
+      this.focusInput();
       this.updateHeight();
       this.sendBtn.disabled = false;
       this.btnActive = true;
@@ -199,12 +203,12 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
     if (this.commentInput?.value.length === 0) this.btnActive = false;
     else this.btnActive = true;
 
-    if (e.data === null) return;
-
     this.autoCompleteHandler.setInput(e);
     const caretIndex = this.autoCompleteHandler.getSelectionStart();
     const keyData = this.autoCompleteHandler.getLastKeyBeforeCaret(caretIndex);
     const keyIndex = keyData?.keyIndex ?? -1;
+
+    if (caretIndex === -1) return;
 
     let searchText = this.autoCompleteHandler.searchMention(caretIndex, keyIndex);
     let position = this.autoCompleteHandler.getSelectionPosition();
@@ -350,6 +354,9 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
   private onTextareaLoseFocus = (e) => {
     const target = e.explicitOriginalTarget?.parentNode?.host;
 
+    const mentionBtn = this.mentionButton;
+    if (mentionBtn === e.explicitOriginalTarget || mentionBtn === e.relatedTarget) return;
+
     // explicitOriginalTarget is for Firefox
     // relatedTarget is for Chrome
     if (
@@ -459,12 +466,11 @@ export class CommentsCommentInput extends WebComponentsBaseElement {
         ></superviz-comments-mention-list>
         <div class="sv-hr"></div>
         <div class="comments__input__options">
-          <button class="icon-button icon-button--medium icon-button--clickable">
-            <superviz-icon
-              name="mention"
-              @click=${this.addAtSymbolInCaretPosition}
-              size="sm"
-            ></superviz-icon>
+          <button
+            @click=${this.addAtSymbolInCaretPosition}
+            class="mention-button icon-button icon-button--medium icon-button--clickable"
+          >
+            <superviz-icon name="mention" size="sm"></superviz-icon>
           </button>
           <div class="comment-input-options">
             ${this.commentInputOptions()} ${this.commentInputEditableOptions()}
