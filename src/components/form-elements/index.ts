@@ -394,7 +394,7 @@ export class FormElements extends BaseComponent {
 
     this.room?.emit(FieldEvents.INTERACTION + target.id, {
       fieldId: target.id,
-      color: this.localParticipant.slot.color,
+      color: this.localParticipant.slot?.color,
     });
 
     const canSync = this.canSyncContent(target.id);
@@ -402,7 +402,7 @@ export class FormElements extends BaseComponent {
 
     const payload: InputPayload & FocusPayload = {
       value: target.value,
-      color: this.localParticipant.slot.color,
+      color: this.localParticipant.slot?.color,
       fieldId: target.id,
       showOutline: this.canUpdateColor(target.id),
       syncContent: canSync,
@@ -604,16 +604,17 @@ export class FormElements extends BaseComponent {
     timestamp,
     ...params
   }: SocketEvent<InputPayload>) => {
-    if (syncContent && this.canSyncContent(fieldId)) {
+    this.publish(FieldEvents.CONTENT_CHANGE, {
+      value,
+      fieldId,
+      attribute,
+      userId: presence.id,
+      userName: presence.name,
+      timestamp,
+    });
+
+    if (syncContent && this.canSyncContent(fieldId) && presence.id !== this.localParticipant.id) {
       this.fields[fieldId][attribute] = value;
-      this.publish(FieldEvents.CONTENT_CHANGE, {
-        value,
-        fieldId,
-        attribute,
-        userId: presence.id,
-        userName: presence.name,
-        timestamp,
-      });
     }
 
     if (showOutline && this.canUpdateColor(fieldId)) {
@@ -659,10 +660,10 @@ export class FormElements extends BaseComponent {
     );
   }
 
-  private canSyncContent(fieldId: string): boolean {
+  private canSyncContent = (fieldId: string): boolean => {
     return (
       (!this.flags.disableRealtimeSync && this.enabledRealtimeSyncFields[fieldId] !== false) ||
-      this.enabledRealtimeSyncFields[fieldId]
+      !!this.enabledRealtimeSyncFields[fieldId]
     );
-  }
+  };
 }
