@@ -171,7 +171,7 @@ export class WhoIsOnline extends BaseComponent {
 
     this.room.presence.get((list) => {
       const dataList = list
-        .filter((participant) => participant.data['id'])
+        .filter((participant) => participant.data['id'] && participant.data['avatar'])
         .map(({ data }: { data: any }) => {
           const tooltip = this.getTooltipData(data);
           const controls = this.getControls(data);
@@ -182,6 +182,8 @@ export class WhoIsOnline extends BaseComponent {
             isLocalParticipant: data.id === this.localParticipantId,
           };
         }) as WhoIsOnlineParticipant[];
+
+      if (!dataList.length) return;
 
       const localParticipantIndex = dataList.findIndex((participant) => {
         return participant.id === this.localParticipantId;
