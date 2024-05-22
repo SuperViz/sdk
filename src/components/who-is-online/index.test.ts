@@ -39,6 +39,7 @@ const generateMockParticipant = ({
       name,
       disableDropdown,
       isPrivate,
+      avatar: {},
     },
   };
 
