@@ -6,9 +6,7 @@ import { DrawingData } from '../../video-conference-manager/types';
 export interface DefaultRealtimeService {
   participantObservers: Observer[];
   participantsObserver: Observer;
-  participantJoinedObserver: Observer;
   participantLeaveObserver: Observer;
-  reconnectObserver: Observer;
   roomInfoUpdatedObserver: Observer;
   roomListUpdatedObserver: Observer;
   realtimeStateObserver: Observer;
@@ -21,9 +19,6 @@ export interface DefaultRealtimeMethods {
   start: (options: StartRealtimeType) => void;
   leave: () => void;
   join: (participant?: Participant) => void;
-  setHost: (masterParticipantId: string) => void;
-  setGridMode: (value: boolean) => void;
-  setDrawing: (drawing: DrawingData) => void;
 }
 
 export interface RealtimeJoinOptions {
@@ -32,6 +27,7 @@ export interface RealtimeJoinOptions {
 }
 
 export interface ParticipantInfo extends Partial<Participant> {
+  timestamp?: number;
   participantId?: string;
   slotIndex?: number;
   activeComponents?: ComponentNames[];

@@ -1,11 +1,15 @@
 import { PublicSubject } from '../../services/stores/common/types';
 import { useGlobalStore } from '../../services/stores/global';
+import { usePresence3DStore } from '../../services/stores/presence3D';
+import { useVideoStore } from '../../services/stores/video';
 import { useWhoIsOnlineStore } from '../../services/stores/who-is-online';
 import { Store, StoreType } from '../types/stores.types';
 
 const stores = {
   [StoreType.GLOBAL]: useGlobalStore,
   [StoreType.WHO_IS_ONLINE]: useWhoIsOnlineStore,
+  [StoreType.VIDEO]: useVideoStore,
+  [StoreType.PRESENCE_3D]: usePresence3DStore,
 };
 
 /**
@@ -30,6 +34,7 @@ function subscribeTo<T>(
     if (this.requestUpdate) this.requestUpdate();
   });
 
+  if (!this.unsubscribeFrom) this.unsubscribeFrom = [];
   this.unsubscribeFrom.push(subject.unsubscribe);
 }
 
@@ -44,7 +49,7 @@ export function useStore<T extends StoreType>(name: T): Store<T> {
   const proxy = new Proxy(storeData, {
     get(store, valueName: string) {
       if (valueName === 'destroy') return store.destroy;
-      
+
       return {
         subscribe(callback?) {
           bindedSubscribeTo(valueName, store[valueName], callback);

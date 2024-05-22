@@ -2,13 +2,14 @@ import * as Socket from '@superviz/socket-client';
 
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Group } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observable } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import { AblyRealtimeService } from '../../services/realtime';
-import { useGlobalStore } from '../../services/stores';
+import { RoomStateService } from '../../services/roomState';
 import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
@@ -40,11 +41,11 @@ export abstract class BaseComponent extends Observable {
     }
 
     const { realtime, config: globalConfig, eventBus, ioc } = params;
+    const { isDomainWhitelisted, hasJoinedRoom } = this.useStore(StoreType.GLOBAL);
 
-    if (!realtime.isDomainWhitelisted) {
+    if (!isDomainWhitelisted.value) {
       const message = `Component ${this.name} can't be used because this website's domain is not whitelisted. Please add your domain in https://dashboard.superviz.com/developer`;
       this.logger.log(message);
-      console.error(message);
       return;
     }
 
@@ -55,7 +56,7 @@ export abstract class BaseComponent extends Observable {
     this.ioc = ioc;
     this.room = ioc.createRoom(this.name);
 
-    if (!this.realtime.isJoinedRoom) {
+    if (!hasJoinedRoom.value) {
       this.logger.log(`${this.name} @ attach - not joined yet`);
 
       setTimeout(() => {
@@ -84,9 +85,11 @@ export abstract class BaseComponent extends Observable {
     }
 
     this.logger.log('detached');
+
     this.publish(ComponentLifeCycleEvent.UNMOUNT);
     this.destroy();
     this.room.disconnect();
+    this.room = undefined;
 
     this.unsubscribeFrom.forEach((unsubscribe) => unsubscribe(this));
 

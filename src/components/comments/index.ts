@@ -219,8 +219,7 @@ export class Comments extends BaseComponent {
     // annotation observers
     document.body.addEventListener('select-annotation', this.onSelectAnnotation);
 
-    // Realtime observers
-    this.realtime.commentsObserver.subscribe(this.onAnnotationListUpdate);
+    this.room.on('update-comments', this.onAnnotationListUpdate);
 
     // pin adapter observers
     this.pinAdapter.onPinFixedObserver.subscribe(this.onPinFixed);
@@ -248,9 +247,7 @@ export class Comments extends BaseComponent {
     document.body.removeEventListener('select-annotation', this.onSelectAnnotation);
     document.body.removeEventListener('create-annotation', this.createAnnotation);
 
-    // Realtime observers
-    this.realtime.commentsObserver.unsubscribe(this.onAnnotationListUpdate);
-
+    this.room.off('update-comments', this.onAnnotationListUpdate);
     // pin adapter observers
     this.pinAdapter.onPinFixedObserver.unsubscribe(this.onPinFixed);
   }
@@ -564,7 +561,7 @@ export class Comments extends BaseComponent {
    */
   private updateAnnotationList(annotations: Annotation[]): void {
     this.annotations = annotations;
-    this.realtime.updateComments(annotations);
+    this.room.emit('update-comments', annotations);
   }
 
   /**

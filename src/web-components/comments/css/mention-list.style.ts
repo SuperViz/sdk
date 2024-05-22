@@ -2,7 +2,7 @@ import { css } from 'lit';
 
 export const mentionListStyle = css`
   #mention-list {
-    position: absolute;
+    position: fixed;
     z-index: 1;
     max-height: 200px;
     overflow-y: auto;
@@ -12,7 +12,7 @@ export const mentionListStyle = css`
     width: 216px;
     text-align: -webkit-center;
     border-radius: 2px;
-    box-shadow: 2px 2px 8px 0px rgba(0, 0, 0, 0.30);
+    box-shadow: 2px 2px 8px 0px rgba(0, 0, 0, 0.3);
     padding-top: 4px;
     padding-bottom: 4px;
     /* Stiling scroll WebKit (Firefox) */

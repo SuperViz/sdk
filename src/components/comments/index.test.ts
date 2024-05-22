@@ -4,12 +4,15 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
+import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { CommentEvent } from '../../common/types/events.types';
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
 import { useStore } from '../../common/utils/use-store';
 import ApiService from '../../services/api';
 import { IOC } from '../../services/io';
+import { Presence3DManager } from '../../services/presence-3d-manager';
+import { RoomStateService } from '../../services/roomState';
 import { useGlobalStore } from '../../services/stores';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
@@ -71,17 +74,19 @@ describe('Comments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    const { localParticipant, group } = useGlobalStore();
+    const { localParticipant, group, hasJoinedRoom } = useGlobalStore();
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
     group.value = MOCK_GROUP;
+    hasJoinedRoom.value = true;
 
     commentsComponent = new Comments(DummiePinAdapter);
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 
@@ -333,9 +338,10 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 
@@ -352,9 +358,10 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { isJoinedRoom: true }),
+      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      Presence3DManagerService: Presence3DManager,
       useStore,
     });
 
@@ -415,9 +422,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'].length).toBe(1);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should throw an error when create annotation fails', async () => {
@@ -454,9 +459,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments.length).toBe(4);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should throw an error when create comment fails', async () => {
@@ -514,9 +517,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments[0].text).toBe('text-test');
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should call apiService when delete a comment', async () => {
@@ -549,9 +550,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'][0].comments.length).toBe(2);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
   });
 
   test('should throw an error when delete comment fails', async () => {
@@ -606,9 +605,7 @@ describe('Comments', () => {
     await sleep(1);
 
     expect(commentsComponent['annotations'].length).toBe(0);
-    expect(ABLY_REALTIME_MOCK.updateComments).toHaveBeenCalledWith(
-      commentsComponent['annotations'],
-    );
+    commentsComponent['room'].emit('update-comments', commentsComponent['annotations']);
     expect(commentsComponent['pinAdapter'].removeAnnotationPin).toHaveBeenCalledWith(
       MOCK_ANNOTATION.uuid,
     );

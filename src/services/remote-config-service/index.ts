@@ -2,10 +2,10 @@ import { RemoteConfigParams } from '../../common/types/remote-config.types';
 import { EnvironmentTypes } from '../../common/types/sdk-options.types';
 import { doRequest } from '../../common/utils';
 
-import { RemoteConfig } from './types';
+import { FeatureFlags, RemoteConfig } from './types';
 
 export default class RemoteConfigService {
-  static REMOTE_CONFIG_BASE_URL: string = 'https://remote-config.superviz.com/sdk';
+  static REMOTE_CONFIG_BASE_URL: string = 'https://remote-config.superviz.com';
 
   /**
    * @function getRemoteConfig
@@ -31,6 +31,14 @@ export default class RemoteConfigService {
     return doRequest(url, 'GET', null) as Promise<RemoteConfig>;
   }
 
+  static async getFeatures(apiKey: string): Promise<FeatureFlags> {
+    return doRequest(
+      `${this.REMOTE_CONFIG_BASE_URL}/features/${apiKey}`,
+      'GET',
+      undefined,
+    ) as Promise<FeatureFlags>;
+  }
+
   /**
    * @function createUrl
    * @description
@@ -39,7 +47,7 @@ export default class RemoteConfigService {
    * @param {RemoteConfigParams} params - The parameters for creating the URL.
    * @returns {string} The URL for fetching remote configuration data.
    */
-  static createUrl({ version, environment }: RemoteConfigParams) {
-    return `${this.REMOTE_CONFIG_BASE_URL}/${version}?env=${environment}`;
+  static createUrl({ version, environment }: RemoteConfigParams): string {
+    return `${this.REMOTE_CONFIG_BASE_URL}/sdk/${version}?env=${environment}`;
   }
 }

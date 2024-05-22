@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { CSSResultGroup, LitElement, Part, PropertyValueMap, html } from 'lit';
+import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -7,12 +6,16 @@ import { repeat } from 'lit/directives/repeat.js';
 import { RealtimeEvent } from '../../common/types/events.types';
 import { INDEX_IS_WHITE_TEXT } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
-import { Avatar, Participant, WIODropdownOptions } from '../../components/who-is-online/types';
+import {
+  Avatar,
+  WhoIsOnlineParticipant,
+  WIODropdownOptions,
+} from '../../components/who-is-online/types';
 import { Following } from '../../services/stores/who-is-online/types';
 import { WebComponentsBase } from '../base';
 import importStyle from '../base/utils/importStyle';
 
-import type { LocalParticipantData, TooltipData } from './components/types';
+import type { LocalParticipantData } from './components/types';
 import { whoIsOnlineStyle } from './css/index';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
@@ -31,7 +34,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
   private localParticipantData: LocalParticipantData;
   private amountOfExtras: number;
   private disableDropdown: boolean;
-  private participants: Participant[];
+  private participants: WhoIsOnlineParticipant[];
 
   static properties = {
     position: { type: String },
@@ -49,9 +52,16 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.open = false;
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    const { participants, following, extras } = this.useStore(StoreType.WHO_IS_ONLINE);
-    participants.subscribe();
+    const { participants, following, extras, disablePresenceControls } = this.useStore(
+      StoreType.WHO_IS_ONLINE,
+    );
+
+    participants.subscribe((participants) => {
+      this.participants = participants;
+    });
     following.subscribe();
+    disablePresenceControls.subscribe();
+
     extras.subscribe((participants) => {
       this.amountOfExtras = participants.length;
     });
@@ -70,9 +80,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
 
       this.disableDropdown = !joinedPresence;
     });
-
-    const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
-    disablePresenceControls.subscribe();
   }
 
   protected firstUpdated(
@@ -257,7 +264,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       id,
       name,
       avatar: { color },
-    } = participants.find(({ id }) => id === participantId) as Participant;
+    } = participants.find(({ id }) => id === participantId) as WhoIsOnlineParticipant;
 
     if (this.everyoneFollowsMe) {
       this.handleStopFollow();

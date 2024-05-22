@@ -189,7 +189,7 @@ export class PointersCanvas extends BaseComponent {
   private goToMouse = (id: string): void => {
     const mouse = this.presences.get(id);
 
-    if (!mouse) return;
+    if (!mouse?.camera) return;
 
     const translatedX = mouse.camera.x;
     const translatedY = mouse.camera.y;

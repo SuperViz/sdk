@@ -85,6 +85,7 @@ export interface FrameConfig {
   layoutPosition: LayoutPosition;
   layoutMode?: LayoutMode;
   collaborationMode: boolean;
+  transcriptLangs: string[];
 }
 
 export interface DevicesConfig {

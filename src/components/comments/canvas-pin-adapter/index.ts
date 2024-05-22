@@ -61,10 +61,12 @@ export class CanvasPin implements PinAdapter {
    * @returns {void}
    * */
   public destroy(): void {
+    this.isActive = false;
     this.removeListeners();
     this.removeAnnotationsPins();
     this.pins = new Map();
     this.divWrapper.remove();
+    this.divWrapper = null;
     this.onPinFixedObserver.destroy();
     this.onPinFixedObserver = null;
     this.canvas.style.cursor = 'default';
@@ -255,7 +257,7 @@ export class CanvasPin implements PinAdapter {
       this.renderTemporaryPin();
     }
 
-    requestAnimationFrame(this.animate);
+    this.animateFrame = requestAnimationFrame(this.animate);
   };
 
   /**

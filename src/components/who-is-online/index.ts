@@ -1,11 +1,9 @@
-import { PresenceEvents } from '@superviz/socket-client';
-import { isEqual } from 'lodash';
+import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
 
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
-import { Avatar } from '../../common/types/participant.types';
+import { Participant, Avatar } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
-import { AblyParticipant } from '../../services/realtime/ably/types';
 import { Following } from '../../services/stores/who-is-online/types';
 import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
 import { DropdownOption } from '../../web-components/dropdown/types';
@@ -15,7 +13,7 @@ import { ComponentNames } from '../types';
 import {
   WhoIsOnlinePosition,
   Position,
-  Participant,
+  WhoIsOnlineParticipant,
   WhoIsOnlineOptions,
   TooltipData,
   WIODropdownOptions,
@@ -28,6 +26,7 @@ export class WhoIsOnline extends BaseComponent {
   private position: WhoIsOnlinePosition;
   private following: Following;
   private localParticipantId: string;
+  private initialized: boolean;
 
   constructor(options?: WhoIsOnlinePosition | WhoIsOnlineOptions) {
     super();
@@ -65,6 +64,8 @@ export class WhoIsOnline extends BaseComponent {
     }
   }
 
+  // #region Start/Destroy/Events
+
   /**
    * @function start
    * @description Initializes the Who Is Online component
@@ -72,15 +73,11 @@ export class WhoIsOnline extends BaseComponent {
    */
   protected start(): void {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe((participant) => {
-      this.localParticipantId = participant.id;
-    });
+    this.localParticipantId = localParticipant.value.id;
 
     this.subscribeToRealtimeEvents();
     this.positionWhoIsOnline();
     this.addListeners();
-
-    this.realtime.enterWIOChannel(localParticipant.value);
   }
 
   /**
@@ -89,8 +86,7 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   protected destroy(): void {
-    this.unsubscribeToRealtimeEvents();
-    this.realtime.leaveWIOChannel();
+    this.unsubscribeFromRealtimeEvents();
     this.removeListeners();
     this.element.remove();
     this.element = null;
@@ -132,7 +128,6 @@ export class WhoIsOnline extends BaseComponent {
     this.element.removeEventListener(RealtimeEvent.REALTIME_PRIVATE_MODE, this.setPrivate);
     this.element.removeEventListener(RealtimeEvent.REALTIME_FOLLOW_PARTICIPANT, this.follow);
     this.element.removeEventListener(RealtimeEvent.REALTIME_GATHER, this.gather);
-    this.room.presence.off(PresenceEvents.UPDATE);
   }
 
   /**
@@ -141,11 +136,15 @@ export class WhoIsOnline extends BaseComponent {
    * @returns {void}
    */
   private subscribeToRealtimeEvents(): void {
-    this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
-    this.realtime.participantLeaveObserver.subscribe(this.stopFollowing);
-    this.realtime.privateModeWIOObserver.subscribe(this.onParticipantListUpdate);
-    this.realtime.followWIOObserver.subscribe(this.setFollow);
-    this.realtime.gatherWIOObserver.subscribe(this.goToMousePointer);
+    this.room.presence.on<WhoIsOnlineParticipant>(
+      PresenceEvents.UPDATE,
+      this.onParticipantListUpdate,
+    );
+    this.room.presence.on(PresenceEvents.LEAVE, this.onParticipantLeave);
+    this.room.presence.on(PresenceEvents.LEAVE, this.stopFollowing);
+    this.room.presence.on(PresenceEvents.JOINED_ROOM, this.onJoinedRoom);
+    this.room.on(WhoIsOnlineEvent.GATHER_ALL, this.goToMousePointer);
+    this.room.on(WhoIsOnlineEvent.START_FOLLOW_ME, this.setFollow);
   }
 
   /**
@@ -153,32 +152,328 @@ export class WhoIsOnline extends BaseComponent {
    * @description Unsubscribes to realtime events
    * @returns {void}
    */
-  private unsubscribeToRealtimeEvents(): void {
-    this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
-    this.realtime.participantLeaveObserver.unsubscribe(this.stopFollowing);
-    this.realtime.privateModeWIOObserver.unsubscribe(this.onParticipantListUpdate);
-    this.realtime.followWIOObserver.unsubscribe(this.setFollow);
-    this.realtime.gatherWIOObserver.unsubscribe(this.goToMousePointer);
+  private unsubscribeFromRealtimeEvents(): void {
+    this.room.presence.off(PresenceEvents.UPDATE);
+    this.room.presence.off(PresenceEvents.LEAVE);
+    this.room.presence.off(PresenceEvents.JOINED_ROOM);
+    this.room.off(WhoIsOnlineEvent.GATHER_ALL, this.goToMousePointer);
+    this.room.off(WhoIsOnlineEvent.START_FOLLOW_ME, this.setFollow);
+  }
+
+  // #region Participants List Logic
+  /**
+   * @function initializeList
+   * @description Initializes the participants list with participants already in the room
+   * @returns {void}
+   */
+  private initializeList() {
+    const { participants, extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    this.room.presence.get((list) => {
+      const dataList = list
+        .filter((participant) => participant.data['id'] && participant.data['avatar'])
+        .map(({ data }: { data: any }) => {
+          const tooltip = this.getTooltipData(data);
+          const controls = this.getControls(data);
+          return {
+            ...data,
+            tooltip,
+            controls,
+            isLocalParticipant: data.id === this.localParticipantId,
+          };
+        }) as WhoIsOnlineParticipant[];
+
+      if (!dataList.length) return;
+
+      const localParticipantIndex = dataList.findIndex((participant) => {
+        return participant.id === this.localParticipantId;
+      });
+
+      const localParticipant = dataList.splice(localParticipantIndex, 1)[0] as any;
+      const otherParticipants = dataList.splice(0, 3) as any;
+
+      participants.publish([localParticipant, ...otherParticipants]);
+      extras.publish(dataList);
+    });
   }
 
   /**
    * @function onParticipantListUpdate
    * @description Receives data about participants in the room who were not loaded
    * when the component was initialized
-   * @param {Record<string, AblyParticipant>} data
+   * @param {PresenceEvent<WhoIsOnlineParticipant>} event
    * @returns {void}
    */
-  private onParticipantListUpdate = (data: Record<string, AblyParticipant>): void => {
-    const updatedParticipants = this.filterParticipants(Object.values(data));
+  private onParticipantListUpdate = (event: PresenceEvent<WhoIsOnlineParticipant>): void => {
+    if (this.localParticipantId === undefined || this.localParticipantId === '') return;
 
-    const mappedParticipants = updatedParticipants.map((participant) =>
-      this.getParticipant(participant),
-    );
+    if (!this.initialized) {
+      this.initialized = true;
+      this.initializeList();
+      return;
+    }
 
-    const remainingParticipants = this.setParticipants(mappedParticipants);
-    this.setExtras(remainingParticipants);
+    const participant: WhoIsOnlineParticipant = {
+      ...event.data,
+      tooltip: this.getTooltipData(event.data),
+      controls: this.getControls(event.data),
+    };
+
+    const { participants, extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    const isInParticipantsList = participants.value.some(({ id }) => id === event.data.id);
+    if (isInParticipantsList) {
+      this.updateParticipant(participant);
+      return;
+    }
+
+    const isInExtrasList = extras.value.some(({ id }) => id === event.data.id);
+    if (isInExtrasList) {
+      this.updateExtra(participant);
+      return;
+    }
+
+    const fitsParticipantList = participants.value.length < 4;
+    if (fitsParticipantList) {
+      participants.publish([...participants.value, participant]);
+      return;
+    }
+
+    extras.publish([...extras.value, participant]);
   };
 
+  /**
+   * @function onParticipantLeave
+   * @description Removes a participant from the participants list when they leave the room
+   * @param {PresenceEvent} event
+   * @returns {void}
+   */
+  private onParticipantLeave = (event) => {
+    const { participants, extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    const participantIndex = participants.value.findIndex(
+      (participant) => participant.id === event.id,
+    );
+
+    if (participantIndex === -1) {
+      const newExtrasList = extras.value.filter((participant) => participant.id !== event.id);
+      extras.publish(newExtrasList);
+      return;
+    }
+
+    const newParticipantsList = participants.value.filter(
+      (participant) => participant.id !== event.id,
+    );
+
+    if (extras.value.length) {
+      newParticipantsList.push(extras.value[0]);
+      const newExtrasList = extras.value.slice(1);
+      extras.publish(newExtrasList);
+    }
+
+    participants.publish(newParticipantsList);
+  };
+
+  /**
+   * @function updateParticipant
+   * @description Update a regular participant with their newly sent data
+   * @param {WhoIsOnlineParticipant} participant The participant with new data
+   * @returns {void}
+   */
+  private updateParticipant = (participant: WhoIsOnlineParticipant): void => {
+    const { participants, extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    if (participant.isPrivate && participant.id !== this.localParticipantId) {
+      const list = participants.value.filter(({ id }) => id !== participant.id);
+      const firstExtra = extras.value.splice(0, 1);
+
+      participants.publish([...list, ...firstExtra]);
+      extras.publish([...extras.value]);
+      return;
+    }
+
+    const newParticipantsList = participants.value.map((p) => {
+      if (p.id === participant.id) {
+        return participant;
+      }
+
+      return p;
+    });
+
+    participants.publish(newParticipantsList);
+  };
+
+  /**
+   * @function updateExtra
+   * @description Update an extra participant (one that is only visible by opening the dropdown) with their newly sent data
+   * @param {WhoIsOnlineParticipant} participant The participant with new data
+   * @returns {void}
+   */
+  private updateExtra = (participant: WhoIsOnlineParticipant): void => {
+    const { extras } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    if (participant.isPrivate && participant.id !== this.localParticipantId) {
+      const list = extras.value.filter(({ id }) => id !== participant.id);
+
+      extras.publish(list);
+      return;
+    }
+
+    const newExtrasList = extras.value.map((p) => {
+      if (p.id === participant.id) {
+        return participant;
+      }
+
+      return p;
+    });
+
+    extras.publish(newExtrasList);
+  };
+
+  /**
+   * @function subscribeToLocalParticipantUpdates
+   * @description Subscribes to updates in the local participant and updates the presence accordingly
+   * @param {Participant} participant The local participant
+   * @returns {void}
+   */
+  private subscribeToLocalParticipantUpdates = (participant: Participant): void => {
+    if (!participant.slot) return;
+
+    this.localParticipantId = participant.id;
+
+    const { privateMode, joinedPresence } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    const isInPresence = this.isInPresence(participant.activeComponents);
+    joinedPresence.publish(isInPresence);
+
+    const newLocalParticipant = this.getParticipant(participant);
+
+    this.room.presence.update({ ...newLocalParticipant, isPrivate: privateMode.value });
+  };
+
+  // #region Presence Controls
+  /**
+   * @function goToMousePointer
+   * @description Publishes the go to event to the event bus
+   * @param {CustomEvent | PresenceEvent} event
+   * @returns {void}
+   */
+  private goToMousePointer = (data) => {
+    const id = data.presence?.id ?? data.detail?.id;
+    if (id === this.localParticipantId) return;
+
+    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, id);
+    this.publish(WhoIsOnlineEvent.GO_TO_PARTICIPANT, id);
+  };
+
+  /**
+   * @function followMousePointer
+   * @description Publishes the follow event to the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private followMousePointer = ({ detail }: CustomEvent) => {
+    this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, detail.id);
+
+    if (this.following) {
+      this.publish(WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT, this.following);
+    }
+
+    if (!this.following) {
+      this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
+    }
+
+    if (detail.source === 'extras') {
+      this.highlightParticipantBeingFollowed();
+    }
+
+    this.updateParticipantsControls(detail.id);
+  };
+
+  /**
+   * @function setPrivate
+   * @description Publishes the private event to realtime and the event bus
+   * @param {CustomEvent} event
+   * @returns {void}
+   */
+  private setPrivate = ({ detail: { isPrivate, id } }: CustomEvent) => {
+    const { privateMode, participants } = this.useStore(StoreType.WHO_IS_ONLINE);
+    const participant = participants.value.find((participant) => participant.id === id);
+
+    privateMode.publish(isPrivate);
+    this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, isPrivate);
+    this.room.presence.update({ ...participant, isPrivate });
+
+    if (isPrivate) {
+      this.publish(WhoIsOnlineEvent.ENTER_PRIVATE_MODE);
+    }
+
+    if (!isPrivate) {
+      this.publish(WhoIsOnlineEvent.LEAVE_PRIVATE_MODE);
+    }
+  };
+
+  /**
+   * @function setFollow
+   * @description Sets participant being followed after someone used Everyone Follows Me
+   * @param followingData
+   * @returns
+   */
+  private setFollow = (followingData) => {
+    const { id } = followingData.presence;
+    if (id === this.localParticipantId) return;
+
+    const { data } = followingData;
+    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
+
+    following.publish(data);
+    this.followMousePointer({ detail: { id: data } } as CustomEvent);
+  };
+
+  private follow = ({ detail }: CustomEvent) => {
+    const { everyoneFollowsMe } = this.useStore(StoreType.WHO_IS_ONLINE);
+    everyoneFollowsMe.publish(!!detail?.id);
+    this.room.emit(WhoIsOnlineEvent.START_FOLLOW_ME, detail?.id);
+
+    if (this.following) {
+      this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);
+    }
+
+    if (!this.following) {
+      this.publish(WhoIsOnlineEvent.STOP_FOLLOW_ME);
+    }
+
+    this.updateParticipantsControls(detail?.id);
+  };
+
+  /**
+   * @function stopFollowing
+   * @description Stops following a participant
+   * @param {AblyParticipant} participant The message sent from Ably (in case of being called as a callback)
+   * @param {boolean} stopEvent A flag that stops the "stop following" event from being published to the user
+   * @returns
+   */
+  private stopFollowing = (event) => {
+    if (event.id !== this.following?.id) return;
+
+    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
+    following.publish(undefined);
+
+    this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
+    this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
+  };
+
+  /**
+   * @function gather
+   * @description Propagates the gather all event in the room
+   * @param {CustomEvent} data The custom event object containing data about the participant calling for the gather all
+   */
+  private gather = (data: CustomEvent) => {
+    this.room.emit(WhoIsOnlineEvent.GATHER_ALL, data.detail.id);
+    this.publish(WhoIsOnlineEvent.GATHER_ALL, data.detail.id);
+  };
+
+  // #region Helpers
   /**
    * @function setStyles
    * @param {string} styles - The user custom styles to be added to the who is online
@@ -225,181 +520,29 @@ export class WhoIsOnline extends BaseComponent {
   }
 
   /**
-   * @function goToMousePointer
-   * @description Publishes the go to event to the event bus
-   * @param {CustomEvent} event
-   * @returns {void}
-   */
-  private goToMousePointer = ({ detail: { id } }: CustomEvent) => {
-    if (id === this.localParticipantId) return;
-
-    this.eventBus.publish(RealtimeEvent.REALTIME_GO_TO_PARTICIPANT, id);
-    this.publish(WhoIsOnlineEvent.GO_TO_PARTICIPANT, id);
-  };
-
-  /**
-   * @function followMousePointer
-   * @description Publishes the follow event to the event bus
-   * @param {CustomEvent} event
-   * @returns {void}
-   */
-  private followMousePointer = ({ detail }: CustomEvent) => {
-    this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, detail.id);
-
-    if (this.following) {
-      this.publish(WhoIsOnlineEvent.START_FOLLOWING_PARTICIPANT, this.following);
-    }
-
-    if (!this.following) {
-      this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
-    }
-
-    if (detail.source === 'extras') {
-      this.highlightParticipantBeingFollowed();
-    }
-
-    this.updateParticipantsControls(detail.id);
-  };
-
-  /**
-   * @function setPrivate
-   * @description Publishes the private event to realtime and the event bus
-   * @param {CustomEvent} event
-   * @returns {void}
-   */
-  private setPrivate = ({ detail: { isPrivate, id } }: CustomEvent) => {
-    const { privateMode } = this.useStore(StoreType.WHO_IS_ONLINE);
-    privateMode.publish(isPrivate);
-
-    this.eventBus.publish(RealtimeEvent.REALTIME_PRIVATE_MODE, isPrivate);
-    this.realtime.setPrivateWIOParticipant(id, isPrivate);
-
-    if (isPrivate) {
-      this.publish(WhoIsOnlineEvent.ENTER_PRIVATE_MODE);
-    }
-
-    if (!isPrivate) {
-      this.publish(WhoIsOnlineEvent.LEAVE_PRIVATE_MODE);
-    }
-  };
-
-  /**
-   * @function setFollow
-   * @description Sets participant being followed after someone used Everyone Follows Me
-   * @param followingData
-   * @returns
-   */
-  private setFollow = (followingData: AblyParticipant) => {
-    if (followingData.clientId === this.localParticipantId) return;
-
-    const data = followingData.data?.id ? followingData.data : undefined;
-    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
-    following.publish(data);
-
-    this.followMousePointer({ detail: { id: data?.id } } as CustomEvent);
-  };
-
-  private follow = ({ detail }: CustomEvent) => {
-    const { everyoneFollowsMe } = this.useStore(StoreType.WHO_IS_ONLINE);
-    everyoneFollowsMe.publish(!!detail?.id);
-
-    this.realtime.setFollowWIOParticipant({ ...detail });
-
-    if (this.following) {
-      this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);
-    }
-
-    if (!this.following) {
-      this.publish(WhoIsOnlineEvent.STOP_FOLLOW_ME);
-    }
-
-    this.updateParticipantsControls(detail?.id);
-  };
-
-  /**
-   * @function stopFollowing
-   * @description Stops following a participant
-   * @param {AblyParticipant} participant The message sent from Ably (in case of being called as a callback)
-   * @param {boolean} stopEvent A flag that stops the "stop following" event from being published to the user
-   * @returns
-   */
-  private stopFollowing = (participant: { clientId: string }, stopEvent?: boolean) => {
-    if (participant.clientId !== this.following?.id) return;
-
-    const { following } = this.useStore(StoreType.WHO_IS_ONLINE);
-    following.publish(undefined);
-
-    this.eventBus.publish(RealtimeEvent.REALTIME_LOCAL_FOLLOW_PARTICIPANT, undefined);
-
-    if (stopEvent) return;
-
-    this.publish(WhoIsOnlineEvent.STOP_FOLLOWING_PARTICIPANT);
-  };
-
-  /**
-   * @function gather
-   * @description Propagates the gather all event in the room
-   * @param {CustomEvent} data The custom event object containing data about the participant calling for the gather all
-   */
-  private gather = (data: CustomEvent) => {
-    this.realtime.setGatherWIOParticipant({ ...data.detail });
-    this.publish(WhoIsOnlineEvent.GATHER_ALL, data.detail.id);
-  };
-
-  /**
-   * @function filterParticipants
-   * @description Removes all participants in the room that shouldn't be shown as part of the Who Is Online component, either because they are private, or because they don't have the component active
-   * @param {AblyParticipant[]} participants The list of participants that will be filtered
-   * @returns {AblyParticipant[]}
-   */
-  private filterParticipants(participants: AblyParticipant[]): AblyParticipant[] {
-    return participants.filter(({ data: { activeComponents, id, isPrivate } }) => {
-      if (isPrivate && this.localParticipantId !== id) {
-        this.stopFollowing(id, true);
-        return false;
-      }
-
-      const isLocal = id === this.localParticipantId;
-
-      if (isLocal) {
-        const hasPresenceComponent = activeComponents?.some((component) =>
-          component.includes('presence'),
-        );
-        const { joinedPresence } = this.useStore(StoreType.WHO_IS_ONLINE);
-        joinedPresence.publish(hasPresenceComponent);
-      }
-
-      return activeComponents?.includes('whoIsOnline') || isLocal;
-    });
-  }
-
-  /**
    * @function getParticipant
-   * @description Accomodates the data from a participant coming from Ably to something used in Who Is Online.
-   * @param {AblyParticipant} participant The participant that will be analyzed
-   * @returns {Participant} The data that will be used in the Who Is Online component the most
+   * @description Processes the data from a participant to something usable in the Who Is Online component
+   * @param {Participant} participant The participant that will be processed
+   * @returns {WhoIsOnlineParticipant} The data that will be used in the Who Is Online component
    */
-  private getParticipant(participant: AblyParticipant): Participant {
-    const { avatar: avatarLinks, activeComponents, participantId, name } = participant.data;
-    const isLocalParticipant = participant.clientId === this.localParticipantId;
-    const { slotIndex } = participant.data;
-    const { color } = this.realtime.getSlotColor(slotIndex);
-    const disableDropdown = this.shouldDisableDropdown({ activeComponents, participantId });
-    const presenceEnabled = !disableDropdown;
+  private getParticipant(participant: Participant): WhoIsOnlineParticipant {
+    const {
+      avatar: avatarLinks,
+      activeComponents,
+      id,
+      name,
+      slot: { index, color },
+    } = participant;
+    const disableDropdown = this.shouldDisableDropdown({ activeComponents, participantId: id });
 
-    const tooltip = this.getTooltipData({ isLocalParticipant, name, presenceEnabled });
-    const avatar = this.getAvatar({ avatar: avatarLinks, color, name, slotIndex });
-    const controls = this.getControls({ participantId, presenceEnabled }) ?? [];
-
+    const avatar = this.getAvatar({ avatar: avatarLinks, color, name, slotIndex: index });
     return {
-      id: participantId,
+      id,
       name,
       avatar,
       disableDropdown,
-      tooltip,
-      controls,
       activeComponents,
-      isLocalParticipant,
+      isPrivate: false,
     };
   }
 
@@ -448,26 +591,23 @@ export class WhoIsOnline extends BaseComponent {
    * @param {isLocalParticipant: boolean; name: string; presenceEnabled: boolean } data Relevant info about the participant that will be used to decide
    * @returns {TooltipData} What the participant tooltip will look like
    */
-  private getTooltipData({
-    isLocalParticipant,
-    name,
-    presenceEnabled,
-  }: {
-    isLocalParticipant: boolean;
-    name: string;
-    presenceEnabled: boolean;
-  }): TooltipData {
-    const data: TooltipData = { name };
+  private getTooltipData(data: WhoIsOnlineParticipant): TooltipData {
+    const { name, disableDropdown, id } = data;
+    const isLocalParticipant = id === this.localParticipantId;
+
+    const tooltip: TooltipData = {
+      name,
+    };
 
     if (isLocalParticipant) {
-      data.name += ' (You)';
+      tooltip.name += ' (You)';
     }
 
-    if (presenceEnabled && !isLocalParticipant) {
-      data.info = 'Click to follow';
+    if (!disableDropdown && !isLocalParticipant) {
+      tooltip.info = 'Click to follow';
     }
 
-    return data;
+    return tooltip;
   }
 
   /**
@@ -499,22 +639,17 @@ export class WhoIsOnline extends BaseComponent {
    * @param { participantId: string; presenceEnabled: boolean } data Relevant info about the participant that will be used to decide
    * @returns {DropdownOption[]} The presence controls enabled for a given participant
    */
-  private getControls({
-    participantId,
-    presenceEnabled,
-  }: {
-    participantId: string;
-    presenceEnabled: boolean;
-  }): DropdownOption[] | undefined {
+  private getControls(data: WhoIsOnlineParticipant): DropdownOption[] | undefined {
     const { disablePresenceControls } = this.useStore(StoreType.WHO_IS_ONLINE);
+    const { disableDropdown, id } = data;
 
-    if (disablePresenceControls.value || !presenceEnabled) return;
+    if (disablePresenceControls.value || disableDropdown) return [];
 
-    if (participantId === this.localParticipantId) {
+    if (id === this.localParticipantId) {
       return this.getLocalParticipantControls();
     }
 
-    return this.getOtherParticipantsControls(participantId);
+    return this.getOtherParticipantsControls(id);
   }
 
   /**
@@ -588,36 +723,6 @@ export class WhoIsOnline extends BaseComponent {
   }
 
   /**
-   * @function setParticipants
-   * @description Adds participants to the main participants (the 4 that are shown without opening any dropdown) until the list is full
-   * @param {Participant[]} participantsList The total participants list
-   * @returns {Participant[]} The participants that did not fit the main list and will be inserted in the extras participants list
-   */
-  private setParticipants = (participantsList: Participant[]): Participant[] => {
-    const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
-
-    const localParticipantIndex = participantsList.findIndex(({ id }) => {
-      return id === this.localParticipantId;
-    });
-
-    const localParticipant = participantsList.splice(localParticipantIndex, 1);
-    const otherParticipants = participantsList.splice(0, 3);
-    participants.publish([...localParticipant, ...otherParticipants]);
-    return participantsList;
-  };
-
-  /**
-   * @function setExtras
-   * @description Adds remaining participants to extras participants (those who are shown without opening any dropdown)
-   * @param {Participant[]} participantsList The remaining participants list
-   * @returns {void}
-   */
-  private setExtras = (participantsList: Participant[]): void => {
-    const { extras } = this.useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish(participantsList);
-  };
-
-  /**
    * @function updateParticipantsControls
    * @description Updated what the presence controls of a single participant should look like now that something about them was updated
    * @param {string | undefined} participantId The participant that suffered some update
@@ -626,22 +731,17 @@ export class WhoIsOnline extends BaseComponent {
   private updateParticipantsControls(participantId: string | undefined): void {
     const { participants } = this.useStore(StoreType.WHO_IS_ONLINE);
 
-    const newParticipantsList = participants.value.map((participant: Participant) => {
+    const newParticipantsList = participants.value.map((participant) => {
       if (participantId && participant.id !== participantId) return participant;
 
       const { id } = participant;
-      const disableDropdown = this.shouldDisableDropdown({
-        activeComponents: participant.activeComponents,
-        participantId: id,
-      });
-      const presenceEnabled = !disableDropdown;
-      const controls = this.getControls({ participantId: id, presenceEnabled }) ?? [];
+      const controls = this.getControls(participant);
 
       return {
         ...participant,
         controls,
       };
-    })
+    });
 
     participants.publish(newParticipantsList);
   }
@@ -671,4 +771,21 @@ export class WhoIsOnline extends BaseComponent {
     extras.publish(extras.value);
     participants.publish(participants.value);
   }
+
+  /**
+   * @function isInPresence
+   * @description Checks if the participant is in presence
+   * @param {ComponentNames[]} activeComponents
+   * @returns {boolean}
+   */
+  private isInPresence(activeComponents: ComponentNames[]): boolean {
+    return activeComponents?.some((component) => component.includes('presence'));
+  }
+
+  private onJoinedRoom = (event: PresenceEvent<Participant>) => {
+    if (event.id !== this.localParticipantId) return;
+
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe(this.subscribeToLocalParticipantUpdates);
+  };
 }

@@ -1,8 +1,9 @@
 import * as Socket from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
-import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
-import { Group, Participant, ParticipantType } from '../../common/types/participant.types';
+import { ParticipantEvent } from '../../common/types/events.types';
+import { Participant } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
 import { Observable } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
 import { useStore } from '../../common/utils/use-store';
@@ -13,11 +14,12 @@ import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
+import { Presence3DManager } from '../../services/presence-3d-manager';
 import { AblyRealtimeService } from '../../services/realtime';
-import { AblyParticipant } from '../../services/realtime/ably/types';
+import { ParticipantInfo } from '../../services/realtime/base/types';
+import { RoomStateService } from '../../services/roomState';
 import { SlotService } from '../../services/slot';
 import { useGlobalStore } from '../../services/stores';
-import { PublicSubject } from '../../services/stores/common/types';
 
 import { DefaultLauncher, LauncherFacade, LauncherOptions } from './types';
 
@@ -33,25 +35,12 @@ export class Launcher extends Observable implements DefaultLauncher {
   private LauncherRealtimeRoom: Socket.Room;
   private realtime: AblyRealtimeService;
   private eventBus: EventBus = new EventBus();
+  private timestamp: number = 0;
 
-  private participant: PublicSubject<Participant>;
-  private participants: PublicSubject<Map<string, Participant>>;
-  private group: PublicSubject<Group>;
+  private useStore = useStore.bind(this) as typeof useStore;
 
   constructor({ participant, group: participantGroup }: LauncherOptions) {
     super();
-    const { localParticipant, participants, group } = useGlobalStore();
-
-    this.participant = localParticipant;
-    this.participants = participants;
-    this.group = group;
-
-    this.participant.value = {
-      ...participant,
-      type: ParticipantType.GUEST,
-    };
-    this.group.value = participantGroup;
-
     this.logger = new Logger('@superviz/sdk/launcher');
 
     // Ably realtime service
@@ -61,7 +50,16 @@ export class Launcher extends Observable implements DefaultLauncher {
     );
 
     // SuperViz IO Room
-    this.ioc = new IOC(this.participant.value);
+    const { localParticipant, participants, group, isDomainWhitelisted } = this.useStore(
+      StoreType.GLOBAL,
+    );
+
+    localParticipant.publish({ ...participant });
+    participants.subscribe(this.onParticipantListUpdate);
+    isDomainWhitelisted.subscribe(this.onAuthentication);
+
+    group.publish(participantGroup);
+    this.ioc = new IOC(localParticipant.value);
     this.LauncherRealtimeRoom = this.ioc.createRoom('launcher');
 
     // internal events without realtime
@@ -82,7 +80,9 @@ export class Launcher extends Observable implements DefaultLauncher {
   public addComponent = (component: Partial<BaseComponent>): void => {
     if (!this.canAddComponent(component)) return;
 
-    if (!this.realtime.isJoinedRoom) {
+    const { hasJoinedRoom, localParticipant, group } = useStore(StoreType.GLOBAL);
+
+    if (!hasJoinedRoom.value) {
       this.logger.log('launcher service @ addComponent - not joined yet');
       this.componentsToAttachAfterJoin.push(component);
       return;
@@ -94,16 +94,21 @@ export class Launcher extends Observable implements DefaultLauncher {
       config: config.configuration,
       eventBus: this.eventBus,
       useStore,
+      Presence3DManagerService: Presence3DManager,
     });
 
     this.activeComponents.push(component.name);
     this.activeComponentsInstances.push(component);
-    this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      activeComponents: this.activeComponents,
+    });
 
     ApiService.sendActivity(
-      this.participant.value.id,
-      this.group.value.id,
-      this.group.value.name,
+      localParticipant.value.id,
+      group.value.id,
+      group.value.name,
       component.name,
     );
   };
@@ -146,9 +151,14 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.activeComponentsInstances = this.activeComponentsInstances.filter((c) => {
       return c.name !== component.name;
     });
-    this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
 
-    this.realtime.updateMyProperties({ activeComponents: this.activeComponents });
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+
+    this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
+    localParticipant.publish({
+      ...localParticipant.value,
+      activeComponents: this.activeComponents,
+    });
   };
 
   /**
@@ -164,23 +174,23 @@ export class Launcher extends Observable implements DefaultLauncher {
       this.removeComponent(component);
     });
 
+    const { localParticipant } = useStore(StoreType.GLOBAL);
+
     this.activeComponents = [];
     this.activeComponentsInstances = [];
-    this.participant = undefined;
+    localParticipant.publish(undefined);
     useGlobalStore().destroy();
 
     this.eventBus.destroy();
     this.eventBus = undefined;
 
-    this.LauncherRealtimeRoom.presence.off(Socket.PresenceEvents.JOINED_ROOM);
-    this.LauncherRealtimeRoom.presence.off(Socket.PresenceEvents.LEAVE);
-    this.LauncherRealtimeRoom.presence.off(Socket.PresenceEvents.UPDATE);
-
-    this.ioc.destroy();
+    this.LauncherRealtimeRoom?.presence.off(Socket.PresenceEvents.JOINED_ROOM);
+    this.LauncherRealtimeRoom?.presence.off(Socket.PresenceEvents.LEAVE);
+    this.LauncherRealtimeRoom?.presence.off(Socket.PresenceEvents.UPDATE);
+    this.ioc?.destroy();
 
     this.realtime.authenticationObserver.unsubscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.unsubscribe(this.onSameAccount);
-    this.realtime.participantJoinedObserver.unsubscribe(this.onParticipantJoined);
     this.realtime.participantsObserver.unsubscribe(this.onParticipantListUpdate);
     this.realtime.leave();
     this.realtime = undefined;
@@ -197,10 +207,15 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {boolean}
    */
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
+    const isProvidedFeature = config.get<boolean>(`features.${component.name}`);
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
 
     const verifications = [
+      {
+        isValid: isProvidedFeature,
+        message: `Component ${component.name} is not enabled in the room`,
+      },
       {
         isValid: !this.isDestroyed,
         message:
@@ -236,9 +251,10 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private startAbly = (): void => {
     this.logger.log('launcher service @ startAbly');
+    const { localParticipant } = useStore(StoreType.GLOBAL);
 
     this.realtime.start({
-      participant: this.participant.value,
+      participant: localParticipant.value,
       apiKey: config.get<string>('apiKey'),
       roomId: config.get<string>('roomId'),
     });
@@ -257,14 +273,13 @@ export class Launcher extends Observable implements DefaultLauncher {
   private subscribeToAblyEvents = (): void => {
     this.realtime.authenticationObserver.subscribe(this.onAuthentication);
     this.realtime.sameAccountObserver.subscribe(this.onSameAccount);
-    this.realtime.participantJoinedObserver.subscribe(this.onParticipantJoined);
     this.realtime.participantsObserver.subscribe(this.onParticipantListUpdate);
   };
 
   /** Ably Listeners */
 
-  private onAuthentication = (event: RealtimeEvent): void => {
-    if (event !== RealtimeEvent.REALTIME_AUTHENTICATION_FAILED) return;
+  private onAuthentication = (isAuthenticated: boolean): void => {
+    if (isAuthenticated) return;
 
     this.destroy();
     console.error(
@@ -278,38 +293,36 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param participants - participants list
    * @returns {void}
    */
-  private onParticipantListUpdate = (participants: Record<string, AblyParticipant>): void => {
+  private onParticipantListUpdate = (participants: Record<string, ParticipantInfo>): void => {
     this.logger.log('launcher service @ onParticipantListUpdate', participants);
+    const { localParticipant } = useStore(StoreType.GLOBAL);
 
-    const participantList: Participant[] = Object.values(participants).map((participant) => ({
-      id: participant.data.id,
-      name: participant.data?.name,
-      type: participant.data?.type,
-      avatar: participant.data?.avatar,
-      avatarConfig: participant.data?.avatarConfig,
-      isHost: this.realtime.hostClientId === participant.clientId,
-      color: this.realtime.getSlotColor(participant.data?.slotIndex).color,
-      activeComponents: participant.data?.activeComponents,
-    }));
+    const participant: ParticipantInfo = Object.values(participants)
+      .filter((participant) => participant.id === localParticipant.value.id)
+      .map((participant) => {
+        return {
+          ...participant,
+          color: participant.slot?.color,
+        };
+      })[0];
 
-    const localParticipant = participantList.find((participant) => {
-      return participant?.id === this.participant.value?.id;
+    if (!participant || isEqual(localParticipant.value, participant)) return;
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      ...participant,
     });
 
-    if (localParticipant && !isEqual(this.participant.value, localParticipant)) {
-      this.LauncherRealtimeRoom.presence.update<Participant>(localParticipant);
+    this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+      /**
+       * @NOTE - Prevents removing all components when
+       * in the first update, activeComponents is undefined.
+       * It means we should keep all instances
+       */
+      if (!participant.activeComponents) return true;
 
-      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
-        /**
-         * @NOTE - Prevents removing all components when
-         * in the first update, activeComponents is undefined.
-         * It means we should keep all instances
-         */
-        if (!localParticipant.activeComponents) return true;
-
-        return this.activeComponents.includes(component.name);
-      });
-    }
+      return this.activeComponents.includes(component.name);
+    });
   };
 
   /**
@@ -318,8 +331,9 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param ablyParticipant - ably participant
    * @returns {void}
    */
-  private onParticipantJoined = (ablyParticipant: AblyParticipant): void => {
-    if (ablyParticipant.clientId !== this.participant.value.id) return;
+  private onParticipantJoined = (participant: Socket.PresenceEvent<Participant>): void => {
+    const { localParticipant } = useStore(StoreType.GLOBAL);
+    if (participant.id !== localParticipant.value.id) return;
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
     this.attachComponentsAfterJoin();
@@ -340,12 +354,27 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private startIOC = (): void => {
     this.logger.log('launcher service @ startIOC');
-
+    const { participants, localParticipant } = useStore(StoreType.GLOBAL);
     // retrieve the current participants in the room
+
     this.LauncherRealtimeRoom.presence.get((presences) => {
+      const participantsMap: Record<string, ParticipantInfo> = {};
+
       presences.forEach((presence) => {
-        this.participants.value.set(presence.id, presence.data as Participant);
+        participantsMap[presence.id] = {
+          ...(presence.data as Participant),
+          name: presence.name,
+          id: presence.id,
+          timestamp: presence.timestamp,
+        };
       });
+
+      participantsMap[localParticipant.value.id] = {
+        ...participantsMap[localParticipant.value.id],
+        ...localParticipant.value,
+      };
+
+      participants.publish(participantsMap);
     });
 
     this.LauncherRealtimeRoom.presence.on<Participant>(
@@ -358,10 +387,13 @@ export class Launcher extends Observable implements DefaultLauncher {
       this.onParticipantLeaveIOC,
     );
 
-    this.LauncherRealtimeRoom.presence.on<Participant>(
+    this.LauncherRealtimeRoom.presence.on<ParticipantInfo>(
       Socket.PresenceEvents.UPDATE,
       this.onParticipantUpdatedIOC,
     );
+
+    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
   };
 
   /**
@@ -373,23 +405,21 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onParticipantJoinedIOC = async (
     presence: Socket.PresenceEvent<Participant>,
   ): Promise<void> => {
-    if (presence.id !== this.participant.value.id) return;
+    const { localParticipant } = useStore(StoreType.GLOBAL);
+    if (presence.id !== localParticipant.value.id) return;
 
     // Assign a slot to the participant
-    const slot = new SlotService(this.LauncherRealtimeRoom, this.participant.value);
-    const slotData = await slot.assignSlot();
+    const slot = new SlotService(this.LauncherRealtimeRoom);
+    await slot.assignSlot();
 
-    this.participant.value = {
-      ...this.participant.value,
-      slot: slotData,
-    };
+    this.timestamp = presence.timestamp;
 
-    this.LauncherRealtimeRoom.presence.update<Participant>(this.participant.value);
+    this.LauncherRealtimeRoom.presence.update(localParticipant.value);
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-
-    this.publish(ParticipantEvent.LOCAL_JOINED, this.participant.value);
-    this.publish(ParticipantEvent.JOINED, this.participant.value);
+    this.onParticipantJoined(presence);
+    this.publish(ParticipantEvent.LOCAL_JOINED, localParticipant.value);
+    this.publish(ParticipantEvent.JOINED, localParticipant.value);
   };
 
   /**
@@ -399,9 +429,13 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private onParticipantLeaveIOC = (presence: Socket.PresenceEvent<Participant>): void => {
-    this.participants.value.delete(presence.id);
+    const { participants, localParticipant } = useStore(StoreType.GLOBAL);
+    const participantsMap = { ...participants.value };
+    delete participantsMap[presence.id];
 
-    if (presence.id === this.participant.value.id) {
+    participants.publish(participantsMap);
+
+    if (presence.id === localParticipant.value.id) {
       this.logger.log('launcher service @ onParticipantLeave - local participant left');
       this.publish(ParticipantEvent.LOCAL_LEFT, presence.data);
     }
@@ -416,32 +450,50 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param presence - participant presence
    * @returns {void}
    */
-  private onParticipantUpdatedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
+  private onParticipantUpdatedIOC = (presence: Socket.PresenceEvent<ParticipantInfo>): void => {
+    const { localParticipant } = useStore(StoreType.GLOBAL);
+
     if (
-      presence.id === this.participant.value.id &&
-      !isEqual(this.participant.value, presence.data)
+      localParticipant.value &&
+      presence.id === localParticipant.value.id &&
+      !isEqual(localParticipant.value, presence.data)
     ) {
-      this.participant.value = presence.data;
+      if (presence.data.timestamp === this.timestamp) {
+        this.timestamp = 0;
+        return;
+      }
+
+      localParticipant.publish({
+        ...presence.data,
+        ...localParticipant.value,
+        timestamp: presence.timestamp,
+      } as Participant);
+
+      this.timestamp = presence.timestamp;
+      this.LauncherRealtimeRoom.presence.update(localParticipant.value);
+
       this.publish(ParticipantEvent.LOCAL_UPDATED, presence.data);
 
       this.logger.log('Publishing ParticipantEvent.UPDATED', presence.data);
-
-      if (
-        presence.data?.slot?.index !== undefined &&
-        presence.data?.slot?.index !== this.realtime.participant.data.slotIndex
-      ) {
-        this.realtime.updateMyProperties({ slotIndex: presence.data.slot.index });
-      }
     }
 
-    if (!this.participants.value.has(presence.id)) {
+    const { participants } = useStore(StoreType.GLOBAL);
+
+    if (!participants.value[presence.id]) {
       this.publish(ParticipantEvent.JOINED, presence.data);
     }
 
-    this.participants.value.set(presence.id, presence.data);
-    const participantList = Array.from(this.participants.value.values());
+    const participantsMap = { ...participants.value };
+    participantsMap[presence.id] = {
+      ...presence.data,
+      ...participants.value[presence.id],
+      timestamp: presence.timestamp,
+    };
 
-    this.logger.log('Publishing ParticipantEvent.LIST_UPDATED', this.participants.value);
+    participants.publish(participantsMap);
+
+    const participantList = Object.values(participants.value);
+    this.logger.log('Publishing ParticipantEvent.LIST_UPDATED', participants.value);
     this.publish(ParticipantEvent.LIST_UPDATED, participantList);
   };
 }

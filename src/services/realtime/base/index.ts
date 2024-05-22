@@ -7,22 +7,15 @@ export class RealtimeService implements DefaultRealtimeService {
   protected readonly logger: Logger;
 
   public participantObservers: Observer[];
-  public participants3DObservers: Observer[];
   public participantsObserver: Observer;
-  public participantJoinedObserver: Observer;
   public participantLeaveObserver: Observer;
-  public reconnectObserver: Observer;
   public roomInfoUpdatedObserver: Observer;
   public roomListUpdatedObserver: Observer;
   public realtimeStateObserver: Observer;
   public kickAllParticipantsObserver: Observer;
   public kickParticipantObserver: Observer;
   public authenticationObserver: Observer;
-  public commentsObserver: Observer;
   public presenceMouseObserver: Observer;
-  public privateModeWIOObserver: Observer;
-  public followWIOObserver: Observer;
-  public gatherWIOObserver: Observer;
   public presence3dObserver: Observer;
   public presence3dLeaveObserver: Observer;
   public presence3dJoinedObserver: Observer;
@@ -30,14 +23,11 @@ export class RealtimeService implements DefaultRealtimeService {
 
   constructor() {
     this.participantObservers = [];
-    this.participants3DObservers = [];
 
     this.logger = new Logger('@superviz/sdk/realtime-service');
 
     this.participantsObserver = new Observer({ logger: this.logger });
-    this.participantJoinedObserver = new Observer({ logger: this.logger });
     this.participantLeaveObserver = new Observer({ logger: this.logger });
-    this.reconnectObserver = new Observer({ logger: this.logger });
     this.sameAccountObserver = new Observer({ logger: this.logger });
 
     // Room info observers helpers
@@ -48,16 +38,8 @@ export class RealtimeService implements DefaultRealtimeService {
     this.kickParticipantObserver = new Observer({ logger: this.logger });
     this.authenticationObserver = new Observer({ logger: this.logger });
 
-    // Comments observer
-    this.commentsObserver = new Observer({ logger: this.logger });
-
     // presence mouse
     this.presenceMouseObserver = new Observer({ logger: this.logger });
-
-    // who is online
-    this.privateModeWIOObserver = new Observer({ logger: this.logger });
-    this.followWIOObserver = new Observer({ logger: this.logger });
-    this.gatherWIOObserver = new Observer({ logger: this.logger });
 
     // presence 3d
 
@@ -91,34 +73,6 @@ export class RealtimeService implements DefaultRealtimeService {
   public unsubscribeFromParticipantUpdate(participantId: string, callback: Function): void {
     if (this.participantObservers[participantId]) {
       this.participantObservers[participantId].unsubscribe(callback);
-    }
-  }
-
-  /**
-   * @function subscribeToParticipant3DUpdate
-   * @description subscribe to a participant's events
-   * @param {string} participantId
-   * @param {Function} callback
-   * @returns {void}
-   */
-  public subscribeToParticipant3DUpdate(participantId: string, callback: Function): void {
-    if (!this.participants3DObservers[participantId]) {
-      this.participants3DObservers[participantId] = new Observer({ logger: this.logger });
-    }
-
-    this.participants3DObservers[participantId].subscribe(callback);
-  }
-
-  /**
-   * @function unsubscribeFromParticipantUpdate
-   * @description unsubscribe to a participant's events
-   * @param {string} participantId
-   * @param {Function} callback
-   * @returns {void}
-   */
-  public unsubscribeFromParticipant3DUpdate(participantId: string, callback: Function): void {
-    if (this.participants3DObservers[participantId]) {
-      this.participants3DObservers[participantId].unsubscribe(callback);
     }
   }
 

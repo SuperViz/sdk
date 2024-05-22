@@ -19,7 +19,7 @@ export interface AblyParticipant {
 
 export interface AblyRealtimeData {
   hostClientId?: string;
-  isGridModeEnable?: boolean;
+  isGridModeEnabled?: boolean;
   followParticipantId?: string;
   gather?: boolean;
   drawing?: DrawingData;

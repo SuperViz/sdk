@@ -96,9 +96,10 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     debug.disable();
   }
 
-  const { apiUrl, conferenceLayerUrl } = await RemoteConfigService.getRemoteConfig(
-    options.environment as EnvironmentTypes,
-  );
+  const [{ apiUrl, conferenceLayerUrl }, features] = await Promise.all([
+    RemoteConfigService.getRemoteConfig(options.environment as EnvironmentTypes),
+    RemoteConfigService.getFeatures(apiKey),
+  ]);
 
   const isValid = await AuthService(apiUrl, apiKey);
 
@@ -132,6 +133,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     limits,
     waterMark,
     colors: options.customColors,
+    features,
   });
 
   setColorVariables(options.customColors);
