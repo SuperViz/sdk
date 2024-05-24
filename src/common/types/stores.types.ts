@@ -13,7 +13,7 @@ export enum StoreType {
 
 type Subject<T extends (...args: any[]) => any, K extends keyof ReturnType<T>> = ReturnType<T>[K];
 
-type StoreApiWithoutDestroy<T extends (...args: any[]) => any> = {
+type IncompleteStoreApi<T extends (...args: any[]) => any> = {
   [K in keyof ReturnType<T>]: {
     subscribe(callback?: (value: Subject<T, K>['value']) => void): void;
     subject: Subject<T, K>;
@@ -22,8 +22,9 @@ type StoreApiWithoutDestroy<T extends (...args: any[]) => any> = {
   };
 };
 
-type StoreApi<T extends (...args: any[]) => any> = Omit<StoreApiWithoutDestroy<T>, 'destroy'> & {
+type StoreApi<T extends (...args: any[]) => any> = IncompleteStoreApi<T> & {
   destroy(): void;
+  restart(): void;
 };
 
 type GlobalStore = StoreType.GLOBAL | `${StoreType.GLOBAL}`;

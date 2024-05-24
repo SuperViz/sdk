@@ -82,7 +82,7 @@ describe('base subject for all stores', () => {
       const unsubscribe = jest.fn();
 
       instance['subscribe'](testValues.id, callback);
-      instance['subscriptions'].get(testValues.id)!.unsubscribe = unsubscribe;
+      instance['subscriptions'].get(testValues.id)![0].unsubscribe = unsubscribe;
 
       instance['unsubscribe'](testValues.id);
 
@@ -97,16 +97,14 @@ describe('base subject for all stores', () => {
       instance = subject<string>(testValues.str1);
 
       const callback = jest.fn();
-      const unsubscribe = jest.fn();
 
       instance['subscribe'](testValues.id, callback);
-      instance['subscriptions'].get(testValues.id)!.unsubscribe = unsubscribe;
 
       instance['destroy']();
 
       expect(instance['subscriptions'].size).toBe(0);
       expect(instance['subscriptions'].get(testValues.id)).toBeUndefined();
-      expect(unsubscribe).toHaveBeenCalled();
+      expect(instance.state).toBe(instance['firstState']);
     });
   });
 

@@ -7,7 +7,6 @@ import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import {
   DeviceEvent,
   FrameEvent,
@@ -25,7 +24,6 @@ import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
 import { ParticipantInfo } from '../../services/realtime/base/types';
-import { RoomStateService } from '../../services/roomState';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
@@ -97,11 +95,12 @@ describe('VideoConference', () => {
   let VideoConferenceInstance: VideoConference;
 
   const { localParticipant, hasJoinedRoom } = useStore(StoreType.GLOBAL);
-  localParticipant.publish(MOCK_LOCAL_PARTICIPANT);
-  hasJoinedRoom.publish(true);
   beforeEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
+
+    localParticipant.publish(MOCK_LOCAL_PARTICIPANT);
+    hasJoinedRoom.publish(true);
 
     VideoConferenceInstance = new VideoConference({
       userType: 'host',
@@ -118,6 +117,7 @@ describe('VideoConference', () => {
       useStore,
     });
 
+    VideoConferenceInstance['startVideo']();
     VideoConferenceInstance['onFrameStateChange'](VideoFrameState.INITIALIZED);
   });
 
