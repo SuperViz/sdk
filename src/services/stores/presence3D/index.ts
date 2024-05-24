@@ -20,6 +20,7 @@ class Presence3DStore {
 
   public destroy() {
     this.hasJoined3D.destroy();
+    this.participants.destroy();
   }
 }
 

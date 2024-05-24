@@ -13,7 +13,6 @@ import { DefaultAttachComponentOptions } from '../../components/base/types';
 import { ComponentNames } from '../../components/types';
 import { IOC } from '../../services/io';
 import LimitsService from '../../services/limits';
-import { AblyParticipant } from '../../services/realtime/ably/types';
 import { useGlobalStore } from '../../services/stores';
 
 import { LauncherFacade, LauncherOptions } from './types';
