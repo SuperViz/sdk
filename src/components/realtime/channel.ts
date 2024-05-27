@@ -172,6 +172,7 @@ export class Channel extends Observable {
 
               group[event.data.name].push({
                 data: event.data.payload,
+                connectionId: event.connectionId,
                 name: event.data.name,
                 participantId: event.presence.id,
                 timestamp: event.timestamp,
