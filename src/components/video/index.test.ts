@@ -870,10 +870,10 @@ describe('VideoConference', () => {
     });
 
     test('should toggle transcript', () => {
-      VideoConferenceInstance['toggleTranscript']();
+      VideoConferenceInstance['toggleRecording']();
 
       expect(VIDEO_MANAGER_MOCK.publishMessageToFrame).toBeCalledWith(
-        MeetingControlsEvent.TOGGLE_TRANSCRIPT,
+        MeetingControlsEvent.TOGGLE_RECORDING,
       );
     });
 

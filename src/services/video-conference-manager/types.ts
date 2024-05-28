@@ -9,7 +9,7 @@ export interface VideoManagerOptions {
   canUseChat: boolean;
   canUseCams: boolean;
   canShowAudienceList: boolean;
-  canUseTranscription: boolean;
+  canUseRecording: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
   canUseGather: boolean;
@@ -36,7 +36,7 @@ export interface VideoManagerOptions {
   callbacks?: {
     onToggleMicrophone?: () => void;
     onToggleCam?: () => void;
-    onToggleTranscript?: () => void;
+    onToggleRecording?: () => void;
     onToggleChat?: () => void;
     onToggleScreenShare?: () => void;
     onClickHangup?: () => void;
@@ -73,7 +73,7 @@ export interface FrameConfig {
   canUseCams: boolean;
   canUseScreenshare: boolean;
   canUseDefaultAvatars: boolean;
-  canUseTranscription: boolean;
+  canUseRecording: boolean;
   canUseFollow: boolean;
   canUseGoTo: boolean;
   canUseGather: boolean;
