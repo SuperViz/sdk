@@ -133,7 +133,7 @@ export class Channel extends Observable {
       this.logger.log('message received', event);
       this.publishEventToClient(event.data.name, {
         data: event.data.payload,
-        participantId: event.presence.id,
+        participantId: event?.presence?.id || null,
         name: event.data.name,
         timestamp: event.timestamp,
       } as RealtimeMessage);

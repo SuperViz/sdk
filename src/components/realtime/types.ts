@@ -25,7 +25,7 @@ export type RealtimeData = {
 export type RealtimeMessage = {
   name: string;
   connectionId: string;
-  participantId: string;
+  participantId: string | null;
   data: unknown;
   timestamp: number;
 };
