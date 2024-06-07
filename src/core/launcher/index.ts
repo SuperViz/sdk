@@ -174,11 +174,9 @@ export class Launcher extends Observable implements DefaultLauncher {
       this.removeComponent(component);
     });
 
-    const { localParticipant } = useStore(StoreType.GLOBAL);
-
     this.activeComponents = [];
     this.activeComponentsInstances = [];
-    localParticipant.publish(undefined);
+
     useGlobalStore().destroy();
 
     this.eventBus.destroy();
