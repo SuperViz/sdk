@@ -42,8 +42,6 @@ export class WhoIsOnlineStore {
     this.everyoneFollowsMe.destroy();
     this.privateMode.destroy();
     this.following.destroy();
-
-    instance.value = null;
   }
 }
 

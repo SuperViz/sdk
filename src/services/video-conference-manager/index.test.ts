@@ -19,7 +19,7 @@ const createVideoConfrenceManager = (options?: VideoManagerOptions) => {
   const defaultOptions: VideoManagerOptions = {
     browserService: new BrowserService(),
     camerasPosition: CamerasPosition.RIGHT,
-    canUseTranscription: true,
+    canUseRecording: true,
     canShowAudienceList: true,
     canUseCams: true,
     canUseChat: true,
@@ -284,7 +284,7 @@ describe('VideoConferenceManager', () => {
       const callbacks = {
         onToggleMicrophone: jest.fn(),
         onToggleCam: jest.fn(),
-        onToggleTranscript: jest.fn(),
+        onToggleRecording: jest.fn(),
         onToggleChat: jest.fn(),
         onToggleScreenShare: jest.fn(),
         onClickHangup: jest.fn(),
@@ -304,7 +304,7 @@ describe('VideoConferenceManager', () => {
         JSON.stringify({
           onToggleMicrophone: true,
           onToggleCam: true,
-          onToggleTranscript: true,
+          onToggleRecording: true,
           onToggleChat: true,
           onToggleScreenShare: true,
           onClickHangup: true,

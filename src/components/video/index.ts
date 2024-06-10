@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents, SocketEvent } from '@superviz/socket-client';
+import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
 
 import { ColorsVariables } from '../../common/types/colors.types';
 import {
@@ -117,12 +117,12 @@ export class VideoConference extends BaseComponent {
   }
 
   /**
-   * @function toggleTranscript
-   * @description open/close meeting transcript
+   * @function toggleRecording
+   * @description open/close meeting recording
    * @returns {void}
    */
-  public toggleTranscript(): void {
-    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_TRANSCRIPT);
+  public toggleRecording(): void {
+    return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_RECORDING);
   }
 
   /**
@@ -178,7 +178,7 @@ export class VideoConference extends BaseComponent {
   private startVideo = (): void => {
     this.videoConfig = {
       language: this.params?.language,
-      canUseTranscription: this.params?.transcriptOff === false,
+      canUseRecording: !!this.params?.enableRecording,
       canShowAudienceList: this.params?.showAudienceList ?? true,
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
@@ -523,12 +523,12 @@ export class VideoConference extends BaseComponent {
   private onParticipantLeft = (_: Participant): void => {
     this.logger.log('video conference @ on participant left', this.localParticipant);
 
-    this.videoManager.leave();
     this.connectionService.removeListeners();
     this.publish(MeetingEvent.DESTROY);
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
 
     this.unsubscribeFromVideoEvents();
+    this.videoManager.leave();
     this.videoManager = undefined;
     this.connectionService = undefined;
 

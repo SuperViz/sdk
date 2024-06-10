@@ -141,7 +141,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   ApiService.createOrUpdateParticipant({
     name: participant.name,
     participantId: participant.id,
-    avatar: participant.avatar?.imageUrl,
+    avatar: participant.avatar?.imageUrl, 
   });
 
   return LauncherFacade(options);

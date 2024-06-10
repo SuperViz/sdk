@@ -13,7 +13,7 @@ export interface VideoComponentOptions {
   camsOff?: boolean;
   screenshareOff?: boolean;
   chatOff?: boolean;
-  transcriptOff?: boolean;
+  enableRecording?: boolean;
   defaultAvatars?: boolean;
   offset?: Offset;
   enableFollow?: boolean;
@@ -38,7 +38,7 @@ export interface VideoComponentOptions {
   callbacks?: {
     onToggleMicrophone?: () => void;
     onToggleCam?: () => void;
-    onToggleTranscript?: () => void;
+    onToggleRecording?: () => void;
     onToggleChat?: () => void;
     onToggleScreenShare?: () => void;
     onLeaveMeeting?: () => void;
