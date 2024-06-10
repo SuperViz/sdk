@@ -7,7 +7,7 @@ import subject from '../subject';
 const instance: Singleton<GlobalStore> = CreateSingleton<GlobalStore>();
 
 export class GlobalStore {
-  public localParticipant = subject<Participant>(null);
+  public localParticipant = subject<Participant>({} as Participant);
   public participants = subject<Record<string, ParticipantInfo>>({});
   public group = subject<Group>(null);
   public isDomainWhitelisted = subject<boolean>(true);

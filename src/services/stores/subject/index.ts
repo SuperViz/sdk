@@ -5,11 +5,15 @@ import { PublicSubject } from '../common/types';
 
 export class Subject<T> {
   public state: T;
+  private firstState: T;
+
   private subject: BehaviorSubject<T>;
-  private subscriptions: Map<string | this, Subscription> = new Map();
+  private subscriptions: Map<string | this, Subscription[]> = new Map();
 
   constructor(state: T, subject: BehaviorSubject<T>) {
     this.state = state;
+    this.firstState = state;
+
     this.subject = subject.pipe(
       distinctUntilChanged(),
       shareReplay({ bufferSize: 1, refCount: true }),
@@ -27,17 +31,34 @@ export class Subject<T> {
 
   public subscribe = (subscriptionId: string | this, callback: (value: T) => void) => {
     const subscription = this.subject.subscribe(callback);
-    this.subscriptions.set(subscriptionId, subscription);
+
+    if (this.subscriptions.has(subscriptionId)) {
+      this.subscriptions.get(subscriptionId).push(subscription);
+      return;
+    }
+
+    this.subscriptions.set(subscriptionId, [subscription]);
   };
 
   public unsubscribe(subscriptionId: string) {
-    this.subscriptions.get(subscriptionId)?.unsubscribe();
+    this.subscriptions.get(subscriptionId)?.forEach((subscription) => subscription.unsubscribe());
     this.subscriptions.delete(subscriptionId);
   }
 
   public destroy() {
-    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     this.subscriptions.clear();
+    this.subject.complete();
+
+    this.restart();
+  }
+
+  private restart() {
+    this.state = this.firstState;
+
+    this.subject = new BehaviorSubject<T>(this.firstState).pipe(
+      distinctUntilChanged(),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    ) as BehaviorSubject<T>;
   }
 
   public expose(): PublicSubject<T> {
