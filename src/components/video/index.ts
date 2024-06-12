@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
+import { PresenceEvent, PresenceEvents, Room } from '@superviz/socket-client';
 
 import { ColorsVariables } from '../../common/types/colors.types';
 import {
@@ -49,6 +49,7 @@ export class VideoConference extends BaseComponent {
   private videoConfig: VideoManagerOptions;
   private params?: VideoComponentOptions;
   private roomState: RoomStateService;
+  private drawingRoom: Room;
 
   private kickParticipantsOnHostLeave = false;
 
@@ -141,6 +142,8 @@ export class VideoConference extends BaseComponent {
    */
   protected start(): void {
     this.logger.log('video conference @ start');
+
+    this.drawingRoom = this.ioc.createRoom('drawing');
 
     this.subscribeToStoreUpdates();
     this.suscribeToRealtimeEvents();
@@ -428,7 +431,7 @@ export class VideoConference extends BaseComponent {
 
     if (state !== VideoFrameState.INITIALIZED) return;
 
-    this.roomState = new RoomStateService(this.room, this.logger);
+    this.roomState = new RoomStateService(this.room, this.drawingRoom, this.logger);
     this.roomState.kickParticipantObserver.subscribe(this.onKickLocalParticipant);
     this.roomState.start();
 
