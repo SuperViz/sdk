@@ -44,7 +44,6 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
   ): void {
     super.firstUpdated(_changedProperties);
     this.updateComplete.then(() => {
-      this.resolved = this.annotation.resolved;
       importStyle.call(this, ['comments']);
     });
   }
@@ -152,7 +151,6 @@ export class CommentsAnnotationItem extends WebComponentsBaseElement {
     const isResolveAnnotation =
       type === 'resolve-annotation' && this.annotationFilter === AnnotationFilter.ALL;
 
-    this.resolved = resolved;
     this.emitEvent('resolve-annotation', {
       uuid,
       resolved,
