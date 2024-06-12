@@ -370,7 +370,6 @@ export class RoomStateService {
       StoreType.VIDEO,
     );
 
-    console.log('data', data);
     followParticipantId.publish(data.followParticipantId);
     gather.publish(data.gather);
     hostId.publish(data.hostClientId);
