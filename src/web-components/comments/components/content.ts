@@ -119,6 +119,7 @@ export class CommentsContent extends WebComponentsBaseElement {
           selected="${this.selectedAnnotation}"
           annotationFilter=${this.annotationFilter}
           uuid=${annotation.uuid}
+          ?resolved=${annotation.resolved}
           isLastComment=${this.checkLastAnnotation(annotation.uuid)}
           participantsList=${JSON.stringify(this.participantsList)}
         >

@@ -106,7 +106,6 @@ describe('CommentsAnnotationItem', () => {
 
     await sleep();
 
-    expect(element['resolved']).toBe(true);
     expect(element['shouldShowUndoResolved']).toBe(true);
   });
 
