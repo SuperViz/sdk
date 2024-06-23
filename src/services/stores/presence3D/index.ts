@@ -1,5 +1,4 @@
 import { Participant } from '../../../common/types/participant.types';
-import { ParticipantInfo } from '../../realtime/base/types';
 import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
@@ -8,7 +7,7 @@ const instance: Singleton<Presence3DStore> = CreateSingleton<Presence3DStore>();
 
 class Presence3DStore {
   public hasJoined3D = subject<boolean>(false);
-  public participants = subject<ParticipantInfo[]>([]);
+  public participants = subject<Participant[]>([]);
 
   constructor() {
     if (instance.value) {

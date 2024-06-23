@@ -3,9 +3,7 @@ import { PresenceEvent } from '@superviz/socket-client';
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { ParticipantEvent, RealtimeEvent } from '../../common/types/events.types';
-import { Participant } from '../../common/types/participant.types';
+import { ParticipantEvent } from '../../common/types/events.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { BaseComponent } from '../../components/base';
@@ -20,10 +18,6 @@ import { LauncherFacade, LauncherOptions } from './types';
 import Facade, { Launcher } from '.';
 
 jest.mock('../../services/limits');
-
-jest.mock('../../services/realtime', () => ({
-  AblyRealtimeService: jest.fn().mockImplementation(() => ABLY_REALTIME_MOCK),
-}));
 
 jest.mock('../../services/event-bus', () => ({
   EventBus: jest.fn().mockImplementation(() => EVENT_BUS_MOCK),
@@ -63,15 +57,7 @@ describe('Launcher', () => {
     expect(Launcher).toBeDefined();
   });
 
-  test('should initialize realtime service', () => {
-    expect(ABLY_REALTIME_MOCK.start).toHaveBeenCalled();
-  });
-
   describe('Components', () => {
-    beforeEach(() => {
-      LauncherInstance['realtime'].hasJoinedRoom = true;
-    });
-
     test('should not add component if realtime is not joined room', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
       const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
@@ -81,18 +67,9 @@ describe('Launcher', () => {
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.attach).not.toBeCalled();
+      expect(MOCK_COMPONENT.attach).not.toHaveBeenCalled();
       expect(LauncherInstance['activeComponentsInstances'].length).toBe(0);
       expect(LauncherInstance['componentsToAttachAfterJoin'].length).toBe(1);
-
-      LauncherInstance['realtime'].hasJoinedRoom = true;
-      LauncherInstance['onParticipantJoined']({
-        data: {
-          id: MOCK_LOCAL_PARTICIPANT.id,
-        },
-      } as unknown as PresenceEvent<Participant>);
-
-      expect(spy).toHaveBeenCalledWith(MOCK_COMPONENT);
     });
 
     test('should add component', () => {
@@ -103,7 +80,6 @@ describe('Launcher', () => {
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledWith(
         expect.objectContaining({
           ioc: expect.any(IOC),
-          realtime: ABLY_REALTIME_MOCK,
           config: MOCK_CONFIG,
           eventBus: EVENT_BUS_MOCK,
           useStore,
@@ -215,17 +191,8 @@ describe('Launcher', () => {
 
       LauncherInstance['onParticipantListUpdate']({
         participant1: {
-          extras: null,
-          clientId: MOCK_LOCAL_PARTICIPANT.id,
-          action: 'present',
-          connectionId: 'connection1',
-          encoding: 'h264',
           id: 'unit-test-participant-ably-id',
-          timestamp: new Date().getTime(),
-          data: {
-            participantId: MOCK_LOCAL_PARTICIPANT.id,
-            activeComponents: [MOCK_COMPONENT.name],
-          },
+          activeComponents: [MOCK_COMPONENT.name],
         },
       });
 
@@ -289,15 +256,7 @@ describe('Launcher', () => {
     test('should destroy the instance', () => {
       LauncherInstance.destroy();
 
-      expect(ABLY_REALTIME_MOCK.leave).toHaveBeenCalled();
       expect(EVENT_BUS_MOCK.destroy).toHaveBeenCalled();
-    });
-
-    test('should unsubscribe from realtime events', () => {
-      LauncherInstance.destroy();
-
-      expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
     });
 
     test('should remove all components', () => {

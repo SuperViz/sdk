@@ -3,13 +3,10 @@ import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
-import { AblyRealtimeService } from '../../services/realtime';
-import { RoomStateService } from '../../services/roomState';
 import { useGlobalStore } from '../../services/stores';
 
 export interface DefaultAttachComponentOptions {
   ioc: IOC;
-  realtime: AblyRealtimeService;
   config: Configuration;
   eventBus: EventBus;
   useStore: <T extends StoreType>(name: T) => Store<T>;

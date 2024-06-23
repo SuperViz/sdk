@@ -2,10 +2,9 @@ import { PresenceEvents } from '@superviz/socket-client';
 
 import { MOCK_IO } from '../../../__mocks__/io.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { Slot } from '../../common/types/participant.types';
+import { Participant, Slot } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
-import { ParticipantInfo } from '../realtime/base/types';
 
 import { Presence3dEvents } from './types';
 
@@ -183,7 +182,7 @@ describe('Presence3DManager', () => {
   describe('onLeaveRoom', () => {
     test('should destroy 3d-related dependencies', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['unsubscribeFromRoomEvents'] = jest.fn();
       presence3DManager['useStore'] = jest.fn().mockReturnValue({
@@ -200,7 +199,7 @@ describe('Presence3DManager', () => {
 
     test('should update the list of participants', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['unsubscribeFromRoomEvents'] = jest.fn();
       presence3DManager['useStore'] = jest.fn().mockReturnValue({
@@ -223,7 +222,7 @@ describe('Presence3DManager', () => {
   describe('unthrottledUpdatePresence3D', () => {
     test('should update the list of participants', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
       hasJoined3D.publish(true);
 
       const modifiedLocalParticipant = {
@@ -238,7 +237,7 @@ describe('Presence3DManager', () => {
 
     test('should update the list of participants if hasJoined3D is false', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
       hasJoined3D.publish(false);
 
       const modifiedLocalParticipant = {
@@ -253,7 +252,7 @@ describe('Presence3DManager', () => {
 
     test('should not update the list of participants if participant has no id', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
       hasJoined3D.publish(true);
 
       const modifiedLocalParticipant = {
@@ -269,7 +268,7 @@ describe('Presence3DManager', () => {
 
     test('should not update presence if has not joined room', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
       hasJoined3D.publish(false);
 
       presence3DManager['unthrottledUpdatePresence3D']({
@@ -282,7 +281,7 @@ describe('Presence3DManager', () => {
 
     test('should not update presence if participant is not local', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
       hasJoined3D.publish(true);
 
       presence3DManager['unthrottledUpdatePresence3D']({
@@ -295,7 +294,7 @@ describe('Presence3DManager', () => {
 
     test('should update presence if participant is local', () => {
       const { participants, hasJoined3D } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
       hasJoined3D.publish(true);
 
       const modifiedLocalParticipant = {
@@ -352,7 +351,7 @@ describe('Presence3DManager', () => {
 
     test('should update the list of participants', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['onParticipantUpdate']({
         id: MOCK_LOCAL_PARTICIPANT.id,
@@ -364,7 +363,7 @@ describe('Presence3DManager', () => {
 
     test('should not update the list of participants if participant is local', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['onParticipantUpdate']({
         id: '123',
@@ -376,7 +375,7 @@ describe('Presence3DManager', () => {
 
     test('should publish the updated participant if observer exists', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['participants3DObservers'] = {
         [MOCK_LOCAL_PARTICIPANT.id]: {
@@ -396,7 +395,7 @@ describe('Presence3DManager', () => {
 
     test('should not publish the updated participant if observer does not exist', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['participants3DObservers'] = {} as any;
 
@@ -412,7 +411,7 @@ describe('Presence3DManager', () => {
 
     test('should not update the list of participants if participant does not exist', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       presence3DManager['onParticipantUpdate']({
         id: '123',
@@ -468,7 +467,7 @@ describe('Presence3DManager', () => {
   describe('getParticipants', () => {
     test('should return the list of participants', () => {
       const { participants } = presence3DManager['useStore'](StoreType.PRESENCE_3D);
-      participants.publish([MOCK_LOCAL_PARTICIPANT as ParticipantInfo]);
+      participants.publish([MOCK_LOCAL_PARTICIPANT as Participant]);
 
       expect(presence3DManager['getParticipants']).toEqual([MOCK_LOCAL_PARTICIPANT]);
     });

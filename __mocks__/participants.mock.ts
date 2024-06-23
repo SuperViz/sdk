@@ -1,7 +1,6 @@
 import { Avatar, Group, Participant } from '../src';
 import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-colors.types';
 import { ParticipantByGroupApi } from '../src/common/types/participant.types';
-import { AblyParticipant } from '../src/services/realtime/ably/types';
 
 export const MOCK_AVATAR: Avatar = {
   imageUrl: 'unit-test-avatar-thumbnail.png',
@@ -48,17 +47,6 @@ export const MOCK_ABLY_PARTICIPANT_DATA_2 = {
   participantId: MOCK_LOCAL_PARTICIPANT.id,
   slotIndex: 1,
   color: MeetingColorsHex[1],
-};
-
-export const MOCK_ABLY_PARTICIPANT: AblyParticipant = {
-  extras: null,
-  clientId: MOCK_LOCAL_PARTICIPANT.id,
-  action: 'present',
-  connectionId: 'connection1',
-  encoding: 'h264',
-  id: 'unit-test-participant1-ably-id',
-  timestamp: new Date().getTime(),
-  data: MOCK_ABLY_PARTICIPANT_DATA_1,
 };
 
 export const MOCK_PARTICIPANT_LIST: ParticipantByGroupApi[] = [

@@ -6,7 +6,6 @@ import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_AVATAR, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import {
   DeviceEvent,
   FrameEvent,
@@ -23,7 +22,6 @@ import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
-import { ParticipantInfo } from '../../services/realtime/base/types';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
 import { ComponentNames } from '../types';
 
@@ -74,23 +72,6 @@ jest.mock('../../services/event-bus', () => {
 
 jest.useFakeTimers();
 
-const MOCK_REALTIME = Object.assign({}, ABLY_REALTIME_MOCK, {
-  hasJoinedRoom: true,
-  participant: {
-    clientId: 'client1',
-    action: 'absent',
-    connectionId: 'connection1',
-    encoding: 'h264',
-    id: 'unit-test-participant-ably-id',
-    timestamp: new Date().getTime(),
-    data: {
-      id: MOCK_LOCAL_PARTICIPANT.id,
-      participantId: MOCK_LOCAL_PARTICIPANT.id,
-      activeComponents: [ComponentNames.VIDEO_CONFERENCE],
-    },
-  },
-});
-
 describe('VideoConference', () => {
   let VideoConferenceInstance: VideoConference;
 
@@ -110,7 +91,6 @@ describe('VideoConference', () => {
     VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: { ...MOCK_REALTIME, hasJoinedRoom: true } as any,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
@@ -136,7 +116,6 @@ describe('VideoConference', () => {
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       Presence3DManagerService: Presence3DManager,
-      realtime: MOCK_REALTIME,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       useStore,
@@ -144,12 +123,6 @@ describe('VideoConference', () => {
 
     VideoConferenceInstance['start']();
     expect(VideoConferenceInstance['videoConfig'].canUseDefaultAvatars).toBeFalsy();
-  });
-
-  test('should subscribe to realtime events', () => {
-    expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.subscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.participantsObserver.subscribe).toHaveBeenCalled();
-    expect(ABLY_REALTIME_MOCK.participantLeaveObserver.subscribe).toHaveBeenCalled();
   });
 
   test('should subscribe from video events', () => {
@@ -162,7 +135,7 @@ describe('VideoConference', () => {
 
   describe('host handler', () => {
     test('should set as host the first participant that joins the room and type is host', () => {
-      const participant: ParticipantInfo[] = [
+      const participant: Participant[] = [
         {
           timestamp: 0,
           id: MOCK_LOCAL_PARTICIPANT.id,
@@ -209,7 +182,7 @@ describe('VideoConference', () => {
     });
 
     test('should keep the host if it is already set and stays in the room', () => {
-      const originalList: Record<string, ParticipantInfo> = {
+      const originalList: Record<string, Participant> = {
         [MOCK_LOCAL_PARTICIPANT.id]: {
           timestamp: 0,
           id: MOCK_LOCAL_PARTICIPANT.id,
@@ -236,7 +209,7 @@ describe('VideoConference', () => {
       VideoConferenceInstance['roomState'].setHost = jest.fn();
       VideoConferenceInstance['onParticipantListUpdate'](originalList);
 
-      const secondList: ParticipantInfo[] = [
+      const secondList: Participant[] = [
         {
           timestamp: 1,
           id: 'second-id',
@@ -269,7 +242,7 @@ describe('VideoConference', () => {
     });
 
     test('should not set host if the participant is not me', () => {
-      const participant: ParticipantInfo[] = [
+      const participant: Participant[] = [
         {
           timestamp: 0,
           id: 'another-client-id',
@@ -333,7 +306,7 @@ describe('VideoConference', () => {
 
       expect(VideoConferenceInstance['kickParticipantsOnHostLeave']).toBe(true);
 
-      const host: ParticipantInfo[] = [
+      const host: Participant[] = [
         {
           timestamp: 0,
           id: MOCK_LOCAL_PARTICIPANT.id,
@@ -362,12 +335,6 @@ describe('VideoConference', () => {
   describe('detach', () => {
     beforeEach(() => {
       VideoConferenceInstance.detach();
-    });
-
-    test('should unsubscribe from realtime events', () => {
-      expect(ABLY_REALTIME_MOCK.roomInfoUpdatedObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.participantsObserver.unsubscribe).toHaveBeenCalled();
-      expect(ABLY_REALTIME_MOCK.participantLeaveObserver.unsubscribe).toHaveBeenCalled();
     });
 
     test('should unsubscribe from video events', () => {
@@ -626,7 +593,7 @@ describe('VideoConference', () => {
         },
       });
 
-      const participantInfoList: ParticipantInfo[] = [
+      const participantInfoList: Participant[] = [
         {
           id: participants.value[MOCK_LOCAL_PARTICIPANT.id].id,
           color: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot?.colorName || 'gray',
@@ -659,7 +626,7 @@ describe('VideoConference', () => {
     });
 
     test('should not update participant list if new list is equal to old list', () => {
-      const participants: Record<string, ParticipantInfo> = {
+      const participants: Record<string, Participant> = {
         [MOCK_LOCAL_PARTICIPANT.id]: {
           timestamp: 0,
           id: 'another-client-id',
@@ -712,7 +679,7 @@ describe('VideoConference', () => {
     });
 
     test('should update participants', () => {
-      const participant: ParticipantInfo[] = [
+      const participant: Participant[] = [
         {
           timestamp: 0,
           id: MOCK_LOCAL_PARTICIPANT.id,

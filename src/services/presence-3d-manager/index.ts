@@ -5,8 +5,6 @@ import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observer } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
-import { ParticipantInfo } from '../realtime/base/types';
-import { RoomStateService } from '../roomState';
 
 import { ParticipantDataInput, Presence3dEvents } from './types';
 
@@ -45,7 +43,7 @@ export class Presence3DManager {
 
   private initializeParticipantsList = (): void => {
     this.room.presence.get((presences) => {
-      presences.forEach((presence: PresenceEvent<ParticipantInfo>) => {
+      presences.forEach((presence: PresenceEvent<Participant>) => {
         this.unthrottledUpdatePresence3D(presence.data);
       });
     });
@@ -118,7 +116,7 @@ export class Presence3DManager {
     participants.publish(updatedParticipants);
   };
 
-  private unthrottledUpdatePresence3D = (data: ParticipantInfo): void => {
+  private unthrottledUpdatePresence3D = (data: Participant): void => {
     if (!data || !data.id) {
       return;
     }
@@ -140,14 +138,14 @@ export class Presence3DManager {
     this.room.presence.update(participant);
   };
 
-  private onJoinedPresence = (event: PresenceEvent<ParticipantInfo>): void => {
+  private onJoinedPresence = (event: PresenceEvent<Participant>): void => {
     if (event.id !== this.localParticipant.id) return;
 
     this.logger.log('participant joined 3D room', event.id);
     this.onLocalParticipantJoined(this.localParticipant);
   };
 
-  public updatePresence3D = throttle((data: ParticipantInfo): void => {
+  public updatePresence3D = throttle((data: Participant): void => {
     this.unthrottledUpdatePresence3D(data);
   }, SYNC_PROPERTY_INTERVAL);
 
@@ -157,7 +155,7 @@ export class Presence3DManager {
    * @description publish a participant's changes to observer
    * @returns {void}
    */
-  private onParticipantUpdate = (event: PresenceEvent<ParticipantInfo>): void => {
+  private onParticipantUpdate = (event: PresenceEvent<Participant>): void => {
     if (event.id === this.localParticipant.id) return;
 
     const { participants } = this.useStore(StoreType.PRESENCE_3D);

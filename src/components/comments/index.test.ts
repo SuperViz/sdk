@@ -3,8 +3,6 @@ import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { CommentEvent } from '../../common/types/events.types';
 import { ParticipantByGroupApi } from '../../common/types/participant.types';
 import sleep from '../../common/utils/sleep';
@@ -12,7 +10,6 @@ import { useStore } from '../../common/utils/use-store';
 import ApiService from '../../services/api';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
-import { RoomStateService } from '../../services/roomState';
 import { useGlobalStore } from '../../services/stores';
 import { CommentsFloatButton } from '../../web-components';
 import { ComponentNames } from '../types';
@@ -83,7 +80,6 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
@@ -338,7 +334,6 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
@@ -358,7 +353,6 @@ describe('Comments', () => {
 
     commentsComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
