@@ -13,6 +13,7 @@ import ApiService from '../../services/api';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
+import { IOCState } from '../../services/io/types';
 import LimitsService from '../../services/limits';
 import { Presence3DManager } from '../../services/presence-3d-manager';
 import { SlotService } from '../../services/slot';
@@ -29,7 +30,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
 
   private ioc: IOC;
-  private LauncherRealtimeRoom: Socket.Room;
+  private room: Socket.Room;
   private eventBus: EventBus = new EventBus();
   private timestamp: number = 0;
 
@@ -49,7 +50,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
-    this.LauncherRealtimeRoom = this.ioc.createRoom('launcher');
+    this.room = this.ioc.createRoom('launcher');
 
     // internal events without realtime
     this.eventBus = new EventBus();
@@ -169,9 +170,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.eventBus.destroy();
     this.eventBus = undefined;
 
-    this.LauncherRealtimeRoom?.presence.off(Socket.PresenceEvents.JOINED_ROOM);
-    this.LauncherRealtimeRoom?.presence.off(Socket.PresenceEvents.LEAVE);
-    this.LauncherRealtimeRoom?.presence.off(Socket.PresenceEvents.UPDATE);
+    this.room?.presence.off(Socket.PresenceEvents.JOINED_ROOM);
+    this.room?.presence.off(Socket.PresenceEvents.LEAVE);
+    this.room?.presence.off(Socket.PresenceEvents.UPDATE);
     this.ioc?.destroy();
 
     this.isDestroyed = true;
@@ -223,8 +224,6 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     return true;
   };
-
-  /** Ably Listeners */
 
   private onAuthentication = (isAuthenticated: boolean): void => {
     if (isAuthenticated) return;
@@ -305,7 +304,12 @@ export class Launcher extends Observable implements DefaultLauncher {
     const { participants, localParticipant } = useStore(StoreType.GLOBAL);
     // retrieve the current participants in the room
 
-    this.LauncherRealtimeRoom.presence.get((presences) => {
+    this.ioc.stateSubject.subscribe((state) => {
+      if (state === IOCState.AUTH_ERROR) {
+        this.onAuthentication(false);
+      }
+    });
+    this.room.presence.get((presences) => {
       const participantsMap: Record<string, Participant> = {};
 
       presences.forEach((presence) => {
@@ -325,20 +329,14 @@ export class Launcher extends Observable implements DefaultLauncher {
       participants.publish(participantsMap);
     });
 
-    this.LauncherRealtimeRoom.presence.on<Participant>(
+    this.room.presence.on<Participant>(
       Socket.PresenceEvents.JOINED_ROOM,
       this.onParticipantJoinedIOC,
     );
 
-    this.LauncherRealtimeRoom.presence.on<Participant>(
-      Socket.PresenceEvents.LEAVE,
-      this.onParticipantLeaveIOC,
-    );
+    this.room.presence.on<Participant>(Socket.PresenceEvents.LEAVE, this.onParticipantLeaveIOC);
 
-    this.LauncherRealtimeRoom.presence.on<Participant>(
-      Socket.PresenceEvents.UPDATE,
-      this.onParticipantUpdatedIOC,
-    );
+    this.room.presence.on<Participant>(Socket.PresenceEvents.UPDATE, this.onParticipantUpdatedIOC);
 
     const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
     hasJoinedRoom.publish(true);
@@ -357,12 +355,12 @@ export class Launcher extends Observable implements DefaultLauncher {
     if (presence.id !== localParticipant.value.id) return;
 
     // Assign a slot to the participant
-    const slot = new SlotService(this.LauncherRealtimeRoom);
+    const slot = new SlotService(this.room);
     await slot.assignSlot();
 
     this.timestamp = presence.timestamp;
 
-    this.LauncherRealtimeRoom.presence.update(localParticipant.value);
+    this.room.presence.update(localParticipant.value);
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
     this.onParticipantJoined(presence);
@@ -418,7 +416,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       } as Participant);
 
       this.timestamp = presence.timestamp;
-      this.LauncherRealtimeRoom.presence.update(localParticipant.value);
+      this.room.presence.update(localParticipant.value);
 
       this.publish(ParticipantEvent.LOCAL_UPDATED, presence.data);
 
