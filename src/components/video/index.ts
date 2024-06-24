@@ -19,7 +19,6 @@ import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
-import { ParticipantInfo } from '../../services/realtime/base/types';
 import { RoomStateService } from '../../services/roomState';
 import VideoConferenceManager from '../../services/video-conference-manager';
 import {
@@ -541,13 +540,13 @@ export class VideoConference extends BaseComponent {
   /**
    * @function onParticipantListUpdate
    * @description callback that is called everytime the global participants list updates
-   * @param {Record<string, ParticipantInfo>} participants - participants
+   * @param {Record<string, Participant>} participants - participants
    * @returns {void}
    */
-  private onParticipantListUpdate = (participants: Record<string, ParticipantInfo>): void => {
+  private onParticipantListUpdate = (participants: Record<string, Participant>): void => {
     this.logger.log('video conference @ on participant list update', participants);
 
-    const list: ParticipantInfo[] = Object.values(participants).map((participant) => {
+    const list: Participant[] = Object.values(participants).map((participant) => {
       return {
         id: participant.id,
         color: participant.slot?.colorName || 'gray',
@@ -669,10 +668,10 @@ export class VideoConference extends BaseComponent {
   /**
    * @function onRealtimeParticipantsDidChange
    * @description handler for participant list update event
-   * @param {ParticipantInfo[]} participants - participants
+   * @param {Participant[]} participants - participants
    * @returns {void}
    */
-  private onRealtimeParticipantsDidChange = (participants: ParticipantInfo[]): void => {
+  private onRealtimeParticipantsDidChange = (participants: Participant[]): void => {
     this.logger.log('video conference @ on participants did change', participants);
     const participantList: ParticipandToFrame[] = participants.map((participant) => {
       return {
@@ -861,7 +860,7 @@ export class VideoConference extends BaseComponent {
       }
 
       return current;
-    }, null) as ParticipantInfo;
+    }, null) as Participant;
 
     this.room.presence.update<Participant>({
       ...this.localParticipant,

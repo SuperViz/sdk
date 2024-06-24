@@ -2,6 +2,14 @@ import { jest } from '@jest/globals';
 import { Room } from '@superviz/socket-client';
 
 export const MOCK_IO = {
+  ClientState: {
+    CONNECTED: 'CONNECTED',
+    CONNECTING: 'CONNECTING',
+    DISCONNECTED: 'DISCONNECTED',
+    CONNECTION_ERROR: 'CONNECTION_ERROR',
+    RECONNECTING: 'RECONNECTING',
+    RECONNECT_ERROR: 'RECONNECT_ERROR',
+  },
   PresenceEvents: {
     JOINED_ROOM: 'presence.joined-room',
     LEAVE: 'presence.leave',
