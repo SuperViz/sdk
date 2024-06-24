@@ -553,9 +553,8 @@ export class VideoConference extends BaseComponent {
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
-        isHost: participant.isHost,
+        isHost: participant.isHost ?? false,
         slot: participant.slot,
-        timestamp: participant.timestamp,
       };
     });
 
@@ -679,7 +678,7 @@ export class VideoConference extends BaseComponent {
         participantId: participant.id,
         color: participant.slot?.colorName ?? 'gray',
         name: participant.name,
-        isHost: participant.isHost,
+        isHost: participant.isHost ?? false,
         avatar: participant.avatar,
         type: participant.type,
         slot: participant.slot,
@@ -695,7 +694,7 @@ export class VideoConference extends BaseComponent {
   /**
    * @function onHostParticipantDidChange
    * @description handler for host participant change event
-   * @param {hostId} string - new host ud
+   * @param {string} hostId - new host ud
    * @returns {void}
    * */
   private onHostParticipantDidChange = (hostId: string): void => {
@@ -703,9 +702,29 @@ export class VideoConference extends BaseComponent {
 
     this.videoManager?.publishMessageToFrame(RealtimeEvent.REALTIME_HOST_CHANGE, hostId);
 
-    const newHost = this.participantsOnMeeting.find((participant) => {
+    const { participants } = this.useStore(StoreType.GLOBAL);
+    const participant = Object.values(participants.value).find((participant) => {
       return participant.id === hostId;
     });
+
+    const newHost = participant
+      ? {
+          id: participant.id,
+          color: participant.slot?.color || MeetingColorsHex[16],
+          avatar: participant.avatar,
+          type: participant.type,
+          name: participant.name,
+          isHost: participant.id === hostId,
+        }
+      : null;
+
+    if (KICK_PARTICIPANTS_TIMEOUT && !!newHost) {
+      this.logger.log(
+        'video conference @ on host participant did change - clear kick all participants timeout',
+      );
+      clearTimeout(KICK_PARTICIPANTS_TIMEOUT);
+      KICK_PARTICIPANTS_TIMEOUT = null;
+    }
 
     this.publish(MeetingEvent.MEETING_HOST_CHANGE, newHost);
   };
@@ -795,15 +814,9 @@ export class VideoConference extends BaseComponent {
     if (!this.roomState) return;
 
     const { hostId } = this.useStore(StoreType.VIDEO);
-    const { participants } = this.useStore(StoreType.GLOBAL);
-    const participantsList = Object.values(participants.value);
 
-    // list with all participants that have the type host and are in the meeting
-    const participantsCanBeHost = participantsList.filter((participant) => {
-      return (
-        participant.type === ParticipantType.HOST &&
-        this.participantsOnMeeting.some((p) => p.id === participant.id)
-      );
+    const participantsCanBeHost = this.participantsOnMeeting.filter((participant) => {
+      return participant.type === ParticipantType.HOST;
     });
 
     if (
@@ -835,7 +848,7 @@ export class VideoConference extends BaseComponent {
 
     this.onHostAvailabilityChange(!!participantsCanBeHost.length);
 
-    const hostAlreadyInRoom = participantsList.find(
+    const hostAlreadyInRoom = participantsCanBeHost.find(
       (participant) => participant?.id === hostId?.value,
     );
 

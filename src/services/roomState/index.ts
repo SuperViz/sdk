@@ -114,11 +114,11 @@ export class RoomStateService {
 
   /**
    * @function updateRoomProperties
-   * @param {AblyRealtimeData} properties
+   * @param {VideoRoomProperties} properties
    * @description updates room properties
    * @returns {void}
    */
-  private updateRoomProperties = (properties: VideoRoomProperties): void => {
+  public updateRoomProperties = (properties: VideoRoomProperties): void => {
     if (this.isMessageTooBig(properties) || this.isSyncFrozen || this.left) return;
 
     const newProperties = {
