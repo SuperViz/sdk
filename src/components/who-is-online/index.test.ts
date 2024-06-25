@@ -366,16 +366,18 @@ describe('Who Is Online', () => {
       jest.clearAllMocks();
     });
 
-    // test.only('should publish following data', () => {
-    //   whoIsOnlineComponent['setFollow']({
-    //     presence: { id: MOCK_ABLY_PARTICIPANT_DATA_2.id },
-    //     ...MOCK_ABLY_PARTICIPANT_DATA_2,
-    //   });
+    test('should publish following data', () => {
+      whoIsOnlineComponent['setFollow']({
+        presence: { id: MOCK_ABLY_PARTICIPANT_DATA_1.id },
+        data: {
+          ...MOCK_ABLY_PARTICIPANT_DATA_1,
+        },
+      });
 
-    //   const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
+      const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
 
-    //   expect(following.value).toBe(MOCK_ABLY_PARTICIPANT_DATA_1);
-    // });
+      expect(following.value).toMatchObject(MOCK_ABLY_PARTICIPANT_DATA_1);
+    });
 
     test('should early return if following the local participant', () => {
       const followingData: Following = {
