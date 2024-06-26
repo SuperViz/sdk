@@ -4,6 +4,10 @@
   "description": "SuperViz SDK",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "exports": {
+    "import": "./lib/index.js",
+    "require": "./lib/index.cjs.js"
+  },
   "files": [
     "lib"
   ],
