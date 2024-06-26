@@ -21,7 +21,7 @@ const config = {
   plugins: [style()],
   bundle: true,
   color: true,
-  minify: false,
+  minify: true,
   logLevel: 'info',
   sourcemap: true,
   chunkNames: 'chunks/[name]-[hash]',
