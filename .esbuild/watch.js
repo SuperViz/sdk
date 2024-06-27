@@ -5,12 +5,12 @@ const esbuild = require('esbuild');
   try {
     const [cjsContext, esmContext] = await Promise.all([
       esbuild.context({
-        cjsConfig,
+        ...cjsConfig,
         outfile: 'dist/index.cjs.js',
       }),
 
       esbuild.context({
-        esmConfig,
+        ...esmConfig,
         outdir: 'dist',
       }),
     ]);
