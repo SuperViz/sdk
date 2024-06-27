@@ -1,11 +1,15 @@
 require('dotenv').config();
 const { style } = require('./plugins/style-loader');
+const glob = require('glob');
+
+const entryPoints = glob
+  .sync('./src/**/*.ts')
+  .filter((file) => !file.endsWith('.d.ts') && !file.endsWith('.test.ts'));
 
 const entries = Object.entries(process.env).filter((key) => key[0].startsWith('SDK_'));
 const env = Object.fromEntries(entries);
 
 const config = {
-  entryPoints: ['./src/index.ts'],
   loader: {
     '.png': 'file',
     '.svg': 'file',
@@ -26,4 +30,30 @@ const config = {
   },
 };
 
-module.exports = config;
+const esmConfig = {
+  ...config,
+  entryPoints,
+  bundle: true,
+  sourcemap: true,
+  minify: true,
+  splitting: true,
+  format: 'esm',
+  define: { global: 'window' },
+  target: ['esnext'],
+  chunkNames: 'chunks/[name]-[hash]',
+};
+
+const cjsConfig = {
+  ...config,
+  entryPoints: ['src/index.ts'],
+  bundle: true,
+  sourcemap: true,
+  minify: true,
+  platform: 'node',
+  target: ['node16'],
+};
+
+module.exports = {
+  esmConfig,
+  cjsConfig,
+};

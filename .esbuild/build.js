@@ -1,21 +1,17 @@
-const config = require('./config');
+const { cjsConfig, esmConfig } = require('./config');
 const esbuild = require('esbuild');
 
 (async () => {
   try {
     await Promise.all([
       esbuild.build({
-        ...config,
-        format: 'cjs',
-        outdir: 'lib',
-        outExtension: { '.js': '.cjs' },
+        ...cjsConfig,
+        outfile: 'lib/index.cjs.js',
       }),
 
       esbuild.build({
-        ...config,
-        format: 'esm',
+        ...esmConfig,
         outdir: 'lib',
-        splitting: true,
       }),
     ]);
   } catch (error) {

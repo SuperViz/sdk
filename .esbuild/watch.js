@@ -1,21 +1,17 @@
-const config = require('./config');
+const { cjsConfig, esmConfig } = require('./config');
 const esbuild = require('esbuild');
 
 (async () => {
   try {
     const [cjsContext, esmContext] = await Promise.all([
       esbuild.context({
-        ...config,
-        format: 'cjs',
-        outdir: 'dist',
-        outExtension: { '.js': '.cjs' },
+        cjsConfig,
+        outfile: 'dist/index.cjs.js',
       }),
 
       esbuild.context({
-        ...config,
-        format: 'esm',
+        esmConfig,
         outdir: 'dist',
-        splitting: true,
       }),
     ]);
 
