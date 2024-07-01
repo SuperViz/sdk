@@ -39,8 +39,6 @@ const esmConfig = {
   splitting: true,
   format: 'esm',
   define: { global: 'window', 'process.env': JSON.stringify(env) },
-  target: ['esnext'],
-  chunkNames: 'chunks/[name]-[hash]',
 };
 
 const cjsConfig = {
