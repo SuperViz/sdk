@@ -20,8 +20,8 @@ export default class RemoteConfigService {
     const { version } = await import('../../../.version.js');
 
     if (environment === EnvironmentTypes.LOCAL) {
-      const { remoteConfig } = await import('../../../.remote-config.js');
-      return remoteConfig;
+      const all = await import('../../../.remote-config.js');
+      return all.default.remoteConfig;
     }
     const remoteConfigParams: RemoteConfigParams = {
       version,
