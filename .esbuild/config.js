@@ -32,13 +32,13 @@ const config = {
 
 const esmConfig = {
   ...config,
-  entryPoints,
+  entryPoints: ['src/index.ts'],
   bundle: true,
   sourcemap: true,
   minify: true,
   splitting: true,
   format: 'esm',
-  define: { global: 'window' },
+  define: { global: 'window', 'process.env': JSON.stringify(env) },
   target: ['esnext'],
   chunkNames: 'chunks/[name]-[hash]',
 };
