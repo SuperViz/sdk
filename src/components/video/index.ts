@@ -814,9 +814,15 @@ export class VideoConference extends BaseComponent {
     if (!this.roomState) return;
 
     const { hostId } = this.useStore(StoreType.VIDEO);
+    const { participants } = this.useStore(StoreType.GLOBAL);
+    const participantsList = Object.values(participants.value);
 
-    const participantsCanBeHost = this.participantsOnMeeting.filter((participant) => {
-      return participant.type === ParticipantType.HOST;
+    // list with all participants that have the type host and are in the meeting
+    const participantsCanBeHost = participantsList.filter((participant) => {
+      return (
+        participant.type === ParticipantType.HOST &&
+        this.participantsOnMeeting.some((p) => p.id === participant.id)
+      );
     });
 
     if (
@@ -848,7 +854,7 @@ export class VideoConference extends BaseComponent {
 
     this.onHostAvailabilityChange(!!participantsCanBeHost.length);
 
-    const hostAlreadyInRoom = participantsCanBeHost.find(
+    const hostAlreadyInRoom = participantsList.find(
       (participant) => participant?.id === hostId?.value,
     );
 
