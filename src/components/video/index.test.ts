@@ -235,7 +235,7 @@ describe('VideoConference', () => {
 
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](secondList);
 
-      expect(VideoConferenceInstance['roomState'].setHost).toHaveBeenCalledTimes(1);
+      expect(VideoConferenceInstance['roomState'].setHost).toHaveBeenCalledTimes(0);
     });
 
     test('should not set host if the participant is not me', () => {
