@@ -2,7 +2,7 @@ import '.';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { RealtimeEvent } from '../../common/types/events.types';
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
 import sleep from '../../common/utils/sleep';
 import { useStore } from '../../common/utils/use-store';
@@ -17,9 +17,9 @@ const MOCK_PARTICIPANTS: WhoIsOnlineParticipant[] = [
     name: 'John Zero',
     avatar: {
       imageUrl: 'https://example.com',
-      color: MeetingColorsHex[0],
+      color: MEETING_COLORS.turquoise,
       firstLetter: 'J',
-      slotIndex: 0,
+      letterColor: '#fff',
     },
     id: '1',
     activeComponents: ['whoisonline', 'presence'],
@@ -44,9 +44,9 @@ const MOCK_PARTICIPANTS: WhoIsOnlineParticipant[] = [
     name: 'John Uno',
     avatar: {
       imageUrl: '',
-      color: MeetingColorsHex[1],
+      color: MEETING_COLORS.orange,
       firstLetter: 'J',
-      slotIndex: 1,
+      letterColor: '#fff',
     },
     id: '2',
     activeComponents: ['whoisonline'],
@@ -68,9 +68,9 @@ const MOCK_PARTICIPANTS: WhoIsOnlineParticipant[] = [
     name: 'John Doe',
     avatar: {
       imageUrl: '',
-      color: MeetingColorsHex[2],
+      color: MEETING_COLORS.brown,
       firstLetter: 'J',
-      slotIndex: 2,
+      letterColor: '#26242A',
     },
     id: '3',
     activeComponents: ['whoisonline', 'presence'],
@@ -185,31 +185,6 @@ describe('Who Is Online', () => {
     extraParticipants = element?.shadowRoot?.querySelector('.superviz-who-is-online__excess');
 
     expect(extraParticipants).toBeTruthy();
-  });
-
-  test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
-    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
-    participants.publish([MOCK_PARTICIPANTS[2]]);
-    await sleep();
-
-    const letter = element?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
-    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[2].avatar.slotIndex as number];
-    expect(letter?.getAttribute('style')).toBe(
-      `background-color: ${backgroundColor}; color: #26242A`,
-    );
-  });
-
-  test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
-    const { participants } = useStore(StoreType.WHO_IS_ONLINE);
-    participants.publish([MOCK_PARTICIPANTS[1]]);
-    await sleep();
-
-    const letter = element?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
-
-    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[1].avatar.slotIndex as number];
-    expect(letter?.getAttribute('style')).toBe(
-      `background-color: ${backgroundColor}; color: #FFFFFF`,
-    );
   });
 
   test('should toggle open property', () => {

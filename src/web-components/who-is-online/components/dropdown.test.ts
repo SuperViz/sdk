@@ -1,9 +1,13 @@
 import '.';
-import { MeetingColorsHex } from '../../../common/types/meeting-colors.types';
+import { MEETING_COLORS } from '../../../common/types/meeting-colors.types';
+
 import { StoreType } from '../../../common/types/stores.types';
 import sleep from '../../../common/utils/sleep';
 import { useStore } from '../../../common/utils/use-store';
-import { Participant, WIODropdownOptions } from '../../../components/who-is-online/types';
+import {
+  WhoIsOnlineParticipant,
+  WIODropdownOptions,
+} from '../../../components/who-is-online/types';
 
 interface elementProps {
   position: string;
@@ -14,14 +18,14 @@ interface elementProps {
   icons?: string[];
 }
 
-const MOCK_PARTICIPANTS: Participant[] = [
+const MOCK_PARTICIPANTS: WhoIsOnlineParticipant[] = [
   {
     name: 'John Zero',
     avatar: {
       imageUrl: 'https://example.com',
-      color: MeetingColorsHex[0],
+      color: MEETING_COLORS.turquoise,
       firstLetter: 'J',
-      slotIndex: 0,
+      letterColor: '#fff',
     },
     id: '1',
     activeComponents: ['whoisonline', 'presence'],
@@ -40,14 +44,15 @@ const MOCK_PARTICIPANTS: Participant[] = [
         label: WIODropdownOptions.PRIVATE,
       },
     ],
+    isPrivate: false,
   },
   {
     name: 'John Uno',
     avatar: {
       imageUrl: '',
-      color: MeetingColorsHex[1],
+      color: MEETING_COLORS.orange,
       firstLetter: 'J',
-      slotIndex: 1,
+      letterColor: '#fff',
     },
     id: '2',
     activeComponents: ['whoisonline'],
@@ -63,14 +68,15 @@ const MOCK_PARTICIPANTS: Participant[] = [
         label: WIODropdownOptions.LOCAL_FOLLOW,
       },
     ],
+    isPrivate: false,
   },
   {
     name: 'John Doe',
     avatar: {
       imageUrl: '',
-      color: MeetingColorsHex[2],
+      color: MEETING_COLORS.brown,
       firstLetter: 'J',
-      slotIndex: 2,
+      letterColor: '#26242A',
     },
     id: '3',
     activeComponents: ['whoisonline', 'presence'],
@@ -86,6 +92,7 @@ const MOCK_PARTICIPANTS: Participant[] = [
         label: WIODropdownOptions.LOCAL_FOLLOW,
       },
     ],
+    isPrivate: false,
   },
 ];
 
@@ -236,41 +243,6 @@ describe('who-is-online-dropdown', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  test('should give a black color to the letter when the slotIndex is not in the textColorValues', async () => {
-    createEl({ position: 'bottom' });
-
-    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish([MOCK_PARTICIPANTS[2]]);
-    await sleep();
-
-    const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
-
-    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[2].avatar.slotIndex as number];
-    expect(letter?.getAttribute('style')).toBe(
-      `background-color: ${backgroundColor}; color: #26242A`,
-    );
-  });
-
-  test('should give a white color to the letter when the slotIndex is in the textColorValues', async () => {
-    const participant = {
-      ...MOCK_PARTICIPANTS[0],
-      slotIndex: 1,
-      color: MeetingColorsHex[1],
-    };
-
-    createEl({ position: 'bottom' });
-    const { extras } = useStore(StoreType.WHO_IS_ONLINE);
-    extras.publish([MOCK_PARTICIPANTS[1]]);
-    await sleep();
-
-    const letter = element()?.shadowRoot?.querySelector('.who-is-online__participant__avatar');
-
-    const backgroundColor = MeetingColorsHex[MOCK_PARTICIPANTS[1].avatar.slotIndex as number];
-    expect(letter?.getAttribute('style')).toBe(
-      `background-color: ${backgroundColor}; color: #FFFFFF`,
-    );
-  });
-
   test('should not render participants when there is no participant', async () => {
     createEl({ position: 'bottom' });
     const { extras } = useStore(StoreType.WHO_IS_ONLINE);
@@ -301,8 +273,9 @@ describe('who-is-online-dropdown', () => {
           imageUrl: '',
           color: 'red',
           firstLetter: 'J',
-          slotIndex: 0,
+          letterColor: '#fff',
         },
+        isPrivate: false,
         id: '1',
         name: 'John Zero',
         activeComponents: ['whoisonline', 'presence'],
