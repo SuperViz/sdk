@@ -7,12 +7,11 @@ import {
 } from '@superviz/socket-client';
 
 import { TranscriptState } from '../../common/types/events.types';
-import { ParticipantType } from '../../common/types/participant.types';
+import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../common/types/realtime.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observer } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
-import { ParticipantInfo } from '../realtime/base/types';
 import { DrawingData } from '../video-conference-manager/types';
 
 import { RoomPropertiesEvents, VideoRoomProperties } from './type';
@@ -20,8 +19,9 @@ import { RoomPropertiesEvents, VideoRoomProperties } from './type';
 export class RoomStateService {
   private room: Room;
   private logger: Logger;
-  private myParticipant: Partial<ParticipantInfo> = {};
-  private localRoomProperties?: VideoRoomProperties = null;
+  private myParticipant: Partial<Participant> = {};
+  private localRoomProperties: VideoRoomProperties = null;
+  private drawingData: DrawingData = null;
   private enableSync: boolean;
   private left: boolean;
   private isSyncFrozen: boolean;
@@ -30,9 +30,12 @@ export class RoomStateService {
   private useStore: typeof useStore = useStore.bind(this);
   public kickParticipantObserver: Observer;
   private started: boolean;
+  private drawingRoom: Room;
 
-  constructor(room: Room, logger: Logger) {
+  constructor(room: Room, drawingRoom: Room, logger: Logger) {
     this.room = room;
+    this.drawingRoom = drawingRoom;
+
     this.logger = logger;
     this.kickParticipantObserver = new Observer({ logger: this.logger });
 
@@ -62,16 +65,17 @@ export class RoomStateService {
 
     if (!this.enableSync) return;
     this.room.on(RoomPropertiesEvents.UPDATE, this.updateLocalRoomState);
+    this.drawingRoom.presence.on(PresenceEvents.UPDATE, this.updateDrawing);
   };
 
   /**
    * @function updateMyProperties
-   * @param {Partial<ParticipantInfo>} participantInfo
+   * @param {Partial<Participant>} Participant
    * @description updates local participant properties
    * @returns {void}
    */
-  public updateMyProperties = (newProperties?: Partial<ParticipantInfo>): void => {
-    const properties = newProperties ?? ({} as ParticipantInfo);
+  public updateMyProperties = (newProperties?: Partial<Participant>): void => {
+    const properties = newProperties ?? ({} as Participant);
 
     if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
       return;
@@ -110,11 +114,11 @@ export class RoomStateService {
 
   /**
    * @function updateRoomProperties
-   * @param {AblyRealtimeData} properties
+   * @param {VideoRoomProperties} properties
    * @description updates room properties
    * @returns {void}
    */
-  private updateRoomProperties = (properties: VideoRoomProperties): void => {
+  public updateRoomProperties = (properties: VideoRoomProperties): void => {
     if (this.isMessageTooBig(properties) || this.isSyncFrozen || this.left) return;
 
     const newProperties = {
@@ -125,6 +129,23 @@ export class RoomStateService {
     this.localRoomProperties = newProperties;
 
     this.room.emit(RoomPropertiesEvents.UPDATE, newProperties);
+  };
+
+  /**
+   * @function updateDrawingProperties
+   * @param {DrawingData} data
+   * @description updates drawing properties
+   * @returns {void}
+   */
+  private updateDrawingProperties = (data: DrawingData): void => {
+    if (this.isMessageTooBig(data) || this.isSyncFrozen || this.left) return;
+
+    this.drawingData = {
+      ...this.drawingData,
+      ...data,
+    };
+
+    this.drawingRoom.presence.update(this.drawingData);
   };
 
   /**
@@ -171,7 +192,7 @@ export class RoomStateService {
    * @returns {void}
    */
   public setDrawing(drawing: DrawingData): void {
-    this.updateRoomProperties({ drawing });
+    this.updateDrawingProperties(drawing);
   }
 
   /**
@@ -197,7 +218,6 @@ export class RoomStateService {
       hostClientId: null,
       followParticipantId: null,
       gather: false,
-      drawing: null,
       transcript: TranscriptState.TRANSCRIPT_STOP,
       kickParticipant: null,
     };
@@ -345,10 +365,10 @@ export class RoomStateService {
     this.logger.log('REALTIME', 'Room update received', data);
     this.localRoomProperties = Object.assign({}, this.localRoomProperties, data);
 
-    const { drawing, followParticipantId, gather, hostId, isGridModeEnabled, transcript } =
-      this.useStore(StoreType.VIDEO);
+    const { followParticipantId, gather, hostId, isGridModeEnabled, transcript } = this.useStore(
+      StoreType.VIDEO,
+    );
 
-    drawing.publish(data.drawing);
     followParticipantId.publish(data.followParticipantId);
     gather.publish(data.gather);
     hostId.publish(data.hostClientId);
@@ -360,6 +380,13 @@ export class RoomStateService {
 
       this.kickParticipantObserver.publish(this.myParticipant.id);
     }
+  };
+
+  private updateDrawing = (event: PresenceEvent<DrawingData>): void => {
+    if (event.id === this.myParticipant.id) return;
+
+    const { drawing } = this.useStore(StoreType.VIDEO);
+    drawing.publish(event.data);
   };
 
   /**

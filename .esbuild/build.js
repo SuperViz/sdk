@@ -1,16 +1,21 @@
-const baseConfig = require('./config');
+const { cjsConfig, esmConfig } = require('./config');
+const esbuild = require('esbuild');
 
-const config = Object.assign({}, baseConfig, {
-  minify: true,
-  drop: ['debugger', 'console'],
-});
+(async () => {
+  try {
+    await Promise.all([
+      esbuild.build({
+        ...cjsConfig,
+        outfile: 'lib/index.cjs.js',
+      }),
 
-require('esbuild')
-  .build({
-    ...config,
-    outfile: 'lib/index.js',
-  })
-  .catch((error) => {
+      esbuild.build({
+        ...esmConfig,
+        outdir: 'lib',
+      }),
+    ]);
+  } catch (error) {
     console.error(error);
     process.exit(1);
-  });
+  }
+})();

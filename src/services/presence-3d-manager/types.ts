@@ -1,4 +1,6 @@
-export interface ParticipantDataInput {
+import { Participant } from '../../common/types/participant.types';
+
+export interface ParticipantDataInput extends Participant {
   [key: string]: string | number | Array<unknown> | Object;
 }
 

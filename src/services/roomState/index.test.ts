@@ -21,9 +21,9 @@ Object.assign(global, { TextDecoder, TextEncoder });
 function createInstance() {
   const ioc = new IOC(MOCK_LOCAL_PARTICIPANT);
   const room = ioc.createRoom('test-room-state-service');
-
+  const drawingRoom = ioc.createRoom('test-drawing-room');
   const logger = new Logger('Room State Service');
-  return new RoomStateService(room, logger);
+  return new RoomStateService(room, drawingRoom, logger);
 }
 
 describe('roomState', () => {
@@ -195,9 +195,9 @@ describe('roomState', () => {
     });
 
     test('should setDrawing', () => {
-      const updateRoomProperties = jest.spyOn(serviceInstance as any, 'updateRoomProperties');
+      const updateDrawingProperties = jest.spyOn(serviceInstance as any, 'updateDrawingProperties');
       serviceInstance.setDrawing({ data: 'drawing data' } as any);
-      expect(updateRoomProperties).toBeCalledWith({ drawing: { data: 'drawing data' } });
+      expect(updateDrawingProperties).toBeCalledWith({ data: 'drawing data' });
     });
 
     test('should setTranscript', () => {
@@ -216,7 +216,6 @@ describe('roomState', () => {
         hostClientId: null,
         followParticipantId: null,
         gather: false,
-        drawing: null,
         transcript: TranscriptState.TRANSCRIPT_STOP,
         kickParticipant: null,
       });
@@ -462,7 +461,6 @@ describe('roomState', () => {
 
       serviceInstance['updateLocalRoomState']({
         data: {
-          drawing: {} as DrawingData,
           followParticipantId: 'followParticipantId',
           gather: true,
           hostClientId: 'hostClientId',
@@ -472,7 +470,7 @@ describe('roomState', () => {
         },
       });
 
-      expect(publish).toBeCalledTimes(7);
+      expect(publish).toBeCalledTimes(6);
     });
 
     test('should not publish new properties if kickParticipant is not me', () => {

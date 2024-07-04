@@ -1,15 +1,24 @@
-const baseConfig = require('./config');
+const { cjsConfig, esmConfig } = require('./config');
+const esbuild = require('esbuild');
 
-const config = Object.assign({}, baseConfig, {
-  watch: true,
-});
+(async () => {
+  try {
+    const [cjsContext, esmContext] = await Promise.all([
+      esbuild.context({
+        ...cjsConfig,
+        outfile: 'dist/index.cjs.js',
+      }),
 
-require('esbuild')
-  .build({
-    ...config,
-    outfile: 'dist/index.js',
-  })
-  .catch((error) => {
+      esbuild.context({
+        ...esmConfig,
+        outdir: 'dist',
+      }),
+    ]);
+
+    cjsContext.watch();
+    esmContext.watch();
+  } catch (error) {
     console.error(error);
     process.exit(1);
-  });
+  }
+})();

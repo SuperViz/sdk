@@ -8,8 +8,6 @@ import { useStore } from '../../common/utils/use-store';
 import config from '../../services/config';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
-import { AblyRealtimeService } from '../../services/realtime';
-import { RoomStateService } from '../../services/roomState';
 import { ComponentNames } from '../types';
 
 import { DefaultAttachComponentOptions } from './types';
@@ -19,7 +17,6 @@ export abstract class BaseComponent extends Observable {
   protected abstract logger: Logger;
   protected group: Group;
   protected ioc: IOC;
-  protected realtime: AblyRealtimeService;
   protected eventBus: EventBus;
   protected isAttached = false;
   protected unsubscribeFrom: Array<(id: unknown) => void> = [];
@@ -40,7 +37,7 @@ export abstract class BaseComponent extends Observable {
       throw new Error(message);
     }
 
-    const { realtime, config: globalConfig, eventBus, ioc } = params;
+    const { config: globalConfig, eventBus, ioc } = params;
     const { isDomainWhitelisted, hasJoinedRoom } = this.useStore(StoreType.GLOBAL);
 
     if (!isDomainWhitelisted.value) {
@@ -50,7 +47,7 @@ export abstract class BaseComponent extends Observable {
     }
 
     config.setConfig(globalConfig);
-    this.realtime = realtime;
+
     this.eventBus = eventBus;
     this.isAttached = true;
     this.ioc = ioc;
@@ -99,7 +96,6 @@ export abstract class BaseComponent extends Observable {
     });
 
     this.observers = undefined;
-    this.realtime = undefined;
     this.isAttached = false;
   };
 
