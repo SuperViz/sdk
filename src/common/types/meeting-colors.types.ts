@@ -12,7 +12,7 @@ export const NAME_IS_WHITE_TEXT = [
   'lightsea',
   'teal',
   'cadetblue',
-  'slategray',
+  'pastelblue',
   'mediumslateblue',
   'bluedark',
   'navy',
@@ -27,6 +27,7 @@ export const NAME_IS_WHITE_TEXT = [
   'vibrantpink',
   'paleredviolet',
   'carmine',
+  'wine',
 ];
 
 export const MEETING_COLORS = {
@@ -55,7 +56,7 @@ export const MEETING_COLORS = {
   seagreen: '#04B45F',
   palegreen: '#8DE990',
   saddlebrown: '#964C42',
-  mediumgray: '#AFAFAF',
+  pastelblue: '#77A1CC',
   palesilver: '#D2BABA',
   coral: '#DF6B6B',
   bisque: '#FFD9C4',
@@ -65,7 +66,7 @@ export const MEETING_COLORS = {
   mint: '#ADE6DF',
   lightsea: '#45AFAA',
   teal: '#036E6E',
-  slategray: '#708090',
+  wine: '#760040',
   cyan: '#00FFFF',
   mediumslateblue: '#6674D7',
   navy: '#0013BB',
