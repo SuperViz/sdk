@@ -4,7 +4,6 @@ import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { RealtimeEvent } from '../../common/types/events.types';
-import { INDEX_IS_WHITE_TEXT } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
 import {
   Avatar,
@@ -147,7 +146,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     this.showTooltip = !this.showTooltip;
   };
 
-  private getAvatar({ color, imageUrl, firstLetter, slotIndex }: Avatar) {
+  private getAvatar({ color, imageUrl, firstLetter, letterColor }: Avatar) {
     if (imageUrl) {
       return html` <img
         class="who-is-online__participant__avatar"
@@ -155,8 +154,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
         src=${imageUrl}
       />`;
     }
-
-    const letterColor = INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"
@@ -303,7 +300,7 @@ export class WhoIsOnline extends WebComponentsBaseElement {
     const {
       id,
       name,
-      avatar: { color, slotIndex },
+      avatar: { color },
     } = participants.find(({ id }) => id === participantId);
 
     this.everyoneFollowsMe = true;
@@ -315,7 +312,6 @@ export class WhoIsOnline extends WebComponentsBaseElement {
       id,
       name,
       color,
-      slotIndex,
     });
   }
 

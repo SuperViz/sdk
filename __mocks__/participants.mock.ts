@@ -1,5 +1,5 @@
 import { Avatar, Group, Participant } from '../src';
-import { MeetingColors, MeetingColorsHex } from '../src/common/types/meeting-colors.types';
+import { MEETING_COLORS } from '../src/common/types/meeting-colors.types';
 import { ParticipantByGroupApi } from '../src/common/types/participant.types';
 
 export const MOCK_AVATAR: Avatar = {
@@ -16,9 +16,9 @@ export const MOCK_LOCAL_PARTICIPANT: Participant = {
     model3DUrl: 'unit-test-avatar-model.glb',
   },
   slot: {
-    color: MeetingColorsHex[0],
+    color: MEETING_COLORS.turquoise,
     index: 0,
-    colorName: MeetingColors[0],
+    colorName: 'turquoise',
     textColor: '#000',
     timestamp: 0,
   },
@@ -36,7 +36,7 @@ export const MOCK_ABLY_PARTICIPANT_DATA_1 = {
   avatar: MOCK_AVATAR,
   participantId: MOCK_LOCAL_PARTICIPANT.id,
   slotIndex: 0,
-  color: MeetingColorsHex[0],
+  color: MEETING_COLORS.turquoise,
 };
 
 export const MOCK_ABLY_PARTICIPANT_DATA_2 = {
@@ -46,7 +46,7 @@ export const MOCK_ABLY_PARTICIPANT_DATA_2 = {
   avatar: MOCK_AVATAR,
   participantId: MOCK_LOCAL_PARTICIPANT.id,
   slotIndex: 1,
-  color: MeetingColorsHex[1],
+  color: MEETING_COLORS.orange,
 };
 
 export const MOCK_PARTICIPANT_LIST: ParticipantByGroupApi[] = [

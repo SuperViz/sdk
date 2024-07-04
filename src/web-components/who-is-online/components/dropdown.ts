@@ -4,7 +4,6 @@ import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import { INDEX_IS_WHITE_TEXT } from '../../../common/types/meeting-colors.types';
 import { StoreType } from '../../../common/types/stores.types';
 import { Avatar, Participant } from '../../../components/who-is-online/types';
 import { WebComponentsBase } from '../../base';
@@ -115,7 +114,7 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
     };
   };
 
-  private getAvatar({ color, imageUrl, firstLetter, slotIndex }: Avatar) {
+  private getAvatar({ color, imageUrl, firstLetter, letterColor }: Avatar) {
     if (imageUrl) {
       return html` <img
         class="who-is-online__participant__avatar"
@@ -123,8 +122,6 @@ export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
         src=${imageUrl}
       />`;
     }
-
-    const letterColor = INDEX_IS_WHITE_TEXT.includes(slotIndex) ? '#FFFFFF' : '#26242A';
 
     return html`<div
       class="who-is-online__participant__avatar"

@@ -40,7 +40,7 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback(new Array(17).fill({}));
+          callback(new Array(50).fill({}));
         }),
         update: jest.fn(),
       },
