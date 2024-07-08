@@ -12,7 +12,6 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
@@ -34,6 +33,7 @@ import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { ParticipandToFrame, VideoComponentOptions } from './types';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
 let KICK_PARTICIPANTS_TIMEOUT: ReturnType<typeof setTimeout> | null = null;
@@ -324,7 +324,7 @@ export class VideoConference extends BaseComponent {
   ): Participant => {
     return {
       id: participant.id,
-      color: participant.data.slot?.color || MeetingColorsHex[16],
+      color: participant.data.slot?.color || MEETING_COLORS.gray,
       avatar: participant.data.avatar,
       type: participant.data.type,
       name: participant.data.name,
@@ -549,12 +549,12 @@ export class VideoConference extends BaseComponent {
     const list: Participant[] = Object.values(participants).map((participant) => {
       return {
         id: participant.id,
-        color: participant.slot?.colorName || 'gray',
+        slot: participant.slot,
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
         isHost: participant.isHost ?? false,
-        slot: participant.slot,
+        timestamp: participant.timestamp,
       };
     });
 
@@ -710,7 +710,7 @@ export class VideoConference extends BaseComponent {
     const newHost = participant
       ? {
           id: participant.id,
-          color: participant.slot?.color || MeetingColorsHex[16],
+          color: participant.slot?.color || MEETING_COLORS.gray,
           avatar: participant.avatar,
           type: participant.type,
           name: participant.name,

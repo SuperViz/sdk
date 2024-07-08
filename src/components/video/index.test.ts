@@ -16,16 +16,15 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { MeetingColors, MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
-import { ComponentNames } from '../types';
 
 import { VideoConference } from '.';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 
 Object.assign(global, { TextDecoder, TextEncoder });
 
@@ -144,10 +143,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -191,10 +190,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -212,10 +211,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -248,10 +247,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -308,10 +307,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -589,12 +588,12 @@ describe('VideoConference', () => {
       const participantInfoList: Participant[] = [
         {
           id: participants.value[MOCK_LOCAL_PARTICIPANT.id].id,
-          color: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot?.colorName || 'gray',
           avatar: participants.value[MOCK_LOCAL_PARTICIPANT.id].avatar,
           name: participants.value[MOCK_LOCAL_PARTICIPANT.id].name,
           type: participants.value[MOCK_LOCAL_PARTICIPANT.id].type,
           isHost: participants.value[MOCK_LOCAL_PARTICIPANT.id].isHost ?? false,
           slot: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot,
+          timestamp: participants.value[MOCK_LOCAL_PARTICIPANT.id].timestamp,
         },
       ];
 
@@ -627,10 +626,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.GUEST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -679,12 +678,12 @@ describe('VideoConference', () => {
           isHost: true,
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
-          color: MeetingColors[0],
+          color: 'turquoise',
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -698,13 +697,13 @@ describe('VideoConference', () => {
         isHost: true,
         avatar: MOCK_AVATAR,
         type: ParticipantType.HOST,
-        color: MeetingColors[0],
+        color: 'turquoise',
         participantId: MOCK_LOCAL_PARTICIPANT.id,
         slot: {
-          colorName: MeetingColors[0],
+          colorName: 'turquoise',
           index: 0,
-          color: MeetingColorsHex[0],
-          textColor: MeetingColors[0],
+          color: MEETING_COLORS.turquoise,
+          textColor: '#fff',
           timestamp: 0,
         },
       };
@@ -730,10 +729,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -762,10 +761,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },

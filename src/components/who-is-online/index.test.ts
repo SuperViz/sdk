@@ -6,7 +6,6 @@ import {
   MOCK_ABLY_PARTICIPANT_DATA_1,
 } from '../../../__mocks__/participants.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
@@ -17,6 +16,7 @@ import { ComponentNames } from '../types';
 import { Avatar, WhoIsOnlineParticipant, TooltipData } from './types';
 
 import { WhoIsOnline } from './index';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 
 const generateMockParticipant = ({
   id,
@@ -68,8 +68,7 @@ describe('Who Is Online', () => {
 
     whoIsOnlineComponent['localParticipantId'] = MOCK_LOCAL_PARTICIPANT.id;
 
-    const gray = MeetingColorsHex[16];
-    whoIsOnlineComponent['color'] = gray;
+    whoIsOnlineComponent['color'] = MEETING_COLORS.gray;
   });
 
   afterEach(() => {
@@ -813,7 +812,7 @@ describe('Who Is Online', () => {
       imageUrl: 'https://example.com/avatar.jpg',
       color: 'white',
       firstLetter: 'L',
-      slotIndex: 0,
+      letterColor: 'black',
     };
 
     test('should return avatar data with image URL', () => {
@@ -821,14 +820,14 @@ describe('Who Is Online', () => {
         avatar: mockAvatar as any,
         name: 'John Doe',
         color: '#007bff',
-        slotIndex: 1,
+        letterColor: 'black',
       });
 
       expect(result).toEqual({
         imageUrl: 'https://example.com/avatar.jpg',
         firstLetter: 'J',
         color: '#007bff',
-        slotIndex: 1,
+        letterColor: 'black',
       });
     });
 
@@ -840,14 +839,14 @@ describe('Who Is Online', () => {
         },
         name: 'Alice Smith',
         color: '#dc3545',
-        slotIndex: 2,
+        letterColor: 'black',
       });
 
       expect(result).toEqual({
         imageUrl: '',
         firstLetter: 'A',
         color: '#dc3545',
-        slotIndex: 2,
+        letterColor: 'black',
       });
     });
 
@@ -856,14 +855,14 @@ describe('Who Is Online', () => {
         avatar: mockAvatar as any,
         name: 'User name',
         color: '#28a745',
-        slotIndex: 3,
+        letterColor: 'black',
       });
 
       expect(result).toEqual({
         imageUrl: 'https://example.com/avatar.jpg',
         firstLetter: 'U',
         color: '#28a745',
-        slotIndex: 3,
+        letterColor: 'black',
       });
     });
 
@@ -875,14 +874,14 @@ describe('Who Is Online', () => {
         },
         name: '',
         color: '#ffc107',
-        slotIndex: 4,
+        letterColor: 'black',
       });
 
       expect(result).toEqual({
         imageUrl: '',
         firstLetter: 'A',
         color: '#ffc107',
-        slotIndex: 4,
+        letterColor: 'black',
       });
     });
   });

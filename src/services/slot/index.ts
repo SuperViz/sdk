@@ -1,10 +1,6 @@
 import * as Socket from '@superviz/socket-client';
 
-import {
-  INDEX_IS_WHITE_TEXT,
-  MeetingColors,
-  MeetingColorsHex,
-} from '../../common/types/meeting-colors.types';
+import { NAME_IS_WHITE_TEXT, MEETING_COLORS } from '../../common/types/meeting-colors.types';
 import { Participant, Slot } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
@@ -26,8 +22,8 @@ export class SlotService {
    * @returns void
    */
   public async assignSlot(): Promise<Slot> {
-    let slots = Array.from({ length: 16 }, (_, i) => i);
-    let slot = Math.floor(Math.random() * 16);
+    let slots = Array.from({ length: 50 }, (_, i) => i);
+    let slot = Math.floor(Math.random() * 50);
     const { localParticipant, participants } = useStore(StoreType.GLOBAL);
 
     try {
@@ -35,7 +31,7 @@ export class SlotService {
         this.room.presence.get((presences) => {
           if (!presences || !presences.length) resolve(true);
 
-          if (presences.length >= 17) {
+          if (presences.length >= 50) {
             slots = [];
             reject(new Error('[SuperViz] - No more slots available'));
             return;
@@ -56,11 +52,13 @@ export class SlotService {
         slot = slots.shift();
       }
 
+      const color = Object.keys(MEETING_COLORS)[slot];
+
       const slotData = {
         index: slot,
-        color: MeetingColorsHex[slot],
-        textColor: INDEX_IS_WHITE_TEXT.includes(slot) ? '#fff' : '#000',
-        colorName: MeetingColors[slot],
+        color: MEETING_COLORS[color],
+        textColor: NAME_IS_WHITE_TEXT.includes(color) ? '#fff' : '#000',
+        colorName: color,
         timestamp: Date.now(),
       };
 
