@@ -1,4 +1,4 @@
-import { Avatar, ParticipantType } from '../../common/types/participant.types';
+import { Avatar, ParticipantType, Slot } from '../../common/types/participant.types';
 import { DevicesOptions } from '../../common/types/sdk-options.types';
 import {
   CamerasPosition,
@@ -46,7 +46,8 @@ export interface VideoComponentOptions {
   };
 }
 
-export type ParticipandToFrame = {
+export type ParticipantToFrame = {
+  id: string;
   timestamp: number;
   participantId: string;
   color: string;
@@ -54,4 +55,5 @@ export type ParticipandToFrame = {
   isHost: boolean;
   avatar?: Avatar;
   type: ParticipantType;
+  slot: Slot;
 };

@@ -330,7 +330,7 @@ export class PointersCanvas extends BaseComponent {
     const pointerUser = divPointer.getElementsByClassName('pointer-mouse')[0] as HTMLDivElement;
 
     if (pointerUser) {
-      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/mouse-pointers/${mouse.slot.colorName}.svg)`;
+      pointerUser.style.backgroundImage = `url(https://production.cdn.superviz.com/static/mouse-pointers/${mouse.slot?.colorName}.svg)`;
     }
 
     if (mouseUser) {

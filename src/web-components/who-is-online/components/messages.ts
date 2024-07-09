@@ -38,7 +38,7 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     super();
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe((participant: Participant) => {
-      this.participantColor = participant.color;
+      this.participantColor = participant.slot.color;
     });
 
     const { following } = this.useStore(StoreType.WHO_IS_ONLINE);

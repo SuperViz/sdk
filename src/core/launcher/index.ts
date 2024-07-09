@@ -28,11 +28,11 @@ export class Launcher extends Observable implements DefaultLauncher {
   private activeComponents: ComponentNames[] = [];
   private componentsToAttachAfterJoin: Partial<BaseComponent>[] = [];
   private activeComponentsInstances: Partial<BaseComponent>[] = [];
+  private participant: Participant;
 
   private ioc: IOC;
   private room: Socket.Room;
   private eventBus: EventBus = new EventBus();
-  private timestamp: number = 0;
 
   private useStore = useStore.bind(this) as typeof useStore;
 
@@ -47,6 +47,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     localParticipant.publish({ ...participant });
     participants.subscribe(this.onParticipantListUpdate);
     isDomainWhitelisted.subscribe(this.onAuthentication);
+    localParticipant.subscribe((participant) => {
+      this.participant = participant;
+    });
 
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
@@ -144,7 +147,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
     localParticipant.publish({
-      ...localParticipant.value,
+      ...this.participant,
       activeComponents: this.activeComponents,
     });
   };
@@ -244,14 +247,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.logger.log('launcher service @ onParticipantListUpdate', participants);
     const { localParticipant } = useStore(StoreType.GLOBAL);
 
-    const participant: Participant = Object.values(participants)
-      .filter((participant) => participant.id === localParticipant.value.id)
-      .map((participant) => {
-        return {
-          ...participant,
-          color: participant.slot?.color,
-        };
-      })[0];
+    const participant: Participant = Object.values(participants).find(
+      (participant) => participant.id === localParticipant.value.id,
+    );
 
     if (!participant || isEqual(localParticipant.value, participant)) return;
 
@@ -279,8 +277,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {void}
    */
   private onParticipantJoined = (participant: Socket.PresenceEvent<Participant>): void => {
-    const { localParticipant } = useStore(StoreType.GLOBAL);
-    if (participant.id !== localParticipant.value.id) return;
+    if (participant.id !== this.participant.id) return;
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
     this.attachComponentsAfterJoin();
@@ -301,7 +298,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
   private startIOC = (): void => {
     this.logger.log('launcher service @ startIOC');
-    const { participants, localParticipant } = useStore(StoreType.GLOBAL);
+    const { participants } = useStore(StoreType.GLOBAL);
     // retrieve the current participants in the room
 
     this.ioc.stateSubject.subscribe((state) => {
@@ -321,9 +318,9 @@ export class Launcher extends Observable implements DefaultLauncher {
         };
       });
 
-      participantsMap[localParticipant.value.id] = {
-        ...participantsMap[localParticipant.value.id],
-        ...localParticipant.value,
+      participantsMap[this.participant.id] = {
+        ...participantsMap[this.participant.id],
+        ...this.participant,
       };
 
       participants.publish(participantsMap);
@@ -351,21 +348,18 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onParticipantJoinedIOC = async (
     presence: Socket.PresenceEvent<Participant>,
   ): Promise<void> => {
-    const { localParticipant } = useStore(StoreType.GLOBAL);
-    if (presence.id !== localParticipant.value.id) return;
+    if (presence.id !== this.participant.id) return;
 
     // Assign a slot to the participant
     const slot = new SlotService(this.room);
     await slot.assignSlot();
 
-    this.timestamp = presence.timestamp;
-
-    this.room.presence.update(localParticipant.value);
+    this.room.presence.update(this.participant);
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
     this.onParticipantJoined(presence);
-    this.publish(ParticipantEvent.LOCAL_JOINED, localParticipant.value);
-    this.publish(ParticipantEvent.JOINED, localParticipant.value);
+    this.publish(ParticipantEvent.LOCAL_JOINED, this.participant);
+    this.publish(ParticipantEvent.JOINED, this.participant);
   };
 
   /**
@@ -399,27 +393,17 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onParticipantUpdatedIOC = (presence: Socket.PresenceEvent<Participant>): void => {
     const { localParticipant } = useStore(StoreType.GLOBAL);
 
-    if (
-      localParticipant.value &&
-      presence.id === localParticipant.value.id &&
-      !isEqual(localParticipant.value, presence.data)
-    ) {
-      if (presence.data.timestamp === this.timestamp) {
-        this.timestamp = 0;
-        return;
-      }
-
+    if (localParticipant.value && presence.id === localParticipant.value.id) {
       localParticipant.publish({
         ...presence.data,
         ...localParticipant.value,
         timestamp: presence.timestamp,
       } as Participant);
 
-      this.timestamp = presence.timestamp;
-      this.room.presence.update(localParticipant.value);
-
-      this.publish(ParticipantEvent.LOCAL_UPDATED, presence.data);
-
+      this.publish(ParticipantEvent.LOCAL_UPDATED, {
+        ...presence.data,
+        ...localParticipant.value,
+      });
       this.logger.log('Publishing ParticipantEvent.UPDATED', presence.data);
     }
 
