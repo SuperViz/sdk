@@ -396,6 +396,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     this.logger.log('launcher service @ onParticipantLeave - participant left', presence.data);
     this.publish(ParticipantEvent.LEFT, presence.data);
+    this.publish(ParticipantEvent.LIST_UPDATED, Object.values(participantsMap));
   };
 
   /**
@@ -422,17 +423,21 @@ export class Launcher extends Observable implements DefaultLauncher {
     }
 
     const { participants } = useStore(StoreType.GLOBAL);
+    const participant: Participant = {
+      id: presence.id,
+      name: presence.name,
+      timestamp: presence.timestamp,
+      ...presence.data,
+    };
 
     if (!participants.value[presence.id]) {
-      this.publish(ParticipantEvent.JOINED, presence.data);
+      this.publish(ParticipantEvent.JOINED, participant);
     }
 
-    const participantsMap = { ...participants.value };
-    participantsMap[presence.id] = {
-      ...presence.data,
-      ...participants.value[presence.id],
-      timestamp: presence.timestamp,
-    };
+    const participantsMap = Object.assign({}, participants.value);
+    participantsMap[presence.id] = participant;
+
+    if (isEqual(participantsMap, participants.value)) return;
 
     participants.publish(participantsMap);
 
