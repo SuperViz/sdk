@@ -228,12 +228,18 @@ export class Launcher extends Observable implements DefaultLauncher {
     return true;
   };
 
+  /**
+   * @function onAuthentication
+   * @description on authentication
+   * @param isAuthenticated - return if the user is authenticated
+   * @returns {void}
+   */
   private onAuthentication = (isAuthenticated: boolean): void => {
     if (isAuthenticated) return;
 
     this.destroy();
     console.error(
-      `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+      `[SuperViz] Room cannot be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
     );
   };
 
