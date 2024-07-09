@@ -8,6 +8,7 @@ import { Logger } from '../../../common/utils';
 import { BaseComponent } from '../../base';
 import { ComponentNames } from '../../types';
 import { Camera, ParticipantMouse, PresenceMouseProps, Transform } from '../types';
+import { MEETING_COLORS } from '../../../common/types/meeting-colors.types';
 
 export class PointersCanvas extends BaseComponent {
   public name: ComponentNames;
@@ -334,8 +335,8 @@ export class PointersCanvas extends BaseComponent {
     }
 
     if (mouseUser) {
-      mouseUser.style.color = mouse.slot.textColor;
-      mouseUser.style.backgroundColor = mouse.slot.color;
+      mouseUser.style.color = mouse.slot?.textColor ?? '#fff';
+      mouseUser.style.backgroundColor = mouse.slot?.color ?? MEETING_COLORS.gray;
       mouseUser.innerHTML = mouse.name;
     }
 

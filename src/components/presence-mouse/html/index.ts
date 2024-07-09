@@ -16,6 +16,7 @@ import {
   Transform,
   VoidElements,
 } from '../types';
+import { MEETING_COLORS } from '../../../common/types/meeting-colors.types';
 
 export class PointersHTML extends BaseComponent {
   public name: ComponentNames;
@@ -695,8 +696,8 @@ export class PointersHTML extends BaseComponent {
     }
 
     if (mouseUser) {
-      mouseUser.style.color = participant.slot.textColor;
-      mouseUser.style.backgroundColor = participant.slot.color;
+      mouseUser.style.color = participant.slot?.textColor ?? MEETING_COLORS.gray;
+      mouseUser.style.backgroundColor = participant.slot?.color ?? '#fff';
       mouseUser.innerHTML = participant.name;
     }
 

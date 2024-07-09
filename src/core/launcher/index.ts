@@ -2,7 +2,7 @@ import * as Socket from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
 import { ParticipantEvent } from '../../common/types/events.types';
-import { Participant } from '../../common/types/participant.types';
+import { Participant, ParticipantType } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Observable } from '../../common/utils';
 import { Logger } from '../../common/utils/logger';
@@ -33,6 +33,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private ioc: IOC;
   private room: Socket.Room;
   private eventBus: EventBus = new EventBus();
+  private slotService: SlotService;
 
   private useStore = useStore.bind(this) as typeof useStore;
 
@@ -47,9 +48,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     localParticipant.publish({ ...participant });
     participants.subscribe(this.onParticipantListUpdate);
     isDomainWhitelisted.subscribe(this.onAuthentication);
-    localParticipant.subscribe((participant) => {
-      this.participant = participant;
-    });
+    localParticipant.subscribe(this.onParticipantLocalParticipantUpdateOnStore);
 
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
@@ -244,6 +243,16 @@ export class Launcher extends Observable implements DefaultLauncher {
   };
 
   /**
+   * @function onParticipantLocalParticipantUpdateOnStore
+   * @description on participant local participant update on store
+   * @param {Participant} participant - new participant data
+   * @returns {void}
+   */
+  private onParticipantLocalParticipantUpdateOnStore = (participant: Participant): void => {
+    this.participant = participant;
+  };
+
+  /**
    * @function onParticipantListUpdate
    * @description on participant list update
    * @param participants - participants list
@@ -357,8 +366,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     if (presence.id !== this.participant.id) return;
 
     // Assign a slot to the participant
-    const slot = new SlotService(this.room);
-    await slot.assignSlot();
+    this.slotService = new SlotService(this.room, this.useStore);
 
     this.room.presence.update(this.participant);
 
