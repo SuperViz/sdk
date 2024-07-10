@@ -18,7 +18,6 @@ export interface Participant {
   id: string;
   name?: string;
   type?: ParticipantType;
-  color?: string;
   slot?: Slot;
   avatar?: Avatar;
   isHost?: boolean;

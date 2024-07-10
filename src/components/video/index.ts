@@ -32,7 +32,7 @@ import {
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { ParticipandToFrame, VideoComponentOptions } from './types';
+import { ParticipantToFrame, VideoComponentOptions } from './types';
 import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
@@ -321,14 +321,17 @@ export class VideoConference extends BaseComponent {
    * */
   private createParticipantFromPresence = (
     participant: PresenceEvent<Participant>,
-  ): Participant => {
+  ): ParticipantToFrame => {
     return {
+      participantId: participant.id,
       id: participant.id,
       color: participant.data.slot?.color || MEETING_COLORS.gray,
       avatar: participant.data.avatar,
       type: participant.data.type,
       name: participant.data.name,
       isHost: participant.data.isHost,
+      timestamp: participant.timestamp,
+      slot: participant.data.slot,
     };
   };
 
@@ -672,11 +675,12 @@ export class VideoConference extends BaseComponent {
    */
   private onRealtimeParticipantsDidChange = (participants: Participant[]): void => {
     this.logger.log('video conference @ on participants did change', participants);
-    const participantList: ParticipandToFrame[] = participants.map((participant) => {
+    const participantList: ParticipantToFrame[] = participants.map((participant) => {
       return {
+        id: participant.id,
         timestamp: participant.timestamp,
         participantId: participant.id,
-        color: participant.slot?.colorName ?? 'gray',
+        color: participant.slot?.color || MEETING_COLORS.gray,
         name: participant.name,
         isHost: participant.isHost ?? false,
         avatar: participant.avatar,

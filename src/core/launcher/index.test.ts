@@ -249,7 +249,7 @@ describe('Launcher', () => {
       LauncherInstance['onAuthentication'](false);
       expect(LauncherInstance.destroy).toHaveBeenCalled();
       expect(console.error).toHaveBeenCalledWith(
-        `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+        `[SuperViz] Room cannot be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
       );
     });
 

@@ -1,19 +1,33 @@
 import * as Socket from '@superviz/socket-client';
 
-import { NAME_IS_WHITE_TEXT, MEETING_COLORS } from '../../common/types/meeting-colors.types';
-import { Participant, Slot } from '../../common/types/participant.types';
-import { StoreType } from '../../common/types/stores.types';
+import {
+  NAME_IS_WHITE_TEXT,
+  MEETING_COLORS,
+  MEETING_COLORS_KEYS,
+} from '../../common/types/meeting-colors.types';
+import { Participant, ParticipantType, Slot } from '../../common/types/participant.types';
+import { Store, StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
+import { ComponentNames } from '../../components/types';
 
 export class SlotService {
-  private room: Socket.Room;
+  private slotIndex: number | null = null;
 
-  private slotIndex: number;
-
-  constructor(room: Socket.Room) {
+  constructor(
+    private room: Socket.Room,
+    private useStore: <T extends StoreType>(name: T) => Store<T>,
+  ) {
     this.room = room;
 
     this.room.presence.on(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
+
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+    localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
+
+    /**
+     * When the participant enters the room, is setted the default slot
+     */
+    this.setDefaultSlot();
   }
 
   /**
@@ -48,6 +62,7 @@ export class SlotService {
       });
 
       const isUsing = !slots.includes(slot);
+
       if (isUsing) {
         slot = slots.shift();
       }
@@ -86,10 +101,44 @@ export class SlotService {
     }
   }
 
-  private onPresenceUpdate = async (event: Socket.PresenceEvent<Participant>) => {
+  /**
+   * @function setDefaultSlot
+   * @description Removes the slot from the participant
+   * @returns void
+   */
+  public setDefaultSlot() {
     const { localParticipant, participants } = useStore(StoreType.GLOBAL);
 
-    if (!event.data.slot || !localParticipant.value?.slot) return;
+    const slot: Slot = {
+      index: null,
+      color: MEETING_COLORS.gray,
+      textColor: '#fff',
+      colorName: 'gray',
+      timestamp: Date.now(),
+    };
+
+    this.slotIndex = slot.index;
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      slot: slot,
+    });
+
+    participants.publish({
+      ...participants.value,
+      [localParticipant.value.id]: {
+        ...participants.value[localParticipant.value.id],
+        slot,
+      },
+    });
+
+    this.room.presence.update({ slot });
+  }
+
+  private onPresenceUpdate = async (event: Socket.PresenceEvent<Participant>) => {
+    const { localParticipant } = this.useStore(StoreType.GLOBAL);
+
+    if (!event.data.slot || !localParticipant.value?.slot?.index) return;
 
     if (event.id === localParticipant.value.id) {
       localParticipant.publish({
@@ -112,6 +161,41 @@ export class SlotService {
       console.debug(
         `[SuperViz] - Slot reassigned to ${localParticipant.value.id}, slot: ${slotData.colorName}`,
       );
+    }
+  };
+
+  /**
+   * @function onLocalParticipantUpdateOnStore
+   * @description handles the update of the local participant in the store.
+   * @param {Participant} participant - new participant data
+   * @returns {void}
+   */
+  private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
+    const COMPONENTS_THAT_NEED_SLOT = [
+      ComponentNames.FORM_ELEMENTS,
+      ComponentNames.WHO_IS_ONLINE,
+      ComponentNames.PRESENCE,
+      ComponentNames.PRESENCE_AUTODESK,
+      ComponentNames.PRESENCE_MATTERPORT,
+      ComponentNames.PRESENCE_THREEJS,
+    ];
+
+    const componentsNeedSlot = COMPONENTS_THAT_NEED_SLOT.some((component) => {
+      return participant.activeComponents.includes(component);
+    });
+
+    const videoNeedSlot =
+      participant.activeComponents.includes(ComponentNames.VIDEO_CONFERENCE) &&
+      participant.type !== ParticipantType.AUDIENCE;
+
+    const needSlot = componentsNeedSlot || videoNeedSlot;
+
+    if ((participant.slot?.index === null || !participant.slot) && needSlot) {
+      this.assignSlot();
+    }
+
+    if (participant.slot?.index !== null && !needSlot) {
+      this.setDefaultSlot();
     }
   };
 }

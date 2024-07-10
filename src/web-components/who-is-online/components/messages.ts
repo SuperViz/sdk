@@ -10,6 +10,7 @@ import importStyle from '../../base/utils/importStyle';
 import { messagesStyle } from '../css';
 
 import { HorizontalSide, VerticalSide } from './types';
+import { MEETING_COLORS } from '../../../common/types/meeting-colors.types';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle];
@@ -38,7 +39,7 @@ export class WhoIsOnlineMessages extends WebComponentsBaseElement {
     super();
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe((participant: Participant) => {
-      this.participantColor = participant.color;
+      this.participantColor = participant.slot?.color ?? MEETING_COLORS.gray;
     });
 
     const { following } = this.useStore(StoreType.WHO_IS_ONLINE);

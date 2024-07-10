@@ -22,6 +22,7 @@ import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
+import { ParticipantToFrame } from './types';
 
 import { VideoConference } from '.';
 import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
@@ -678,7 +679,6 @@ describe('VideoConference', () => {
           isHost: true,
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
-          color: 'turquoise',
           slot: {
             colorName: 'turquoise',
             index: 0,
@@ -691,14 +691,15 @@ describe('VideoConference', () => {
 
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](participant);
 
-      const expectedParticipants = {
+      const expectedParticipants: ParticipantToFrame = {
         timestamp: 0,
-        name: MOCK_LOCAL_PARTICIPANT.name,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
         isHost: true,
         avatar: MOCK_AVATAR,
         type: ParticipantType.HOST,
-        color: 'turquoise',
         participantId: MOCK_LOCAL_PARTICIPANT.id,
+        color: MEETING_COLORS.turquoise,
+        id: MOCK_LOCAL_PARTICIPANT.id,
         slot: {
           colorName: 'turquoise',
           index: 0,
