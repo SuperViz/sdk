@@ -48,7 +48,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     localParticipant.publish({ ...participant });
     participants.subscribe(this.onParticipantListUpdate);
     isDomainWhitelisted.subscribe(this.onAuthentication);
-    localParticipant.subscribe(this.onParticipantLocalParticipantUpdateOnStore);
+    localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
 
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
@@ -243,12 +243,12 @@ export class Launcher extends Observable implements DefaultLauncher {
   };
 
   /**
-   * @function onParticipantLocalParticipantUpdateOnStore
-   * @description on participant local participant update on store
+   * @function onLocalParticipantUpdateOnStore
+   * @description handles the update of the local participant in the store.
    * @param {Participant} participant - new participant data
    * @returns {void}
    */
-  private onParticipantLocalParticipantUpdateOnStore = (participant: Participant): void => {
+  private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     this.participant = participant;
   };
 

@@ -22,7 +22,7 @@ export class SlotService {
     this.room.presence.on(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe(this.onParticipantLocalParticipantUpdateOnStore);
+    localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
 
     /**
      * When the participant enters the room, is setted the default slot
@@ -165,12 +165,12 @@ export class SlotService {
   };
 
   /**
-   * @function onParticipantLocalParticipantUpdateOnStore
-   * @description on participant local participant update on store
+   * @function onLocalParticipantUpdateOnStore
+   * @description handles the update of the local participant in the store.
    * @param {Participant} participant - new participant data
    * @returns {void}
    */
-  private onParticipantLocalParticipantUpdateOnStore = (participant: Participant): void => {
+  private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     const COMPONENTS_THAT_NEED_SLOT = [
       ComponentNames.FORM_ELEMENTS,
       ComponentNames.WHO_IS_ONLINE,
