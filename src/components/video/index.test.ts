@@ -26,6 +26,7 @@ import { ParticipantToFrame } from './types';
 
 import { VideoConference } from '.';
 import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 Object.assign(global, { TextDecoder, TextEncoder });
 
@@ -94,6 +95,7 @@ describe('VideoConference', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
       useStore,
     });
 
@@ -118,6 +120,7 @@ describe('VideoConference', () => {
       Presence3DManagerService: Presence3DManager,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
       useStore,
     });
 

@@ -1,3 +1,4 @@
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { IOC } from '../../services/io';
@@ -21,7 +22,8 @@ describe('Realtime Channel', () => {
     ChannelInstance = new Channel(
       'channel',
       new IOC(MOCK_LOCAL_PARTICIPANT),
-      MOCK_LOCAL_PARTICIPANT
+      MOCK_LOCAL_PARTICIPANT,
+      LIMITS_MOCK.realtime.maxParticipants,
     );
 
     ChannelInstance['state'] = RealtimeChannelState.CONNECTED;
@@ -120,7 +122,7 @@ describe('Realtime Channel', () => {
         });
 
       const h = await ChannelInstance.fetchHistory();
-      
+
       expect(spy).toHaveBeenCalled();
       expect(h).toEqual({
         'unit-test-event-name': [
@@ -202,10 +204,10 @@ describe('Realtime Channel', () => {
       ChannelInstance['state'] = RealtimeChannelState.DISCONNECTED;
 
       ChannelInstance.disconnect();
-      
+
       expect(spy).not.toHaveBeenCalled();
     });
-    
+
     test('Should log an error if a disconnect attempt is made when the channel is already disconnected', () => {
       const spy = jest.spyOn(ChannelInstance['logger'], 'log' as any);
       ChannelInstance['state'] = RealtimeChannelState.DISCONNECTED;
@@ -213,6 +215,6 @@ describe('Realtime Channel', () => {
       ChannelInstance.disconnect();
 
       expect(spy).toHaveBeenCalled();
-    })
+    });
   });
-})
+});

@@ -3,6 +3,7 @@ import { ComponentNames } from '../../components/types';
 import config from '../config';
 
 import LimitsService from './index';
+import { ComponentLimits } from './types';
 
 describe('LimitsService', () => {
   describe('checkComponentLimit', () => {
@@ -12,20 +13,25 @@ describe('LimitsService', () => {
 
       const result = LimitsService.checkComponentLimit(componentName);
 
-      expect(result).toBe(true);
+      expect(result).toBe(LIMITS_MOCK.videoConference);
     });
 
     it('should return false if the component limit is exceeded', () => {
       const componentName = ComponentNames.COMMENTS;
 
-      jest.spyOn(config, 'get').mockReturnValue({
+      const expected: ComponentLimits = {
         ...LIMITS_MOCK,
-        comments: false,
-      });
+        presence: {
+          ...LIMITS_MOCK.presence,
+          canUse: false,
+        },
+      };
+
+      jest.spyOn(config, 'get').mockReturnValue(expected);
 
       const result = LimitsService.checkComponentLimit(componentName);
 
-      expect(result).toBe(false);
+      expect(result).toBe(expected.presence);
     });
   });
 });
