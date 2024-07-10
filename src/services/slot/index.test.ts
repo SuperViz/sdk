@@ -141,8 +141,7 @@ describe('slot service', () => {
       activeComponents: [],
     };
 
-    const { localParticipant } = useStore(StoreType.GLOBAL);
-    localParticipant.publish(event);
+    instance['onLocalParticipantUpdateOnStore'](event);
 
     expect(room.presence.update).toHaveBeenCalledWith({
       slot: {

@@ -98,6 +98,11 @@ export class Launcher extends Observable implements DefaultLauncher {
       activeComponents: this.activeComponents,
     });
 
+    this.room.presence.update({
+      ...localParticipant.value,
+      activeComponents: this.activeComponents,
+    });
+
     ApiService.sendActivity(
       localParticipant.value.id,
       group.value.id,
@@ -348,9 +353,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       Socket.PresenceEvents.JOINED_ROOM,
       this.onParticipantJoinedIOC,
     );
-
     this.room.presence.on<Participant>(Socket.PresenceEvents.LEAVE, this.onParticipantLeaveIOC);
-
     this.room.presence.on<Participant>(Socket.PresenceEvents.UPDATE, this.onParticipantUpdatedIOC);
 
     const { hasJoinedRoom } = useStore(StoreType.GLOBAL);

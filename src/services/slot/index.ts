@@ -23,11 +23,6 @@ export class SlotService {
 
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
     localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
-
-    /**
-     * When the participant enters the room, is setted the default slot
-     */
-    this.setDefaultSlot();
   }
 
   /**
