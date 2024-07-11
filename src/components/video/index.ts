@@ -178,6 +178,9 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private startVideo = (): void => {
+    const defaultAvatars =
+      this.params?.userType !== ParticipantType.AUDIENCE && this.params?.defaultAvatars === true;
+
     this.videoConfig = {
       language: this.params?.language,
       canUseRecording: !!this.params?.enableRecording,
@@ -185,8 +188,7 @@ export class VideoConference extends BaseComponent {
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
-      canUseDefaultAvatars:
-        !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
+      canUseDefaultAvatars: defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
       canUseGather: !!this.params?.enableGather,
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
