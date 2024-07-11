@@ -481,6 +481,7 @@ describe('VideoConference', () => {
       expect(VideoConferenceInstance['roomState'].updateMyProperties).toHaveBeenCalledWith({
         name: 'John Doe',
         type: ParticipantType.HOST,
+        joinedMeeting: true,
       });
     });
 
@@ -500,6 +501,7 @@ describe('VideoConference', () => {
         name: 'John Doe',
         avatar: MOCK_AVATAR,
         type: ParticipantType.HOST,
+        joinedMeeting: true,
       });
     });
 

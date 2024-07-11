@@ -28,6 +28,10 @@ export interface Participant {
   timestamp?: number;
 }
 
+export interface VideoParticipant extends Participant {
+  joinedMeeting?: boolean;
+}
+
 export type ParticipantByGroupApi = {
   id: string;
   name: string;
