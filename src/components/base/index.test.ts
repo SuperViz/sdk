@@ -2,8 +2,6 @@ import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import { MOCK_OBSERVER_HELPER } from '../../../__mocks__/observer-helper.mock';
 import { MOCK_GROUP, MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
-import { ROOM_STATE_MOCK } from '../../../__mocks__/roomState.mock';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { useStore } from '../../common/utils/use-store';
@@ -11,7 +9,6 @@ import { Configuration } from '../../services/config/types';
 import { EventBus } from '../../services/event-bus';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
-import { AblyRealtimeService } from '../../services/realtime';
 import { useGlobalStore } from '../../services/stores';
 import { ComponentNames } from '../types';
 
@@ -36,8 +33,6 @@ class DummyComponent extends BaseComponent {
     this.logger.log('started');
   }
 }
-
-const REALTIME_MOCK = Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true });
 
 jest.mock('../../common/utils/observer', () => ({
   Observer: jest.fn().mockImplementation(() => MOCK_OBSERVER_HELPER),
@@ -72,7 +67,6 @@ describe('BaseComponent', () => {
 
       DummyComponentInstance.attach({
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-        realtime: ABLY_REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         Presence3DManagerService: Presence3DManager,
@@ -91,14 +85,9 @@ describe('BaseComponent', () => {
     });
 
     test('should not start if domain is not whitelisted', () => {
-      const ablyMock = { ...ABLY_REALTIME_MOCK };
-
-      ablyMock['isDomainWhitelisted'] = false;
-
       DummyComponentInstance.attach({
         Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-        realtime: ablyMock as AblyRealtimeService,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         useStore,
@@ -118,15 +107,13 @@ describe('BaseComponent', () => {
       DummyComponentInstance.attach({
         Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-        realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         useStore,
       });
 
-      expect(DummyComponentInstance['realtime']).toEqual(REALTIME_MOCK);
       expect(DummyComponentInstance['isAttached']).toBeTruthy();
-      expect(DummyComponentInstance['start']).toBeCalled();
+      expect(DummyComponentInstance['start']).toHaveBeenCalled();
     });
 
     test('should throw error if realtime is not provided', () => {
@@ -136,7 +123,6 @@ describe('BaseComponent', () => {
         DummyComponentInstance.attach({
           ioc: null as unknown as IOC,
           Presence3DManagerService: Presence3DManager,
-          realtime: null as unknown as AblyRealtimeService,
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
           useStore: null as unknown as typeof useStore,
@@ -153,7 +139,6 @@ describe('BaseComponent', () => {
       DummyComponentInstance.attach({
         Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-        realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         useStore,
@@ -175,7 +160,6 @@ describe('BaseComponent', () => {
       DummyComponentInstance.attach({
         Presence3DManagerService: Presence3DManager,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-        realtime: REALTIME_MOCK,
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         useStore,

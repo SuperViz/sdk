@@ -1,5 +1,4 @@
 import { Group, Participant } from '../../../common/types/participant.types';
-import { ParticipantInfo } from '../../realtime/base/types';
 import { Singleton } from '../common/types';
 import { CreateSingleton } from '../common/utils';
 import subject from '../subject';
@@ -8,7 +7,7 @@ const instance: Singleton<GlobalStore> = CreateSingleton<GlobalStore>();
 
 export class GlobalStore {
   public localParticipant = subject<Participant>({} as Participant);
-  public participants = subject<Record<string, ParticipantInfo>>({});
+  public participants = subject<Record<string, Participant>>({});
   public group = subject<Group>(null);
   public isDomainWhitelisted = subject<boolean>(true);
   public hasJoinedRoom = subject<boolean>(false);

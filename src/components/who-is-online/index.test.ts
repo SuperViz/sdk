@@ -1,12 +1,10 @@
 import { MOCK_CONFIG } from '../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../__mocks__/event-bus.mock';
 import {
-  MOCK_ABLY_PARTICIPANT,
   MOCK_ABLY_PARTICIPANT_DATA_2,
   MOCK_LOCAL_PARTICIPANT,
   MOCK_ABLY_PARTICIPANT_DATA_1,
 } from '../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../__mocks__/realtime.mock';
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
 import { StoreType } from '../../common/types/stores.types';
@@ -60,7 +58,6 @@ describe('Who Is Online', () => {
 
     whoIsOnlineComponent.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-      realtime: Object.assign({}, ABLY_REALTIME_MOCK, { hasJoinedRoom: true }),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
@@ -370,13 +367,16 @@ describe('Who Is Online', () => {
     });
 
     test('should publish following data', () => {
+      whoIsOnlineComponent['setFollow']({
+        presence: { id: MOCK_ABLY_PARTICIPANT_DATA_1.id },
+        data: {
+          ...MOCK_ABLY_PARTICIPANT_DATA_1,
+        },
+      });
+
       const { following } = whoIsOnlineComponent['useStore'](StoreType.WHO_IS_ONLINE);
 
-      whoIsOnlineComponent['setFollow']({
-        presence: { id: 'id' },
-        ...MOCK_ABLY_PARTICIPANT,
-      });
-      expect(following.value).toBe(MOCK_ABLY_PARTICIPANT_DATA_1);
+      expect(following.value).toMatchObject(MOCK_ABLY_PARTICIPANT_DATA_1);
     });
 
     test('should early return if following the local participant', () => {
@@ -390,7 +390,7 @@ describe('Who Is Online', () => {
 
       whoIsOnlineComponent['setFollow']({
         presence: { id: MOCK_LOCAL_PARTICIPANT.id },
-        ...MOCK_ABLY_PARTICIPANT,
+        ...MOCK_LOCAL_PARTICIPANT,
       });
 
       expect(whoIsOnlineComponent['followMousePointer']).not.toHaveBeenCalled();
@@ -408,7 +408,7 @@ describe('Who Is Online', () => {
       following.publish(followingData);
 
       whoIsOnlineComponent['setFollow']({
-        ...MOCK_ABLY_PARTICIPANT,
+        ...MOCK_LOCAL_PARTICIPANT,
         presence: {
           id: 'id',
         },
@@ -453,7 +453,7 @@ describe('Who Is Online', () => {
         name: MOCK_ABLY_PARTICIPANT_DATA_2.name,
       });
 
-      whoIsOnlineComponent['stopFollowing'](MOCK_ABLY_PARTICIPANT);
+      whoIsOnlineComponent['stopFollowing'](MOCK_LOCAL_PARTICIPANT);
 
       expect(following.value).toBeDefined();
       expect(following.value!.id).toBe(MOCK_ABLY_PARTICIPANT_DATA_2.id);

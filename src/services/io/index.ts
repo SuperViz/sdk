@@ -4,22 +4,16 @@ import { Subject } from 'rxjs';
 import { Participant } from '../../common/types/participant.types';
 import config from '../config/index';
 
+import { IOCState } from './types';
+
 export class IOC {
   public state: Socket.ConnectionState;
   public client: Socket.Realtime;
 
-  private stateSubject: Subject<Socket.ConnectionState> = new Subject();
+  public stateSubject: Subject<IOCState> = new Subject();
 
-  constructor(participant: Participant) {
-    let environment = config.get<string>('environment') as 'dev' | 'prod';
-    environment = ['dev', 'prod'].includes(environment) ? environment : 'dev';
-
-    this.client = new Socket.Realtime(config.get<string>('apiKey'), environment, {
-      id: participant.id,
-      name: participant.name,
-    });
-
-    this.subscribeToDefaultEvents();
+  constructor(private participant: Participant) {
+    this.createClient();
   }
 
   /**
@@ -33,25 +27,73 @@ export class IOC {
   }
 
   /**
-   * @function onStateChange
-   * @description Subscribe to the socket connection state changes
-   * @param next {Function}
-   * @returns {void}
-   */
-  public onStateChange(next: (state: Socket.ConnectionState) => void): void {
-    this.stateSubject.subscribe(next);
-  }
-
-  /**
    * @function subscribeToDefaultEvents
    * @description subscribe to the default socket events
    * @returns {void}
    */
   private subscribeToDefaultEvents(): void {
-    this.client.connection.on((state) => {
-      this.state = state;
-      this.stateSubject.next(state);
+    this.client.connection.on(this.handleConnectionState);
+  }
+
+  private handleConnectionState = (state: Socket.ConnectionState): void => {
+    const needsToReconnectStates = [
+      Socket.ClientState.DISCONNECTED,
+      Socket.ClientState.RECONNECT_ERROR,
+    ];
+
+    if (
+      needsToReconnectStates.includes(state.state) &&
+      state.reason !== 'Unauthorized connection'
+    ) {
+      this.forceReconnect();
+    }
+
+    if (state.reason === 'Unauthorized connection') {
+      console.error(
+        '[Superviz] Unauthorized connection. Please check your API key and if your domain is white listed.',
+      );
+
+      this.state = {
+        state: Socket.ClientState.DISCONNECTED,
+        reason: 'Unauthorized connection',
+      };
+
+      this.stateSubject.next(IOCState.AUTH_ERROR);
+
+      return;
+    }
+
+    this.state = state;
+    this.stateSubject.next(state.state as unknown as IOCState);
+  };
+
+  /**
+   * @function forceReconnect
+   * @description force the socket to reconnect
+   * @returns {void}
+   */
+  private forceReconnect(): void {
+    this.client?.destroy();
+    this.client = null;
+
+    this.createClient();
+  }
+
+  /**
+   * @function createClient
+   * @description create a new socket client
+   * @returns {void}
+   */
+  public createClient(): void {
+    let environment = config.get<string>('environment') as 'dev' | 'prod';
+    environment = ['dev', 'prod'].includes(environment) ? environment : 'dev';
+
+    this.client = new Socket.Realtime(config.get<string>('apiKey'), environment, {
+      id: this.participant.id,
+      name: this.participant.name,
     });
+
+    this.subscribeToDefaultEvents();
   }
 
   /**

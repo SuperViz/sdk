@@ -9,7 +9,6 @@ export interface VideoRoomProperties {
   isGridModeEnabled?: boolean;
   followParticipantId?: string;
   gather?: boolean;
-  drawing?: DrawingData;
   kickParticipant?: PresenceEvent<Participant>;
   transcript?: TranscriptState;
 }

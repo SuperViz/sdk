@@ -2,8 +2,6 @@ import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
-import { ABLY_REALTIME_MOCK } from '../../../../__mocks__/realtime.mock';
-import { ROOM_STATE_MOCK } from '../../../../__mocks__/roomState.mock';
 import { useStore } from '../../../common/utils/use-store';
 import { IOC } from '../../../services/io';
 import { Presence3DManager } from '../../../services/presence-3d-manager';
@@ -52,7 +50,6 @@ const createMousePointers = (): PointersCanvas => {
 
   presenceMouseComponent.attach({
     ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
-    realtime: ABLY_REALTIME_MOCK,
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
     Presence3DManagerService: Presence3DManager,

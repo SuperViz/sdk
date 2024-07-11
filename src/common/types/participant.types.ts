@@ -25,6 +25,7 @@ export interface Participant {
   // @NOTE - this is a hack to make the participant info work with the 3D avatar
   avatarConfig?: unknown;
   activeComponents?: ComponentNames[];
+  timestamp?: number;
 }
 
 export type ParticipantByGroupApi = {
