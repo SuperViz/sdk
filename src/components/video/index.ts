@@ -12,8 +12,11 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
-import { VideoParticipant, ParticipantType } from '../../common/types/participant.types';
+import {
+  VideoParticipant,
+  ParticipantType,
+  Participant,
+} from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
@@ -33,7 +36,8 @@ import {
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { ParticipandToFrame, VideoComponentOptions } from './types';
+import { ParticipantToFrame, VideoComponentOptions } from './types';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
 let KICK_PARTICIPANTS_TIMEOUT: ReturnType<typeof setTimeout> | null = null;
@@ -303,7 +307,10 @@ export class VideoConference extends BaseComponent {
       this.useStore(StoreType.VIDEO);
 
     localParticipant.subscribe((participant) => {
-      this.localParticipant = participant;
+      this.localParticipant = {
+        ...participant,
+        ...this.localParticipant,
+      };
     });
 
     drawing.subscribe(this.setDrawing);
@@ -322,15 +329,18 @@ export class VideoConference extends BaseComponent {
    * @returns {Participant} a participant
    * */
   private createParticipantFromPresence = (
-    participant: PresenceEvent<VideoParticipant>,
+    participant: PresenceEvent<Participant>,
   ): VideoParticipant => {
     return {
+      participantId: participant.id,
       id: participant.id,
-      color: participant.data.slot?.color || MeetingColorsHex[16],
+      color: participant.data.slot?.color || MEETING_COLORS.gray,
       avatar: participant.data.avatar,
       type: participant.data.type,
       name: participant.data.name,
       isHost: participant.data.isHost,
+      timestamp: participant.timestamp,
+      slot: participant.data.slot,
     };
   };
 
@@ -553,12 +563,13 @@ export class VideoConference extends BaseComponent {
     const list: VideoParticipant[] = Object.values(participants).map((participant) => {
       return {
         id: participant.id,
-        color: participant.slot?.colorName || 'gray',
+        slot: participant.slot,
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
         isHost: participant.isHost ?? false,
-        slot: participant.slot,
+        timestamp: participant.timestamp,
+        color: participant.slot?.color || MEETING_COLORS.gray,
       };
     });
 
@@ -674,13 +685,14 @@ export class VideoConference extends BaseComponent {
    * @param {Participant[]} participants - participants
    * @returns {void}
    */
-  private onRealtimeParticipantsDidChange = (participants: VideoParticipant[]): void => {
+  private onRealtimeParticipantsDidChange = (participants: Participant[]): void => {
     this.logger.log('video conference @ on participants did change', participants);
-    const participantList: ParticipandToFrame[] = participants.map((participant) => {
+    const participantList: ParticipantToFrame[] = participants.map((participant) => {
       return {
+        id: participant.id,
         timestamp: participant.timestamp,
         participantId: participant.id,
-        color: participant.slot?.colorName ?? 'gray',
+        color: participant.slot?.color || MEETING_COLORS.gray,
         name: participant.name,
         isHost: participant.isHost ?? false,
         avatar: participant.avatar,
@@ -714,7 +726,7 @@ export class VideoConference extends BaseComponent {
     const newHost = participant
       ? {
           id: participant.id,
-          color: participant.slot?.color || MeetingColorsHex[16],
+          color: participant.slot?.color || MEETING_COLORS.gray,
           avatar: participant.avatar,
           type: participant.type,
           name: participant.name,
@@ -755,7 +767,7 @@ export class VideoConference extends BaseComponent {
    * @param {PresenceEvent<Participant>} participant - participant
    * @returns {void}
    */
-  private onParticipantJoinedOnRealtime = (participant: PresenceEvent<VideoParticipant>): void => {
+  private onParticipantJoinedOnRealtime = (participant: PresenceEvent<Participant>): void => {
     this.logger.log('video conference @ on participant joined on realtime', participant);
 
     this.publish(
@@ -774,7 +786,7 @@ export class VideoConference extends BaseComponent {
    * @param {PresenceEvent<Participant>} participant
    * @returns {void}
    */
-  private onParticipantLeftOnRealtime = (participant: PresenceEvent<VideoParticipant>): void => {
+  private onParticipantLeftOnRealtime = (participant: PresenceEvent<Participant>): void => {
     this.logger.log('video conference @ on participant left on realtime', participant);
 
     this.publish(
@@ -783,7 +795,7 @@ export class VideoConference extends BaseComponent {
     );
   };
 
-  private onParticipantUpdateOnRealtime = (participant: PresenceEvent<VideoParticipant>): void => {
+  private onParticipantUpdateOnRealtime = (participant: PresenceEvent<Participant>): void => {
     this.logger.log('video conference @ on participant update on realtime', participant);
     const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
 

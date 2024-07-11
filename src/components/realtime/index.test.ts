@@ -8,6 +8,7 @@ import { Presence3DManager } from '../../services/presence-3d-manager';
 import { RealtimeComponentState } from './types';
 
 import { Realtime } from '.';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 jest.mock('lodash/throttle', () => jest.fn((fn) => fn));
 jest.useFakeTimers();
@@ -27,6 +28,7 @@ describe('realtime component', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.realtime.maxParticipants,
       useStore,
     });
 

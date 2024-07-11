@@ -107,9 +107,8 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('Failed to validate API key');
   }
 
-  const [environment, limits, waterMark] = await Promise.all([
+  const [environment, waterMark] = await Promise.all([
     ApiService.fetchConfig(apiUrl, apiKey),
-    ApiService.fetchLimits(apiUrl, apiKey),
     ApiService.fetchWaterMark(apiUrl, apiKey),
   ]).catch(() => {
     throw new Error('Failed to load configuration from server');
@@ -130,7 +129,21 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     environment: (options.environment as EnvironmentTypes) ?? EnvironmentTypes.PROD,
     roomId,
     debug: options.debug,
-    limits,
+    limits: {
+      presence: {
+        canUse: true,
+        maxParticipants: 50,
+      },
+      realtime: {
+        canUse: true,
+        maxParticipants: 200,
+      },
+      videoConference: {
+        canUse: true,
+        maxParticipants: 255,
+        canUseTranscript: true,
+      },
+    },
     waterMark,
     colors: options.customColors,
     features,
@@ -141,7 +154,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   ApiService.createOrUpdateParticipant({
     name: participant.name,
     participantId: participant.id,
-    avatar: participant.avatar?.imageUrl, 
+    avatar: participant.avatar?.imageUrl,
   });
 
   return LauncherFacade(options);

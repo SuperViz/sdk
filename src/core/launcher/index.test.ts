@@ -16,6 +16,7 @@ import { useGlobalStore } from '../../services/stores';
 import { LauncherFacade, LauncherOptions } from './types';
 
 import Facade, { Launcher } from '.';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 jest.mock('../../services/limits');
 
@@ -59,7 +60,7 @@ describe('Launcher', () => {
 
   describe('Components', () => {
     test('should not add component if realtime is not joined room', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
       const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
       hasJoinedRoom.publish(false);
 
@@ -73,7 +74,7 @@ describe('Launcher', () => {
     });
 
     test('should add component', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -82,6 +83,7 @@ describe('Launcher', () => {
           ioc: expect.any(IOC),
           config: MOCK_CONFIG,
           eventBus: EVENT_BUS_MOCK,
+          connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
           useStore,
         } as DefaultAttachComponentOptions),
       );
@@ -93,7 +95,10 @@ describe('Launcher', () => {
     });
 
     test('should show a console message if limit reached and not add component', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(false);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue({
+        ...LIMITS_MOCK.videoConference,
+        canUse: false,
+      });
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -101,7 +106,7 @@ describe('Launcher', () => {
     });
 
     test('should remove component', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
       LauncherInstance.removeComponent(MOCK_COMPONENT);
@@ -115,11 +120,11 @@ describe('Launcher', () => {
     test('should show a console message if component is not initialized yet', () => {
       LauncherInstance.removeComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.detach).not.toBeCalled();
+      expect(MOCK_COMPONENT.detach).not.toHaveBeenCalled();
     });
 
     test('should show a console message if component is already active', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
       LauncherInstance.addComponent(MOCK_COMPONENT);
@@ -249,7 +254,7 @@ describe('Launcher', () => {
       LauncherInstance['onAuthentication'](false);
       expect(LauncherInstance.destroy).toHaveBeenCalled();
       expect(console.error).toHaveBeenCalledWith(
-        `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+        `[SuperViz] Room cannot be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
       );
     });
 

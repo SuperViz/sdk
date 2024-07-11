@@ -14,10 +14,10 @@ export enum ComponentNames {
 }
 
 export enum PresenceMap {
+  'comments' = 'presence',
   'presence3dMatterport' = 'presence',
   'presence3dAutodesk' = 'presence',
   'presence3dThreejs' = 'presence',
-  'realtime' = 'presence',
   'whoIsOnline' = 'presence',
   'formElements' = 'presence',
 }
