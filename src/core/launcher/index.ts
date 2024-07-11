@@ -46,7 +46,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     );
 
     localParticipant.publish({ ...participant });
-    participants.subscribe(this.onParticipantListUpdate);
     isDomainWhitelisted.subscribe(this.onAuthentication);
     localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
 
@@ -92,11 +91,6 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     this.activeComponents.push(component.name);
     this.activeComponentsInstances.push(component);
-
-    localParticipant.publish({
-      ...localParticipant.value,
-      activeComponents: this.activeComponents,
-    });
 
     this.room.presence.update({
       ...localParticipant.value,
@@ -150,10 +144,8 @@ export class Launcher extends Observable implements DefaultLauncher {
       return c.name !== component.name;
     });
 
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-
     this.activeComponents.splice(this.activeComponents.indexOf(component.name), 1);
-    localParticipant.publish({
+    this.room.presence.update({
       ...this.participant,
       activeComponents: this.activeComponents,
     });
@@ -258,39 +250,6 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     this.participant = participant;
-  };
-
-  /**
-   * @function onParticipantListUpdate
-   * @description on participant list update
-   * @param participants - participants list
-   * @returns {void}
-   */
-  private onParticipantListUpdate = (participants: Record<string, Participant>): void => {
-    this.logger.log('launcher service @ onParticipantListUpdate', participants);
-    const { localParticipant } = useStore(StoreType.GLOBAL);
-
-    const participant: Participant = Object.values(participants).find(
-      (participant) => participant.id === localParticipant.value.id,
-    );
-
-    if (!participant || isEqual(localParticipant.value, participant)) return;
-
-    localParticipant.publish({
-      ...localParticipant.value,
-      ...participant,
-    });
-
-    this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
-      /**
-       * @NOTE - Prevents removing all components when
-       * in the first update, activeComponents is undefined.
-       * It means we should keep all instances
-       */
-      if (!participant.activeComponents) return true;
-
-      return this.activeComponents.includes(component.name);
-    });
   };
 
   /**
@@ -416,14 +375,14 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     if (localParticipant.value && presence.id === localParticipant.value.id) {
       localParticipant.publish({
-        ...presence.data,
         ...localParticipant.value,
+        ...presence.data,
         timestamp: presence.timestamp,
       } as Participant);
 
       this.publish(ParticipantEvent.LOCAL_UPDATED, {
-        ...presence.data,
         ...localParticipant.value,
+        ...presence.data,
       });
       this.logger.log('Publishing ParticipantEvent.UPDATED', presence.data);
     }

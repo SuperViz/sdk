@@ -7,7 +7,7 @@ import {
 } from '@superviz/socket-client';
 
 import { TranscriptState } from '../../common/types/events.types';
-import { Participant, ParticipantType } from '../../common/types/participant.types';
+import { ParticipantType, VideoParticipant } from '../../common/types/participant.types';
 import { RealtimeStateTypes } from '../../common/types/realtime.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger, Observer } from '../../common/utils';
@@ -19,7 +19,7 @@ import { RoomPropertiesEvents, VideoRoomProperties } from './type';
 export class RoomStateService {
   private room: Room;
   private logger: Logger;
-  private myParticipant: Partial<Participant> = {};
+  private myParticipant: Partial<VideoParticipant> = {};
   private localRoomProperties: VideoRoomProperties = null;
   private drawingData: DrawingData = null;
   private enableSync: boolean;
@@ -70,12 +70,12 @@ export class RoomStateService {
 
   /**
    * @function updateMyProperties
-   * @param {Partial<Participant>} Participant
+   * @param {Partial<VideoParticipant>} newProperties
    * @description updates local participant properties
    * @returns {void}
    */
-  public updateMyProperties = (newProperties?: Partial<Participant>): void => {
-    const properties = newProperties ?? ({} as Participant);
+  public updateMyProperties = (newProperties?: Partial<VideoParticipant>): void => {
+    const properties = newProperties ?? ({} as VideoParticipant);
 
     if (this.isMessageTooBig(properties) || this.left || !this.enableSync || this.isSyncFrozen) {
       return;

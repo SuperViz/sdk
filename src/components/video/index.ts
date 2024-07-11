@@ -12,7 +12,11 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { Participant, ParticipantType } from '../../common/types/participant.types';
+import {
+  VideoParticipant,
+  ParticipantType,
+  Participant,
+} from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
@@ -40,8 +44,8 @@ let KICK_PARTICIPANTS_TIMEOUT: ReturnType<typeof setTimeout> | null = null;
 export class VideoConference extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
-  private participantsOnMeeting: Partial<Participant>[] = [];
-  private localParticipant: Participant;
+  private participantsOnMeeting: Partial<VideoParticipant>[] = [];
+  private localParticipant: VideoParticipant;
   private videoManager: VideoConferenceManager;
   private connectionService: ConnectionService;
   private browserService: BrowserService;
@@ -178,6 +182,9 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private startVideo = (): void => {
+    const defaultAvatars =
+      this.params?.userType !== ParticipantType.AUDIENCE && this.params?.defaultAvatars === true;
+
     this.videoConfig = {
       language: this.params?.language,
       canUseRecording: !!this.params?.enableRecording,
@@ -185,8 +192,7 @@ export class VideoConference extends BaseComponent {
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
-      canUseDefaultAvatars:
-        !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
+      canUseDefaultAvatars: defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
       canUseGather: !!this.params?.enableGather,
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
@@ -301,7 +307,10 @@ export class VideoConference extends BaseComponent {
       this.useStore(StoreType.VIDEO);
 
     localParticipant.subscribe((participant) => {
-      this.localParticipant = participant;
+      this.localParticipant = {
+        ...this.localParticipant,
+        ...participant,
+      };
     });
 
     drawing.subscribe(this.setDrawing);
@@ -321,7 +330,7 @@ export class VideoConference extends BaseComponent {
    * */
   private createParticipantFromPresence = (
     participant: PresenceEvent<Participant>,
-  ): ParticipantToFrame => {
+  ): VideoParticipant => {
     return {
       participantId: participant.id,
       id: participant.id,
@@ -396,9 +405,6 @@ export class VideoConference extends BaseComponent {
   private onMeetingStateChange = (state: MeetingState): void => {
     this.logger.log('video conference @ on meeting state change', state);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, state);
-
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.publish(localParticipant.value);
   };
 
   /**
@@ -496,7 +502,7 @@ export class VideoConference extends BaseComponent {
    * @param {Participant} participant - participant
    * @returns {void}
    */
-  private onParticipantJoined = (participant: Participant): void => {
+  private onParticipantJoined = (participant: VideoParticipant): void => {
     this.logger.log('video conference @ on participant joined', participant);
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
@@ -508,6 +514,7 @@ export class VideoConference extends BaseComponent {
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
+        joinedMeeting: true,
       });
 
       return;
@@ -516,6 +523,7 @@ export class VideoConference extends BaseComponent {
     this.roomState.updateMyProperties({
       name: participant.name,
       type: participant.type,
+      joinedMeeting: true,
     });
   };
 
@@ -525,7 +533,7 @@ export class VideoConference extends BaseComponent {
    * @param {Participant} _ - participant
    * @returns {void}
    */
-  private onParticipantLeft = (_: Participant): void => {
+  private onParticipantLeft = (_: VideoParticipant): void => {
     this.logger.log('video conference @ on participant left', this.localParticipant);
 
     this.connectionService.removeListeners();
@@ -546,10 +554,10 @@ export class VideoConference extends BaseComponent {
    * @param {Record<string, Participant>} participants - participants
    * @returns {void}
    */
-  private onParticipantListUpdate = (participants: Record<string, Participant>): void => {
+  private onParticipantListUpdate = (participants: Record<string, VideoParticipant>): void => {
     this.logger.log('video conference @ on participant list update', participants);
 
-    const list: Participant[] = Object.values(participants).map((participant) => {
+    const list: VideoParticipant[] = Object.values(participants).map((participant) => {
       return {
         id: participant.id,
         slot: participant.slot,
@@ -558,6 +566,7 @@ export class VideoConference extends BaseComponent {
         type: participant.type,
         isHost: participant.isHost ?? false,
         timestamp: participant.timestamp,
+        color: participant.slot?.color || MEETING_COLORS.gray,
       };
     });
 
@@ -792,12 +801,6 @@ export class VideoConference extends BaseComponent {
         MeetingEvent.MY_PARTICIPANT_UPDATED,
         this.createParticipantFromPresence(participant),
       );
-
-      localParticipant.publish({
-        ...localParticipant.value,
-        ...participant.data,
-        type: this.params.userType as ParticipantType,
-      });
     }
 
     participants.publish({
@@ -883,9 +886,9 @@ export class VideoConference extends BaseComponent {
       }
 
       return current;
-    }, null) as Participant;
+    }, null) as VideoParticipant;
 
-    this.room.presence.update<Participant>({
+    this.room.presence.update<VideoParticipant>({
       ...this.localParticipant,
       isHost: host.id === this.localParticipant.id,
     });

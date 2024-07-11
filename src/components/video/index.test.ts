@@ -16,7 +16,11 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { Participant, ParticipantType } from '../../common/types/participant.types';
+import {
+  Participant,
+  ParticipantType,
+  VideoParticipant,
+} from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
@@ -89,7 +93,7 @@ describe('VideoConference', () => {
       allowGuests: false,
     });
 
-    VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
+    VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT as VideoParticipant;
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       config: MOCK_CONFIG,
@@ -113,7 +117,7 @@ describe('VideoConference', () => {
     VideoConferenceInstance['localParticipant'] = {
       ...MOCK_LOCAL_PARTICIPANT,
       avatar: MOCK_AVATAR,
-    };
+    } as VideoParticipant;
 
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
@@ -484,6 +488,7 @@ describe('VideoConference', () => {
       expect(VideoConferenceInstance['roomState'].updateMyProperties).toHaveBeenCalledWith({
         name: 'John Doe',
         type: ParticipantType.HOST,
+        joinedMeeting: true,
       });
     });
 
@@ -503,6 +508,7 @@ describe('VideoConference', () => {
         name: 'John Doe',
         avatar: MOCK_AVATAR,
         type: ParticipantType.HOST,
+        joinedMeeting: true,
       });
     });
 
@@ -589,7 +595,7 @@ describe('VideoConference', () => {
         },
       });
 
-      const participantInfoList: Participant[] = [
+      const participantInfoList: VideoParticipant[] = [
         {
           id: participants.value[MOCK_LOCAL_PARTICIPANT.id].id,
           avatar: participants.value[MOCK_LOCAL_PARTICIPANT.id].avatar,
@@ -598,6 +604,7 @@ describe('VideoConference', () => {
           isHost: participants.value[MOCK_LOCAL_PARTICIPANT.id].isHost ?? false,
           slot: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot,
           timestamp: participants.value[MOCK_LOCAL_PARTICIPANT.id].timestamp,
+          color: MEETING_COLORS.turquoise,
         },
       ];
 
@@ -648,12 +655,14 @@ describe('VideoConference', () => {
         [MOCK_LOCAL_PARTICIPANT.id]: {
           ...participants[MOCK_LOCAL_PARTICIPANT.id],
           timestamp: 0,
+          color: MEETING_COLORS.turquoise,
         },
       });
       VideoConferenceInstance['onParticipantListUpdate']({
         [MOCK_LOCAL_PARTICIPANT.id]: {
           ...participants[MOCK_LOCAL_PARTICIPANT.id],
           timestamp: 0,
+          color: MEETING_COLORS.turquoise,
         },
       });
 
