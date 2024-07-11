@@ -37,6 +37,7 @@ const esmConfig = {
   sourcemap: true,
   minify: true,
   splitting: true,
+  target: 'es6',
   format: 'esm',
   define: { global: 'window', 'process.env': JSON.stringify(env) },
 };
