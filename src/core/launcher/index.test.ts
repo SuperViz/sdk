@@ -90,6 +90,17 @@ describe('Launcher', () => {
 
       const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
 
+      LauncherInstance['onParticipantUpdatedIOC']({
+        connectionId: 'connection1',
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: [MOCK_COMPONENT.name],
+        },
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
+        timestamp: Date.now(),
+      });
+
       expect(localParticipant.value.activeComponents?.length).toBe(1);
       expect(localParticipant.value.activeComponents![0]).toBe(MOCK_COMPONENT.name);
     });
@@ -112,6 +123,17 @@ describe('Launcher', () => {
       LauncherInstance.removeComponent(MOCK_COMPONENT);
 
       const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
+
+      LauncherInstance['onParticipantUpdatedIOC']({
+        connectionId: 'connection1',
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: [],
+        },
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
+        timestamp: Date.now(),
+      });
 
       expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
       expect(localParticipant.value.activeComponents?.length).toBe(0);
@@ -191,31 +213,19 @@ describe('Launcher', () => {
       expect(LauncherInstance['publish']).toHaveBeenCalled();
     });
 
-    test('should update activeComponentsInstances when participant list is updated', () => {
-      LauncherInstance.addComponent(MOCK_COMPONENT);
-
-      LauncherInstance['onParticipantListUpdate']({
-        participant1: {
-          id: 'unit-test-participant-ably-id',
-          activeComponents: [MOCK_COMPONENT.name],
-        },
-      });
-
-      expect(LauncherInstance['activeComponentsInstances'].length).toBe(1);
-    });
-
     test('should remove component when participant is not usign it anymore', () => {
-      LauncherInstance.addComponent(MOCK_COMPONENT);
-
       LauncherInstance['onParticipantUpdatedIOC']({
         connectionId: 'connection1',
         id: MOCK_LOCAL_PARTICIPANT.id,
         name: MOCK_LOCAL_PARTICIPANT.name as string,
         data: {
           ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: [],
         },
         timestamp: Date.now(),
       });
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(LauncherInstance['activeComponentsInstances'].length).toBe(1);
 
@@ -227,6 +237,7 @@ describe('Launcher', () => {
         name: MOCK_LOCAL_PARTICIPANT.name as string,
         data: {
           ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: LauncherInstance['activeComponents'],
         },
         timestamp: Date.now(),
       });

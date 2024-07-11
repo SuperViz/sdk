@@ -308,8 +308,8 @@ export class VideoConference extends BaseComponent {
 
     localParticipant.subscribe((participant) => {
       this.localParticipant = {
-        ...participant,
         ...this.localParticipant,
+        ...participant,
       };
     });
 
@@ -405,9 +405,6 @@ export class VideoConference extends BaseComponent {
   private onMeetingStateChange = (state: MeetingState): void => {
     this.logger.log('video conference @ on meeting state change', state);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, state);
-
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.publish(localParticipant.value);
   };
 
   /**
@@ -804,12 +801,6 @@ export class VideoConference extends BaseComponent {
         MeetingEvent.MY_PARTICIPANT_UPDATED,
         this.createParticipantFromPresence(participant),
       );
-
-      localParticipant.publish({
-        ...localParticipant.value,
-        ...participant.data,
-        type: this.params.userType as ParticipantType,
-      });
     }
 
     participants.publish({

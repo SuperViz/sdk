@@ -176,11 +176,11 @@ export class SlotService {
     ];
 
     const componentsNeedSlot = COMPONENTS_THAT_NEED_SLOT.some((component) => {
-      return participant.activeComponents.includes(component);
+      return participant?.activeComponents?.includes(component);
     });
 
     const videoNeedSlot =
-      participant.activeComponents.includes(ComponentNames.VIDEO_CONFERENCE) &&
+      participant?.activeComponents?.includes(ComponentNames.VIDEO_CONFERENCE) &&
       participant.type !== ParticipantType.AUDIENCE;
 
     const needSlot = componentsNeedSlot || videoNeedSlot;
