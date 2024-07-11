@@ -52,7 +52,7 @@ export class Launcher extends Observable implements DefaultLauncher {
 
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
-    this.room = this.ioc.createRoom('launcher');
+    this.room = this.ioc.createRoom('launcher', 'unlimited');
 
     // internal events without realtime
     this.eventBus = new EventBus();
@@ -79,18 +79,26 @@ export class Launcher extends Observable implements DefaultLauncher {
       return;
     }
 
+    const limit = LimitsService.checkComponentLimit(component.name);
+
     component.attach({
       ioc: this.ioc,
       config: config.configuration,
       eventBus: this.eventBus,
       useStore,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: limit.maxParticipants,
     });
 
     this.activeComponents.push(component.name);
     this.activeComponentsInstances.push(component);
 
     localParticipant.publish({
+      ...localParticipant.value,
+      activeComponents: this.activeComponents,
+    });
+
+    this.room.presence.update({
       ...localParticipant.value,
       activeComponents: this.activeComponents,
     });
@@ -191,7 +199,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
     const isProvidedFeature = config.get<boolean>(`features.${component.name}`);
-    const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
+    const componentLimit = LimitsService.checkComponentLimit(component.name);
     const isComponentActive = this.activeComponents.includes(component.name);
 
     const verifications = [
@@ -209,7 +217,7 @@ export class Launcher extends Observable implements DefaultLauncher {
         message: `Component ${component.name} is already active. Please remove it first`,
       },
       {
-        isValid: hasComponentLimit,
+        isValid: componentLimit.canUse,
         message: `You reached the limit usage of ${component.name}`,
       },
     ];
@@ -345,9 +353,7 @@ export class Launcher extends Observable implements DefaultLauncher {
       Socket.PresenceEvents.JOINED_ROOM,
       this.onParticipantJoinedIOC,
     );
-
     this.room.presence.on<Participant>(Socket.PresenceEvents.LEAVE, this.onParticipantLeaveIOC);
-
     this.room.presence.on<Participant>(Socket.PresenceEvents.UPDATE, this.onParticipantUpdatedIOC);
 
     const { hasJoinedRoom } = useStore(StoreType.GLOBAL);

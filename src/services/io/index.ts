@@ -99,11 +99,14 @@ export class IOC {
   /**
    * @function createRoom
    * @description create and join realtime room
-   * @param roomName {string}
+   * @param {string} roomName - name of the room that will be created
+   * @param {number | 'unlimited'} connectionLimit -
+   *  connection limit for the room, the default is 50 because it's the maximum number of slots
    * @returns {Room}
    */
-  public createRoom(roomName: string): Socket.Room {
+  public createRoom(roomName: string, connectionLimit: number | 'unlimited' = 50): Socket.Room {
     const roomId = config.get<string>('roomId');
-    return this.client.connect(`${roomId}:${roomName}`);
+
+    return this.client.connect(`${roomId}:${roomName}`, connectionLimit);
   }
 }

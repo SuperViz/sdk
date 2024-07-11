@@ -7,6 +7,7 @@ import { Presence3DManager } from '../../../services/presence-3d-manager';
 import { ParticipantMouse } from '../types';
 
 import { PointersHTML } from '.';
+import { LIMITS_MOCK } from '../../../../__mocks__/limits.mock';
 
 const createMousePointers = (id: string = 'html'): PointersHTML => {
   const presenceMouseComponent = new PointersHTML(id);
@@ -17,6 +18,7 @@ const createMousePointers = (id: string = 'html'): PointersHTML => {
     config: MOCK_CONFIG,
     Presence3DManagerService: Presence3DManager,
     eventBus: EVENT_BUS_MOCK,
+    connectionLimit: LIMITS_MOCK.presence.maxParticipants,
     useStore,
   });
 
@@ -379,6 +381,7 @@ describe('MousePointers on HTML', () => {
         eventBus: EVENT_BUS_MOCK,
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         Presence3DManagerService: Presence3DManager,
+        connectionLimit: LIMITS_MOCK.presence.maxParticipants,
         useStore,
       });
 

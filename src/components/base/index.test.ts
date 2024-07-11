@@ -13,6 +13,7 @@ import { useGlobalStore } from '../../services/stores';
 import { ComponentNames } from '../types';
 
 import { BaseComponent } from '.';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 class DummyComponent extends BaseComponent {
   protected logger: Logger;
@@ -70,6 +71,7 @@ describe('BaseComponent', () => {
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
         Presence3DManagerService: Presence3DManager,
+        connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
         useStore,
       });
 
@@ -90,6 +92,7 @@ describe('BaseComponent', () => {
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
         useStore,
       });
 
@@ -109,6 +112,7 @@ describe('BaseComponent', () => {
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
         useStore,
       });
 
@@ -126,8 +130,9 @@ describe('BaseComponent', () => {
           config: null as unknown as Configuration,
           eventBus: null as unknown as EventBus,
           useStore: null as unknown as typeof useStore,
+          connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
         });
-      }).toThrowError();
+      }).toThrow();
     });
   });
 
@@ -141,6 +146,7 @@ describe('BaseComponent', () => {
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
         useStore,
       });
 
@@ -162,6 +168,7 @@ describe('BaseComponent', () => {
         ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
         config: MOCK_CONFIG,
         eventBus: EVENT_BUS_MOCK,
+        connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
         useStore,
       });
 

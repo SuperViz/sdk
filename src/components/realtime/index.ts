@@ -55,7 +55,7 @@ export class Realtime extends BaseComponent {
 
     if (channel) return channel;
 
-    channel = new Channel(name, this.ioc, this.localParticipant);
+    channel = new Channel(name, this.ioc, this.localParticipant, this.connectionLimit);
 
     this.channels.set(name, channel);
 
@@ -100,7 +100,7 @@ export class Realtime extends BaseComponent {
 
   protected start(): void {
     this.logger.log('started');
-    this.channel = new Channel('default', this.ioc, this.localParticipant);
+    this.channel = new Channel('default', this.ioc, this.localParticipant, this.connectionLimit);
 
     this.channel.subscribe(RealtimeChannelEvent.REALTIME_CHANNEL_STATE_CHANGED, (state) => {
       if (state !== RealtimeChannelState.CONNECTED) return;

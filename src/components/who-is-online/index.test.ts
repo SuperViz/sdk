@@ -17,6 +17,7 @@ import { Avatar, WhoIsOnlineParticipant, TooltipData } from './types';
 
 import { WhoIsOnline } from './index';
 import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 const generateMockParticipant = ({
   id,
@@ -61,6 +62,7 @@ describe('Who Is Online', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.presence.maxParticipants,
       useStore,
     });
 
