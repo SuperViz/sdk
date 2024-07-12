@@ -525,6 +525,25 @@ export class VideoConference extends BaseComponent {
   private onParticipantLeft = (_: Participant): void => {
     this.logger.log('video conference @ on participant left', this.localParticipant);
 
+    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      activeComponents: localParticipant.value.activeComponents?.filter(
+        (ac) => ac !== ComponentNames.VIDEO_CONFERENCE,
+      ),
+    });
+
+    participants.publish({
+      ...participants.value,
+      [this.localParticipant.id]: {
+        ...localParticipant.value,
+        activeComponents: localParticipant.value.activeComponents?.filter(
+          (ac) => ac !== ComponentNames.VIDEO_CONFERENCE,
+        ),
+      },
+    });
+
     this.connectionService.removeListeners();
     this.publish(MeetingEvent.DESTROY);
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
