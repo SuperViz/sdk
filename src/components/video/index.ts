@@ -509,6 +509,23 @@ export class VideoConference extends BaseComponent {
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
     this.kickParticipantsOnHostLeave = !this.params?.allowGuests;
 
+    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+
+    const newParticipantName = participant.name.trim();
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      name: newParticipantName,
+    });
+
+    participants.publish({
+      ...participants.value,
+      [participant.id]: {
+        ...localParticipant.value,
+        name: newParticipantName,
+      },
+    });
+
     if (this.videoConfig.canUseDefaultAvatars) {
       this.roomState.updateMyProperties({
         avatar: participant.avatar,
