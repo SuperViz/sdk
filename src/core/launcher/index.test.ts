@@ -149,6 +149,13 @@ describe('Launcher', () => {
       LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      // it will be updated by IOC when the participant is updated
+      LauncherInstance['participant'] = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        activeComponents: [MOCK_COMPONENT.name],
+      };
+
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
@@ -159,7 +166,7 @@ describe('Launcher', () => {
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.attach).not.toBeCalled();
+      expect(MOCK_COMPONENT.attach).not.toHaveBeenCalled();
     });
   });
 
