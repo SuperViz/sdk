@@ -41,9 +41,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     super();
     this.logger = new Logger('@superviz/sdk/launcher');
 
-    const { localParticipant, participants, group, isDomainWhitelisted } = this.useStore(
-      StoreType.GLOBAL,
-    );
+    const { localParticipant, group, isDomainWhitelisted } = this.useStore(StoreType.GLOBAL);
 
     localParticipant.publish({ ...participant });
     isDomainWhitelisted.subscribe(this.onAuthentication);
@@ -192,7 +190,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
     const isProvidedFeature = config.get<boolean>(`features.${component.name}`);
     const componentLimit = LimitsService.checkComponentLimit(component.name);
-    const isComponentActive = this.participant.activeComponents?.includes(component.name);
+    const isComponentActive = this.activeComponents?.includes(component.name);
 
     const verifications = [
       {
@@ -250,6 +248,13 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     this.participant = participant;
+    this.activeComponents = participant.activeComponents || [];
+
+    if (this.activeComponents.length) {
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+        return this.activeComponents.includes(component.name);
+      });
+    }
   };
 
   /**
