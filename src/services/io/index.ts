@@ -23,7 +23,6 @@ export class IOC {
    */
   public destroy(): void {
     this.client.destroy();
-    this.client.connection.off();
   }
 
   /**
@@ -43,7 +42,7 @@ export class IOC {
 
     if (
       needsToReconnectStates.includes(state.state) &&
-      state.reason !== 'Unauthorized connection'
+      !['io client disconnect', 'Unauthorized connection'].includes(state.reason)
     ) {
       this.forceReconnect();
     }
