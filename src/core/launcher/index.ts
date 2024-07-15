@@ -47,6 +47,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     localParticipant.publish({ ...participant });
     participants.subscribe(this.onParticipantListUpdate);
     isDomainWhitelisted.subscribe(this.onAuthentication);
+    localParticipant.subscribe(this.onLocalParticipantUpdate);
 
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
@@ -188,11 +189,9 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @returns {boolean}
    */
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
-    const { localParticipant } = useStore(StoreType.GLOBAL);
-
     const isProvidedFeature = config.get<boolean>(`features.${component.name}`);
     const hasComponentLimit = LimitsService.checkComponentLimit(component.name);
-    const isComponentActive = localParticipant.value.activeComponents?.includes(component.name);
+    const isComponentActive = this.activeComponents?.includes(component.name);
 
     const verifications = [
       {
@@ -234,6 +233,16 @@ export class Launcher extends Observable implements DefaultLauncher {
     console.error(
       `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
     );
+  };
+
+  private onLocalParticipantUpdate = (participant: Participant): void => {
+    this.activeComponents = participant.activeComponents || [];
+
+    if (this.activeComponents.length) {
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((ac) => {
+        return this.activeComponents.includes(ac.name);
+      });
+    }
   };
 
   /**
