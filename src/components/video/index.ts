@@ -90,6 +90,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleMicrophone(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle microphone');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MICROPHONE);
   }
 
@@ -99,6 +104,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleCam(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle camera');
+      return;
+    }
+
     this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_CAM);
   }
 
@@ -108,6 +118,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleScreenShare(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle screen share');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_SCREENSHARE);
   }
 
@@ -126,6 +141,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleRecording(): void {
+    if (this.localParticipant.isHost) {
+      console.warn('[SuperViz] Only host can toggle recording');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_RECORDING);
   }
 
