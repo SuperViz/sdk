@@ -240,6 +240,16 @@ export class Launcher extends Observable implements DefaultLauncher {
     );
   };
 
+  private onLocalParticipantUpdate = (participant: Participant): void => {
+    this.activeComponents = participant.activeComponents || [];
+
+    if (this.activeComponents.length) {
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((ac) => {
+        return this.activeComponents.includes(ac.name);
+      });
+    }
+  };
+
   /**
    * @function onLocalParticipantUpdateOnStore
    * @description handles the update of the local participant in the store.
