@@ -11,7 +11,13 @@ import { useStore } from '../../common/utils/use-store';
 import { ComponentNames } from '../../components/types';
 
 export class SlotService {
-  private slotIndex: number | null = null;
+  public slot: Slot = {
+    index: null,
+    color: MEETING_COLORS.gray,
+    textColor: '#fff',
+    colorName: 'gray',
+    timestamp: Date.now(),
+  };
 
   constructor(
     private room: Socket.Room,
@@ -20,9 +26,6 @@ export class SlotService {
     this.room = room;
 
     this.room.presence.on(Socket.PresenceEvents.UPDATE, this.onPresenceUpdate);
-
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
   }
 
   /**
@@ -72,7 +75,7 @@ export class SlotService {
         timestamp: Date.now(),
       };
 
-      this.slotIndex = slot;
+      this.slot = slotData;
 
       localParticipant.publish({
         ...localParticipant.value,
@@ -112,7 +115,7 @@ export class SlotService {
       timestamp: Date.now(),
     };
 
-    this.slotIndex = slot.index;
+    this.slot = slot;
 
     localParticipant.publish({
       ...localParticipant.value,
@@ -133,25 +136,26 @@ export class SlotService {
   private onPresenceUpdate = async (event: Socket.PresenceEvent<Participant>) => {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
 
-    if (!event.data.slot || !localParticipant.value?.slot?.index) return;
-
     if (event.id === localParticipant.value.id) {
+      const slot = await this.validateSlotType(event.data);
+
       localParticipant.publish({
         ...localParticipant.value,
-        slot: event.data.slot,
+        slot: slot,
       });
-      this.slotIndex = event.data.slot.index;
+
       return;
     }
 
-    if (event.data.slot?.index === this.slotIndex) {
-      this.slotIndex = null;
+    if (event.data.slot?.index === null || this.slot.index === null) return;
+
+    if (event.data.slot?.index === this.slot?.index) {
+      const slotData = await this.assignSlot();
+
       localParticipant.publish({
         ...localParticipant.value,
-        slot: null,
+        slot: slotData,
       });
-
-      const slotData = await this.assignSlot();
 
       console.debug(
         `[SuperViz] - Slot reassigned to ${localParticipant.value.id}, slot: ${slotData.colorName}`,
@@ -159,13 +163,7 @@ export class SlotService {
     }
   };
 
-  /**
-   * @function onLocalParticipantUpdateOnStore
-   * @description handles the update of the local participant in the store.
-   * @param {Participant} participant - new participant data
-   * @returns {void}
-   */
-  private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
+  public participantNeedsSlot = (participant: Participant): boolean => {
     const COMPONENTS_THAT_NEED_SLOT = [
       ComponentNames.FORM_ELEMENTS,
       ComponentNames.WHO_IS_ONLINE,
@@ -185,12 +183,27 @@ export class SlotService {
 
     const needSlot = componentsNeedSlot || videoNeedSlot;
 
-    if ((participant.slot?.index === null || !participant.slot) && needSlot) {
-      this.assignSlot();
+    return needSlot;
+  };
+
+  /**
+   * @function validateSlotType
+   * @description validate if the participant needs a slot
+   * @param {Participant} participant - new participant data
+   * @returns {void}
+   */
+  private validateSlotType = async (participant: Participant): Promise<Slot> => {
+    const needSlot = this.participantNeedsSlot(participant);
+
+    if (participant.slot?.index === null && needSlot) {
+      const slotData = await this.assignSlot();
+      this.slot = slotData;
     }
 
     if (participant.slot?.index !== null && !needSlot) {
       this.setDefaultSlot();
     }
+
+    return this.slot;
   };
 }
