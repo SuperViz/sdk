@@ -35,17 +35,17 @@ export class IOC {
   }
 
   private handleConnectionState = (state: Socket.ConnectionState): void => {
-    const needsToReconnectStates = [
-      Socket.ClientState.DISCONNECTED,
-      Socket.ClientState.RECONNECT_ERROR,
-    ];
+    // const needsToReconnectStates = [
+    //   Socket.ClientState.DISCONNECTED,
+    //   Socket.ClientState.RECONNECT_ERROR,
+    // ];
 
-    if (
-      needsToReconnectStates.includes(state.state) &&
-      !['io client disconnect', 'Unauthorized connection'].includes(state.reason)
-    ) {
-      this.forceReconnect();
-    }
+    // if (
+    //   needsToReconnectStates.includes(state.state) &&
+    //   !['io client disconnect', 'Unauthorized connection'].includes(state.reason)
+    // ) {
+    //   this.forceReconnect();
+    // }
 
     if (state.reason === 'Unauthorized connection') {
       console.error(
