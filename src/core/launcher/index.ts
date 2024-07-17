@@ -41,9 +41,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     super();
     this.logger = new Logger('@superviz/sdk/launcher');
 
-    const { localParticipant, participants, group, isDomainWhitelisted } = this.useStore(
-      StoreType.GLOBAL,
-    );
+    const { localParticipant, group, isDomainWhitelisted } = this.useStore(StoreType.GLOBAL);
 
     localParticipant.publish({ ...participant });
     isDomainWhitelisted.subscribe(this.onAuthentication);
@@ -52,6 +50,16 @@ export class Launcher extends Observable implements DefaultLauncher {
     group.publish(participantGroup);
     this.ioc = new IOC(localParticipant.value);
     this.room = this.ioc.createRoom('launcher', 'unlimited');
+
+    // Assign a slot to the participant
+    this.slotService = new SlotService(this.room, this.useStore);
+    localParticipant.publish({
+      ...localParticipant.value,
+      slot: this.slotService.slot,
+      activeComponents: [],
+    });
+
+    this.participant = localParticipant.value;
 
     // internal events without realtime
     this.eventBus = new EventBus();
@@ -67,10 +75,10 @@ export class Launcher extends Observable implements DefaultLauncher {
    * @param component - component to add
    * @returns {void}
    */
-  public addComponent = (component: Partial<BaseComponent>): void => {
+  public addComponent = async (component: Partial<BaseComponent>): Promise<void> => {
     if (!this.canAddComponent(component)) return;
 
-    const { hasJoinedRoom, localParticipant, group } = useStore(StoreType.GLOBAL);
+    const { hasJoinedRoom, group, localParticipant } = useStore(StoreType.GLOBAL);
 
     if (!hasJoinedRoom.value) {
       this.logger.log('launcher service @ addComponent - not joined yet');
@@ -92,17 +100,18 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.activeComponents.push(component.name);
     this.activeComponentsInstances.push(component);
 
-    this.room.presence.update({
-      ...localParticipant.value,
+    localParticipant.publish({
+      ...this.participant,
       activeComponents: this.activeComponents,
     });
 
-    ApiService.sendActivity(
-      localParticipant.value.id,
-      group.value.id,
-      group.value.name,
-      component.name,
-    );
+    this.room.presence.update({
+      ...this.participant,
+      slot: this.slotService.slot,
+      activeComponents: this.activeComponents,
+    });
+
+    ApiService.sendActivity(this.participant.id, group.value.id, group.value.name, component.name);
   };
 
   /**
@@ -192,7 +201,7 @@ export class Launcher extends Observable implements DefaultLauncher {
   private canAddComponent = (component: Partial<BaseComponent>): boolean => {
     const isProvidedFeature = config.get<boolean>(`features.${component.name}`);
     const componentLimit = LimitsService.checkComponentLimit(component.name);
-    const isComponentActive = this.activeComponents.includes(component.name);
+    const isComponentActive = this.activeComponents?.includes(component.name);
 
     const verifications = [
       {
@@ -242,6 +251,16 @@ export class Launcher extends Observable implements DefaultLauncher {
     );
   };
 
+  private onLocalParticipantUpdate = (participant: Participant): void => {
+    this.activeComponents = participant.activeComponents || [];
+
+    if (this.activeComponents.length) {
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((ac) => {
+        return this.activeComponents.includes(ac.name);
+      });
+    }
+  };
+
   /**
    * @function onLocalParticipantUpdateOnStore
    * @description handles the update of the local participant in the store.
@@ -250,19 +269,13 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     this.participant = participant;
-  };
+    this.activeComponents = participant.activeComponents || [];
 
-  /**
-   * @function onParticipantJoined
-   * @description on participant joined
-   * @param ablyParticipant - ably participant
-   * @returns {void}
-   */
-  private onParticipantJoined = (participant: Socket.PresenceEvent<Participant>): void => {
-    if (participant.id !== this.participant.id) return;
-
-    this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-    this.attachComponentsAfterJoin();
+    if (this.activeComponents.length) {
+      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
+        return this.activeComponents.includes(component.name);
+      });
+    }
   };
 
   private onSameAccount = (): void => {
@@ -330,13 +343,11 @@ export class Launcher extends Observable implements DefaultLauncher {
   ): Promise<void> => {
     if (presence.id !== this.participant.id) return;
 
-    // Assign a slot to the participant
-    this.slotService = new SlotService(this.room, this.useStore);
-
     this.room.presence.update(this.participant);
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
-    this.onParticipantJoined(presence);
+
+    this.attachComponentsAfterJoin();
     this.publish(ParticipantEvent.LOCAL_JOINED, this.participant);
     this.publish(ParticipantEvent.JOINED, this.participant);
   };

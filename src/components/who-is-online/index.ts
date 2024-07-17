@@ -171,14 +171,27 @@ export class WhoIsOnline extends BaseComponent {
 
     this.room.presence.get((list) => {
       const dataList = list
-        .filter((participant) => participant.data['id'] && participant.data['avatar'])
+        .filter((participant) => participant.data['id'])
         .map(({ data }: { data: any }) => {
+          let avatar = data.avatar;
+
+          if (!avatar) {
+            avatar = this.getAvatar({
+              avatar: data.avatar,
+              color: data.slot.color,
+              name: data.name,
+              letterColor: data.slot.textColor,
+            });
+          }
+
           const tooltip = this.getTooltipData(data);
           const controls = this.getControls(data);
+
           return {
             ...data,
             tooltip,
             controls,
+            avatar,
             isLocalParticipant: data.id === this.localParticipantId,
           };
         }) as WhoIsOnlineParticipant[];
@@ -433,7 +446,7 @@ export class WhoIsOnline extends BaseComponent {
   private follow = ({ detail }: CustomEvent) => {
     const { everyoneFollowsMe } = this.useStore(StoreType.WHO_IS_ONLINE);
     everyoneFollowsMe.publish(!!detail?.id);
-    this.room.emit(WhoIsOnlineEvent.START_FOLLOW_ME, detail?.id);
+    this.room.emit(WhoIsOnlineEvent.START_FOLLOW_ME, detail);
 
     if (this.following) {
       this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);

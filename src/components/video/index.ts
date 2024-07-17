@@ -90,6 +90,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleMicrophone(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle microphone');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MICROPHONE);
   }
 
@@ -99,6 +104,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleCam(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle camera');
+      return;
+    }
+
     this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_CAM);
   }
 
@@ -108,6 +118,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleScreenShare(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle screen share');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_SCREENSHARE);
   }
 
@@ -126,6 +141,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleRecording(): void {
+    if (this.localParticipant.isHost) {
+      console.warn('[SuperViz] Only host can toggle recording');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_RECORDING);
   }
 
@@ -509,6 +529,23 @@ export class VideoConference extends BaseComponent {
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
     this.kickParticipantsOnHostLeave = !this.params?.allowGuests;
 
+    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+
+    const newParticipantName = participant.name.trim();
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      name: newParticipantName,
+    });
+
+    participants.publish({
+      ...participants.value,
+      [participant.id]: {
+        ...localParticipant.value,
+        name: newParticipantName,
+      },
+    });
+
     if (this.videoConfig.canUseDefaultAvatars) {
       this.roomState.updateMyProperties({
         avatar: participant.avatar,
@@ -535,6 +572,25 @@ export class VideoConference extends BaseComponent {
    */
   private onParticipantLeft = (_: VideoParticipant): void => {
     this.logger.log('video conference @ on participant left', this.localParticipant);
+
+    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      activeComponents: localParticipant.value.activeComponents?.filter(
+        (ac) => ac !== ComponentNames.VIDEO_CONFERENCE,
+      ),
+    });
+
+    participants.publish({
+      ...participants.value,
+      [this.localParticipant.id]: {
+        ...localParticipant.value,
+        activeComponents: localParticipant.value.activeComponents?.filter(
+          (ac) => ac !== ComponentNames.VIDEO_CONFERENCE,
+        ),
+      },
+    });
 
     this.connectionService.removeListeners();
     this.publish(MeetingEvent.DESTROY);

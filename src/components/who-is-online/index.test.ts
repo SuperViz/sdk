@@ -440,7 +440,7 @@ describe('Who Is Online', () => {
 
       expect(whoIsOnlineComponent['room'].emit).toHaveBeenCalledWith(
         WhoIsOnlineEvent.START_FOLLOW_ME,
-        event.detail.id,
+        event.detail,
       );
     });
   });

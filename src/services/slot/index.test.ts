@@ -25,7 +25,7 @@ describe('slot service', () => {
     const instance = new SlotService(room, useStore);
     const result = await instance.assignSlot();
 
-    expect(instance['slotIndex']).toBeDefined();
+    expect(instance['slot']).toBeDefined();
     expect(result).toEqual({
       index: expect.any(Number),
       color: expect.any(String),
@@ -44,10 +44,10 @@ describe('slot service', () => {
     } as any;
 
     const instance = new SlotService(room, useStore);
-    instance['slotIndex'] = 0;
+    instance['slot'].index = 0;
     instance.setDefaultSlot();
 
-    expect(instance['slotIndex']).toBeNull();
+    expect(instance['slot'].index).toBeNull();
     expect(room.presence.update).toHaveBeenCalledWith({
       slot: {
         index: null,
@@ -75,7 +75,7 @@ describe('slot service', () => {
     const instance = new SlotService(room, useStore);
     await instance.assignSlot();
 
-    expect(instance['slotIndex']).toBeNull();
+    expect(console.error).toHaveBeenCalled();
   });
 
   test('if the slot is already in use, it should assign a new slot', async () => {
@@ -108,49 +108,13 @@ describe('slot service', () => {
     const instance = new SlotService(room, useStore);
     const result = await instance.assignSlot();
 
-    expect(instance['slotIndex']).toBeDefined();
+    expect(instance['slot'].index).toBeDefined();
     expect(result).toEqual({
       index: expect.any(Number),
       color: expect.any(String),
       textColor: expect.any(String),
       colorName: expect.any(String),
       timestamp: expect.any(Number),
-    });
-  });
-
-  test("should remove the slot from the participant when the participant don't need it anymore", async () => {
-    const room = {
-      presence: {
-        on: jest.fn(),
-        update: jest.fn(),
-      },
-    } as any;
-
-    const instance = new SlotService(room, useStore);
-    instance['slotIndex'] = 0;
-
-    const event: Participant = {
-      ...MOCK_LOCAL_PARTICIPANT,
-      slot: {
-        index: 0,
-        color: MEETING_COLORS.turquoise,
-        colorName: MEETING_COLORS_KEYS[0],
-        textColor: '#000',
-        timestamp: 0,
-      },
-      activeComponents: [],
-    };
-
-    instance['onLocalParticipantUpdateOnStore'](event);
-
-    expect(room.presence.update).toHaveBeenCalledWith({
-      slot: {
-        index: null,
-        color: expect.any(String),
-        textColor: expect.any(String),
-        colorName: expect.any(String),
-        timestamp: expect.any(Number),
-      },
     });
   });
 });
