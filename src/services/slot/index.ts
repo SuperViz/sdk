@@ -11,6 +11,8 @@ import { useStore } from '../../common/utils/use-store';
 import { ComponentNames } from '../../components/types';
 
 export class SlotService {
+  private isAssigningSlot = false;
+
   public slot: Slot = {
     index: null,
     color: MEETING_COLORS.gray,
@@ -34,6 +36,9 @@ export class SlotService {
    * @returns void
    */
   public async assignSlot(): Promise<Slot> {
+    if (this.isAssigningSlot) return this.slot;
+
+    this.isAssigningSlot = true;
     let slots = Array.from({ length: 50 }, (_, i) => i);
     let slot = Math.floor(Math.random() * 50);
     const { localParticipant, participants } = useStore(StoreType.GLOBAL);
@@ -92,6 +97,7 @@ export class SlotService {
 
       this.room.presence.update({ slot: slotData });
 
+      this.isAssigningSlot = false;
       return slotData;
     } catch (error) {
       console.error(error);
@@ -193,6 +199,8 @@ export class SlotService {
    * @returns {void}
    */
   private validateSlotType = async (participant: Participant): Promise<Slot> => {
+    if (this.isAssigningSlot) return this.slot;
+
     const needSlot = this.participantNeedsSlot(participant);
 
     if (participant.slot?.index === null && needSlot) {
