@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents, Room, SocketEvent } from '@superviz/socket-client';
+import { PresenceEvent, PresenceEvents, Room, SocketEvent } from '../../lib/socket';
 import { throttle } from 'lodash';
 
 import { Participant } from '../../common/types/participant.types';

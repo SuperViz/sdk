@@ -1,4 +1,4 @@
-import * as Socket from '@superviz/socket-client';
+import * as Socket from '../../lib/socket';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 

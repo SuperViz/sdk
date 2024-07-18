@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { Room } from '@superviz/socket-client';
+import { Room } from '../src/lib/socket';
 
 export const MOCK_IO = {
   ClientState: {
