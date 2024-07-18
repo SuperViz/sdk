@@ -1,4 +1,4 @@
-import { PresenceEvents } from '@superviz/socket-client';
+import { PresenceEvents } from '../../lib/socket';
 
 import { MOCK_IO } from '../../../__mocks__/io.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';

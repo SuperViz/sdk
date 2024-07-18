@@ -1,4 +1,4 @@
-import * as Socket from '@superviz/socket-client';
+import * as Socket from '../../../lib/socket';
 import { isEqual } from 'lodash';
 import { Subscription, fromEvent, throttleTime } from 'rxjs';
 
