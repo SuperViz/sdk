@@ -1,8 +1,7 @@
-import { PresenceEvent } from '@superviz/socket-client';
+import { PresenceEvent } from '../../lib/socket';
 
 import { TranscriptState } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
-import { DrawingData } from '../video-conference-manager/types';
 
 export interface VideoRoomProperties {
   hostClientId?: string;

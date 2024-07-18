@@ -92,7 +92,9 @@
     "lodash.isequal": "^4.5.0",
     "luxon": "^3.4.4",
     "rxjs": "^7.8.1",
-    "semantic-release-version-file": "^1.0.2"
+    "semantic-release-version-file": "^1.0.2",
+    "socket.io-client": "^4.7.5",
+    "zod": "^3.23.8"
   },
   "config": {
     "commitizen": {
