@@ -1,4 +1,4 @@
-import { SocketEvent } from '@superviz/socket-client';
+import { SocketEvent } from '../../lib/socket';
 
 export type FormElementsProps = {
   fields?: string[] | string;

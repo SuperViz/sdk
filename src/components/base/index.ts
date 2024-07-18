@@ -1,4 +1,4 @@
-import * as Socket from '@superviz/socket-client';
+import * as Socket from '../../lib/socket';
 
 import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Group } from '../../common/types/participant.types';
