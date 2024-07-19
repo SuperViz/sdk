@@ -24,7 +24,7 @@ export class Room {
     private apiKey: string,
     private maxConnections: number | 'unlimited' = 100,
   ) {
-    this.logger = new Logger('@superviz/socket-client/room');
+    this.logger = new Logger('@superviz/sdk/socket-client/room');
 
     const payload: JoinRoomPayload = {
       name: roomId,

@@ -14,7 +14,7 @@ export class PresenceRoom {
   private observers: Map<PresenceEvents, Subject<PresenceEvent>> = new Map();
 
   constructor(private io: Socket, private presence: Presence, private roomId: string) {
-    this.logger = new Logger('@superviz/socket-client/presence');
+    this.logger = new Logger('@superviz/sdk/socket-client/presence');
 
     this.registerSubsjects();
     this.subscribeToPresenceEvents();

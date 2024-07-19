@@ -3,6 +3,7 @@ import type { Socket } from 'socket.io-client';
 
 import { ErrorCallback } from '../common/types/callbacks.types';
 
+
 import { ClientState, ConnectionState, SocketErrorEvent, SocketEvent } from './types';
 import { Logger } from '../../../common/utils';
 
@@ -13,7 +14,7 @@ export class ClientConnection {
   public state: ClientState;
 
   constructor(private socket: Socket) {
-    this.logger = new Logger('@superviz/socket-client/connection');
+    this.logger = new Logger('@superviz/sdk/socket-client/connection');
     this.subscribeToManagerEvents();
     this.stateObserver = new Subject();
   }
