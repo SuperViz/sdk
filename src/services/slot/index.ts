@@ -1,4 +1,4 @@
-import * as Socket from '@superviz/socket-client';
+import * as Socket from '../../lib/socket';
 
 import {
   INDEX_IS_WHITE_TEXT,

@@ -1,4 +1,4 @@
-import { SocketEvent } from '@superviz/socket-client';
+import { SocketEvent } from '../../lib/socket';
 
 import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
