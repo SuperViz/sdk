@@ -2,14 +2,14 @@ import { SuperVizSdkOptions } from '../../common/types/sdk-options.types';
 import { doRequest } from '../../common/utils';
 import { Annotation } from '../../components/comments/types';
 import config from '../config';
-
+import { ComponentLimits } from '../limits/types';
 
 import {
   AnnotationParams,
   CommentParams,
   CreateOrUpdateParticipantParams,
   FetchAnnotationsParams,
-  MentionParams
+  MentionParams,
 } from './types';
 
 export default class ApiService {
@@ -32,11 +32,11 @@ export default class ApiService {
     return doRequest(url, 'POST', { apiKey });
   }
 
-  static async fetchLimits(baseUrl: string, apikey: string) {
-    const path: string = '/user/check_limits';
+  static async fetchLimits(baseUrl: string, apikey: string): Promise<ComponentLimits> {
+    const path: string = '/user/check_limits_v2';
     const url: string = this.createUrl(baseUrl, path);
     const result = await doRequest(url, 'GET', '', { apikey });
-    return result.usage;
+    return result.limits;
   }
 
   static async fetchWaterMark(baseUrl: string, apiKey: string) {
@@ -130,18 +130,14 @@ export default class ApiService {
     return doRequest(url, 'POST', body, { apikey });
   }
 
-  static async fetchParticipantsByGroup(
-    groupId: string,
-  ) {
+  static async fetchParticipantsByGroup(groupId: string) {
     const path = `/groups/participants/${groupId}`;
     const baseUrl = config.get<string>('apiUrl');
     const url = this.createUrl(baseUrl, path, { take: 10000 });
     return doRequest(url, 'GET', undefined, { apikey: config.get('apiKey') });
   }
 
-  static async createMentions(
-    mentionParams: MentionParams
-  ) {
+  static async createMentions(mentionParams: MentionParams) {
     const path = '/mentions';
     const baseUrl = config.get<string>('apiUrl');
     const url = this.createUrl(baseUrl, path);
