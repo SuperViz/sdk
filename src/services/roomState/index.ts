@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents, Room, RoomEvents, SocketEvent } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents, Room, SocketEvent } from '../../lib/socket';
 
 import { TranscriptState } from '../../common/types/events.types';
 import { ParticipantType, VideoParticipant } from '../../common/types/participant.types';

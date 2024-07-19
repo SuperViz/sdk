@@ -107,9 +107,10 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('Failed to validate API key');
   }
 
-  const [environment, waterMark] = await Promise.all([
+  const [environment, waterMark, limits] = await Promise.all([
     ApiService.fetchConfig(apiUrl, apiKey),
     ApiService.fetchWaterMark(apiUrl, apiKey),
+    ApiService.fetchLimits(apiUrl, apiKey),
   ]).catch(() => {
     throw new Error('Failed to load configuration from server');
   });
@@ -129,21 +130,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     environment: (options.environment as EnvironmentTypes) ?? EnvironmentTypes.PROD,
     roomId,
     debug: options.debug,
-    limits: {
-      presence: {
-        canUse: true,
-        maxParticipants: 50,
-      },
-      realtime: {
-        canUse: true,
-        maxParticipants: 200,
-      },
-      videoConference: {
-        canUse: true,
-        maxParticipants: 255,
-        canUseTranscript: true,
-      },
-    },
+    limits,
     waterMark,
     colors: options.customColors,
     features,
