@@ -115,9 +115,8 @@ export class ClientConnection {
   private onCustomError = (error: SocketErrorEvent) => {
     if (error.needsToDisconnect) {
       this.socket.disconnect();
+      this.changeState(ClientState.DISCONNECTED, error.errorType);
     }
-
-    this.changeState(ClientState.DISCONNECTED, error.errorType);
 
     if (error.level === 'error') {
       console.error('[SuperViz - Error]', 'Type: ', error.errorType, 'Message :', error.message);
