@@ -118,11 +118,16 @@ export class ClientConnection {
       this.changeState(ClientState.DISCONNECTED, error.errorType);
     }
 
+    const logMessage = `[SuperViz] 
+    - Error: ${error.errorType}
+    - Message: ${error.message}
+    `;
+
     if (error.level === 'error') {
-      console.error('[SuperViz - Error]', 'Type: ', error.errorType, 'Message :', error.message);
+      console.error(logMessage);
       return;
     }
 
-    console.warn('[SuperViz - Warning]', 'Type: ', error.errorType, 'Message :', error.message);
+    console.warn(logMessage);
   };
 }

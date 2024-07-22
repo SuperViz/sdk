@@ -50,8 +50,6 @@ export class IOC {
       return;
     }
 
-    console.log('[Superviz] Connection state:', state);
-
     if (state.reason === 'user-already-in-room') {
       this.state = state;
       this.stateSubject.next(IOCState.SAME_ACCOUNT_ERROR);
