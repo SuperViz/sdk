@@ -50,6 +50,9 @@ describe('Launcher', () => {
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
 
     LauncherInstance = new Launcher(DEFAULT_INITIALIZATION_MOCK);
+
+    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
   });
 
   test('should be defined', () => {

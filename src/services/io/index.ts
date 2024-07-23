@@ -35,18 +35,6 @@ export class IOC {
   }
 
   private handleConnectionState = (state: Socket.ConnectionState): void => {
-    // const needsToReconnectStates = [
-    //   Socket.ClientState.DISCONNECTED,
-    //   Socket.ClientState.RECONNECT_ERROR,
-    // ];
-
-    // if (
-    //   needsToReconnectStates.includes(state.state) &&
-    //   !['io client disconnect', 'Unauthorized connection'].includes(state.reason)
-    // ) {
-    //   this.forceReconnect();
-    // }
-
     if (state.reason === 'Unauthorized connection') {
       console.error(
         '[Superviz] Unauthorized connection. Please check your API key and if your domain is white listed.',
@@ -62,21 +50,15 @@ export class IOC {
       return;
     }
 
+    if (state.reason === 'user-already-in-room') {
+      this.state = state;
+      this.stateSubject.next(IOCState.SAME_ACCOUNT_ERROR);
+      return;
+    }
+
     this.state = state;
     this.stateSubject.next(state.state as unknown as IOCState);
   };
-
-  /**
-   * @function forceReconnect
-   * @description force the socket to reconnect
-   * @returns {void}
-   */
-  private forceReconnect(): void {
-    this.client?.destroy();
-    this.client = null;
-
-    this.createClient();
-  }
 
   /**
    * @function createClient

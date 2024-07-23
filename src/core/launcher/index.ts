@@ -184,6 +184,7 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.room?.presence.off(Socket.PresenceEvents.JOINED_ROOM);
     this.room?.presence.off(Socket.PresenceEvents.LEAVE);
     this.room?.presence.off(Socket.PresenceEvents.UPDATE);
+    this.ioc.stateSubject.unsubscribe();
     this.ioc?.destroy();
 
     this.isDestroyed = true;
@@ -294,13 +295,8 @@ export class Launcher extends Observable implements DefaultLauncher {
   private startIOC = (): void => {
     this.logger.log('launcher service @ startIOC');
     const { participants } = useStore(StoreType.GLOBAL);
-    // retrieve the current participants in the room
 
-    this.ioc.stateSubject.subscribe((state) => {
-      if (state === IOCState.AUTH_ERROR) {
-        this.onAuthentication(false);
-      }
-    });
+    this.ioc.stateSubject.subscribe(this.onConnectionStateChange);
     this.room.presence.get((presences) => {
       const participantsMap: Record<string, Participant> = {};
 
@@ -327,9 +323,24 @@ export class Launcher extends Observable implements DefaultLauncher {
     );
     this.room.presence.on<Participant>(Socket.PresenceEvents.LEAVE, this.onParticipantLeaveIOC);
     this.room.presence.on<Participant>(Socket.PresenceEvents.UPDATE, this.onParticipantUpdatedIOC);
+  };
 
-    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
-    hasJoinedRoom.publish(true);
+  /**
+   * @function onConnectionStateChange
+   * @description on connection state change
+   * @param state - connection state
+   * @returns {void}
+   */
+  private onConnectionStateChange = (state: IOCState): void => {
+    if (state === IOCState.AUTH_ERROR) {
+      this.onAuthentication(false);
+      return;
+    }
+
+    if (state === IOCState.SAME_ACCOUNT_ERROR) {
+      this.onSameAccount();
+      return;
+    }
   };
 
   /**
@@ -346,6 +357,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.room.presence.update(this.participant);
 
     this.logger.log('launcher service @ onParticipantJoined - local participant joined');
+
+    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
 
     this.attachComponentsAfterJoin();
     this.publish(ParticipantEvent.LOCAL_JOINED, this.participant);
