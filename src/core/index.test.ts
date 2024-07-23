@@ -149,4 +149,44 @@ describe('initialization errors', () => {
       'Color sv-primary-900 is not a valid color variable value. Please check the documentation for more information.',
     );
   });
+
+  test('should throw an error if room id is invalid', async () => {
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        roomId: '<invalid-room-id>',
+      }),
+    ).rejects.toThrow(
+      '[SuperViz] Room id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
+
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        roomId: '1',
+      }),
+    ).rejects.toThrow(
+      '[SuperViz] Room id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
+  });
+
+  test('should throw an error if participant id is invalid', async () => {
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        participant: { ...SIMPLE_INITIALIZATION_MOCK.participant, id: '<invalid-participant-id>' },
+      }),
+    ).rejects.toThrow(
+      '[SuperViz] Participant id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
+
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        participant: { ...SIMPLE_INITIALIZATION_MOCK.participant, id: '1' },
+      }),
+    ).rejects.toThrow(
+      '[SuperViz] Participant id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
+  });
 });
