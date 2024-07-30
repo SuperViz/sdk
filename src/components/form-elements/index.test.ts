@@ -10,6 +10,7 @@ import { ComponentNames } from '../types';
 import { FieldEvents } from './types';
 
 import { FormElements } from '.';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 describe('form elements', () => {
   let instance: any;
@@ -32,6 +33,7 @@ describe('form elements', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.presence.maxParticipants,
       useStore,
     });
   });

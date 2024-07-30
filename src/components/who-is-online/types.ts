@@ -15,8 +15,8 @@ export interface TooltipData {
 export interface Avatar {
   imageUrl: string;
   firstLetter: string;
-  slotIndex: number;
   color: string;
+  letterColor: string;
 }
 
 export interface WhoIsOnlineParticipant {

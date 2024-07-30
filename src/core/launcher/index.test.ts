@@ -14,6 +14,7 @@ import { useGlobalStore } from '../../services/stores';
 import { LauncherFacade, LauncherOptions } from './types';
 
 import Facade, { Launcher } from '.';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 jest.mock('../../services/limits');
 
@@ -49,6 +50,9 @@ describe('Launcher', () => {
     localParticipant.value = MOCK_LOCAL_PARTICIPANT;
 
     LauncherInstance = new Launcher(DEFAULT_INITIALIZATION_MOCK);
+
+    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
   });
 
   test('should be defined', () => {
@@ -57,7 +61,7 @@ describe('Launcher', () => {
 
   describe('Components', () => {
     test('should not add component if realtime is not joined room', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
       const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
       hasJoinedRoom.publish(false);
 
@@ -71,7 +75,7 @@ describe('Launcher', () => {
     });
 
     test('should add component', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -80,18 +84,33 @@ describe('Launcher', () => {
           ioc: expect.any(IOC),
           config: MOCK_CONFIG,
           eventBus: EVENT_BUS_MOCK,
+          connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
           useStore,
         } as DefaultAttachComponentOptions),
       );
 
       const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
 
+      LauncherInstance['onParticipantUpdatedIOC']({
+        connectionId: 'connection1',
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: [MOCK_COMPONENT.name],
+        },
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
+        timestamp: Date.now(),
+      });
+
       expect(localParticipant.value.activeComponents?.length).toBe(1);
       expect(localParticipant.value.activeComponents![0]).toBe(MOCK_COMPONENT.name);
     });
 
     test('should show a console message if limit reached and not add component', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(false);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue({
+        ...LIMITS_MOCK.videoConference,
+        canUse: false,
+      });
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
@@ -99,12 +118,23 @@ describe('Launcher', () => {
     });
 
     test('should remove component', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
       LauncherInstance.removeComponent(MOCK_COMPONENT);
 
       const { localParticipant } = LauncherInstance['useStore'](StoreType.GLOBAL);
+
+      LauncherInstance['onParticipantUpdatedIOC']({
+        connectionId: 'connection1',
+        data: {
+          ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: [],
+        },
+        id: MOCK_LOCAL_PARTICIPANT.id,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
+        timestamp: Date.now(),
+      });
 
       expect(MOCK_COMPONENT.detach).toHaveBeenCalled();
       expect(localParticipant.value.activeComponents?.length).toBe(0);
@@ -113,13 +143,20 @@ describe('Launcher', () => {
     test('should show a console message if component is not initialized yet', () => {
       LauncherInstance.removeComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.detach).not.toBeCalled();
+      expect(MOCK_COMPONENT.detach).not.toHaveBeenCalled();
     });
 
     test('should show a console message if component is already active', () => {
-      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(true);
+      LimitsService.checkComponentLimit = jest.fn().mockReturnValue(LIMITS_MOCK.videoConference);
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
+
+      // it will be updated by IOC when the participant is updated
+      LauncherInstance['participant'] = {
+        ...MOCK_LOCAL_PARTICIPANT,
+        activeComponents: [MOCK_COMPONENT.name],
+      };
+
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(MOCK_COMPONENT.attach).toHaveBeenCalledTimes(1);
@@ -130,7 +167,7 @@ describe('Launcher', () => {
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.attach).not.toBeCalled();
+      expect(MOCK_COMPONENT.attach).not.toHaveBeenCalled();
     });
   });
 
@@ -184,31 +221,19 @@ describe('Launcher', () => {
       expect(LauncherInstance['publish']).toHaveBeenCalled();
     });
 
-    test('should update activeComponentsInstances when participant list is updated', () => {
-      LauncherInstance.addComponent(MOCK_COMPONENT);
-
-      LauncherInstance['onParticipantListUpdate']({
-        participant1: {
-          id: 'unit-test-participant-ably-id',
-          activeComponents: [MOCK_COMPONENT.name],
-        },
-      });
-
-      expect(LauncherInstance['activeComponentsInstances'].length).toBe(1);
-    });
-
     test('should remove component when participant is not usign it anymore', () => {
-      LauncherInstance.addComponent(MOCK_COMPONENT);
-
       LauncherInstance['onParticipantUpdatedIOC']({
         connectionId: 'connection1',
         id: MOCK_LOCAL_PARTICIPANT.id,
         name: MOCK_LOCAL_PARTICIPANT.name as string,
         data: {
           ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: [],
         },
         timestamp: Date.now(),
       });
+
+      LauncherInstance.addComponent(MOCK_COMPONENT);
 
       expect(LauncherInstance['activeComponentsInstances'].length).toBe(1);
 
@@ -220,6 +245,7 @@ describe('Launcher', () => {
         name: MOCK_LOCAL_PARTICIPANT.name as string,
         data: {
           ...MOCK_LOCAL_PARTICIPANT,
+          activeComponents: LauncherInstance['activeComponents'],
         },
         timestamp: Date.now(),
       });
@@ -247,7 +273,7 @@ describe('Launcher', () => {
       LauncherInstance['onAuthentication'](false);
       expect(LauncherInstance.destroy).toHaveBeenCalled();
       expect(console.error).toHaveBeenCalledWith(
-        `Room can't be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
+        `[SuperViz] Room cannot be initialized because this website's domain is not whitelisted. If you are the developer, please add your domain in https://dashboard.superviz.com/developer`,
       );
     });
 

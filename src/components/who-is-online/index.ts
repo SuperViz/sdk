@@ -171,14 +171,27 @@ export class WhoIsOnline extends BaseComponent {
 
     this.room.presence.get((list) => {
       const dataList = list
-        .filter((participant) => participant.data['id'] && participant.data['avatar'])
+        .filter((participant) => participant.data['id'])
         .map(({ data }: { data: any }) => {
+          let avatar = data.avatar;
+
+          if (!avatar) {
+            avatar = this.getAvatar({
+              avatar: data.avatar,
+              color: data.slot.color,
+              name: data.name,
+              letterColor: data.slot.textColor,
+            });
+          }
+
           const tooltip = this.getTooltipData(data);
           const controls = this.getControls(data);
+
           return {
             ...data,
             tooltip,
             controls,
+            avatar,
             isLocalParticipant: data.id === this.localParticipantId,
           };
         }) as WhoIsOnlineParticipant[];
@@ -433,7 +446,7 @@ export class WhoIsOnline extends BaseComponent {
   private follow = ({ detail }: CustomEvent) => {
     const { everyoneFollowsMe } = this.useStore(StoreType.WHO_IS_ONLINE);
     everyoneFollowsMe.publish(!!detail?.id);
-    this.room.emit(WhoIsOnlineEvent.START_FOLLOW_ME, detail?.id);
+    this.room.emit(WhoIsOnlineEvent.START_FOLLOW_ME, detail);
 
     if (this.following) {
       this.publish(WhoIsOnlineEvent.START_FOLLOW_ME, this.following);
@@ -531,11 +544,11 @@ export class WhoIsOnline extends BaseComponent {
       activeComponents,
       id,
       name,
-      slot: { index, color },
+      slot: { color, textColor },
     } = participant;
     const disableDropdown = this.shouldDisableDropdown({ activeComponents, participantId: id });
 
-    const avatar = this.getAvatar({ avatar: avatarLinks, color, name, slotIndex: index });
+    const avatar = this.getAvatar({ avatar: avatarLinks, color, name, letterColor: textColor });
     return {
       id,
       name,
@@ -613,24 +626,24 @@ export class WhoIsOnline extends BaseComponent {
   /**
    * @function getAvatar
    * @description Processes the info of the participant's avatar
-   * @param { avatar: Avatar; name: string; color: string; slotIndex: number } data Information about the participant that will take part in their avatar somehow
+   * @param { avatar: Avatar; name: string; color: string; letterColor: string } data Information about the participant that will take part in their avatar somehow
    * @returns {Avatar} Information used to decide how to construct the participant's avatar html
    */
   private getAvatar({
     avatar,
     color,
     name,
-    slotIndex,
+    letterColor,
   }: {
     avatar: Avatar;
     name: string;
     color: string;
-    slotIndex: number;
+    letterColor: string;
   }) {
     const imageUrl = avatar?.imageUrl;
     const firstLetter = name?.at(0)?.toUpperCase() ?? 'A';
 
-    return { imageUrl, firstLetter, color, slotIndex };
+    return { imageUrl, firstLetter, color, letterColor };
   }
 
   /**

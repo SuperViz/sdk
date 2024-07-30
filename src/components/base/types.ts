@@ -11,6 +11,7 @@ export interface DefaultAttachComponentOptions {
   eventBus: EventBus;
   useStore: <T extends StoreType>(name: T) => Store<T>;
   Presence3DManagerService: typeof Presence3DManager;
+  connectionLimit: number | 'unlimited';
 }
 
 export type GlobalStore = {

@@ -15,6 +15,7 @@ import { DefaultAttachComponentOptions } from './types';
 export abstract class BaseComponent extends Observable {
   public abstract name: ComponentNames;
   protected abstract logger: Logger;
+  protected connectionLimit: number | 'unlimited';
   protected group: Group;
   protected ioc: IOC;
   protected eventBus: EventBus;
@@ -51,7 +52,8 @@ export abstract class BaseComponent extends Observable {
     this.eventBus = eventBus;
     this.isAttached = true;
     this.ioc = ioc;
-    this.room = ioc.createRoom(this.name);
+    this.connectionLimit = params.connectionLimit ?? 50;
+    this.room = ioc.createRoom(this.name, this.connectionLimit);
 
     if (!hasJoinedRoom.value) {
       this.logger.log(`${this.name} @ attach - not joined yet`);

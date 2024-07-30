@@ -29,7 +29,11 @@ export interface ConnectionState {
 }
 
 export type SocketErrorEvent = {
-  errorType: 'message-size-limit' | 'rate-limit' | 'room-connections-limit';
+  errorType:
+    | 'message-size-limit'
+    | 'rate-limit'
+    | 'room-connections-limit'
+    | 'user-already-in-room';
   message: string;
   connectionId: string;
   needsToDisconnect: boolean;

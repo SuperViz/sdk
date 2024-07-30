@@ -1,6 +1,14 @@
+export type Limit = {
+  canUse: boolean;
+  maxParticipants: number;
+};
+
+export type VideoConferenceLimit = Limit & {
+  canUseTranscript: boolean;
+};
+
 export type ComponentLimits = {
-  videoConference: boolean;
-  presence: boolean;
-  comments: boolean;
-  transcript?: boolean;
+  videoConference: VideoConferenceLimit;
+  presence: Limit;
+  realtime: Limit;
 };
