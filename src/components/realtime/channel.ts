@@ -20,13 +20,18 @@ export class Channel extends Observable {
     callback: (data: unknown) => void;
   }> = [];
 
-  constructor(name: string, ioc: IOC, localParticipant: Participant) {
+  constructor(
+    name: string,
+    ioc: IOC,
+    localParticipant: Participant,
+    connectionLimit: number | 'unlimited',
+  ) {
     super();
 
     this.name = name;
     this.ioc = ioc;
     this.logger = new Logger('@superviz/sdk/realtime-channel');
-    this.channel = this.ioc.createRoom(`realtime:${this.name}`);
+    this.channel = this.ioc.createRoom(`realtime:${this.name}`, connectionLimit);
     this.localParticipant = localParticipant;
 
     this.subscribeToRealtimeEvents();

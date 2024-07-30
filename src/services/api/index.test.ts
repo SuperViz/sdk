@@ -8,17 +8,17 @@ const INVALID_API_KEY = 'unit-test-invalid-api-key';
 const MOCK_ABLY_KEY = 'unit-test-ably-key';
 
 const CHECK_LIMITS_MOCK = {
-  usage: LIMITS_MOCK,
+  limits: LIMITS_MOCK,
 };
 
 const FETCH_PARTICIPANTS_BY_GROUP_MOCK = [
   {
-    id: "any_user_id",
-    name: "any_name",
+    id: 'any_user_id',
+    name: 'any_name',
     avatar: null,
     email: 'any_email',
-  }
-]
+  },
+];
 
 jest.mock('../../common/utils', () => {
   return {
@@ -209,7 +209,7 @@ describe('ApiService', () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
       const response = await ApiService.fetchLimits(baseUrl, VALID_API_KEY);
 
-      expect(response).toEqual(CHECK_LIMITS_MOCK.usage);
+      expect(response).toEqual(CHECK_LIMITS_MOCK.limits);
     });
   });
 
@@ -217,7 +217,9 @@ describe('ApiService', () => {
     test('should return the participants', async () => {
       const response = await ApiService.fetchParticipantsByGroup('any_group_id');
 
-      expect(response).toEqual([{"avatar": null, "id": "any_user_id", "name": "any_name",  "email": "any_email"}]);
+      expect(response).toEqual([
+        { avatar: null, id: 'any_user_id', name: 'any_name', email: 'any_email' },
+      ]);
     });
   });
 
@@ -225,10 +227,10 @@ describe('ApiService', () => {
     test('should create a mention', async () => {
       const response = await ApiService.createMentions({
         commentsId: 'any_comment_id',
-        participants: []
+        participants: [],
       });
 
       expect(response).toEqual({});
     });
-  })
+  });
 });

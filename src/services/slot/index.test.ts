@@ -1,4 +1,10 @@
 import { SlotService } from '.';
+import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
+import { MEETING_COLORS, MEETING_COLORS_KEYS } from '../../common/types/meeting-colors.types';
+import { Participant } from '../../common/types/participant.types';
+import { StoreType } from '../../common/types/stores.types';
+import { useStore } from '../../common/utils/use-store';
+import { ComponentNames } from '../../components/types';
 
 describe('slot service', () => {
   afterEach(() => {
@@ -16,20 +22,40 @@ describe('slot service', () => {
       },
     } as any;
 
-    const participant = {
-      id: '123',
-    } as any;
-
-    const instance = new SlotService(room);
+    const instance = new SlotService(room, useStore);
     const result = await instance.assignSlot();
 
-    expect(instance['slotIndex']).toBeDefined();
+    expect(instance['slot']).toBeDefined();
     expect(result).toEqual({
       index: expect.any(Number),
       color: expect.any(String),
       textColor: expect.any(String),
       colorName: expect.any(String),
       timestamp: expect.any(Number),
+    });
+  });
+
+  test('should remove the slot from the participant', async () => {
+    const room = {
+      presence: {
+        on: jest.fn(),
+        update: jest.fn(),
+      },
+    } as any;
+
+    const instance = new SlotService(room, useStore);
+    instance['slot'].index = 0;
+    instance.setDefaultSlot();
+
+    expect(instance['slot'].index).toBeNull();
+    expect(room.presence.update).toHaveBeenCalledWith({
+      slot: {
+        index: null,
+        color: expect.any(String),
+        textColor: expect.any(String),
+        colorName: expect.any(String),
+        timestamp: expect.any(Number),
+      },
     });
   });
 
@@ -40,16 +66,16 @@ describe('slot service', () => {
       presence: {
         on: jest.fn(),
         get: jest.fn((callback) => {
-          callback(new Array(17).fill({}));
+          callback(new Array(50).fill({}));
         }),
         update: jest.fn(),
       },
     } as any;
 
-    const instance = new SlotService(room);
+    const instance = new SlotService(room, useStore);
     await instance.assignSlot();
 
-    expect(instance['slotIndex']).toBeUndefined();
+    expect(console.error).toHaveBeenCalled();
   });
 
   test('if the slot is already in use, it should assign a new slot', async () => {
@@ -79,10 +105,10 @@ describe('slot service', () => {
       id: '123',
     } as any;
 
-    const instance = new SlotService(room);
+    const instance = new SlotService(room, useStore);
     const result = await instance.assignSlot();
 
-    expect(instance['slotIndex']).toBeDefined();
+    expect(instance['slot'].index).toBeDefined();
     expect(result).toEqual({
       index: expect.any(Number),
       color: expect.any(String),

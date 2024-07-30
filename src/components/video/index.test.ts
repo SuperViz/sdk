@@ -16,16 +16,21 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { MeetingColors, MeetingColorsHex } from '../../common/types/meeting-colors.types';
-import { Participant, ParticipantType } from '../../common/types/participant.types';
+import {
+  Participant,
+  ParticipantType,
+  VideoParticipant,
+} from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { useStore } from '../../common/utils/use-store';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
 import { VideoFrameState } from '../../services/video-conference-manager/types';
-import { ComponentNames } from '../types';
+import { ParticipantToFrame } from './types';
 
 import { VideoConference } from '.';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 Object.assign(global, { TextDecoder, TextEncoder });
 
@@ -88,12 +93,13 @@ describe('VideoConference', () => {
       allowGuests: false,
     });
 
-    VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT;
+    VideoConferenceInstance['localParticipant'] = MOCK_LOCAL_PARTICIPANT as VideoParticipant;
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
       useStore,
     });
 
@@ -111,13 +117,14 @@ describe('VideoConference', () => {
     VideoConferenceInstance['localParticipant'] = {
       ...MOCK_LOCAL_PARTICIPANT,
       avatar: MOCK_AVATAR,
-    };
+    } as VideoParticipant;
 
     VideoConferenceInstance.attach({
       ioc: new IOC(MOCK_LOCAL_PARTICIPANT),
       Presence3DManagerService: Presence3DManager,
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
+      connectionLimit: LIMITS_MOCK.videoConference.maxParticipants,
       useStore,
     });
 
@@ -144,10 +151,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -191,10 +198,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -212,10 +219,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -248,10 +255,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -308,10 +315,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -481,6 +488,7 @@ describe('VideoConference', () => {
       expect(VideoConferenceInstance['roomState'].updateMyProperties).toHaveBeenCalledWith({
         name: 'John Doe',
         type: ParticipantType.HOST,
+        joinedMeeting: true,
       });
     });
 
@@ -500,6 +508,7 @@ describe('VideoConference', () => {
         name: 'John Doe',
         avatar: MOCK_AVATAR,
         type: ParticipantType.HOST,
+        joinedMeeting: true,
       });
     });
 
@@ -586,15 +595,16 @@ describe('VideoConference', () => {
         },
       });
 
-      const participantInfoList: Participant[] = [
+      const participantInfoList: VideoParticipant[] = [
         {
           id: participants.value[MOCK_LOCAL_PARTICIPANT.id].id,
-          color: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot?.colorName || 'gray',
           avatar: participants.value[MOCK_LOCAL_PARTICIPANT.id].avatar,
           name: participants.value[MOCK_LOCAL_PARTICIPANT.id].name,
           type: participants.value[MOCK_LOCAL_PARTICIPANT.id].type,
           isHost: participants.value[MOCK_LOCAL_PARTICIPANT.id].isHost ?? false,
           slot: participants.value[MOCK_LOCAL_PARTICIPANT.id].slot,
+          timestamp: participants.value[MOCK_LOCAL_PARTICIPANT.id].timestamp,
+          color: MEETING_COLORS.turquoise,
         },
       ];
 
@@ -627,10 +637,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.GUEST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -645,12 +655,14 @@ describe('VideoConference', () => {
         [MOCK_LOCAL_PARTICIPANT.id]: {
           ...participants[MOCK_LOCAL_PARTICIPANT.id],
           timestamp: 0,
+          color: MEETING_COLORS.turquoise,
         },
       });
       VideoConferenceInstance['onParticipantListUpdate']({
         [MOCK_LOCAL_PARTICIPANT.id]: {
           ...participants[MOCK_LOCAL_PARTICIPANT.id],
           timestamp: 0,
+          color: MEETING_COLORS.turquoise,
         },
       });
 
@@ -679,12 +691,11 @@ describe('VideoConference', () => {
           isHost: true,
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
-          color: MeetingColors[0],
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -692,19 +703,20 @@ describe('VideoConference', () => {
 
       VideoConferenceInstance['onRealtimeParticipantsDidChange'](participant);
 
-      const expectedParticipants = {
+      const expectedParticipants: ParticipantToFrame = {
         timestamp: 0,
-        name: MOCK_LOCAL_PARTICIPANT.name,
+        name: MOCK_LOCAL_PARTICIPANT.name as string,
         isHost: true,
         avatar: MOCK_AVATAR,
         type: ParticipantType.HOST,
-        color: MeetingColors[0],
         participantId: MOCK_LOCAL_PARTICIPANT.id,
+        color: MEETING_COLORS.turquoise,
+        id: MOCK_LOCAL_PARTICIPANT.id,
         slot: {
-          colorName: MeetingColors[0],
+          colorName: 'turquoise',
           index: 0,
-          color: MeetingColorsHex[0],
-          textColor: MeetingColors[0],
+          color: MEETING_COLORS.turquoise,
+          textColor: '#fff',
           timestamp: 0,
         },
       };
@@ -730,10 +742,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },
@@ -762,10 +774,10 @@ describe('VideoConference', () => {
           avatar: MOCK_AVATAR,
           type: ParticipantType.HOST,
           slot: {
-            colorName: MeetingColors[0],
+            colorName: 'turquoise',
             index: 0,
-            color: MeetingColorsHex[0],
-            textColor: MeetingColors[0],
+            color: MEETING_COLORS.turquoise,
+            textColor: '#fff',
             timestamp: 0,
           },
         },

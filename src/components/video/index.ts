@@ -12,8 +12,11 @@ import {
   RealtimeEvent,
   TranscriptState,
 } from '../../common/types/events.types';
-import { MeetingColorsHex } from '../../common/types/meeting-colors.types';
-import { Participant, ParticipantType } from '../../common/types/participant.types';
+import {
+  VideoParticipant,
+  ParticipantType,
+  Participant,
+} from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
@@ -33,15 +36,16 @@ import {
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
-import { ParticipandToFrame, VideoComponentOptions } from './types';
+import { ParticipantToFrame, VideoComponentOptions } from './types';
+import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
 let KICK_PARTICIPANTS_TIMEOUT: ReturnType<typeof setTimeout> | null = null;
 export class VideoConference extends BaseComponent {
   public name: ComponentNames;
   protected logger: Logger;
-  private participantsOnMeeting: Partial<Participant>[] = [];
-  private localParticipant: Participant;
+  private participantsOnMeeting: Partial<VideoParticipant>[] = [];
+  private localParticipant: VideoParticipant;
   private videoManager: VideoConferenceManager;
   private connectionService: ConnectionService;
   private browserService: BrowserService;
@@ -86,6 +90,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleMicrophone(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle microphone');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_MICROPHONE);
   }
 
@@ -95,6 +104,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleCam(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle camera');
+      return;
+    }
+
     this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_CAM);
   }
 
@@ -104,6 +118,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleScreenShare(): void {
+    if (this.localParticipant.type === ParticipantType.AUDIENCE) {
+      console.warn('[SuperViz] Audience cannot toggle screen share');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_SCREENSHARE);
   }
 
@@ -122,6 +141,11 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   public toggleRecording(): void {
+    if (this.localParticipant.isHost) {
+      console.warn('[SuperViz] Only host can toggle recording');
+      return;
+    }
+
     return this.videoManager?.publishMessageToFrame(MeetingControlsEvent.TOGGLE_RECORDING);
   }
 
@@ -178,6 +202,9 @@ export class VideoConference extends BaseComponent {
    * @returns {void}
    */
   private startVideo = (): void => {
+    const defaultAvatars =
+      this.params?.userType !== ParticipantType.AUDIENCE && this.params?.defaultAvatars === true;
+
     this.videoConfig = {
       language: this.params?.language,
       canUseRecording: !!this.params?.enableRecording,
@@ -185,8 +212,7 @@ export class VideoConference extends BaseComponent {
       canUseChat: !this.params?.chatOff,
       canUseCams: !this.params?.camsOff,
       canUseScreenshare: !this.params?.screenshareOff,
-      canUseDefaultAvatars:
-        !!this.params?.defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
+      canUseDefaultAvatars: defaultAvatars && !this.localParticipant?.avatar?.model3DUrl,
       canUseGather: !!this.params?.enableGather,
       canUseFollow: !!this.params?.enableFollow,
       canUseGoTo: !!this.params?.enableGoTo,
@@ -301,7 +327,10 @@ export class VideoConference extends BaseComponent {
       this.useStore(StoreType.VIDEO);
 
     localParticipant.subscribe((participant) => {
-      this.localParticipant = participant;
+      this.localParticipant = {
+        ...this.localParticipant,
+        ...participant,
+      };
     });
 
     drawing.subscribe(this.setDrawing);
@@ -321,14 +350,17 @@ export class VideoConference extends BaseComponent {
    * */
   private createParticipantFromPresence = (
     participant: PresenceEvent<Participant>,
-  ): Participant => {
+  ): VideoParticipant => {
     return {
+      participantId: participant.id,
       id: participant.id,
-      color: participant.data.slot?.color || MeetingColorsHex[16],
+      color: participant.data.slot?.color || MEETING_COLORS.gray,
       avatar: participant.data.avatar,
       type: participant.data.type,
       name: participant.data.name,
       isHost: participant.data.isHost,
+      timestamp: participant.timestamp,
+      slot: participant.data.slot,
     };
   };
 
@@ -393,9 +425,6 @@ export class VideoConference extends BaseComponent {
   private onMeetingStateChange = (state: MeetingState): void => {
     this.logger.log('video conference @ on meeting state change', state);
     this.publish(MeetingEvent.MEETING_STATE_UPDATE, state);
-
-    const { localParticipant } = this.useStore(StoreType.GLOBAL);
-    localParticipant.publish(localParticipant.value);
   };
 
   /**
@@ -493,18 +522,36 @@ export class VideoConference extends BaseComponent {
    * @param {Participant} participant - participant
    * @returns {void}
    */
-  private onParticipantJoined = (participant: Participant): void => {
+  private onParticipantJoined = (participant: VideoParticipant): void => {
     this.logger.log('video conference @ on participant joined', participant);
 
     this.publish(MeetingEvent.MEETING_PARTICIPANT_JOINED, participant);
     this.publish(MeetingEvent.MY_PARTICIPANT_JOINED, participant);
     this.kickParticipantsOnHostLeave = !this.params?.allowGuests;
 
+    const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
+
+    const newParticipantName = participant.name.trim();
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      name: newParticipantName,
+    });
+
+    participants.publish({
+      ...participants.value,
+      [participant.id]: {
+        ...localParticipant.value,
+        name: newParticipantName,
+      },
+    });
+
     if (this.videoConfig.canUseDefaultAvatars) {
       this.roomState.updateMyProperties({
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
+        joinedMeeting: true,
       });
 
       return;
@@ -513,6 +560,7 @@ export class VideoConference extends BaseComponent {
     this.roomState.updateMyProperties({
       name: participant.name,
       type: participant.type,
+      joinedMeeting: true,
     });
   };
 
@@ -522,7 +570,7 @@ export class VideoConference extends BaseComponent {
    * @param {Participant} _ - participant
    * @returns {void}
    */
-  private onParticipantLeft = (_: Participant): void => {
+  private onParticipantLeft = (_: VideoParticipant): void => {
     this.logger.log('video conference @ on participant left', this.localParticipant);
 
     const { localParticipant, participants } = this.useStore(StoreType.GLOBAL);
@@ -562,18 +610,19 @@ export class VideoConference extends BaseComponent {
    * @param {Record<string, Participant>} participants - participants
    * @returns {void}
    */
-  private onParticipantListUpdate = (participants: Record<string, Participant>): void => {
+  private onParticipantListUpdate = (participants: Record<string, VideoParticipant>): void => {
     this.logger.log('video conference @ on participant list update', participants);
 
-    const list: Participant[] = Object.values(participants).map((participant) => {
+    const list: VideoParticipant[] = Object.values(participants).map((participant) => {
       return {
         id: participant.id,
-        color: participant.slot?.colorName || 'gray',
+        slot: participant.slot,
         avatar: participant.avatar,
         name: participant.name,
         type: participant.type,
         isHost: participant.isHost ?? false,
-        slot: participant.slot,
+        timestamp: participant.timestamp,
+        color: participant.slot?.color || MEETING_COLORS.gray,
       };
     });
 
@@ -691,11 +740,12 @@ export class VideoConference extends BaseComponent {
    */
   private onRealtimeParticipantsDidChange = (participants: Participant[]): void => {
     this.logger.log('video conference @ on participants did change', participants);
-    const participantList: ParticipandToFrame[] = participants.map((participant) => {
+    const participantList: ParticipantToFrame[] = participants.map((participant) => {
       return {
+        id: participant.id,
         timestamp: participant.timestamp,
         participantId: participant.id,
-        color: participant.slot?.colorName ?? 'gray',
+        color: participant.slot?.color || MEETING_COLORS.gray,
         name: participant.name,
         isHost: participant.isHost ?? false,
         avatar: participant.avatar,
@@ -729,7 +779,7 @@ export class VideoConference extends BaseComponent {
     const newHost = participant
       ? {
           id: participant.id,
-          color: participant.slot?.color || MeetingColorsHex[16],
+          color: participant.slot?.color || MEETING_COLORS.gray,
           avatar: participant.avatar,
           type: participant.type,
           name: participant.name,
@@ -807,12 +857,6 @@ export class VideoConference extends BaseComponent {
         MeetingEvent.MY_PARTICIPANT_UPDATED,
         this.createParticipantFromPresence(participant),
       );
-
-      localParticipant.publish({
-        ...localParticipant.value,
-        ...participant.data,
-        type: this.params.userType as ParticipantType,
-      });
     }
 
     participants.publish({
@@ -898,9 +942,9 @@ export class VideoConference extends BaseComponent {
       }
 
       return current;
-    }, null) as Participant;
+    }, null) as VideoParticipant;
 
-    this.room.presence.update<Participant>({
+    this.room.presence.update<VideoParticipant>({
       ...this.localParticipant,
       isHost: host.id === this.localParticipant.id,
     });

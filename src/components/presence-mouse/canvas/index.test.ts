@@ -1,6 +1,7 @@
 import { MOCK_CANVAS } from '../../../../__mocks__/canvas.mock';
 import { MOCK_CONFIG } from '../../../../__mocks__/config.mock';
 import { EVENT_BUS_MOCK } from '../../../../__mocks__/event-bus.mock';
+import { LIMITS_MOCK } from '../../../../__mocks__/limits.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../../__mocks__/participants.mock';
 import { useStore } from '../../../common/utils/use-store';
 import { IOC } from '../../../services/io';
@@ -53,6 +54,7 @@ const createMousePointers = (): PointersCanvas => {
     config: MOCK_CONFIG,
     eventBus: EVENT_BUS_MOCK,
     Presence3DManagerService: Presence3DManager,
+    connectionLimit: LIMITS_MOCK.presence.maxParticipants,
     useStore,
   });
 

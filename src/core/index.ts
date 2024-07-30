@@ -11,6 +11,27 @@ import LauncherFacade from './launcher';
 import { LauncherFacade as LauncherFacadeType } from './launcher/types';
 
 /**
+ * @function validateId
+ * @description validate if the id follows the constraints
+ * @param {string} id - id to validate
+ * @returns {boolean}
+ */
+function validateId(id: string): boolean {
+  const lengthConstraint = /^.{2,64}$/;
+  const pattern = /^[-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*$/;
+
+  if (!lengthConstraint.test(id)) {
+    return false;
+  }
+
+  if (!pattern.test(id)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * @function validateOptions
  * @description Validate the options passed to the SDK
  * @param {SuperVizSdkOptions} param
@@ -27,15 +48,27 @@ const validateOptions = ({
   }
 
   if (!group || !group.name || !group.id) {
-    throw new Error('Group fields is required');
+    throw new Error('[SuperViz] Group fields is required');
   }
 
   if (!participant || !participant.id || !participant.name) {
-    throw new Error('Participant name and id is required');
+    throw new Error('[SuperViz] Participant name and id is required');
   }
 
   if (!roomId) {
-    throw new Error('Room id is required');
+    throw new Error('[SuperViz] Room id is required');
+  }
+
+  if (!validateId(roomId)) {
+    throw new Error(
+      '[SuperViz] Room id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
+  }
+
+  if (!validateId(participant.id)) {
+    throw new Error(
+      '[SuperViz] Participant id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
   }
 };
 
@@ -107,10 +140,10 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('Failed to validate API key');
   }
 
-  const [environment, limits, waterMark] = await Promise.all([
+  const [environment, waterMark, limits] = await Promise.all([
     ApiService.fetchConfig(apiUrl, apiKey),
-    ApiService.fetchLimits(apiUrl, apiKey),
     ApiService.fetchWaterMark(apiUrl, apiKey),
+    ApiService.fetchLimits(apiUrl, apiKey),
   ]).catch(() => {
     throw new Error('Failed to load configuration from server');
   });
@@ -141,7 +174,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
   ApiService.createOrUpdateParticipant({
     name: participant.name,
     participantId: participant.id,
-    avatar: participant.avatar?.imageUrl, 
+    avatar: participant.avatar?.imageUrl,
   });
 
   return LauncherFacade(options);

@@ -17,6 +17,7 @@ import { ComponentNames } from '../types';
 import { PinAdapter, CommentsSide, Annotation, PinCoordinates } from './types';
 
 import { Comments } from './index';
+import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
 
 const MOCK_PARTICIPANTS: ParticipantByGroupApi[] = [
   {
@@ -83,6 +84,7 @@ describe('Comments', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.presence.maxParticipants,
       useStore,
     });
 
@@ -337,6 +339,7 @@ describe('Comments', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.presence.maxParticipants,
       useStore,
     });
 
@@ -356,6 +359,7 @@ describe('Comments', () => {
       config: MOCK_CONFIG,
       eventBus: EVENT_BUS_MOCK,
       Presence3DManagerService: Presence3DManager,
+      connectionLimit: LIMITS_MOCK.presence.maxParticipants,
       useStore,
     });
 
