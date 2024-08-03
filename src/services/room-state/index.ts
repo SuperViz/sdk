@@ -407,6 +407,7 @@ export class RoomStateService {
   public destroy() {
     this.room.presence.off(PresenceEvents.LEAVE);
     this.room.presence.off(PresenceEvents.JOINED_ROOM);
+    this.drawingRoom.presence.off(PresenceEvents.UPDATE);
 
     this.room.off(RoomPropertiesEvents.UPDATE, this.updateLocalRoomState);
   }
