@@ -22,7 +22,7 @@ import { Logger } from '../../common/utils';
 import { BrowserService } from '../../services/browser';
 import config from '../../services/config';
 import { ConnectionService } from '../../services/connection-status';
-import { RoomStateService } from '../../services/roomState';
+import { RoomStateService } from '../../services/room-state';
 import VideoConferenceManager from '../../services/video-conference-manager';
 import {
   CamerasPosition,
@@ -184,6 +184,7 @@ export class VideoConference extends BaseComponent {
     destroy();
 
     this.roomState?.destroy();
+    this.drawingRoom.disconnect();
 
     this.kickParticipantsOnHostLeave = false;
 
