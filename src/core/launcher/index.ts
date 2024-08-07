@@ -98,15 +98,25 @@ export class Launcher extends Observable implements DefaultLauncher {
     });
 
     this.activeComponents.push(component.name);
-    this.activeComponentsInstances.push(component);
+
+    if (this.activeComponentsInstances.some((c) => c.name === component.name)) {
+      this.activeComponentsInstances = this.activeComponentsInstances.map((ac) => {
+        if (ac.name === component.name) {
+          return component;
+        }
+        return ac;
+      });
+    } else {
+      this.activeComponentsInstances.push(component);
+    }
 
     localParticipant.publish({
-      ...this.participant,
+      ...localParticipant.value,
       activeComponents: this.activeComponents,
     });
 
     this.room.presence.update({
-      ...this.participant,
+      ...localParticipant.value,
       slot: this.slotService.slot,
       activeComponents: this.activeComponents,
     });
@@ -176,15 +186,14 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.activeComponents = [];
     this.activeComponentsInstances = [];
 
-    useGlobalStore().destroy();
+    useGlobalStore()?.destroy();
 
-    this.eventBus.destroy();
+    this.eventBus?.destroy();
     this.eventBus = undefined;
 
     this.room?.presence.off(Socket.PresenceEvents.JOINED_ROOM);
     this.room?.presence.off(Socket.PresenceEvents.LEAVE);
     this.room?.presence.off(Socket.PresenceEvents.UPDATE);
-    this.ioc.stateSubject.unsubscribe();
     this.ioc?.destroy();
 
     this.isDestroyed = true;
@@ -252,16 +261,6 @@ export class Launcher extends Observable implements DefaultLauncher {
     );
   };
 
-  private onLocalParticipantUpdate = (participant: Participant): void => {
-    this.activeComponents = participant.activeComponents || [];
-
-    if (this.activeComponents.length) {
-      this.activeComponentsInstances = this.activeComponentsInstances.filter((ac) => {
-        return this.activeComponents.includes(ac.name);
-      });
-    }
-  };
-
   /**
    * @function onLocalParticipantUpdateOnStore
    * @description handles the update of the local participant in the store.
@@ -271,12 +270,6 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     this.participant = participant;
     this.activeComponents = participant.activeComponents || [];
-
-    if (this.activeComponents.length) {
-      this.activeComponentsInstances = this.activeComponentsInstances.filter((component) => {
-        return this.activeComponents.includes(component.name);
-      });
-    }
   };
 
   private onSameAccount = (): void => {
