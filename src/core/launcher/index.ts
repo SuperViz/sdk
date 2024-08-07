@@ -151,7 +151,7 @@ export class Launcher extends Observable implements DefaultLauncher {
    */
   public removeComponent = (component: Partial<BaseComponent>): void => {
     if (!this.activeComponents.includes(component.name)) {
-      const message = `Component ${component.name} is not initialized yet.`;
+      const message = `[SuperViz] Component ${component.name} is not initialized yet.`;
       this.logger.log(message);
       console.error(message);
       return;
@@ -216,20 +216,20 @@ export class Launcher extends Observable implements DefaultLauncher {
     const verifications = [
       {
         isValid: isProvidedFeature,
-        message: `Component ${component.name} is not enabled in the room`,
+        message: `[SuperViz] Component ${component.name} is not enabled in the room`,
       },
       {
         isValid: !this.isDestroyed,
         message:
-          'Component can not be added because the superviz room is destroyed. Initialize a new room to add and use components.',
+          '[SuperViz] Component can not be added because the superviz room is destroyed. Initialize a new room to add and use components.',
       },
       {
         isValid: !isComponentActive,
-        message: `Component ${component.name} is already active. Please remove it first`,
+        message: `[SuperViz] Component ${component.name} is already active. Please remove it first`,
       },
       {
         isValid: componentLimit.canUse,
-        message: `You reached the limit usage of ${component.name}`,
+        message: `[SuperViz] You reached the limit usage of ${component.name}`,
       },
     ];
 
