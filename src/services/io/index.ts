@@ -22,6 +22,7 @@ export class IOC {
    * @returns {void}
    */
   public destroy(): void {
+    this.stateSubject.complete();
     this.client.destroy();
   }
 
