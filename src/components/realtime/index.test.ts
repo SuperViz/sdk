@@ -55,13 +55,13 @@ describe('realtime component', () => {
   });
 
   describe('connect', () => {
-    test('should log an error when trying to create a channel before start', () => {
+    test('should return a promise when trying to create a channel before start', () => {
+      RealtimeComponentInstance['start']();
       RealtimeComponentInstance['state'] = RealtimeComponentState.STOPPED;
 
-      const spy = jest.spyOn(RealtimeComponentInstance['logger'], 'log');
-      RealtimeComponentInstance.connect('test');
+      const channel = RealtimeComponentInstance.connect('test');
 
-      expect(spy).toHaveBeenCalled();
+      expect(channel instanceof Promise).toBe(true);
     });
 
     test('should create a new channel', () => {

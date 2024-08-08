@@ -41,25 +41,23 @@ export class Realtime extends BaseComponent {
    * @param name - channel name
    * @returns {Channel}
    */
-  public connect(name: string): Channel {
-    if (this.state !== RealtimeComponentState.STARTED) {
-      const message =
-        "[SuperViz] Realtime component is not started yet. You can't connect to a channel before start";
-
-      this.logger.log(message);
-      console.warn(message);
-      return;
-    }
-
+  public connect(name: string): Promise<Channel> {
     let channel: Channel = this.channels.get(name);
-
-    if (channel) return channel;
+    if (channel) return channel as unknown as Promise<Channel>;
 
     channel = new Channel(name, this.ioc, this.localParticipant, this.connectionLimit);
-
     this.channels.set(name, channel);
 
-    return channel;
+    if (this.state === RealtimeComponentState.STARTED) {
+      return channel as unknown as Promise<Channel>;
+    }
+
+    return new Promise((resolve) => {
+      this.channel.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, (state) => {
+        if (state !== RealtimeComponentState.STARTED) return;
+        resolve(channel);
+      });
+    });
   }
 
   /**
@@ -75,7 +73,7 @@ export class Realtime extends BaseComponent {
       return;
     }
 
-    this.channel?.subscribe(event, callback);
+    this.channel.subscribe(event, callback);
   };
 
   /**
