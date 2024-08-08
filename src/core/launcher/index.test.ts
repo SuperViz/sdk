@@ -114,7 +114,7 @@ describe('Launcher', () => {
 
       LauncherInstance.addComponent(MOCK_COMPONENT);
 
-      expect(MOCK_COMPONENT.attach).not.toBeCalled();
+      expect(MOCK_COMPONENT.attach).not.toHaveBeenCalled();
     });
 
     test('should remove component', () => {
