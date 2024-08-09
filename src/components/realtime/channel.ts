@@ -7,6 +7,7 @@ import { Logger, Observable, Observer } from '../../common/utils';
 import { IOC } from '../../services/io';
 
 import { RealtimeChannelEvent, RealtimeChannelState, RealtimeData, RealtimeMessage } from './types';
+import { RealtimePresence } from './presence';
 
 export class Channel extends Observable {
   private name: string;
@@ -19,6 +20,7 @@ export class Channel extends Observable {
     event: string;
     callback: (data: unknown) => void;
   }> = [];
+  public participant: RealtimePresence;
 
   constructor(
     name: string,
@@ -36,6 +38,7 @@ export class Channel extends Observable {
 
     this.subscribeToRealtimeEvents();
     this.logger.log('started');
+    this.participant = new RealtimePresence(this.channel);
   }
 
   public async disconnect(): Promise<void> {

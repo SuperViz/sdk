@@ -9,6 +9,7 @@ import { RealtimeComponentState } from './types';
 
 import { Realtime } from '.';
 import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
+import { StoreType } from '../../common/types/stores.types';
 
 jest.mock('lodash/throttle', () => jest.fn((fn) => fn));
 jest.useFakeTimers();
@@ -21,6 +22,9 @@ describe('realtime component', () => {
 
     console.error = jest.fn();
     console.debug = jest.fn();
+
+    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
 
     RealtimeComponentInstance = new Realtime();
     RealtimeComponentInstance.attach({

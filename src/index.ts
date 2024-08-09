@@ -38,7 +38,7 @@ import {
 } from './services/video-conference-manager/types';
 
 export { StoreType } from './common/types/stores.types';
-
+export { PresenceEvents } from './lib/socket/common/types/event.types';
 export { Presence3DManager } from './services/presence-3d-manager';
 
 export { FieldEvents } from './components/form-elements/types';

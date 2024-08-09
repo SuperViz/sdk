@@ -16,7 +16,7 @@ export class PresenceRoom {
   constructor(private io: Socket, private presence: Presence, private roomId: string) {
     this.logger = new Logger('@superviz/sdk/socket-client/presence');
 
-    this.registerSubsjects();
+    this.registerSubjects();
     this.subscribeToPresenceEvents();
   }
 
@@ -90,11 +90,11 @@ export class PresenceRoom {
   }
 
   /**
-   * @function registerSubsjects
+   * @function registerSubjects
    * @description Register the subjects for the presence events
    * @returns {void}
    */
-  private registerSubsjects(): void {
+  private registerSubjects(): void {
     this.observers.set(PresenceEvents.JOINED_ROOM, new Subject());
     this.observers.set(PresenceEvents.LEAVE, new Subject());
     this.observers.set(PresenceEvents.UPDATE, new Subject());
@@ -127,6 +127,8 @@ export class PresenceRoom {
    */
   public off(event: PresenceEvents): void {
     this.observers.get(event).unsubscribe();
+    this.observers.delete(event);
+    this.observers.set(event, new Subject());
   }
 
   /**
