@@ -88,7 +88,7 @@ describe('initialization errors', () => {
         ...SIMPLE_INITIALIZATION_MOCK,
         participant: undefined as unknown as SuperVizSdkOptions['participant'],
       }),
-    ).rejects.toThrow('Participant name and id is required');
+    ).rejects.toThrow('Participant id is required');
   });
 
   test('should throw an error if no participant id is provided', async () => {
@@ -97,16 +97,7 @@ describe('initialization errors', () => {
         ...SIMPLE_INITIALIZATION_MOCK,
         participant: { name: 'unit-test-participant-name' } as SuperVizSdkOptions['participant'],
       }),
-    ).rejects.toThrow('Participant name and id is required');
-  });
-
-  test('should throw an error if participant name is not provided', async () => {
-    await expect(
-      sdk(UNIT_TEST_API_KEY, {
-        ...SIMPLE_INITIALIZATION_MOCK,
-        participant: { id: 'unit-test-participant-id' } as SuperVizSdkOptions['participant'],
-      }),
-    ).rejects.toThrow('Participant name and id is required');
+    ).rejects.toThrow('Participant id is required');
   });
 
   test('should throw an error if no group name is provided', async () => {

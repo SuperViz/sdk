@@ -11,8 +11,9 @@ export interface SuperVizSdkOptions {
   roomId: string;
   participant: {
     id: string;
-    name: string;
+    name?: string;
     avatar?: Avatar;
+    email?: string;
   };
   group: Group;
   customColors?: ColorsVariables;

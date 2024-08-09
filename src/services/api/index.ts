@@ -7,7 +7,7 @@ import { ComponentLimits } from '../limits/types';
 import {
   AnnotationParams,
   CommentParams,
-  CreateOrUpdateParticipantParams,
+  CreateParticipantParams,
   FetchAnnotationsParams,
   MentionParams,
 } from './types';
@@ -105,8 +105,8 @@ export default class ApiService {
     return doRequest(url, 'DELETE', {}, { apikey: apiKey });
   }
 
-  static async createOrUpdateParticipant(
-    participant: CreateOrUpdateParticipantParams,
+  static async createParticipant(
+    participant: CreateParticipantParams,
   ): Promise<void> {
     const baseUrl = config.get<string>('apiUrl');
     const path = '/participants';

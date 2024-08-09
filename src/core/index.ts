@@ -51,8 +51,8 @@ const validateOptions = ({
     throw new Error('[SuperViz] Group fields is required');
   }
 
-  if (!participant || !participant.id || !participant.name) {
-    throw new Error('[SuperViz] Participant name and id is required');
+  if (!participant || !participant.id) {
+    throw new Error('[SuperViz] Participant id is required');
   }
 
   if (!roomId) {
@@ -171,10 +171,11 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
 
   setColorVariables(options.customColors);
 
-  ApiService.createOrUpdateParticipant({
-    name: participant.name,
+  ApiService.createParticipant({
     participantId: participant.id,
+    name: participant?.name,
     avatar: participant.avatar?.imageUrl,
+    email: participant?.email,
   });
 
   return LauncherFacade(options);
