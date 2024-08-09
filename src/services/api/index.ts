@@ -7,7 +7,7 @@ import { ComponentLimits } from '../limits/types';
 import {
   AnnotationParams,
   CommentParams,
-  CreateOrUpdateParticipantParams,
+  CreateParticipantParams,
   FetchAnnotationsParams,
   MentionParams,
 } from './types';
@@ -105,13 +105,20 @@ export default class ApiService {
     return doRequest(url, 'DELETE', {}, { apikey: apiKey });
   }
 
-  static async createOrUpdateParticipant(
-    participant: CreateOrUpdateParticipantParams,
+  static async createParticipant(
+    participant: CreateParticipantParams,
   ): Promise<void> {
     const baseUrl = config.get<string>('apiUrl');
     const path = '/participants';
     const url = this.createUrl(baseUrl, path);
     return doRequest(url, 'POST', { ...participant }, { apikey: config.get<string>('apiKey') });
+  }
+
+  static async fetchParticipant(id: string) {
+    const baseUrl = config.get<string>('apiUrl');
+    const path = `/participants/${id}`;
+    const url = this.createUrl(baseUrl, path);
+    return doRequest(url, 'GET', undefined, { apikey: config.get<string>('apiKey') });
   }
 
   static async sendActivity(userId: string, groupId: string, groupName: string, product: string) {
