@@ -26,8 +26,9 @@ export type MentionParticipantParams = {
   readed: number
 }
 
-export type CreateOrUpdateParticipantParams = {
-  name: string;
+export type CreateParticipantParams = {
+  name?: string;
   participantId: string;
-  avatar: string | null;
+  avatar?: string | null;
+  email?: string
 };
