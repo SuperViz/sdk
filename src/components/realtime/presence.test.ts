@@ -1,11 +1,7 @@
 import { PresenceEvents, Room } from '../../lib/socket';
-import { RealtimeComponentState } from './types';
 
 import { RealtimePresence } from './presence';
 import { MOCK_IO } from '../../../__mocks__/io.mock';
-
-jest.mock('lodash/throttle', () => jest.fn((fn) => fn));
-jest.useFakeTimers();
 
 describe('realtime component', () => {
   let RealtimePresenceInstance: RealtimePresence;
