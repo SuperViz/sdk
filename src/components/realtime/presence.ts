@@ -26,7 +26,7 @@ export class RealtimePresence {
 
   public async getAll() {
     this.logger.log('Realtime Presence @ get all');
-    return new Promise((resolve, reject) => {
+    return new Promise<Socket.PresenceEvent[]>((resolve, reject) => {
       this.room.presence.get(
         (data) => resolve(data),
         (error) => {
