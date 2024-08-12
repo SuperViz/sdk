@@ -24,19 +24,18 @@ export class RealtimePresence {
     this.room.presence.off(event);
   }
 
-  public getAll() {
+  public async getAll() {
     this.logger.log('Realtime Presence @ get all');
-    let presences: Socket.PresenceEvent[] = [];
-    this.room.presence.get(
-      (data) => {
-        presences = data;
-      },
-      (error) => {
-        const message = `[SuperViz] ${error.name} - ${error.message}`;
-        this.logger.log(error);
-        console.error(message);
-      },
-    );
-    return presences;
+    return new Promise((resolve, reject) => {
+      this.room.presence.get(
+        (data) => resolve(data),
+        (error) => {
+          const message = `[SuperViz] ${error.name} - ${error.message}`;
+          this.logger.log(error);
+          console.error(message);
+          reject(error);
+        },
+      );
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { PresenceEvents, Room } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents, Room } from '../../lib/socket';
 
 import { RealtimePresence } from './presence';
 import { MOCK_IO } from '../../../__mocks__/io.mock';
@@ -54,6 +54,19 @@ describe('realtime component', () => {
       RealtimePresenceInstance['getAll']();
 
       expect(spy).toHaveBeenCalled();
+    });
+
+    test('should get all presences and resolve', async () => {
+      RealtimePresenceInstance['room'].presence.get = jest.fn((callback) => {
+        callback([{ id: '123', name: 'John Doe' }] as PresenceEvent[]);
+      });
+      const presences = RealtimePresenceInstance['getAll']();
+
+      expect(presences instanceof Promise).toBe(true);
+
+      const data = await presences;
+
+      expect(data).toEqual([{ id: '123', name: 'John Doe' }]);
     });
   });
 });
