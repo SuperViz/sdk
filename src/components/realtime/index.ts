@@ -2,10 +2,12 @@ import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
+import { useGlobalStore } from '../../services/stores';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { Channel } from './channel';
+
 import {
   Callback,
   RealtimeChannelEvent,
@@ -44,6 +46,19 @@ export class Realtime extends BaseComponent {
    * @returns {Channel}
    */
   public connect(name: string): Promise<Channel> {
+    if (!this.channel) {
+      return new Promise<Channel>((resolve) => {
+        const { localParticipant } = useGlobalStore();
+
+        localParticipant.subscribe('connect-after-init', (participant) => {
+          if (!participant.activeComponents.includes(ComponentNames.REALTIME)) return;
+
+          localParticipant.unsubscribe('connect-after-init');
+          resolve(this.connect(name));
+        });
+      });
+    }
+
     let channel: Channel = this.channels.get(name);
     if (channel) return channel as unknown as Promise<Channel>;
 

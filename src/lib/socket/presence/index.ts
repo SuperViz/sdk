@@ -2,7 +2,11 @@ import { Subject } from 'rxjs';
 import type { Socket } from 'socket.io-client';
 
 import { ErrorCallback } from '../common/types/callbacks.types';
-import { InternalPresenceEvents, PresenceEvents } from '../common/types/event.types';
+import {
+  InternalPresenceEvents,
+  PresenceEvents,
+  PresenceEventsArg,
+} from '../common/types/event.types';
 import type { Presence } from '../common/types/presence.types';
 
 import { PresenceCallback, PresenceEvent, PresenceEventFromServer } from './types';
@@ -11,12 +15,12 @@ import { Logger } from '../../../common/utils';
 export class PresenceRoom {
   private logger: Logger;
   private presences: Set<PresenceEvent> = new Set();
-  private observers: Map<PresenceEvents, Subject<PresenceEvent>> = new Map();
+  private observers: Map<PresenceEventsArg, Subject<PresenceEvent>> = new Map();
 
   constructor(private io: Socket, private presence: Presence, private roomId: string) {
     this.logger = new Logger('@superviz/sdk/socket-client/presence');
 
-    this.registerSubsjects();
+    this.registerSubjects();
     this.subscribeToPresenceEvents();
   }
 
@@ -90,11 +94,11 @@ export class PresenceRoom {
   }
 
   /**
-   * @function registerSubsjects
+   * @function registerSubjects
    * @description Register the subjects for the presence events
    * @returns {void}
    */
-  private registerSubsjects(): void {
+  private registerSubjects(): void {
     this.observers.set(PresenceEvents.JOINED_ROOM, new Subject());
     this.observers.set(PresenceEvents.LEAVE, new Subject());
     this.observers.set(PresenceEvents.UPDATE, new Subject());
@@ -108,7 +112,7 @@ export class PresenceRoom {
    * @returns {void}
    */
   public on<T extends unknown>(
-    event: PresenceEvents,
+    event: PresenceEventsArg,
     callback: PresenceCallback<T>,
     error?: ErrorCallback,
   ): void {
@@ -125,8 +129,10 @@ export class PresenceRoom {
    * @param callback - The callback to remove from the event
    * @returns {void}
    */
-  public off(event: PresenceEvents): void {
+  public off(event: PresenceEventsArg): void {
     this.observers.get(event).unsubscribe();
+    this.observers.delete(event);
+    this.observers.set(event, new Subject());
   }
 
   /**

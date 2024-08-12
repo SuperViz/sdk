@@ -34,6 +34,8 @@ export enum PresenceEvents {
   UPDATE = 'presence.update',
 }
 
+export type PresenceEventsArg = PresenceEvents | `${PresenceEvents}`;
+
 /**
  * @enum InternalPresenceEvents
  * @description events that the server listens to in the presence module
