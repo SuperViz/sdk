@@ -1,3 +1,4 @@
+import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
@@ -8,11 +9,12 @@ import { ComponentNames } from '../types';
 import { Channel } from './channel';
 
 import {
+  Callback,
   RealtimeChannelEvent,
   RealtimeChannelState,
   RealtimeComponentEvent,
   RealtimeComponentState,
-  RealtimeMessage,
+  RealtimeComponentSubscribe,
 } from './types';
 
 export class Realtime extends BaseComponent {
@@ -68,7 +70,7 @@ export class Realtime extends BaseComponent {
     }
 
     return new Promise((resolve) => {
-      this.channel.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, (state) => {
+      this.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, (state) => {
         if (state !== RealtimeComponentState.STARTED) return;
         resolve(channel);
       });
@@ -82,7 +84,10 @@ export class Realtime extends BaseComponent {
    * @param event - The name of the event to subscribe to.
    * @param callback - The callback function to handle the received data. It takes a parameter of type `RealtimeMessage` or `string`.
    */
-  public subscribe = (event: string, callback: (data: RealtimeMessage | string) => void): void => {
+  public subscribe: RealtimeComponentSubscribe = <T = unknown>(
+    event: string,
+    callback: Callback<T>,
+  ): void => {
     if (!this.channel) {
       this.callbacksToSubscribeWhenJoined.push({ event, callback });
       return;
@@ -95,9 +100,14 @@ export class Realtime extends BaseComponent {
    * @function publish
    * @description Publishes an event with optional data to the channel.
    * @param event - The name of the event to publish.
-   * @param data - Optional data to be sent along with the event.
+   * @param data - Data to be sent along with the event.
    */
-  public publish = (event: string, data?: unknown): void => {
+  public publish = <T = unknown>(event: string, data: T): void => {
+    if (ComponentLifeCycleEvent[event.toUpperCase() as keyof typeof ComponentLifeCycleEvent]) {
+      this.channel['publishEventToClient'](event, data);
+      return;
+    }
+
     this.channel?.publish(event, data);
   };
 
@@ -107,7 +117,10 @@ export class Realtime extends BaseComponent {
    * @param event - The event to unsubscribe from.
    * @param callback - An optional callback function to be called when the event is unsubscribed.
    */
-  public unsubscribe = (event: string, callback?: (data: RealtimeMessage) => void): void => {
+  public unsubscribe: RealtimeComponentSubscribe = <T = unknown>(
+    event: string,
+    callback?: Callback<T>,
+  ): void => {
     this.channel?.unsubscribe(event, callback);
   };
 
