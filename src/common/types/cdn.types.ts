@@ -1,4 +1,4 @@
-import {
+import type {
   CanvasPin,
   HTMLPin,
   Comments,
@@ -8,15 +8,18 @@ import {
   WhoIsOnline,
   FormElements,
 } from '../../components';
-import { RealtimeComponentEvent, RealtimeComponentState } from '../../components/realtime/types';
-import { LauncherFacade } from '../../core/launcher/types';
-import {
+import type {
+  RealtimeComponentEvent,
+  RealtimeComponentState,
+} from '../../components/realtime/types';
+import type { LauncherFacade } from '../../core/launcher/types';
+import type {
   CamerasPosition,
   LayoutMode,
   LayoutPosition,
 } from '../../services/video-conference-manager/types';
 
-import {
+import type {
   DeviceEvent,
   MeetingEvent,
   RealtimeEvent,
@@ -31,6 +34,10 @@ import {
 } from './events.types';
 import { ParticipantType } from './participant.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
+import { StoreType } from '../types/stores.types';
+import { PresenceEvents } from '../../lib/socket/common/types/event.types';
+import { FieldEvents } from '../../components/form-elements/types';
+import { PinMode } from '../../web-components/comments/components/types';
 
 export interface SuperVizCdn {
   init: (apiKey: string, options: SuperVizSdkOptions) => Promise<LauncherFacade>;
@@ -59,4 +66,9 @@ export interface SuperVizCdn {
   FormElements: typeof FormElements;
   RealtimeComponentState: typeof RealtimeComponentState;
   RealtimeComponentEvent: typeof RealtimeComponentEvent;
+  StoreType: typeof StoreType;
+  PresenceEvents: typeof PresenceEvents;
+  FieldEvents: typeof FieldEvents;
+  PinMode: typeof PinMode;
+  Comment: typeof Comment;
 }
