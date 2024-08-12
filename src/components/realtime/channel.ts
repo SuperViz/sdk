@@ -80,7 +80,10 @@ export class Channel extends Observable {
    * @param event - The name of the event to subscribe to.
    * @param callback - The callback function to handle the received data. It takes a parameter of type `RealtimeMessage` or `string`.
    */
-  public subscribe: RealtimeChannelSubscribe = <T>(event: string, callback: Callback<T>): void => {
+  public subscribe: RealtimeChannelSubscribe = <T = unknown>(
+    event: string,
+    callback: Callback<T>,
+  ): void => {
     if (this.state !== RealtimeChannelState.CONNECTED) {
       this.callbacksToSubscribeWhenJoined.push({ event, callback });
       return;
@@ -99,7 +102,7 @@ export class Channel extends Observable {
    * @param event - The event to unsubscribe from.
    * @param callback - An optional callback function to be called when the event is unsubscribed.
    */
-  public unsubscribe: RealtimeChannelSubscribe = <T>(
+  public unsubscribe: RealtimeChannelSubscribe = <T = unknown>(
     event: string,
     callback?: Callback<T>,
   ): void => {
@@ -217,7 +220,7 @@ export class Channel extends Observable {
    * @param data - data to publish
    * @returns {void}
    */
-  private publishEventToClient = <T>(event: string, data?: T): void => {
+  private publishEventToClient = <T = unknown>(event: string, data?: T): void => {
     this.logger.log('realtime channel @ publishEventToClient', { event, data });
 
     this.observers[event]?.publish(data);

@@ -69,7 +69,7 @@ export class Realtime extends BaseComponent {
    * @param event - The name of the event to subscribe to.
    * @param callback - The callback function to handle the received data. It takes a parameter of type `RealtimeMessage` or `string`.
    */
-  public subscribe: RealtimeComponentSubscribe = <T>(
+  public subscribe: RealtimeComponentSubscribe = <T = unknown>(
     event: string,
     callback: Callback<T>,
   ): void => {
@@ -87,7 +87,7 @@ export class Realtime extends BaseComponent {
    * @param event - The name of the event to publish.
    * @param data - Data to be sent along with the event.
    */
-  public publish = <T>(event: string, data: T): void => {
+  public publish = <T = unknown>(event: string, data: T): void => {
     if (ComponentLifeCycleEvent[event.toUpperCase() as keyof typeof ComponentLifeCycleEvent]) {
       this.channel['publishEventToClient'](event, data);
       return;
@@ -102,7 +102,7 @@ export class Realtime extends BaseComponent {
    * @param event - The event to unsubscribe from.
    * @param callback - An optional callback function to be called when the event is unsubscribed.
    */
-  public unsubscribe: RealtimeComponentSubscribe = <T>(
+  public unsubscribe: RealtimeComponentSubscribe = <T = unknown>(
     event: string,
     callback?: Callback<T>,
   ): void => {
