@@ -26,13 +26,13 @@ export class RealtimePresence {
 
   public getAll() {
     this.logger.log('Realtime Presence @ get all');
-    let presences: Socket.PresenceEvent[];
+    let presences: Socket.PresenceEvent[] = [];
     this.room.presence.get(
       (data) => {
         presences = data;
       },
       (error) => {
-        const message = `${error.name} - ${error.message}`;
+        const message = `[SuperViz] ${error.name} - ${error.message}`;
         this.logger.log(error);
         console.error(message);
       },
