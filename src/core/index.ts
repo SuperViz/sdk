@@ -31,7 +31,7 @@ function validateId(id: string): boolean {
   return true;
 }
 
-function validateEmail (email: string): boolean {
+function validateEmail(email: string): boolean {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailPattern.test(email);
 }
@@ -48,7 +48,6 @@ const validateOptions = ({
   roomId,
   customColors,
 }: SuperVizSdkOptions): void => {
-
   if (customColors) {
     validateColorsVariablesNames(customColors);
   }
@@ -78,9 +77,7 @@ const validateOptions = ({
   }
 
   if (participant.email && !validateEmail(participant.email)) {
-    throw new Error(
-      '[SuperViz] Participant email is invalid',
-    );
+    throw new Error('[SuperViz] Participant email is invalid');
   }
 };
 
@@ -93,13 +90,13 @@ const validateColorsVariablesNames = (colors: ColorsVariables) => {
   Object.entries(colors).forEach(([key, value]) => {
     if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
       throw new Error(
-        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
+        `[SuperViz] Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
       );
     }
 
     if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
       throw new Error(
-        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
+        `[SuperViz] Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
       );
     }
   });
@@ -152,24 +149,17 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('Failed to validate API key');
   }
 
-  const [environment, waterMark, limits] = await Promise.all([
-    ApiService.fetchConfig(apiUrl, apiKey),
+  const [waterMark, limits] = await Promise.all([
     ApiService.fetchWaterMark(apiUrl, apiKey),
-    ApiService.fetchLimits(apiUrl, apiKey)
+    ApiService.fetchLimits(apiUrl, apiKey),
   ]).catch(() => {
-    throw new Error('Failed to load configuration from server');
+    throw new Error('[SuperViz] Failed to load configuration from server');
   });
 
-  if (!environment || !environment.ablyKey) {
-    throw new Error('Failed to load configuration from server');
-  }
-
-  const { ablyKey } = environment;
   const { participant, roomId, customColors: colors } = options;
 
   config.setConfig({
     apiUrl,
-    ablyKey,
     apiKey,
     conferenceLayerUrl,
     environment: (options.environment as EnvironmentTypes) ?? EnvironmentTypes.PROD,
@@ -183,10 +173,12 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
 
   setColorVariables(options.customColors);
 
-  const apiParticipant = await ApiService.fetchParticipant(participant.id).catch(() => null)
+  const apiParticipant = await ApiService.fetchParticipant(participant.id).catch(() => null);
 
   if (!apiParticipant && !participant.name) {
-    throw new Error('[SuperViz] - Participant does not exist, create the user in the API or add the name in the initialization to initialize the SuperViz room.');
+    throw new Error(
+      '[SuperViz] - Participant does not exist, create the user in the API or add the name in the initialization to initialize the SuperViz room.',
+    );
   }
 
   if (!apiParticipant) {
@@ -194,7 +186,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
       participantId: participant.id,
       name: participant?.name,
       avatar: participant.avatar?.imageUrl,
-      email: participant?.email
+      email: participant?.email,
     });
   }
 

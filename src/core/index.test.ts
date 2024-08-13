@@ -109,14 +109,6 @@ describe('initialization errors', () => {
     ).rejects.toThrow('Group fields is required');
   });
 
-  test('should throw an error if envoriment is invalid', async () => {
-    ApiService.fetchConfig = jest.fn().mockResolvedValue(undefined);
-
-    expect(sdk(UNIT_TEST_API_KEY, SIMPLE_INITIALIZATION_MOCK)).rejects.toThrow(
-      'Failed to load configuration from server',
-    );
-  });
-
   test('should throw an error if custom colors variables names are invalid', async () => {
     const colorKey = 'invalid-color';
 
@@ -198,6 +190,8 @@ describe('initialization errors', () => {
         ...SIMPLE_INITIALIZATION_MOCK,
         participant: { ...SIMPLE_INITIALIZATION_MOCK.participant, name: undefined },
       }),
-    ).rejects.toThrow('[SuperViz] - Participant does not exist, create the user in the API or add the name in the initialization to initialize the SuperViz room.');
+    ).rejects.toThrow(
+      '[SuperViz] - Participant does not exist, create the user in the API or add the name in the initialization to initialize the SuperViz room.',
+    );
   });
 });

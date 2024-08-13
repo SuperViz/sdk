@@ -104,7 +104,6 @@ export default class VideoConfereceManager {
     this.frameConfig = {
       apiKey: config.get<string>('apiKey'),
       apiUrl: config.get<string>('apiUrl'),
-      ablyKey: config.get<string>('ablyKey'),
       debug: config.get<boolean>('debug'),
       roomId: config.get<string>('roomId'),
       limits: config.get<ComponentLimits>('limits'),
