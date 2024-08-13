@@ -6,7 +6,6 @@ import { LIMITS_MOCK } from './limits.mock';
 import { WATERMARK_MOCK } from './watermark.mock';
 
 export const MOCK_CONFIG: Configuration = {
-  ablyKey: 'unit-test-ably-key',
   apiKey: 'unit-test-api-key',
   apiUrl: 'http://unit-test-api-url',
   conferenceLayerUrl: 'https://unit-test-conference-layer-url',

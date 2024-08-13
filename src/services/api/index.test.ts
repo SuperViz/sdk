@@ -11,6 +11,14 @@ const CHECK_LIMITS_MOCK = {
   limits: LIMITS_MOCK,
 };
 
+const FETCH_PARTICIPANT_MOCK = {
+  id: 'any_user_id',
+  name: 'any_user_name',
+  email: null,
+  avatar: null,
+  createdAt: '2024-08-13T09:13:09.438Z',
+};
+
 const FETCH_PARTICIPANTS_BY_GROUP_MOCK = [
   {
     id: 'any_user_id',
@@ -31,14 +39,6 @@ jest.mock('../../common/utils', () => {
         }
 
         return Promise.resolve({ status: 404 });
-      }
-
-      if (url.includes('/immersive-config')) {
-        return Promise.resolve(
-          JSON.stringify({
-            ablyKey: MOCK_ABLY_KEY,
-          }),
-        );
       }
 
       if (url.includes('/user/watermark')) {
@@ -81,6 +81,10 @@ jest.mock('../../common/utils', () => {
         return Promise.resolve(FETCH_PARTICIPANTS_BY_GROUP_MOCK);
       }
 
+      if (url.includes('/participants/any_user_id') && method === 'GET') {
+        return Promise.resolve(FETCH_PARTICIPANT_MOCK);
+      }
+
       if (url.includes('/mentions') && method === 'POST') {
         return Promise.resolve({});
       }
@@ -106,15 +110,6 @@ describe('ApiService', () => {
       const response = await ApiService.validateApiKey(baseUrl, INVALID_API_KEY);
 
       expect(response.status).toEqual(404);
-    });
-  });
-
-  describe('fetchConfig', () => {
-    test('should return the config', async () => {
-      const baseUrl = 'https://dev.nodeapi.superviz.com';
-      const response = await ApiService.fetchConfig(baseUrl, VALID_API_KEY);
-
-      expect(response).toBe(JSON.stringify({ ablyKey: MOCK_ABLY_KEY }));
     });
   });
 
@@ -231,6 +226,14 @@ describe('ApiService', () => {
       });
 
       expect(response).toEqual({});
+    });
+  });
+
+  describe('fetchParticipant', () => {
+    test('should return the participant', async () => {
+      const response = await ApiService.fetchParticipant('any_user_id');
+
+      expect(response).toEqual(FETCH_PARTICIPANT_MOCK);
     });
   });
 });

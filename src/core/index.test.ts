@@ -88,7 +88,7 @@ describe('initialization errors', () => {
         ...SIMPLE_INITIALIZATION_MOCK,
         participant: undefined as unknown as SuperVizSdkOptions['participant'],
       }),
-    ).rejects.toThrow('Participant name and id is required');
+    ).rejects.toThrow('Participant id is required');
   });
 
   test('should throw an error if no participant id is provided', async () => {
@@ -97,16 +97,7 @@ describe('initialization errors', () => {
         ...SIMPLE_INITIALIZATION_MOCK,
         participant: { name: 'unit-test-participant-name' } as SuperVizSdkOptions['participant'],
       }),
-    ).rejects.toThrow('Participant name and id is required');
-  });
-
-  test('should throw an error if participant name is not provided', async () => {
-    await expect(
-      sdk(UNIT_TEST_API_KEY, {
-        ...SIMPLE_INITIALIZATION_MOCK,
-        participant: { id: 'unit-test-participant-id' } as SuperVizSdkOptions['participant'],
-      }),
-    ).rejects.toThrow('Participant name and id is required');
+    ).rejects.toThrow('Participant id is required');
   });
 
   test('should throw an error if no group name is provided', async () => {
@@ -116,14 +107,6 @@ describe('initialization errors', () => {
         group: { id: 'unit-test-group-test-id' } as Group,
       }),
     ).rejects.toThrow('Group fields is required');
-  });
-
-  test('should throw an error if envoriment is invalid', async () => {
-    ApiService.fetchConfig = jest.fn().mockResolvedValue(undefined);
-
-    expect(sdk(UNIT_TEST_API_KEY, SIMPLE_INITIALIZATION_MOCK)).rejects.toThrow(
-      'Failed to load configuration from server',
-    );
   });
 
   test('should throw an error if custom colors variables names are invalid', async () => {
@@ -187,6 +170,28 @@ describe('initialization errors', () => {
       }),
     ).rejects.toThrow(
       '[SuperViz] Participant id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
+    );
+  });
+
+  test('should throw an error if participant email is invalid', async () => {
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        participant: { ...SIMPLE_INITIALIZATION_MOCK.participant, email: 'invalid-email' },
+      }),
+    ).rejects.toThrow('[SuperViz] Participant email is invalid');
+  });
+
+  test('should throw an error if participant does not exist and name is not defined', async () => {
+    ApiService.fetchParticipant = jest.fn().mockRejectedValue({});
+
+    await expect(
+      sdk(UNIT_TEST_API_KEY, {
+        ...SIMPLE_INITIALIZATION_MOCK,
+        participant: { ...SIMPLE_INITIALIZATION_MOCK.participant, name: undefined },
+      }),
+    ).rejects.toThrow(
+      '[SuperViz] - Participant does not exist, create the user in the API or add the name in the initialization to initialize the SuperViz room.',
     );
   });
 });
