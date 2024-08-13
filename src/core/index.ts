@@ -156,7 +156,7 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('[SuperViz] Failed to load configuration from server');
   });
 
-  const { participant, roomId, customColors: colors } = options;
+  const { participant, roomId, customColors } = options;
 
   config.setConfig({
     apiUrl,
@@ -167,11 +167,11 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     debug: options.debug,
     limits,
     waterMark,
-    colors: options.customColors,
+    colors: customColors,
     features,
   });
 
-  setColorVariables(options.customColors);
+  setColorVariables(customColors);
 
   const apiParticipant = await ApiService.fetchParticipant(participant.id).catch(() => null);
 
@@ -190,7 +190,15 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     });
   }
 
-  return LauncherFacade(options);
+  return LauncherFacade({
+    ...options,
+    participant: {
+      id: participant.id,
+      name: participant.name ?? apiParticipant?.name,
+      avatar: participant.avatar ?? apiParticipant?.avatar,
+      email: participant.email ?? apiParticipant?.email,
+    },
+  });
 };
 
 export default init;
