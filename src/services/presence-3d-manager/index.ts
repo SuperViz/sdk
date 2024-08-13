@@ -51,7 +51,7 @@ export class Presence3DManager {
   };
 
   private onLocalParticipantJoined = (participant: Participant): void => {
-    if (!participant.slot?.index) {
+    if (!participant.slot || participant.slot?.index === null) {
       setTimeout(() => {
         this.onLocalParticipantJoined(this.localParticipant);
       }, 2000);
