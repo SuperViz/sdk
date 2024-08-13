@@ -31,7 +31,8 @@ export class Presence3DManager {
       if (this.localParticipant) {
         if (
           this.localParticipant.name !== participant.name ||
-          this.localParticipant.avatar?.model3DUrl !== participant.avatar?.model3DUrl
+          this.localParticipant.avatar?.model3DUrl !== participant.avatar?.model3DUrl ||
+          this.localParticipant.slot !== participant.slot
         ) {
           this.unthrottledUpdatePresence3D({ ...participant });
         }
@@ -50,7 +51,7 @@ export class Presence3DManager {
   };
 
   private onLocalParticipantJoined = (participant: Participant): void => {
-    if (!participant.slot) {
+    if (!participant.slot?.index) {
       setTimeout(() => {
         this.onLocalParticipantJoined(this.localParticipant);
       }, 2000);
