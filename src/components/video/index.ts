@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents, Room } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents, Room } from '@superviz/socket-client';
 
 import { ColorsVariables } from '../../common/types/colors.types';
 import {

@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents, Room } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents, Room } from '@superviz/socket-client';
 
 import { RealtimePresence } from './presence';
 import { MOCK_IO } from '../../../__mocks__/io.mock';

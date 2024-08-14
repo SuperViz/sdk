@@ -1,6 +1,6 @@
 import { TextEncoder, TextDecoder } from 'util';
 
-import { PresenceEvent, PresenceEvents } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
 
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
 import { TranscriptState } from '../../common/types/events.types';

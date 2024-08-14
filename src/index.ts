@@ -24,7 +24,7 @@ import {
 import { ParticipantType } from './common/types/participant.types';
 import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
 import { StoreType } from './common/types/stores.types';
-import { PresenceEvents } from './lib/socket/common/types/event.types';
+import { PresenceEvents } from '@superviz/socket-client';
 import { FieldEvents } from './components/form-elements/types';
 import { PinMode } from './web-components/comments/components/types';
 

@@ -1,4 +1,4 @@
-import * as Socket from '../../lib/socket';
+import * as Socket from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
 import { ParticipantEvent } from '../../common/types/events.types';
