@@ -7,6 +7,7 @@ import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { Channel } from './channel';
+import { RealtimePresence } from './presence';
 
 import {
   Callback,
@@ -29,6 +30,7 @@ export class Realtime extends BaseComponent {
     event: string;
     callback: (data: unknown) => void;
   }> = [];
+  public participant: RealtimePresence;
 
   constructor() {
     super();
@@ -139,6 +141,7 @@ export class Realtime extends BaseComponent {
       this.callbacksToSubscribeWhenJoined = [];
 
       this.channel.unsubscribe(RealtimeChannelEvent.REALTIME_CHANNEL_STATE_CHANGED);
+      this.participant = this.channel.participant;
       this.channels.set('default', this.channel);
     });
   }
