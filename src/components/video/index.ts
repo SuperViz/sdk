@@ -534,19 +534,6 @@ export class VideoConference extends BaseComponent {
 
     const newParticipantName = participant.name.trim();
 
-    localParticipant.publish({
-      ...localParticipant.value,
-      name: newParticipantName,
-    });
-
-    participants.publish({
-      ...participants.value,
-      [participant.id]: {
-        ...localParticipant.value,
-        name: newParticipantName,
-      },
-    });
-
     if (this.videoConfig.canUseDefaultAvatars) {
       this.roomState.updateMyProperties({
         avatar: participant.avatar,
@@ -555,8 +542,36 @@ export class VideoConference extends BaseComponent {
         joinedMeeting: true,
       });
 
+      localParticipant.publish({
+        ...localParticipant.value,
+        avatar: participant.avatar,
+        name: participant.name,
+      });
+
+      participants.publish({
+        ...participants.value,
+        [participant.id]: {
+          ...participants.value[participant.id],
+          avatar: participant.avatar,
+          name: participant.name,
+        },
+      });
+
       return;
     }
+
+    localParticipant.publish({
+      ...localParticipant.value,
+      name: newParticipantName,
+    });
+
+    participants.publish({
+      ...participants.value,
+      [participant.id]: {
+        ...participants.value[participant.id],
+        name: newParticipantName,
+      },
+    });
 
     this.roomState.updateMyProperties({
       name: participant.name,
