@@ -35,7 +35,7 @@ import type {
 import { ParticipantType } from './participant.types';
 import { SuperVizSdkOptions } from './sdk-options.types';
 import { StoreType } from '../types/stores.types';
-import { PresenceEvents } from '../../lib/socket/common/types/event.types';
+import { PresenceEvents } from '@superviz/socket-client';
 import { FieldEvents } from '../../components/form-elements/types';
 import { PinMode } from '../../web-components/comments/components/types';
 

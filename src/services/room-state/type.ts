@@ -1,4 +1,4 @@
-import { PresenceEvent } from '../../lib/socket';
+import { PresenceEvent } from '@superviz/socket-client';
 
 import { TranscriptState } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';

@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents } from '@superviz/socket-client';
 
 import { RealtimeEvent, WhoIsOnlineEvent } from '../../common/types/events.types';
 import { Participant, Avatar } from '../../common/types/participant.types';

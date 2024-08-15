@@ -1,6 +1,5 @@
 import { Logger } from '../../common/utils';
-import * as Socket from '../../lib/socket';
-import { PresenceEventsArg } from '../../lib/socket/common/types/event.types';
+import * as Socket from '@superviz/socket-client';
 
 export class RealtimePresence {
   private logger: Logger;
@@ -14,12 +13,15 @@ export class RealtimePresence {
     this.room.presence.update(data);
   }
 
-  public subscribe<T = unknown>(event: PresenceEventsArg, callback: Socket.PresenceCallback<T>) {
+  public subscribe<T = unknown>(
+    event: Socket.PresenceEventsArg,
+    callback: Socket.PresenceCallback<T>,
+  ) {
     this.logger.log('Realtime Presence @ subscribe', event);
     this.room.presence.on(event, callback);
   }
 
-  public unsubscribe(event: PresenceEventsArg) {
+  public unsubscribe(event: Socket.PresenceEventsArg) {
     this.logger.log('Realtime Presence @ unsubscribe', event);
     this.room.presence.off(event);
   }

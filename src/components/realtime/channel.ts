@@ -1,4 +1,4 @@
-import * as Socket from '../../lib/socket';
+import * as Socket from '@superviz/socket-client';
 import throttle from 'lodash/throttle';
 
 import { Participant } from '../../common/types/participant.types';
