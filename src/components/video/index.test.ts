@@ -520,7 +520,7 @@ describe('VideoConference', () => {
       VideoConferenceInstance['onParticipantLeft'](MOCK_LOCAL_PARTICIPANT);
       expect(VideoConferenceInstance['publish']).toHaveBeenCalledWith(
         MeetingEvent.MY_PARTICIPANT_LEFT,
-        MOCK_LOCAL_PARTICIPANT,
+        { ...MOCK_LOCAL_PARTICIPANT, type: ParticipantType.HOST },
       );
     });
 

@@ -54,6 +54,6 @@ export type ParticipantToFrame = {
   name: string;
   isHost: boolean;
   avatar?: Avatar;
-  type: ParticipantType;
+  type: ParticipantType | `${ParticipantType}`;
   slot: Slot;
 };
