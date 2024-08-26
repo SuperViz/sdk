@@ -41,25 +41,33 @@ export class Launcher extends Observable implements DefaultLauncher {
     super();
     this.logger = new Logger('@superviz/sdk/launcher');
 
-    const { localParticipant, group, isDomainWhitelisted } = this.useStore(StoreType.GLOBAL);
+    const {
+      localParticipant: globalParticipant,
+      group,
+      isDomainWhitelisted,
+    } = this.useStore(StoreType.GLOBAL);
+    const { localParticipant, participants } = this.useStore(StoreType.CORE);
 
-    localParticipant.publish({ ...participant });
+    globalParticipant.publish({ ...participant });
     isDomainWhitelisted.subscribe(this.onAuthentication);
-    localParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
+    globalParticipant.subscribe(this.onLocalParticipantUpdateOnStore);
+
+    localParticipant.subscribe(this.onLocalParticipantUpdateOnCore);
+    participants.subscribe(this.onParticipantsListUpdateOnCore);
 
     group.publish(participantGroup);
-    this.ioc = new IOC(localParticipant.value);
+    this.ioc = new IOC(globalParticipant.value);
     this.room = this.ioc.createRoom('launcher', 'unlimited');
 
     // Assign a slot to the participant
     this.slotService = new SlotService(this.room, this.useStore);
-    localParticipant.publish({
-      ...localParticipant.value,
+    globalParticipant.publish({
+      ...globalParticipant.value,
       slot: this.slotService.slot,
       activeComponents: [],
     });
 
-    this.participant = localParticipant.value;
+    this.participant = globalParticipant.value;
 
     // internal events without realtime
     this.eventBus = new EventBus();
@@ -270,6 +278,16 @@ export class Launcher extends Observable implements DefaultLauncher {
   private onLocalParticipantUpdateOnStore = (participant: Participant): void => {
     this.participant = participant;
     this.activeComponents = participant.activeComponents || [];
+  };
+
+  private onLocalParticipantUpdateOnCore = (participant: Participant): void => {
+    if (!this.room) return;
+    this.room.presence.update(participant);
+  };
+
+  private onParticipantsListUpdateOnCore = (list: Record<string, Participant>): void => {
+    const { participants } = this.useStore(StoreType.GLOBAL);
+    participants.publish(list);
   };
 
   private onSameAccount = (): void => {
