@@ -17,7 +17,7 @@ export type Slot = {
 export interface Participant {
   id: string;
   name?: string;
-  type?: ParticipantType;
+  type?: ParticipantType | `${ParticipantType}`;
   slot?: Slot;
   avatar?: Avatar;
   isHost?: boolean;

@@ -38,6 +38,7 @@ import { ComponentNames } from '../types';
 
 import { ParticipantToFrame, VideoComponentOptions } from './types';
 import { MEETING_COLORS } from '../../common/types/meeting-colors.types';
+import { coreBridge } from '../../services/core-bridge';
 
 const KICK_PARTICIPANTS_TIME = 1000 * 60;
 let KICK_PARTICIPANTS_TIMEOUT: ReturnType<typeof setTimeout> | null = null;
@@ -331,6 +332,7 @@ export class VideoConference extends BaseComponent {
       this.localParticipant = {
         ...this.localParticipant,
         ...participant,
+        type: this.params.userType,
       };
     });
 
@@ -542,13 +544,13 @@ export class VideoConference extends BaseComponent {
         joinedMeeting: true,
       });
 
-      localParticipant.publish({
+      coreBridge.updateLocalParticipant({
         ...localParticipant.value,
         avatar: participant.avatar,
         name: participant.name,
       });
 
-      participants.publish({
+      coreBridge.updateParticipantsList({
         ...participants.value,
         [participant.id]: {
           ...participants.value[participant.id],
@@ -560,12 +562,12 @@ export class VideoConference extends BaseComponent {
       return;
     }
 
-    localParticipant.publish({
+    coreBridge.updateLocalParticipant({
       ...localParticipant.value,
       name: newParticipantName,
     });
 
-    participants.publish({
+    coreBridge.updateParticipantsList({
       ...participants.value,
       [participant.id]: {
         ...participants.value[participant.id],

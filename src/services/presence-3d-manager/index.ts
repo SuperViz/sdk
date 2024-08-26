@@ -142,7 +142,7 @@ export class Presence3DManager {
   private onJoinedPresence = (event: PresenceEvent<Participant>): void => {
     if (event.id !== this.localParticipant.id) return;
 
-    this.logger.log('participant joined 3D room', event.id);
+    this.logger.log('participant joined 3D room', event.id, this.localParticipant);
     this.onLocalParticipantJoined(this.localParticipant);
   };
 
