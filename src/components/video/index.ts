@@ -548,6 +548,7 @@ export class VideoConference extends BaseComponent {
         ...localParticipant.value,
         avatar: participant.avatar,
         name: participant.name,
+        type: this.params.userType,
       });
 
       coreBridge.updateParticipantsList({
@@ -565,6 +566,7 @@ export class VideoConference extends BaseComponent {
     coreBridge.updateLocalParticipant({
       ...localParticipant.value,
       name: newParticipantName,
+      type: this.params.userType,
     });
 
     coreBridge.updateParticipantsList({
@@ -829,6 +831,7 @@ export class VideoConference extends BaseComponent {
       this.publish(MeetingEvent.MEETING_HOST_AVAILABLE);
       return;
     }
+
     this.publish(MeetingEvent.MEETING_NO_HOST_AVAILABLE);
   };
 
