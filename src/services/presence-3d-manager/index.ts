@@ -27,16 +27,20 @@ export class Presence3DManager {
     const { localParticipant } = this.useStore(StoreType.GLOBAL);
 
     // have to set manually because useStore is binded to the 3d plugin that creates the service
-    localParticipant.subscribe((participant) => {
-      if (this.localParticipant) {
-        if (
-          this.localParticipant.name !== participant.name ||
-          this.localParticipant.avatar?.model3DUrl !== participant.avatar?.model3DUrl ||
-          this.localParticipant.slot !== participant.slot
-        ) {
-          this.unthrottledUpdatePresence3D({ ...participant });
-        }
-      }
+    localParticipant.subscribe((data) => {
+      this.room.presence.update(data);
+
+      const { participants } = this.useStore(StoreType.PRESENCE_3D);
+
+      const participant = {
+        ...participants.value.find((participant) => participant.id === data.id),
+        ...data,
+      };
+
+      participants.publish([
+        ...participants.value.filter((participant) => participant.id !== data.id),
+        participant,
+      ]);
 
       this.localParticipant = participant;
     });
@@ -118,9 +122,7 @@ export class Presence3DManager {
   };
 
   private unthrottledUpdatePresence3D = (data: Participant): void => {
-    if (!data || !data.id) {
-      return;
-    }
+    if (!data?.id) return;
 
     const { participants, hasJoined3D } = this.useStore(StoreType.PRESENCE_3D);
 
