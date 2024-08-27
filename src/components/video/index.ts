@@ -613,7 +613,6 @@ export class VideoConference extends BaseComponent {
     });
 
     this.connectionService.removeListeners();
-    this.publish(MeetingEvent.DESTROY);
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
 
     this.unsubscribeFromVideoEvents();
