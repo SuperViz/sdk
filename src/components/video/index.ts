@@ -574,6 +574,7 @@ export class VideoConference extends BaseComponent {
       [participant.id]: {
         ...participants.value[participant.id],
         name: newParticipantName,
+        type: this.params.userType,
       },
     });
 

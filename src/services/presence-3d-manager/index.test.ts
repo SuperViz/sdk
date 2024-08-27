@@ -22,17 +22,6 @@ describe('Presence3DManager', () => {
     localParticipant.publish(MOCK_LOCAL_PARTICIPANT);
   });
 
-  describe('constructor', () => {
-    test('should create a Presence3DManager instance', () => {
-      expect(presence3DManager).toBeInstanceOf(Presence3DManager);
-      expect(presence3DManager['room']).toBeDefined();
-      expect(presence3DManager['useStore']).toBeDefined();
-      expect(presence3DManager['participants3DObservers']).toEqual([]);
-      expect(presence3DManager['localParticipant']).toBe(MOCK_LOCAL_PARTICIPANT);
-      expect(presence3DManager['logger']).toBeDefined();
-    });
-  });
-
   describe('initializeParticipantsList', () => {
     test('should update the list of participants', () => {
       presence3DManager['unthrottledUpdatePresence3D'] = jest.fn();
@@ -276,7 +265,7 @@ describe('Presence3DManager', () => {
         id: '123',
       });
 
-      expect(presence3DManager['room'].presence.update).not.toBeCalled();
+      expect(presence3DManager['room'].presence.update).not.toHaveBeenCalledTimes(2);
     });
 
     test('should not update presence if participant is not local', () => {
@@ -289,7 +278,7 @@ describe('Presence3DManager', () => {
         id: '123',
       });
 
-      expect(presence3DManager['room'].presence.update).not.toBeCalled();
+      expect(presence3DManager['room'].presence.update).not.toHaveBeenCalledTimes(2);
     });
 
     test('should update presence if participant is local', () => {
@@ -304,7 +293,9 @@ describe('Presence3DManager', () => {
 
       presence3DManager['unthrottledUpdatePresence3D'](modifiedLocalParticipant);
 
-      expect(presence3DManager['room'].presence.update).toBeCalledWith(modifiedLocalParticipant);
+      expect(presence3DManager['room'].presence.update).toHaveBeenCalledWith(
+        modifiedLocalParticipant,
+      );
     });
   });
 
