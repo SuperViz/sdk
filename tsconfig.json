@@ -3,7 +3,7 @@
     "rootDirs": ["./src", "."],
     "target": "ES2020",
     "module": "ES2020",
-    "outDir": "./lib",
+    "outDir": "./dist",
     "lib": ["ES2020", "DOM"],
     "preserveWatchOutput": true,
     "emitDeclarationOnly": true,
@@ -12,13 +12,8 @@
     "moduleResolution": "Node",
     "experimentalDecorators": true,
     "skipLibCheck": true,
-    "allowJs": true,
+    "allowJs": true
   },
-  "include": [
-    "./src"
-  ],
-  "exclude": [
-    "./src/**/*.test.ts",
-    "node_modules"
-  ]
+  "include": ["./src"],
+  "exclude": ["./src/**/*.test.ts", "node_modules"]
 }

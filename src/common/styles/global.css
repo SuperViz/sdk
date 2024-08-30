@@ -5,7 +5,8 @@
   --sv-primary: 98, 16, 204;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -46,14 +47,14 @@ html, body {
   display: none;
 }
 
-
 /* Presence Mouse */
 
 .pointer-mouse {
   display: flex;
-  height: 17px;
-  width: 17px;
+  height: 15px;
+  width: 16px;
   background-image: url(https://production.cdn.superviz.com/static/pointers/0.svg);
+  background-repeat: no-repeat;
 }
 
 .mouse-user-name {
