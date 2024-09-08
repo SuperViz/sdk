@@ -23,8 +23,10 @@ export class ConnectionService implements DefaultConnectionService {
    * @returns {void}
    */
   public addListeners(): void {
-    window.addEventListener('online', this.onUpdateBrowserOnlineStatus);
-    window.addEventListener('offline', this.onUpdateBrowserOnlineStatus);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', this.onUpdateBrowserOnlineStatus);
+      window.addEventListener('offline', this.onUpdateBrowserOnlineStatus);
+    }
   }
 
   /**
@@ -33,8 +35,10 @@ export class ConnectionService implements DefaultConnectionService {
    * @returns {void}
    */
   public removeListeners(): void {
-    window.removeEventListener('online', this.onUpdateBrowserOnlineStatus);
-    window.removeEventListener('offline', this.onUpdateBrowserOnlineStatus);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', this.onUpdateBrowserOnlineStatus);
+      window.removeEventListener('offline', this.onUpdateBrowserOnlineStatus);
+    }
   }
 
   /**

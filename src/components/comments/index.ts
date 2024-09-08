@@ -152,6 +152,7 @@ export class Comments extends BaseComponent {
    * @returns {void}
    */
   protected start(): void {
+    if (typeof window === 'undefined') return;
     this.clientUrl = window.location.href;
 
     this.positionComments();
