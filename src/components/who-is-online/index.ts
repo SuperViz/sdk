@@ -5,7 +5,7 @@ import { Participant, Avatar } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
 import { Following } from '../../services/stores/who-is-online/types';
-import { WhoIsOnline as WhoIsOnlineElement } from '../../web-components';
+import type { WhoIsOnline as WhoIsOnlineElement } from '../../web-components/who-is-online';
 import { DropdownOption } from '../../web-components/dropdown/types';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';

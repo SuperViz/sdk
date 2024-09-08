@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { repeat } from 'lit/directives/repeat.js';
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
@@ -8,11 +8,12 @@ import { WebComponentsBase } from '../../base';
 import { contentStyle } from '../css';
 
 import { AnnotationFilter, PinMode } from './types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, contentStyle];
 
-@customElement('superviz-comments-content')
+@CreateElement('superviz-comments-content')
 export class CommentsContent extends WebComponentsBaseElement {
   static styles = styles;
 

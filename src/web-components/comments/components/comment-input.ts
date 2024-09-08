@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
@@ -11,11 +11,12 @@ import { AutoCompleteHandler } from '../utils/autocomplete-handler';
 import mentionHandler from '../utils/mention-handler';
 
 import { CommentMode } from './types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentInputStyle];
 
-@customElement('superviz-comments-comment-input')
+@CreateElement('superviz-comments-comment-input')
 export class CommentsCommentInput extends WebComponentsBaseElement {
   declare eventType: string;
   declare text: string;

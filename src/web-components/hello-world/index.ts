@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { CreateElement } from '../global/decorators/create-element.decorator';
 
-@customElement('superviz-hello-world')
+@CreateElement('superviz-hello-world')
 export class HelloWorld extends LitElement {
   declare name: string;
 

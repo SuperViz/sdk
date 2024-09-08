@@ -5,7 +5,7 @@ import { Logger } from '../../common/utils';
 import ApiService from '../../services/api';
 import config from '../../services/config';
 import subject from '../../services/stores/subject';
-import type { Comments as CommentElement } from '../../web-components';
+import type { Comments as CommentElement } from '../../web-components/comments';
 import { CommentsFloatButton } from '../../web-components/comments/components/float-button';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';

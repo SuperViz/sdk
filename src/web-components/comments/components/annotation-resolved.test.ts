@@ -1,7 +1,7 @@
 import sleep from '../../../common/utils/sleep';
-import '.';
-
 let element: HTMLElement;
+
+import './annotation-resolved';
 
 const createElement = async (timeToHide = 1000) => {
   const element = document.createElement('superviz-comments-annotation-resolved');
