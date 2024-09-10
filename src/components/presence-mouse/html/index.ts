@@ -205,6 +205,8 @@ export class PointersHTML extends BaseComponent {
    * @returns {void}
    */
   private onMyParticipantMouseLeave = (event: MouseEvent): void => {
+    if (typeof window === 'undefined') return;
+
     const { left, top, right, bottom } = this.container.getBoundingClientRect();
     const isInsideContainer =
       event.x > left && event.y > top && event.x < right && event.y < bottom;

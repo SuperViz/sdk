@@ -161,8 +161,11 @@ export default class VideoConfereceManager {
       locales,
     };
     this.meetingAvatars = avatars;
-    window.addEventListener('resize', this.onWindowResize);
-    window.addEventListener('orientationchange', this.onWindowResize);
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.onWindowResize);
+      window.addEventListener('orientationchange', this.onWindowResize);
+    }
   }
 
   get isWaterMarkEnabled(): boolean {
@@ -372,6 +375,8 @@ export default class VideoConfereceManager {
    * @returns {void}
    */
   private onFrameDimensionsUpdate = ({ width, height }: Dimensions): void => {
+    if (typeof window === 'undefined') return;
+
     const frame = document.getElementById(FRAME_ID);
     const {
       bottom: offsetBottom,
@@ -661,8 +666,10 @@ export default class VideoConfereceManager {
     this.bricklayer = null;
     this.frameState = null;
 
-    window.removeEventListener('resize', this.onWindowResize);
-    window.removeEventListener('orientationchange', this.onWindowResize);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.onWindowResize);
+      window.removeEventListener('orientationchange', this.onWindowResize);
+    }
   }
 
   /**

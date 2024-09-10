@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
@@ -16,11 +16,12 @@ import importStyle from '../base/utils/importStyle';
 
 import type { LocalParticipantData } from './components/types';
 import { whoIsOnlineStyle } from './css/index';
+import { CreateElement } from '../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, whoIsOnlineStyle];
 
-@customElement('superviz-who-is-online')
+@CreateElement('superviz-who-is-online')
 export class WhoIsOnline extends WebComponentsBaseElement {
   static styles = styles;
   declare position: string;

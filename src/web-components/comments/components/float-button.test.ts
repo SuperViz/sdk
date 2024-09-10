@@ -1,7 +1,7 @@
-import '.';
 import sleep from '../../../common/utils/sleep';
 
-import type { CommentsFloatButton } from '.';
+import './float-button';
+import type { CommentsFloatButton } from './float-button';
 
 let element: CommentsFloatButton;
 

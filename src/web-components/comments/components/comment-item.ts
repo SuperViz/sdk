@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 import { DateTime } from 'luxon';
 
@@ -9,11 +9,12 @@ import importStyle from '../../base/utils/importStyle';
 import { commentItemStyle } from '../css';
 
 import { CommentMode, CommentDropdownOptions, AnnotationFilter } from './types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, commentItemStyle];
 
-@customElement('superviz-comments-comment-item')
+@CreateElement('superviz-comments-comment-item')
 export class CommentsCommentItem extends WebComponentsBaseElement {
   constructor() {
     super();

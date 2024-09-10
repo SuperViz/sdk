@@ -2,7 +2,7 @@ import { MOCK_PARTICIPANT_LIST } from '../../../../__mocks__/participants.mock';
 import sleep from '../../../common/utils/sleep';
 import { AutoCompleteHandler } from '../utils/autocomplete-handler';
 import mentionHandler from '../utils/mention-handler';
-import '.';
+import './comment-input';
 
 import { CommentsCommentInput } from './comment-input';
 

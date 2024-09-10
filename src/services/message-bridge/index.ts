@@ -62,7 +62,9 @@ export class MessageBridge {
       delete this.observers[type];
     });
 
-    window.removeEventListener('message', this.onReceiveMessage);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('message', this.onReceiveMessage);
+    }
 
     delete this.logger;
     delete this.allowedOrigins;

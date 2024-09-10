@@ -1,6 +1,6 @@
 import sleep from '../../../common/utils/sleep';
 
-import '.';
+import './delete-comment-modal';
 
 const createEl = async (open = false) => {
   const element = document.createElement('superviz-comments-delete-comments-modal');
@@ -20,8 +20,7 @@ const modal = () => element().shadowRoot!.querySelector('superviz-modal') as HTM
 
 describe('delete-comment-modal', () => {
   afterEach(() => {
-    document.body.querySelector('superviz-comments-delete-comments-modal')
-      ?.remove();
+    document.body.querySelector('superviz-comments-delete-comments-modal')?.remove();
   });
 
   test('should render', async () => {
@@ -65,7 +64,9 @@ describe('delete-comment-modal', () => {
 
     const spy = jest.fn();
     element.addEventListener('close', spy);
-    window.document.body.dispatchEvent(new CustomEvent('superviz-modal--close', { composed: true, bubbles: true }));
+    window.document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--close', { composed: true, bubbles: true }),
+    );
 
     await element['updateComplete'];
 
@@ -77,7 +78,9 @@ describe('delete-comment-modal', () => {
 
     const spy = jest.fn();
     element.addEventListener('confirm', spy);
-    window.document.body.dispatchEvent(new CustomEvent('superviz-modal--confirm', { composed: true, bubbles: true }));
+    window.document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--confirm', { composed: true, bubbles: true }),
+    );
 
     await element['updateComplete'];
 

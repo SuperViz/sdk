@@ -58,7 +58,7 @@ import type {
 } from './components/comments/types';
 import type { Transform } from './components/presence-mouse/types';
 
-if (window) {
+if (typeof window !== 'undefined') {
   window.SuperVizRoom = {
     init,
     CommentEvent,

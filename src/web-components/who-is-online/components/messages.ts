@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyDeclaration, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 
 import { Participant } from '../../../common/types/participant.types';
@@ -11,11 +11,12 @@ import { messagesStyle } from '../css';
 
 import { HorizontalSide, VerticalSide } from './types';
 import { MEETING_COLORS } from '../../../common/types/meeting-colors.types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, messagesStyle];
 
-@customElement('superviz-who-is-online-messages')
+@CreateElement('superviz-who-is-online-messages')
 export class WhoIsOnlineMessages extends WebComponentsBaseElement {
   static styles = styles;
 

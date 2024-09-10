@@ -1,14 +1,14 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { topbarStyle } from '../css';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, topbarStyle];
 
-@customElement('superviz-comments-topbar')
+@CreateElement('superviz-comments-topbar')
 export class CommentsTopbar extends WebComponentsBase(LitElement) {
   static styles = styles;
   declare side: string;

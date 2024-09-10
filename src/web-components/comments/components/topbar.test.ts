@@ -1,4 +1,4 @@
-import '.';
+import './topbar';
 
 const element = document.createElement('superviz-comments-topbar');
 document.body.appendChild(element);
