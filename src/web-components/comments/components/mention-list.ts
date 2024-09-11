@@ -1,15 +1,16 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { repeat } from 'lit/directives/repeat.js';
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
 import { WebComponentsBase } from '../../base';
 import { mentionListStyle } from '../css';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, mentionListStyle];
 
-@customElement('superviz-comments-mention-list')
+@CreateElement('superviz-comments-mention-list')
 export class CommentsMentionList extends WebComponentsBaseElement {
   constructor() {
     super();

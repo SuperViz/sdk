@@ -1,4 +1,4 @@
-import { PresenceEvents } from '../../lib/socket';
+import { PresenceEvents } from '@superviz/socket-client';
 
 import { MOCK_IO } from '../../../__mocks__/io.mock';
 import { MOCK_LOCAL_PARTICIPANT } from '../../../__mocks__/participants.mock';
@@ -248,7 +248,7 @@ describe('Presence3DManager', () => {
         ...MOCK_LOCAL_PARTICIPANT,
         name: 'new name',
         id: undefined,
-      };
+      } as unknown as Participant;
 
       presence3DManager['unthrottledUpdatePresence3D'](modifiedLocalParticipant);
 

@@ -1,15 +1,16 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { floatButtonStyle } from '../css';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, floatButtonStyle];
 
-@customElement('superviz-comments-button')
+@CreateElement('superviz-comments-button')
 export class CommentsFloatButton extends WebComponentsBaseElement {
   static styles = styles;
   declare isHidden: boolean;

@@ -1,4 +1,4 @@
-import { PresenceEvent, PresenceEvents, Room } from '../../lib/socket';
+import { PresenceEvent, PresenceEvents, Room } from '@superviz/socket-client';
 
 import { ColorsVariables } from '../../common/types/colors.types';
 import {
@@ -614,7 +614,6 @@ export class VideoConference extends BaseComponent {
     });
 
     this.connectionService.removeListeners();
-    this.publish(MeetingEvent.DESTROY);
     this.publish(MeetingEvent.MY_PARTICIPANT_LEFT, this.localParticipant);
 
     this.unsubscribeFromVideoEvents();

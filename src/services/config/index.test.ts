@@ -13,7 +13,6 @@ describe('ConfigurationService', () => {
 
   describe('setConfig', () => {
     test('configuration should be set correctly', () => {
-      expect(configService.get('ablyKey')).toEqual(MOCK_CONFIG.ablyKey);
       expect(configService.get('apiKey')).toEqual(MOCK_CONFIG.apiKey);
       expect(configService.get('apiUrl')).toEqual(MOCK_CONFIG.apiUrl);
       expect(configService.get('conferenceLayerUrl')).toEqual(MOCK_CONFIG.conferenceLayerUrl);
@@ -24,8 +23,8 @@ describe('ConfigurationService', () => {
 
   describe('get', () => {
     test('should get a value from configuration', () => {
-      const result = configService.get('ablyKey', 'defaultValue');
-      expect(result).toBe(MOCK_CONFIG.ablyKey);
+      const result = configService.get('apiKey', 'defaultValue');
+      expect(result).toBe(MOCK_CONFIG.apiKey);
     });
 
     test('should provide a default value if key is not found', () => {
@@ -35,7 +34,7 @@ describe('ConfigurationService', () => {
 
     test('should return the default value if the config is not available', () => {
       configService.setConfig(null as unknown as Configuration);
-      expect(configService.get('ablyKey')).toBeUndefined();
+      expect(configService.get('apiKey')).toBeUndefined();
     });
   });
 });

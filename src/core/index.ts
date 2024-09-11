@@ -31,6 +31,11 @@ function validateId(id: string): boolean {
   return true;
 }
 
+function validateEmail(email: string): boolean {
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailPattern.test(email);
+}
+
 /**
  * @function validateOptions
  * @description Validate the options passed to the SDK
@@ -51,8 +56,8 @@ const validateOptions = ({
     throw new Error('[SuperViz] Group fields is required');
   }
 
-  if (!participant || !participant.id || !participant.name) {
-    throw new Error('[SuperViz] Participant name and id is required');
+  if (!participant || !participant.id) {
+    throw new Error('[SuperViz] Participant id is required');
   }
 
   if (!roomId) {
@@ -70,6 +75,10 @@ const validateOptions = ({
       '[SuperViz] Participant id is invalid, it should be between 2 and 64 characters and only accept letters, numbers and special characters: -_&@+=,(){}[]/«».:|\'"',
     );
   }
+
+  if (participant.email && !validateEmail(participant.email)) {
+    throw new Error('[SuperViz] Participant email is invalid');
+  }
 };
 
 /**
@@ -81,13 +90,13 @@ const validateColorsVariablesNames = (colors: ColorsVariables) => {
   Object.entries(colors).forEach(([key, value]) => {
     if (!Object.values(ColorsVariablesNames).includes(key as ColorsVariablesNames)) {
       throw new Error(
-        `Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
+        `[SuperViz] Color ${key} is not a valid color variable name. Please check the documentation for more information.`,
       );
     }
 
     if (!/^(\d{1,3}\s){2}\d{1,3}$/.test(value)) {
       throw new Error(
-        `Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
+        `[SuperViz] Color ${key} is not a valid color variable value. Please check the documentation for more information.`,
       );
     }
   });
@@ -140,24 +149,17 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     throw new Error('Failed to validate API key');
   }
 
-  const [environment, waterMark, limits] = await Promise.all([
-    ApiService.fetchConfig(apiUrl, apiKey),
+  const [waterMark, limits] = await Promise.all([
     ApiService.fetchWaterMark(apiUrl, apiKey),
     ApiService.fetchLimits(apiUrl, apiKey),
   ]).catch(() => {
-    throw new Error('Failed to load configuration from server');
+    throw new Error('[SuperViz] Failed to load configuration from server');
   });
 
-  if (!environment || !environment.ablyKey) {
-    throw new Error('Failed to load configuration from server');
-  }
-
-  const { ablyKey } = environment;
-  const { participant, roomId, customColors: colors } = options;
+  const { participant, roomId, customColors } = options;
 
   config.setConfig({
     apiUrl,
-    ablyKey,
     apiKey,
     conferenceLayerUrl,
     environment: (options.environment as EnvironmentTypes) ?? EnvironmentTypes.PROD,
@@ -165,19 +167,38 @@ const init = async (apiKey: string, options: SuperVizSdkOptions): Promise<Launch
     debug: options.debug,
     limits,
     waterMark,
-    colors: options.customColors,
+    colors: customColors,
     features,
   });
 
-  setColorVariables(options.customColors);
+  setColorVariables(customColors);
 
-  ApiService.createOrUpdateParticipant({
-    name: participant.name,
-    participantId: participant.id,
-    avatar: participant.avatar?.imageUrl,
+  const apiParticipant = await ApiService.fetchParticipant(participant.id).catch(() => null);
+
+  if (!apiParticipant && !participant.name) {
+    throw new Error(
+      '[SuperViz] - Participant does not exist, create the user in the API or add the name in the initialization to initialize the SuperViz room.',
+    );
+  }
+
+  if (!apiParticipant) {
+    await ApiService.createParticipant({
+      participantId: participant.id,
+      name: participant?.name,
+      avatar: participant.avatar?.imageUrl,
+      email: participant?.email,
+    });
+  }
+
+  return LauncherFacade({
+    ...options,
+    participant: {
+      id: participant.id,
+      name: participant.name ?? apiParticipant?.name,
+      avatar: participant.avatar ?? apiParticipant?.avatar,
+      email: participant.email ?? apiParticipant?.email,
+    },
   });
-
-  return LauncherFacade(options);
 };
 
 export default init;

@@ -1,16 +1,16 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';
 import importStyle from '../../base/utils/importStyle';
 import { annotationResolvedStyle } from '../css';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationResolvedStyle];
 
 const DEFAULT_SECONDS_TO_HIDE = 10 * 1000;
 
-@customElement('superviz-comments-annotation-resolved')
+@CreateElement('superviz-comments-annotation-resolved')
 export class CommentsAnnotationResolved extends WebComponentsBaseElement {
   constructor() {
     super();

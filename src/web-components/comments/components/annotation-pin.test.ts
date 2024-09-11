@@ -6,7 +6,7 @@ import { useGlobalStore } from '../../../services/stores';
 import type { CommentsAnnotationPin } from './annotation-pin';
 import { PinMode } from './types';
 
-import '.';
+import './annotation-pin';
 import '../../icon';
 
 interface CreateAnnotationPinOptions {

@@ -1,14 +1,14 @@
 import { CSSResultGroup, LitElement, css, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../base';
 
 import { IconSizes } from './types';
+import { CreateElement } from '../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 
-@customElement('superviz-icon')
+@CreateElement('superviz-icon')
 export class Icon extends WebComponentsBaseElement {
   declare name: string;
   declare size: string;

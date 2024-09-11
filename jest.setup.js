@@ -36,4 +36,4 @@ global.DOMPoint = class {
   }
 };
 
-jest.mock('./src/lib/socket', () => MOCK_IO);
+jest.mock('@superviz/socket-client', () => MOCK_IO);

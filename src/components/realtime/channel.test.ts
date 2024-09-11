@@ -34,14 +34,14 @@ describe('Realtime Channel', () => {
       ChannelInstance['state'] = RealtimeChannelState.DISCONNECTED;
 
       const spy = jest.spyOn(ChannelInstance['logger'], 'log' as any);
-      ChannelInstance.publish('test');
+      ChannelInstance.publish('test', {});
 
       expect(spy).toHaveBeenCalled();
     });
 
     test('should publish an event', () => {
       const spy = jest.spyOn(ChannelInstance['channel'], 'emit' as any);
-      ChannelInstance.publish('test');
+      ChannelInstance.publish('test', {});
 
       expect(spy).toHaveBeenCalled();
     });

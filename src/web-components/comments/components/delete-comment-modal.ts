@@ -1,12 +1,12 @@
 import { CSSResultGroup, LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../../base';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles];
 
-@customElement('superviz-comments-delete-comments-modal')
+@CreateElement('superviz-comments-delete-comments-modal')
 export class DeleteCommentModal extends WebComponentsBaseElement {
   static styles = styles;
 
