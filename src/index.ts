@@ -1,3 +1,8 @@
+import init from './core';
+import './web-components';
+import './common/styles/global.css';
+
+// #region enums
 import {
   MeetingEvent,
   RealtimeEvent,
@@ -11,7 +16,19 @@ import {
   ComponentLifeCycleEvent,
   WhoIsOnlineEvent,
 } from './common/types/events.types';
+import {
+  CamerasPosition,
+  LayoutMode,
+  LayoutPosition,
+} from './services/video-conference-manager/types';
 import { ParticipantType } from './common/types/participant.types';
+import { RealtimeComponentEvent, RealtimeComponentState } from './components/realtime/types';
+import { StoreType } from './common/types/stores.types';
+import { PresenceEvents } from '@superviz/socket-client';
+import { FieldEvents } from './components/form-elements/types';
+import { PinMode } from './web-components/comments/components/types';
+
+// #region Classes
 import {
   VideoConference,
   MousePointers,
@@ -22,35 +39,16 @@ import {
   WhoIsOnline,
   FormElements,
 } from './components';
-import { Transform } from './components/presence-mouse/types';
-import {
-  RealtimeComponentEvent,
-  RealtimeComponentState,
-  RealtimeMessage,
-} from './components/realtime/types';
-import init from './core';
-import './web-components';
-import './common/styles/global.css';
-import {
-  CamerasPosition,
-  LayoutMode,
-  LayoutPosition,
-} from './services/video-conference-manager/types';
+import type { Channel } from './components/realtime/channel';
+import type { Presence3DManager } from './services/presence-3d-manager';
 
-export { StoreType } from './common/types/stores.types';
-
-export { Presence3DManager } from './services/presence-3d-manager';
-
-export { FieldEvents } from './components/form-elements/types';
-export { PinMode } from './web-components/comments/components/types';
-
-export { Participant, Group, Avatar } from './common/types/participant.types';
-export { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
-export { BrowserService } from './services/browser';
-export { BrowserStats } from './services/browser/types';
-export { LauncherFacade } from './core/launcher/types';
-export { Observer } from './common/utils/observer';
-export {
+// #region Types and Interfaces
+import type { RealtimeMessage } from './components/realtime/types';
+import type { Participant, Group, Avatar } from './common/types/participant.types';
+import type { SuperVizSdkOptions, DevicesOptions } from './common/types/sdk-options.types';
+import type { BrowserStats } from './services/browser/types';
+import type { LauncherFacade } from './core/launcher/types';
+import type {
   Annotation,
   Comment,
   PinAdapter,
@@ -58,8 +56,9 @@ export {
   AnnotationPositionInfo,
   Offset,
 } from './components/comments/types';
+import type { Transform } from './components/presence-mouse/types';
 
-if (window) {
+if (typeof window !== 'undefined') {
   window.SuperVizRoom = {
     init,
     CommentEvent,
@@ -87,6 +86,11 @@ if (window) {
     RealtimeComponentEvent,
     ComponentLifeCycleEvent,
     WhoIsOnlineEvent,
+    StoreType,
+    PresenceEvents,
+    FieldEvents,
+    PinMode,
+    Comment,
   };
 }
 
@@ -118,6 +122,25 @@ export {
   VideoConference,
   Realtime,
   RealtimeMessage,
+  Channel,
+  StoreType,
+  PresenceEvents,
+  Presence3DManager,
+  FieldEvents,
+  PinMode,
+  Participant,
+  SuperVizSdkOptions,
+  BrowserStats,
+  LauncherFacade,
+  Annotation,
+  Comment,
+  PinAdapter,
+  PinCoordinates,
+  AnnotationPositionInfo,
+  Offset,
+  DevicesOptions,
+  Group,
+  Avatar,
 };
 
 export default init;

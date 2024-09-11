@@ -2,14 +2,14 @@
   "name": "@superviz/sdk",
   "version": "0.0.0-development",
   "description": "SuperViz SDK",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./lib/index.js",
-    "require": "./lib/index.cjs.js"
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs.js"
   },
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
     "prepare": "husky install",
@@ -92,7 +92,7 @@
     "luxon": "^3.4.4",
     "rxjs": "^7.8.1",
     "semantic-release-version-file": "^1.0.2",
-    "socket.io-client": "^4.7.5",
+    "@superviz/socket-client": "^1.10.0",
     "zod": "^3.23.8"
   },
   "config": {

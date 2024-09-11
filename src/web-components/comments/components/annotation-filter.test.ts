@@ -1,7 +1,7 @@
 import { MOCK_ANNOTATION } from '../../../../__mocks__/comments.mock';
 import sleep from '../../../common/utils/sleep';
 
-import '.';
+import './annotation-filter';
 import { AnnotationFilter } from './types';
 
 let element: HTMLElement;

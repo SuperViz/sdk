@@ -1,6 +1,7 @@
 import { MOCK_PARTICIPANT_LIST } from '../../../../__mocks__/participants.mock';
 import sleep from '../../../common/utils/sleep';
-import '.';
+
+import './mention-list';
 
 describe('CommentsMentionList', () => {
   let element;
@@ -23,15 +24,15 @@ describe('CommentsMentionList', () => {
     expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('block');
   });
 
-  test('selects a participant and emits event', async () => {  
+  test('selects a participant and emits event', async () => {
     element.participants = MOCK_PARTICIPANT_LIST;
     await element.updateComplete;
-  
+
     const mentionItem = element.shadowRoot.querySelector('.mention-item');
     mentionItem.click();
-  
+
     element['selectParticipant'](MOCK_PARTICIPANT_LIST[0]);
-    expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('none'); 
+    expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('none');
   });
 
   test('renders without participants', async () => {
@@ -46,7 +47,7 @@ describe('CommentsMentionList', () => {
     expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('block');
   });
 
-  test('selects a participant and emits event', async () => {  
+  test('selects a participant and emits event', async () => {
     element.participants = MOCK_PARTICIPANT_LIST;
     await element.updateComplete;
 
@@ -54,7 +55,7 @@ describe('CommentsMentionList', () => {
     mentionItem.click();
 
     element['selectParticipant'](MOCK_PARTICIPANT_LIST[0]);
-    expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('none'); 
+    expect(element.shadowRoot.getElementById('mention-list').style.display).toEqual('none');
   });
 
   test('should display avatar', async () => {
@@ -69,8 +70,8 @@ describe('CommentsMentionList', () => {
     element.participants = [
       {
         ...MOCK_PARTICIPANT_LIST[0],
-        avatar: null
-      }
+        avatar: null,
+      },
     ];
     await element.updateComplete;
 
@@ -86,7 +87,6 @@ describe('CommentsMentionList', () => {
     expect(mentionListElement).toBeTruthy();
 
     expect(mentionListElement?.style.display).toEqual('block');
-
 
     const mockHandleZoom = jest.fn();
     element.stopHandleZoom = mockHandleZoom;
@@ -142,8 +142,8 @@ describe('CommentsMentionList', () => {
     element.participants = [
       {
         ...MOCK_PARTICIPANT_LIST[0],
-        avatar: null
-      }
+        avatar: null,
+      },
     ];
     await element.updateComplete;
 

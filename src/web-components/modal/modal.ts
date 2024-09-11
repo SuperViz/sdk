@@ -1,16 +1,16 @@
 import { CSSResultGroup, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
 
 import { WebComponentsBase } from '../base';
 
 import { ModalContainer } from './modal-container';
 import { modalStyle } from './styles/index.style';
 import { ModalOptions } from './types';
+import { CreateElement } from '../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, modalStyle];
 
-@customElement('superviz-modal')
+@CreateElement('superviz-modal')
 export class Modal extends WebComponentsBaseElement {
   static styles = styles;
 

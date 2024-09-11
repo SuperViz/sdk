@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 
 import sleep from '../../../common/utils/sleep';
 
-import '.';
+import './comment-item';
 import { CommentDropdownOptions, CommentMode } from './types';
 
 const DEFAULT_ELEMENT_OPTIONS = {

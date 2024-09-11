@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../base';
@@ -7,11 +7,12 @@ import importStyle from '../base/utils/importStyle';
 
 import { dropdownStyle } from './index.style';
 import { Positions, PositionsEnum } from './types';
+import { CreateElement } from '../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
 
-@customElement('superviz-tooltip')
+@CreateElement('superviz-tooltip')
 export class Tooltip extends WebComponentsBaseElement {
   static styles = styles;
 

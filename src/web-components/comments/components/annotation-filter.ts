@@ -1,5 +1,4 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WebComponentsBase } from '../../base';
@@ -8,6 +7,7 @@ import { DropdownOption } from '../../dropdown/types';
 import { annotationFilterStyle } from '../css';
 
 import { AnnotationFilter } from './types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationFilterStyle];
@@ -21,7 +21,7 @@ const options: DropdownOption[] = [
   },
 ];
 
-@customElement('superviz-comments-annotation-filter')
+@CreateElement('superviz-comments-annotation-filter')
 export class CommentsAnnotationFilter extends WebComponentsBaseElement {
   constructor() {
     super();

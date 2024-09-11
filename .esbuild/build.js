@@ -6,12 +6,12 @@ const esbuild = require('esbuild');
     await Promise.all([
       esbuild.build({
         ...cjsConfig,
-        outfile: 'lib/index.cjs.js',
+        outfile: 'dist/index.cjs.js',
       }),
 
       esbuild.build({
         ...esmConfig,
-        outdir: 'lib',
+        outdir: 'dist',
       }),
     ]);
   } catch (error) {

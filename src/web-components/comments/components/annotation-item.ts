@@ -1,5 +1,5 @@
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 
 import { ParticipantByGroupApi } from '../../../common/types/participant.types';
@@ -9,11 +9,12 @@ import importStyle from '../../base/utils/importStyle';
 import { annotationItemStyle } from '../css';
 
 import { AnnotationFilter } from './types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, annotationItemStyle];
 
-@customElement('superviz-comments-annotation-item')
+@CreateElement('superviz-comments-annotation-item')
 export class CommentsAnnotationItem extends WebComponentsBaseElement {
   static styles = styles;
 

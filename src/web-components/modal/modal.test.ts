@@ -10,17 +10,18 @@ const createEl = (): HTMLElement => {
 
 describe('modal', () => {
   afterEach(() => {
-    document.body.querySelector('superviz-modal')
-      ?.remove();
+    document.body.querySelector('superviz-modal')?.remove();
   });
 
   test('should render modal container when open is true', async () => {
     createEl();
     await sleep(100);
 
-    document.body.dispatchEvent(new CustomEvent('superviz-modal--open', {
-      detail: {},
-    }));
+    document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--open', {
+        detail: {},
+      }),
+    );
 
     await sleep(100);
 
@@ -34,9 +35,11 @@ describe('modal', () => {
 
     await sleep(100);
 
-    document.body.dispatchEvent(new CustomEvent('superviz-modal--open', {
-      detail: {},
-    }));
+    document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--open', {
+        detail: {},
+      }),
+    );
 
     await sleep(100);
 
@@ -51,9 +54,11 @@ describe('modal', () => {
     const element = createEl();
     await sleep(100);
 
-    document.body.dispatchEvent(new CustomEvent('superviz-modal--open', {
-      detail: {},
-    }));
+    document.body.dispatchEvent(
+      new CustomEvent('superviz-modal--open', {
+        detail: {},
+      }),
+    );
 
     await sleep(100);
 

@@ -1,4 +1,4 @@
-import * as Socket from '../../lib/socket';
+import * as Socket from '@superviz/socket-client';
 import { isEqual } from 'lodash';
 
 import { ParticipantEvent } from '../../common/types/events.types';
@@ -207,7 +207,9 @@ export class Launcher extends Observable implements DefaultLauncher {
     this.isDestroyed = true;
 
     // clean window object
-    window.SUPERVIZ = undefined;
+    if (typeof window !== 'undefined') {
+      window.SUPERVIZ = undefined;
+    }
   };
 
   /**
@@ -455,7 +457,7 @@ export class Launcher extends Observable implements DefaultLauncher {
  * @returns {LauncherFacade}
  */
 export default (options: LauncherOptions): LauncherFacade => {
-  if (window.SUPERVIZ) {
+  if (typeof window !== 'undefined' && window.SUPERVIZ) {
     console.warn('[SUPERVIZ] Room already initialized');
 
     return {
@@ -469,7 +471,9 @@ export default (options: LauncherOptions): LauncherFacade => {
 
   const launcher = new Launcher(options);
 
-  window.SUPERVIZ = launcher;
+  if (typeof window !== 'undefined') {
+    window.SUPERVIZ = launcher;
+  }
 
   return {
     destroy: launcher.destroy,

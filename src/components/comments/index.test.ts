@@ -11,7 +11,7 @@ import ApiService from '../../services/api';
 import { IOC } from '../../services/io';
 import { Presence3DManager } from '../../services/presence-3d-manager';
 import { useGlobalStore } from '../../services/stores';
-import { CommentsFloatButton } from '../../web-components';
+import type { CommentsFloatButton } from '../../web-components/comments/components/float-button';
 import { ComponentNames } from '../types';
 
 import { PinAdapter, CommentsSide, Annotation, PinCoordinates } from './types';

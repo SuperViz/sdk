@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { CSSResultGroup, LitElement, PropertyValueMap, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
@@ -11,11 +11,12 @@ import importStyle from '../../base/utils/importStyle';
 import { dropdownStyle } from '../css';
 
 import { Following, VerticalSide, HorizontalSide } from './types';
+import { CreateElement } from '../../global/decorators/create-element.decorator';
 
 const WebComponentsBaseElement = WebComponentsBase(LitElement);
 const styles: CSSResultGroup[] = [WebComponentsBaseElement.styles, dropdownStyle];
 
-@customElement('superviz-who-is-online-dropdown')
+@CreateElement('superviz-who-is-online-dropdown')
 export class WhoIsOnlineDropdown extends WebComponentsBaseElement {
   static styles = styles;
 

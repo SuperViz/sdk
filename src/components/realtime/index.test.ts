@@ -9,6 +9,7 @@ import { RealtimeComponentState } from './types';
 
 import { Realtime } from '.';
 import { LIMITS_MOCK } from '../../../__mocks__/limits.mock';
+import { StoreType } from '../../common/types/stores.types';
 
 jest.mock('lodash/throttle', () => jest.fn((fn) => fn));
 jest.useFakeTimers();
@@ -21,6 +22,9 @@ describe('realtime component', () => {
 
     console.error = jest.fn();
     console.debug = jest.fn();
+
+    const { hasJoinedRoom } = useStore(StoreType.GLOBAL);
+    hasJoinedRoom.publish(true);
 
     RealtimeComponentInstance = new Realtime();
     RealtimeComponentInstance.attach({
@@ -55,13 +59,13 @@ describe('realtime component', () => {
   });
 
   describe('connect', () => {
-    test('should log an error when trying to create a channel before start', () => {
+    test('should return a promise when trying to create a channel before start', () => {
+      RealtimeComponentInstance['start']();
       RealtimeComponentInstance['state'] = RealtimeComponentState.STOPPED;
 
-      const spy = jest.spyOn(RealtimeComponentInstance['logger'], 'log');
-      RealtimeComponentInstance.connect('test');
+      const channel = RealtimeComponentInstance.connect('test');
 
-      expect(spy).toHaveBeenCalled();
+      expect(channel instanceof Promise).toBe(true);
     });
 
     test('should create a new channel', () => {

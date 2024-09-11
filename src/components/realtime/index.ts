@@ -1,16 +1,21 @@
+import { ComponentLifeCycleEvent } from '../../common/types/events.types';
 import { Participant } from '../../common/types/participant.types';
 import { StoreType } from '../../common/types/stores.types';
 import { Logger } from '../../common/utils';
+import { useGlobalStore } from '../../services/stores';
 import { BaseComponent } from '../base';
 import { ComponentNames } from '../types';
 
 import { Channel } from './channel';
+import { RealtimePresence } from './presence';
+
 import {
+  Callback,
   RealtimeChannelEvent,
   RealtimeChannelState,
   RealtimeComponentEvent,
   RealtimeComponentState,
-  RealtimeMessage,
+  RealtimeComponentSubscribe,
 } from './types';
 
 export class Realtime extends BaseComponent {
@@ -25,6 +30,7 @@ export class Realtime extends BaseComponent {
     event: string;
     callback: (data: unknown) => void;
   }> = [];
+  public participant: RealtimePresence;
 
   constructor() {
     super();
@@ -41,25 +47,36 @@ export class Realtime extends BaseComponent {
    * @param name - channel name
    * @returns {Channel}
    */
-  public connect(name: string): Channel {
-    if (this.state !== RealtimeComponentState.STARTED) {
-      const message =
-        "[SuperViz] Realtime component is not started yet. You can't connect to a channel before start";
+  public connect(name: string): Promise<Channel> {
+    if (!this.channel) {
+      return new Promise<Channel>((resolve) => {
+        const { localParticipant } = useGlobalStore();
 
-      this.logger.log(message);
-      console.warn(message);
-      return;
+        localParticipant.subscribe('connect-after-init', (participant) => {
+          if (!participant.activeComponents.includes(ComponentNames.REALTIME)) return;
+
+          localParticipant.unsubscribe('connect-after-init');
+          resolve(this.connect(name));
+        });
+      });
     }
 
     let channel: Channel = this.channels.get(name);
-
-    if (channel) return channel;
+    if (channel) return channel as unknown as Promise<Channel>;
 
     channel = new Channel(name, this.ioc, this.localParticipant, this.connectionLimit);
-
     this.channels.set(name, channel);
 
-    return channel;
+    if (this.state === RealtimeComponentState.STARTED) {
+      return channel as unknown as Promise<Channel>;
+    }
+
+    return new Promise((resolve) => {
+      this.subscribe(RealtimeComponentEvent.REALTIME_STATE_CHANGED, (state) => {
+        if (state !== RealtimeComponentState.STARTED) return;
+        resolve(channel);
+      });
+    });
   }
 
   /**
@@ -69,22 +86,30 @@ export class Realtime extends BaseComponent {
    * @param event - The name of the event to subscribe to.
    * @param callback - The callback function to handle the received data. It takes a parameter of type `RealtimeMessage` or `string`.
    */
-  public subscribe = (event: string, callback: (data: RealtimeMessage | string) => void): void => {
+  public subscribe: RealtimeComponentSubscribe = <T = unknown>(
+    event: string,
+    callback: Callback<T>,
+  ): void => {
     if (!this.channel) {
       this.callbacksToSubscribeWhenJoined.push({ event, callback });
       return;
     }
 
-    this.channel?.subscribe(event, callback);
+    this.channel.subscribe(event, callback);
   };
 
   /**
    * @function publish
    * @description Publishes an event with optional data to the channel.
    * @param event - The name of the event to publish.
-   * @param data - Optional data to be sent along with the event.
+   * @param data - Data to be sent along with the event.
    */
-  public publish = (event: string, data?: unknown): void => {
+  public publish = <T = unknown>(event: string, data: T): void => {
+    if (ComponentLifeCycleEvent[event.toUpperCase() as keyof typeof ComponentLifeCycleEvent]) {
+      this.channel['publishEventToClient'](event, data);
+      return;
+    }
+
     this.channel?.publish(event, data);
   };
 
@@ -94,7 +119,10 @@ export class Realtime extends BaseComponent {
    * @param event - The event to unsubscribe from.
    * @param callback - An optional callback function to be called when the event is unsubscribed.
    */
-  public unsubscribe = (event: string, callback?: (data: RealtimeMessage) => void): void => {
+  public unsubscribe: RealtimeComponentSubscribe = <T = unknown>(
+    event: string,
+    callback?: Callback<T>,
+  ): void => {
     this.channel?.unsubscribe(event, callback);
   };
 
@@ -113,6 +141,7 @@ export class Realtime extends BaseComponent {
       this.callbacksToSubscribeWhenJoined = [];
 
       this.channel.unsubscribe(RealtimeChannelEvent.REALTIME_CHANNEL_STATE_CHANGED);
+      this.participant = this.channel.participant;
       this.channels.set('default', this.channel);
     });
   }
