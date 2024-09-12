@@ -138,7 +138,6 @@ describe('ApiService', () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
       const response = await ApiService.createAnnotations(baseUrl, VALID_API_KEY, {
         roomId: 'any_room_id',
-        url: 'any_url',
         position: 'any_position',
         userId: 'any_user_id',
       });
@@ -162,7 +161,6 @@ describe('ApiService', () => {
       const baseUrl = 'https://dev.nodeapi.superviz.com';
       const response = await ApiService.fetchAnnotation(baseUrl, VALID_API_KEY, {
         roomId: 'any_room_id',
-        url: 'any_url',
       });
 
       expect(response).toEqual([]);

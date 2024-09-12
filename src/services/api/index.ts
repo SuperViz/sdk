@@ -74,8 +74,7 @@ export default class ApiService {
   static async fetchAnnotation(baseUrl: string, apiKey: string, query: FetchAnnotationsParams) {
     const path = '/annotations';
     const url = this.createUrl(baseUrl, path, {
-      roomId: query.roomId,
-      url: query.url,
+      roomId: query.roomId
     });
     return doRequest(url, 'GET', undefined, { apikey: apiKey });
   }

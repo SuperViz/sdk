@@ -139,8 +139,7 @@ describe('Comments', () => {
     const spy = jest.spyOn(ApiService, 'fetchAnnotation');
 
     expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, {
-      roomId: MOCK_CONFIG.roomId,
-      url: expect.any(String),
+      roomId: MOCK_CONFIG.roomId
     });
   });
 
@@ -161,7 +160,6 @@ describe('Comments', () => {
 
     expect(spy).toHaveBeenCalledWith(MOCK_CONFIG.apiUrl, MOCK_CONFIG.apiKey, {
       roomId: MOCK_CONFIG.roomId,
-      url: expect.any(String),
       userId: expect.any(String),
       position: expect.any(String),
     });

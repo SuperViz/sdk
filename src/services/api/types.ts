@@ -1,6 +1,5 @@
 export type AnnotationParams = {
   roomId: string;
-  url: string;
   position: string;
   userId: string;
 };
@@ -13,7 +12,6 @@ export type CommentParams = {
 
 export type FetchAnnotationsParams = {
   roomId: string;
-  url: string;
 }
 
 export type MentionParams = {
