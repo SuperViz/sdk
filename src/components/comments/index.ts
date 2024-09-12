@@ -135,18 +135,6 @@ export class Comments extends BaseComponent {
   }
 
   /**
-   * @function url
-   * @description Gets the URL of the client
-   * @returns {void}
-   */
-  private get url(): string {
-    const url = new URL(this.clientUrl);
-    url.search = '';
-
-    return url.toString();
-  }
-
-  /**
    * @function start
    * @description Initializes the Comments component
    * @returns {void}
@@ -392,7 +380,6 @@ export class Comments extends BaseComponent {
   private createAnnotation = async ({ detail }: CustomEvent): Promise<void> => {
     try {
       const { text, mentions } = detail;
-      const { url } = this;
       const position = { ...this.coordinates };
       const annotation = await ApiService.createAnnotations(
         config.get<string>('apiUrl'),
@@ -400,7 +387,6 @@ export class Comments extends BaseComponent {
         {
           roomId: config.get<string>('roomId'),
           position: JSON.stringify(position),
-          url,
           userId: this.localParticipantId,
         },
       );
@@ -604,7 +590,6 @@ export class Comments extends BaseComponent {
 
         {
           roomId: config.get('roomId'),
-          url: this.url,
         },
       );
 
